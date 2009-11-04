@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>using glow</title>
+	
+	<script type="text/javascript">
+		assert = {
+			ok: function(t, msg) {
+				console.log( t + ' - ' + msg);
+			},
+			equals: function(a, b, msg) {
+				console.log( (a == b) + ' - ' + msg + ' [' + a + ' == ' + b + '].' );
+			}
+		};
+	</script>
+	
+	<script src="../src/glow.js" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+		Glow.versions = ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'];
+		
+		var glow = Glow('2');
+		
+			assert.ok( (glow !== undefined), 'glow is defined.' );
+			assert.equals(glow.version, '2.1.0', 'glow.version is set to the latest minor+bugfix version.');
+		
+		glow = Glow('2.0');
+		
+			assert.equals(glow.version, '2.0.1', 'glow.version is set to the latest bugfix version.');
+		
+		glow = Glow('2.1.0 rc-1');
+		
+			assert.equals(glow.version, '2.1.0 rc-1', 'glow.version is set to the latest exact version.');
+		
+		try { glow = Glow('3'); }
+		catch(e) {
+			assert.ok( true, 'an undefined version throws an error.' );
+		}
+		
+		glow = glow.load('widgets');
+		
+			assert.ok( (glow !== undefined), 'glow is returned by glow.load().' );
+		
+		glow = glow.load('widgets').ready( function(){} );
+		
+			assert.ok( (glow !== undefined), 'glow is returned by glow.ready().' );
+	</script>
+
+</head>
+<body>
+
+</body>
+</html>
