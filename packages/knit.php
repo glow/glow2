@@ -22,6 +22,8 @@ if ( empty($args['package']) ) {
 }
 
 $js_files = getFiles($packages, $args['package'], 'js');
+
+header('Content-Type: text/javascript');
 knitFiles($js_files, $conf['path_to_src']);
 
 
