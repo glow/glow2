@@ -1,20 +1,22 @@
 <packages>
-	<package name="core">
+	<core>
 		<js>
-			<file>dom/dom.js</file>
-			<file>NodeList/NodeList-core.js</file>
-			<file>NodeList/NodeList-selector.js</file>
+			<file>src/dom/dom.js</file>
+			<file>src/NodeList/NodeList-core.js</file>
+			<file>src/NodeList/NodeList-selector.js</file>
 		</js>
 		<css></css>
-	</package>
-	<package name="more">
+	</core>
+	<more>
 		<js></js>
 		<css></css>
-	</package>
-	<package name="widgets">
+	</more>
+	<widgets>
 		<js>
-			<file>widgets/widgets.js</file>
+			<file>src/widgets/widgets.js</file>
 		</js>
-		<css></css>
-	</package>
+		<css>
+			<file>src/widgets/widgets.css</file>
+		</css>
+	</widgets>
 </packages>

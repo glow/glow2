@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="glow" default="all" basedir=".">
 
-
+	<target name="knit">
+		<mkdir dir="out" />
+	
+		<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
+		
+		<concat destfile="out/core.js" fixlastline="yes" eol="lf">
+			<filelist files="${packages.core.js.file}" />
+		</concat>
+		
+		<concat destfile="out/widgets.js" fixlastline="yes" eol="lf">
+			<filelist files="${packages.widgets.js.file}" />
+		</concat>
+		
+		<concat destfile="out/widgets.css" fixlastline="yes" eol="lf">
+			<filelist files="${packages.widgets.css.file}" />
+		</concat>
+	</target>
+	
 </project>

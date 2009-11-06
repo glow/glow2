@@ -5,7 +5,7 @@
 
 $conf = array(
 	'path_to_packagelist' => 'packages.xml',
-	'path_to_src'         => '../src/'
+	'path_to_root'        => '../'
 );
 
 
@@ -24,7 +24,7 @@ if ( empty($args['package']) ) {
 $js_files = getFiles($packages, $args['package'], 'js');
 
 header('Content-Type: text/javascript');
-knitFiles($js_files, $conf['path_to_src']);
+knitFiles($js_files, $conf['path_to_root']);
 
 
 /**** functions ****/
@@ -64,7 +64,7 @@ function getPackages($address) {
 /**
  */
 function getFiles($packages, $package, $type) {
-	$file_list = $packages->xpath("//package[@name='$package']/$type");
+	$file_list = $packages->xpath("/packages/$package/$type");
 	if ( empty($file_list) ) {
 		throw new Exception('No data is defined for the package with that name and type.');
 	}
