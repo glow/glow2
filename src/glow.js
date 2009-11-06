@@ -70,8 +70,39 @@ var Glow = function(version) {
 		return glow;
 	}
 	
+	// TODO many instances of the same version should refer to the same object
+	Glow.instances[glow.version] = glow;
+	
 	return glow;
 }
 
 // must be in order: newest to latest
 Glow.versions = ['2.0.0'];
+Glow.instances = {};
+
+/**
+	@name Glow.provide
+	@function
+	@param {Object} def Definition of the code to build.
+	@description provide some code to a Glow module.
+ */
+Glow.provide = function(def) {
+	if ( !Glow.instances[def.version] ) {
+		// TODO handle unrequested code here
+	}
+	
+	def.builder(Glow.instances[def.version]);
+}
+
+/**
+	@name Glow.complete
+	@function
+	@param {String} packageName The name of the package that is now complete.
+	@param {Number} version The version of the package that is now complete.
+	@description Tell the instance that onloaded can run.
+ */
+Glow.complete = function(packageName, version) {
+	for (var i = 0, len = Glow.instances.length; i < len; i++) {
+		// TODO
+	}
+}

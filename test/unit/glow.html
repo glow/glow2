@@ -11,11 +11,11 @@
 	<script src="../../src/glow.js" type="text/javascript"></script>
 	
 	<script type="text/javascript">
-		module("Version Resolution");
+		module("Glow");
 		
 		Glow.versions = ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'];
-		test("Glow can find the latest available version that matches.", function() {
-			expect(7);
+		test("resolveVersion", function() {
+			expect(5);
 			
 			var glow = Glow('2');
 		
@@ -34,14 +34,30 @@
 			catch(e) {
 				ok( true, 'an undefined version throws an error.' );
 			}
+		});
+		
+		
+		var myGlow = Glow('2.0.0'); // set up for the next test
+	</script>
+	
+	<!-- TODO: write these out dynamically in the load() method -->
+	<script src="../../src/lang/lang.js" type="text/javascript"></script>
+
+	<script type="text/javascript">
+		
+		test("provide", function() {
+			expect(6);
 			
-			glow = glow.load('widgets');
+			ok( (Glow.instances['2.0.0'] !== undefined), 'reference to 2.0.0 glow instance is defined.' );
+			ok( (Glow.instances['2.0.0'].lang !== undefined), 'namespace lang is defined there.' );
+			ok( (Glow.instances['2.0.0'].lang.trim !== undefined), 'method lang.trim is defined there.' );
+			ok( (Glow.instances['2.0.0'].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
 			
-				ok( (glow !== undefined), 'glow is returned by glow.load().' );
+			ok( (myGlow.lang !== undefined), 'my instance of glow has the module defined.' );
 			
-			glow = glow.load('widgets').ready( function(){} );
+			var trimmed = myGlow.lang.trim("  Hello World  ");
+			equals( trimmed, 'Hello World', 'my instance of glow has module methods that can be called.' );
 			
-				ok( (glow !== undefined), 'glow is returned by glow.ready().' );
 		});
 		
 	</script>
