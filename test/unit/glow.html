@@ -11,12 +11,30 @@
 	<script src="../../src/glow.js" type="text/javascript"></script>
 	
 	<script type="text/javascript">
-		module("Glow");
+		testHelper = {
+			getScriptTagsBySrc: function(src) {
+				var scriptTags = document.getElementsByTagName('script');
+				var found = [];
+				for (var i = 0, len = scriptTags.length; i < len; i++) {
+					if ( scriptTags[i].src.indexOf(src) > -1 ) {
+						found.push(scriptTags[i]);
+					}
+				}
+				return found;
+			}
+		}
+	</script>
+	
+	<script type="text/javascript">
+		module('Glow');
 		
-		Glow.versions = ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'];
-		test("resolveVersion", function() {
+		test('resolveVersion', function() {
 			expect(5);
 			
+			// setup
+			var originalVersions = Glow.versions;
+			Glow.versions = ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'];
+		
 			var glow = Glow('2');
 		
 				ok( (glow !== undefined), 'glow is defined.' );
@@ -34,32 +52,57 @@
 			catch(e) {
 				ok( true, 'an undefined version throws an error.' );
 			}
+			
+			// tear down
+			Glow.versions = originalVersions;
 		});
 		
-		
-		var myGlow = Glow('2.0.0'); // set up for the next test
+		var providedGlow = Glow('src'); // set up for the next test
 	</script>
 	
-	<!-- TODO: write these out dynamically in the load() method -->
+	<!-- script will be added dynamically in the load() test -->
 	<script src="../../src/lang/lang.js" type="text/javascript"></script>
 
 	<script type="text/javascript">
 		
-		test("provide", function() {
+		test('provide', function() {
 			expect(6);
 			
-			ok( (Glow.instances['2.0.0'] !== undefined), 'reference to 2.0.0 glow instance is defined.' );
-			ok( (Glow.instances['2.0.0'].lang !== undefined), 'namespace lang is defined there.' );
-			ok( (Glow.instances['2.0.0'].lang.trim !== undefined), 'method lang.trim is defined there.' );
-			ok( (Glow.instances['2.0.0'].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
+			ok( (Glow.instances['src'] !== undefined), 'reference to src glow instance is defined.' );
+			ok( (Glow.instances['src'].lang !== undefined), 'namespace lang is defined there.' );
+			ok( (Glow.instances['src'].lang.trim !== undefined), 'method lang.trim is defined there.' );
+			ok( (Glow.instances['src'].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
 			
-			ok( (myGlow.lang !== undefined), 'my instance of glow has the module defined.' );
+			ok( (providedGlow.lang !== undefined), 'my instance of glow has the module defined.' );
 			
-			var trimmed = myGlow.lang.trim("  Hello World  ");
+			var trimmed = providedGlow.lang.trim("  Hello World  ");
 			equals( trimmed, 'Hello World', 'my instance of glow has module methods that can be called.' );
 			
 		});
 		
+		test('load and loaded', function() {
+			expect(4);
+			
+			Glow.instances = {}; // reset
+			Glow.packages = {}; // reset
+			Glow.waitingFor = {}; // reset
+			var myGlow = Glow('src');
+			
+			stop(2000); // wait for core package to be provided, max 2 seconds
+			
+			myGlow.base = '/projects/glow2/';
+			// multiple loads of the same package should not add multiple script tags to the page
+			myGlow.load('core').load('core').loaded(function(glow) { /*debug*///console.log('loaded callback invoked.');
+				start();
+				ok( true, 'loaded callback is invoked.' );
+				ok( glow, 'loaded callback receives a glow argument.' );
+				ok( glow.lang, 'loaded callback receives a glow argument which has been populated.' );
+				
+			});
+			
+			coreScriptTags = testHelper.getScriptTagsBySrc(myGlow.base + 'src/core.js');
+			equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
+		});
 	</script>
 
 </head>

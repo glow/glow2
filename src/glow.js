@@ -21,7 +21,21 @@ var Glow = function(version) {
 				return versions[i];
 			}
 		}
+		
+		// version 'src' is special, use to refer to a working copy of glow
+		if (version == 'src') { return 'src'; }
+		
 		throw new Error('Version "'+version+'"does not exist');
+	}
+	
+	var injectJs = function(src) { /*debug*///console.log('injectJs("'+src+'")');
+		// inserting a script node causes the file to load asynchronously
+		var headElement = document.getElementsByTagName('head')[0];
+		var scriptElement = document.createElement('script');
+		scriptElement.type = 'text/javascript';
+		scriptElement.src = src;
+		scriptElement.className = "Glow";
+		headElement.appendChild(scriptElement);
 	}
 	
 	/**
@@ -32,7 +46,10 @@ var Glow = function(version) {
 	var glow = {
 		version: resolveVersion(version),
 		onloaded: function(){},
-		onready: function(){}
+		onready: function(){},
+		base: '',
+		waitingFor: {},
+		packages: {}
 	};
 	
 	/**
@@ -42,7 +59,20 @@ var Glow = function(version) {
 		@description Add modules to your glow.
 	 */
 	glow.load = function() {
-		// TODO
+		for (var i = 0, len = arguments.length; i < len; i++) {
+			var packageName = arguments[i];
+			
+			// if the package is already loading or loaded, don't load it again
+			if (glow.packages[packageName] === undefined) { // undefined means it was never loaded
+				glow.packages[packageName] = false; // false means we're waiting on it
+				
+				injectJs(glow.base + glow.version + '/' + packageName + '.js');
+			}
+			else {
+				glow.waitingFor[packageName] = true;
+			}
+		}
+		
 		return glow;
 	}
 	
@@ -86,23 +116,34 @@ Glow.instances = {};
 	@param {Object} def Definition of the code to build.
 	@description provide some code to a Glow module.
  */
-Glow.provide = function(def) {
+Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSource()+'")');
 	if ( !Glow.instances[def.version] ) {
 		// TODO handle unrequested code here
 	}
+	var glow = Glow.instances[def.version];
 	
-	def.builder(Glow.instances[def.version]);
+	def.builder(glow);
 }
 
 /**
 	@name Glow.complete
 	@function
-	@param {String} packageName The name of the package that is now complete.
-	@param {Number} version The version of the package that is now complete.
+	@param {Object} packageDef
+	@param {String} packageDef.packageName The name of the package that is now complete.
+	@param {Number} packageDef.version The version of the package that is now complete.
 	@description Tell the instance that onloaded can run.
  */
-Glow.complete = function(packageName, version) {
-	for (var i = 0, len = Glow.instances.length; i < len; i++) {
-		// TODO
-	}
+Glow.complete = function(def) {  /*debug*///console.log('Glow.complete("'+def.toSource()+'")');
+	var glow = Glow.instances[def.version];
+	
+	glow.packages[def.packageName] = true; // true means it's loaded
+	
+	// stop waiting for this package
+	delete glow.waitingFor[def.packageName];
+	
+	// are we done waiting yet?
+	var waitCount = 0;
+	for (var p in glow.waitingFor) { waitCount++; }
+	
+	if (waitCount == 0) { glow.onloaded(glow); }
 }
