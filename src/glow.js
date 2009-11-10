@@ -48,8 +48,14 @@ var Glow = function(version) {
 		onloaded: function(){},
 		onready: function(){},
 		base: '',
-		waitingFor: {},
-		packages: {}
+		packages: {}             // packageName: loadState
+	};
+	
+	Glow.STATE = {
+		injected: 1,
+		completed: 2,
+		loaded: 3,
+		readied: 4
 	};
 	
 	/**
@@ -58,18 +64,16 @@ var Glow = function(version) {
 		@param {String} ... One or more package names.
 		@description Add modules to your glow.
 	 */
-	glow.load = function() {
+	glow.load = function() { /*debug*///console.log('glow.load()');
 		for (var i = 0, len = arguments.length; i < len; i++) {
 			var packageName = arguments[i];
 			
-			// if the package is already loading or loaded, don't load it again
-			if (glow.packages[packageName] === undefined) { // undefined means it was never loaded
-				glow.packages[packageName] = false; // false means we're waiting on it
-				
+			if (!glow.packages[packageName]) glow.packages[packageName] = 0;
+			
+			// if the package is already injected don't inject it again
+			if (glow.packages[packageName] < Glow.STATE.injected) {
+				glow.packages[packageName] = Glow.STATE.injected;
 				injectJs(glow.base + glow.version + '/' + packageName + '.js');
-			}
-			else {
-				glow.waitingFor[packageName] = true;
 			}
 		}
 		
@@ -83,9 +87,35 @@ var Glow = function(version) {
 		@description Do something when all the packages load.
 	 */
 	glow.loaded = function(onLoadCallback) {
-		glow.onloaded = onLoadCallback;
-		// TODO
+		glow.onloaded = onLoadCallback; // TODO: this should be a stack
+		
+		glow.tryLoaded();
+		
 		return glow;
+	}
+	
+	glow.tryLoaded = function() { /*debug*///console.log('glow.tryLoaded()');
+		var notcompleted = 0;
+		for (var p in glow.packages) {
+			if (glow.packages[p] < Glow.STATE.completed) { notcompleted++; }
+		}
+
+		if (notcompleted == 0) {
+			var notLoaded = 0;
+			for (var p in glow.packages) {
+				if (glow.packages[p] < Glow.STATE.loaded) { notLoaded++; }
+			}
+			
+			
+			if (notLoaded > 0) {
+				glow.onloaded(glow);
+				for (var p in glow.packages) {
+					if (glow.packages[p] < Glow.STATE.loaded) { glow.packages[p] < Glow.STATE.loaded; }
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -121,8 +151,7 @@ Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSou
 		// TODO handle unrequested code here
 	}
 	var glow = Glow.instances[def.version];
-	
-	def.builder(glow);
+	def.builder && def.builder(glow);
 }
 
 /**
@@ -133,17 +162,10 @@ Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSou
 	@param {Number} packageDef.version The version of the package that is now complete.
 	@description Tell the instance that onloaded can run.
  */
-Glow.complete = function(def) {  /*debug*///console.log('Glow.complete("'+def.toSource()+'")');
+Glow.complete = function(def) {  /*debug*///console.log('Glow.complete("'+def.packageName+'")');
 	var glow = Glow.instances[def.version];
 	
-	glow.packages[def.packageName] = true; // true means it's loaded
+	glow.packages[def.packageName] = Glow.STATE.completed;
 	
-	// stop waiting for this package
-	delete glow.waitingFor[def.packageName];
-	
-	// are we done waiting yet?
-	var waitCount = 0;
-	for (var p in glow.waitingFor) { waitCount++; }
-	
-	if (waitCount == 0) { glow.onloaded(glow); }
+	glow.tryLoaded();
 }
