@@ -1,9 +1,11 @@
 <packages>
 	<core>
 		<js>
+			<file>src/lang/lang.js</file>
 			<file>src/dom/dom.js</file>
 			<file>src/NodeList/NodeList-core.js</file>
 			<file>src/NodeList/NodeList-selector.js</file>
+			<file>src/footer/core.js</file>
 		</js>
 		<css></css>
 	</core>
@@ -14,6 +16,7 @@
 	<widgets>
 		<js>
 			<file>src/widgets/widgets.js</file>
+			<file>src/footer/widgets.js</file>
 		</js>
 		<css>
 			<file>src/widgets/widgets.css</file>

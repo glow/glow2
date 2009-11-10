@@ -1,10 +1,10 @@
 <?php
 
 /**
-	Given a query like: '?package=name.js' or '?package=name.css'
-	will dynamically pull together all the files to make that package.
+  Given a query like: '?package=version/name.js' or '?package=version/name.css'
+  will dynamically pull together all the files to make that package.
 	
-	Uses the packages.xml file to decide which files belong to which packages.
+  Uses the packages.xml file to decide which files belong to which packages.
 */
 
 
@@ -28,12 +28,13 @@ if ( empty($args['package']) ) {
  	throw new Exception('Required GET parameter "package" is empty.');
 }
 
-list($package_name, $type) = split('\.', $args['package']);
+list($version, $package) = split('\/', $args['package']);
+list($package_name, $type) = split('\.', $package);
 
 $files = getFiles($packages, $package_name, $type);
 
 printHeader($type);
-knitFiles($files, $conf['path_to_root']);
+knitFiles($files, $conf['path_to_root'] . $version . '/');
 
 
 /**** functions ****/
@@ -44,9 +45,11 @@ function getSafeArgs($unsafe_args) {
 	$safe_args = array();
 	
 	if ( !empty($unsafe_args['package']) ) {
-		$safe_args['package'] = preg_replace('/[^a-zA-Z_0-9.-]/', '', $unsafe_args['package']);
-		if ($unsafe_args['package'] != $safe_args['package']) {
+		if (!preg_match('!([^/]+)/[a-z]+\.(js|css)$!', $unsafe_args['package'])) {
 			throw new Exception('Argument "package" ' . $unsafe_args['package'] . ' has unsafe characters and cannot be used.');
+		}
+		else {
+			$safe_args['package'] = $unsafe_args['package'];
 		}
 	}
 	
@@ -81,7 +84,7 @@ function getFiles($packages, $package_name, $type) {
 	$files = array();
 	
 	foreach ($file_list[0] as $file) {
-  		$files[] = $file;
+  		$files[] = preg_replace('/^src\//', '', $file); // 'src' will be replaced by the root+version
   	}
   	return $files;
 }
@@ -101,9 +104,9 @@ function printHeader($type) {
 
 /**
  */
-function knitFiles($files, $root='') {
+function knitFiles($files, $base='') {
 	foreach ($files as $file) {
-  		readfile($root . $file);
+  		readfile($base . $file);
   		print "\n";
   	}
   	return $files;
