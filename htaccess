@@ -1,4 +1,4 @@
 RewriteEngine On
 RewriteBase /projects/glow2/
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^src/(.+)\.js$ packages/knit.php?package=$1 [L]
+RewriteRule ^src/(.+\.(js|css))$ packages/knit.php?package=$1 [L]
