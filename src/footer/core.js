@@ -1,0 +1,1 @@
+Glow.complete({packageName: 'core', version: '2.0.0'});

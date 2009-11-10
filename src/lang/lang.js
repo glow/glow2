@@ -1,4 +1,3 @@
-
 Glow.provide({
 	version: '2.0.0',
 	builder: function(glow) {
@@ -40,6 +39,3 @@ Glow.provide({
 		};
 	}
 });
-
-// must be last thing
-Glow.complete('core', '2.0.0'); // safe to call loaded() now

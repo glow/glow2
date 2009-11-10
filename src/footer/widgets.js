@@ -1,0 +1,1 @@
+Glow.complete({packageName: 'widgets', version: '2.0.0'});
