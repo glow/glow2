@@ -1,5 +1,5 @@
 Glow.provide({
-	version: '2.0.0',
+	version: 'src',
 	builder: function(glow) {
 		glow.lang = glow.lang || {};
 		
@@ -17,7 +17,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: '2.0.0',
+	version: 'src',
 	builder: function(glow) {
 		glow.lang = glow.lang || {};
 		
