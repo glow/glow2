@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="glow" default="all" basedir=".">
 	<property file="build.properties" />
-	
+	<property name="JSDOC_JAR" value="${JSDOC_DIR}/jsrun.jar" />
+	<property name="JSDOC_TPL" value="jsdoc/templates/jsdoc" />
+	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
 	<target name="knit">
 		<mkdir dir="dist" />
-		<mkdir dir="dist/${VERSION}" />
-	
-		<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
-		
+		<mkdir dir="dist/${VERSION}" />	
 		<concat destfile="dist/${VERSION}/core.js" fixlastline="yes" eol="lf">
 			<filelist files="${packages.core.js.file}" />
 		</concat>
@@ -20,5 +19,25 @@
 			<filelist files="${packages.widgets.css.file}" />
 		</concat>
 	</target>
-	
+	<target name="apidocs">
+                <delete dir="/docs/${LINE}"/>
+		<mkdir dir="/docs/${LINE}" />		
+		<exec executable="java" failonerror="true">
+			<arg value="-jar"/>
+	                <arg value="${JSDOC_JAR}"/>
+			<arg value="${JSDOC_DIR}/app/run.js" />
+			<arg value="-n" />
+			<arg value="-t=${JSDOC_TPL}/" />
+			<arg value="-d=docs/${LINE}/" />
+			<arg value="-r=4" />			
+			<arg value="src/" />
+		</exec>
+	</target>
+	<target name="all" depends="knit, apidocs">
+		<echo message="" />
+		<echo message="**************************************" />
+		<echo message="Glow version ${VERSION} build complete" />
+		<echo message="**************************************" />
+		<echo message="" />
+	</target>
 </project>
