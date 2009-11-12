@@ -45,8 +45,8 @@ var Glow = function(version) {
 	 */
 	var glow = {
 		version: resolveVersion(version),
-		onloaded: function(){},
-		onready: function(){},
+		onloaded: [],
+		onready: [],
 		base: '',
 		packages: {}             // packageName: loadState
 	};
@@ -86,8 +86,8 @@ var Glow = function(version) {
 		@param {Function} onLoadCallback Called when all the packages load.
 		@description Do something when all the packages load.
 	 */
-	glow.loaded = function(onLoadCallback) {
-		glow.onloaded = onLoadCallback; // TODO: this should be a stack
+	glow.loaded = function(onLoadCallback) { /*debug*///console.log('glow.loaded('+onLoadCallback+')');
+		glow.onloaded.push(onLoadCallback);
 		
 		glow.tryLoaded();
 		
@@ -95,22 +95,28 @@ var Glow = function(version) {
 	}
 	
 	glow.tryLoaded = function() { /*debug*///console.log('glow.tryLoaded()');
-		var notcompleted = 0;
+		var notCompleted = 0;
 		for (var p in glow.packages) {
-			if (glow.packages[p] < Glow.STATE.completed) { notcompleted++; }
+			if (glow.packages[p] < Glow.STATE.completed) { notCompleted++; }
 		}
 
-		if (notcompleted == 0) {
+		if (notCompleted == 0) {
 			var notLoaded = 0;
 			for (var p in glow.packages) {
 				if (glow.packages[p] < Glow.STATE.loaded) { notLoaded++; }
 			}
-			
-			
+	
 			if (notLoaded > 0) {
-				glow.onloaded(glow);
+				// run any queued onloaded callbacks (destructive to glow.onloaded)
+				while (glow.onloaded.length) {	
+					glow.onloaded.shift()(glow);
+				}
+				
+				// set status of any packages to 'loaded'
 				for (var p in glow.packages) {
-					if (glow.packages[p] < Glow.STATE.loaded) { glow.packages[p] < Glow.STATE.loaded; }
+					if (glow.packages[p] < Glow.STATE.loaded) {
+						glow.packages[p] < Glow.STATE.loaded;
+					}
 				}
 				return true;
 			}

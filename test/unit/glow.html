@@ -84,8 +84,7 @@
 			expect(6);
 			
 			Glow.instances = {}; // reset
-			Glow.packages = {}; // reset
-			Glow.waitingFor = {}; // reset
+			Glow.packages = {};  // reset
 			var myGlow = Glow('src');
 			
 			stop(); // wait for core package to be available
@@ -94,11 +93,12 @@
 			// multiple loads of the same package should not add multiple script tags to the page
 			myGlow.load('core').loaded(function(glow) { /*debug*///console.log('loaded callback invoked.');
 				start();
+			
 				ok( true, 'loaded callback is invoked.' );
 				ok( glow, 'loaded callback receives a glow argument.' );
 				ok( glow.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
 				
-				// we should invoke the loaded callback immediately because the package is already avilable
+				// we should invoke this loaded callback immediately because the package is already avilable
 				myGlow.load('core');
 				myGlow.loaded(function(glow) {
 					ok( true, 'second loaded callback is invoked.' );
@@ -109,7 +109,6 @@
 					equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
 				});
 			});
-				
 		});
 	</script>
 

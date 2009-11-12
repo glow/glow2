@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>test: glow</title>
+	
+	<script src="qunit.js" type="text/javascript"></script>
+	<link rel="stylesheet" rev="stylesheet" href="qunit.css" type="text/css" media="screen">
+
+	<script src="../../src/glow.js" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+		module('Glow');
+		
+		test('load and load more', function() {
+			expect(7);
+			
+			var myGlow = Glow('src');
+			
+			stop(); // wait for packages to arrive
+			
+			myGlow.base = '../../';
+			
+			myGlow.load('core').loaded(function(glow) { /*debug*///console.log('loaded callback invoked.');
+				ok( true, 'loaded callback is invoked.' );
+				ok( glow, 'loaded callback receives a glow argument.' );
+				ok( glow.lang, 'loaded callback receives a glow argument which has been populated by core.' );
+				equals( glow.widgets, undefined, 'loaded callback receives a glow argument which has not yet been populated by widgets module.' );
+				
+				// a bit later...
+				setTimeout(
+					function() {
+						myGlow.load('core', 'widgets').loaded(function(glow) {
+							start();
+							
+							ok( true, 'second loaded callback is invoked.' );
+							ok( glow.lang, 'second loaded callback receives a glow argument which has been populated by core.' );
+							ok( glow.widgets, 'second loaded callback receives a glow argument which has been populated by widgets.' );
+						});
+					},
+					1000
+				);
+			});
+		});
+	</script>
+
+</head>
+<body>
+	<h1 id="qunit-header">Unit Tests: glow.js</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+</body>
+</html>
