@@ -1,3 +1,9 @@
+
+/**
+	@name glow.lang
+	@namespace
+ */
+
 Glow.provide({
 	version: 'src',
 	builder: function(glow) {
