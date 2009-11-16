@@ -4,6 +4,7 @@
 			<file>src/header/core.js</file>
 			<file>src/lang/lang.js</file>
 			<file>src/dom/dom.js</file>
+			<file>src/events/events.js</file>
 			<file>src/NodeList/NodeList-core.js</file>
 			<file>src/NodeList/NodeList-selector.js</file>
 			<file>src/footer/core.js</file>
