@@ -30,7 +30,7 @@ Glow.provide({
 		*/
 		glow.events.addListeners = function () {
 			
-			}
+
 		};
 	}
 });
@@ -57,7 +57,7 @@ Glow.provide({
 	       */
 		glow.events.fire = function () {
 			
-			}
+
 		};
 	}
 });
@@ -84,7 +84,7 @@ Glow.provide({
 		   */
 		glow.events.removeAllListeners = function () {
 			
-			}
+
 		};
 	}
 });
@@ -129,7 +129,7 @@ Glow.provide({
 	       */
 		glow.events.Target = function () {
 			
-			}
+
 		};
 	}
 });
@@ -165,7 +165,7 @@ Glow.provide({
 	       */
 		glow.events.Target.extend = function () {
 			
-			}
+
 		};
 		
 		/**
@@ -273,24 +273,50 @@ Glow.provide({
 		glow.events = glow.events || {};
 		
 		/**
-		@name  glow.events.Event
+		@name glow.events.Event
 		@class
 		@param {Object} [properties] Properties to add to the Event instance.
-			Each key-value pair in the object will be added to the Event as
-			properties
-		@description Object passed into all events
-			
-			Some of the properties described below are only available for 
-			certain event types. These are listed in the property descriptions 
-			where applicable.
-			
-			<p><em>Notes for Opera</em></p>
-			
-			The information returned from Opera about key events does not allow 
-			certain keys to be differentiated. This mainly applies to special 
-			keys, such as the arrow keys, function keys, etc. which conflict 
-			with some printable characters.
-			
+		       Each key-value pair in the object will be added to the Event as
+		       properties
+	       
+		@description Describes an event that occurred
+		       You don't need to create instances of this class if you're simply
+		       listening to events. One will be provided as the first argument
+		       in your callback.
+	       
+		@example
+		       // creating a simple event object
+		       var event = new glow.events.Event({
+			       velocity: 50,
+			       direction: 180
+		       });
+		       
+		       // 'velocity' and 'direction' are simple made-up properties
+		       // you may want to add to your event object
+		       
+		@example
+		       // inheriting from glow.events.Event to make a more
+		       // specialised event object
+		       
+		       function RocketEvent() {
+			       // ...
+		       }
+		       
+		       // inherit from glow.events.Event
+		       glow.lang.extend(RocketEvent, glow.events.Event, {
+			       getVector: function() {
+				       return // ...
+			       }
+		       });
+		       
+		       // firing the event
+		       rocketInstance.fire( 'landingGearDown', new RocketEvent() );
+		       
+		       // how a user would listen to the event
+		       rocketInstance.on('landingGearDown', function(rocketEvent) {
+			       var vector = rocketEvent.getVector();
+		       });
+	       */
 		*/
 		glow.events.Event = function ( obj ) {
 			if( obj ) {
@@ -300,11 +326,10 @@ Glow.provide({
 		
 		/**
 		@name glow.events.Event#attachedTo
-		@type Object | Element
-		@description The object/element that the listener is attached to.
-		
-			See the description for 'source' for more details.
-		*/
+		@type {Object}
+		@description The object the listener was attached to.
+		       If null, this value will be populated by {@link glow.events.Target#fire}
+	       	*/
 		
 		/**
 		@name glow.events.Event#source
@@ -447,18 +472,33 @@ Glow.provide({
 		/**
 		@name glow.events.Event#preventDefault
 		@function
-		@description Prevent the default action for events. 
-		
-			This can also be achieved by returning false from an event callback
-		
-		*/
+		@description Prevent the default action of the event.
+		       Eg, if the click event on a link is cancelled, the link
+		       is not followed.
+		       
+		       Returning false from an event listener has the same effect
+		       as calling this function.
+		       
+		       For custom events, it's down to whatever fired the event
+		       to decide what to do in this case. See {@link glow.events.Event#defaultPrevented defaultPrevented}
+		       
+		@example
+		       myLinks.on('click', function(event) {
+			       event.preventDefault();
+		       });
+		       
+		       // same as...
+		       
+		       myLinks.on('click', function(event) {
+			       return false;
+		       });
+	       */
 		glow.events.Event.prototype.preventDefault = function () {
 			if (this[psuedoPreventDefaultKey]) { return; }
 			this[psuedoPreventDefaultKey] = true;
 			if (this.nativeEvent && this.nativeEvent.preventDefault) {
 				this.nativeEvent.preventDefault();
 				this.nativeEvent.returnValue = false;
-			}
 		};
 	}
 });
@@ -473,12 +513,19 @@ Glow.provide({
 		/**
 		@name glow.events.Event#defaultPrevented
 		@function
-		@description Test if the default action has been prevented.
+		@description Has the default been prevented for this event?
+		       This should be used by whatever fires the event to determine if it should
+		       carry out of the default action.
 		
-		@returns {Boolean}
+		@returns {Boolean} Returns true if {@link glow.events.Event#preventDefault preventDefault} has been called for this event.
 		
-			True if the default action has been prevented.
-		*/
+		@example
+		       // fire the 'show' event
+		       // read if the default action has been prevented
+		       if ( overlayInstance.fire('show').defaultPrevented() == false ) {
+			       // go ahead and show
+		       }
+	       */
 		glow.events.Event.prototype.defaultPrevented = function () {
 			return !! this[psuedoPreventDefaultKey];
 		};
