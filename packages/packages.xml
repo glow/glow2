@@ -1,6 +1,7 @@
 <packages>
 	<core>
 		<js>
+			<file>src/header/core.js</file>
 			<file>src/lang/lang.js</file>
 			<file>src/dom/dom.js</file>
 			<file>src/NodeList/NodeList-core.js</file>
