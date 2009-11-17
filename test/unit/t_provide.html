@@ -15,6 +15,11 @@
 	<!-- Glow.provide() is called in here... -->
 	<script src="../../src/lang/lang.js" type="text/javascript"></script>
 	
+	<script type="text/javascript">
+		if (parent.callbacks[window.name]) {
+			parent.callbacks[window.name](window);
+		}
+	</script>
 </head>
 <body>
 

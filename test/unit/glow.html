@@ -35,9 +35,8 @@
 				document.body.appendChild(iframe);			
 				
 				if (callback) {
-					iframe.onload = (function(frame) {
-						return function() { callback(frame); };
-					})(frames[iframe.name]);
+					if (!window.callbacks) { window.callbacks = {}; }					
+					window.callbacks[iframe.name] = callback;
 				}
 				
 				return iframe.id;
@@ -86,9 +85,7 @@
 			expect(6);
 			
 			stop();
-			var frameId = testHelper.addFrame('t_provide.html', checkProvide);
-			
-			function checkProvide(frame) {
+			testHelper.addFrame('t_provide.html', function(frame) {
 				with (frame) {
 					ok( (Glow.instances['src'] !== undefined), 'reference to src glow instance is defined.' );
 					ok( (Glow.instances['src'].lang !== undefined), 'namespace lang is defined there.' );
@@ -101,7 +98,7 @@
 					equals( trimmed, 'Hello World', 'my instance of glow has module methods that can be called.' );
 				}
 				start();
-			}			
+			});			
 		});
 		
 		test('load', function() {
@@ -111,6 +108,36 @@
 			var frameId = testHelper.addFrame('t_load.html', checkLoad);
 			
 			function checkLoad(frame) {
+				with (frame) {
+					glow.base = '../../packages/';
+					glow.load('core').loaded(function(g) {
+						ok( true, 'loaded callback is invoked.' );
+						ok( g, 'loaded callback receives a glow argument.' );
+						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
+					
+						g.load('core');
+						g.loaded(function(g) {
+							ok( true, 'second loaded callback is invoked.' );
+							ok( g.lang, 'second loaded callback receives a glow argument which has been populated.' );
+							
+							// count how many script tags were added for core (should be 1)
+							var coreScriptTags = testHelper.getScriptTagsBySrc('src/core.js', frame);
+							equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
+						});
+						
+						start();
+					});
+				}
+			}
+		});
+		
+		test('ready', function() {
+			expect(1);
+			
+			stop();
+			var frameId = testHelper.addFrame('t_ready.html', checkReady);
+			
+			function checkReady(frame) {
 				with (frame) {
 					glow.base = '../../packages/';
 					glow.load('core').loaded(function(g) {

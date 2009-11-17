@@ -12,6 +12,11 @@
 		window.glow = Glow('src');
 	</script>
 	
+	<script type="text/javascript">
+		if (parent.callbacks[window.name]) {
+			parent.callbacks[window.name](window);
+		}
+	</script>
 </head>
 <body>
 
