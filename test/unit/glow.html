@@ -89,7 +89,7 @@
 			
 			stop(); // wait for core package to be available
 			
-			myGlow.base = '/projects/glow2/';
+			myGlow.base = '../../packages/';
 			// multiple loads of the same package should not add multiple script tags to the page
 			myGlow.load('core').loaded(function(glow) { /*debug*///console.log('loaded callback invoked.');
 				start();

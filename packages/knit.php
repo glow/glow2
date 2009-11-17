@@ -28,8 +28,8 @@ if ( empty($args['package']) ) {
  	throw new Exception('Required GET parameter "package" is empty.');
 }
 
-list($version, $package) = split('\/', $args['package']);
-list($package_name, $type) = split('\.', $package);
+list($version, $package) = explode('/', $args['package']);
+list($package_name, $type) = explode('.', $package);
 
 $files = getFiles($packages, $package_name, $type);
 
