@@ -12,8 +12,9 @@
 	
 	<script type="text/javascript">
 		testHelper = {
-			getScriptTagsBySrc: function(src) {
-				var scriptTags = document.getElementsByTagName('script');
+			getScriptTagsBySrc: function(src, w) {
+				w = w || window;
+				var scriptTags = w.document.getElementsByTagName('script');
 				var found = [];
 				for (var i = 0, len = scriptTags.length; i < len; i++) {
 					if ( scriptTags[i].src.indexOf(src) > -1 ) {
@@ -42,8 +43,9 @@
 				return iframe.id;
 			}
 			,
-			removeFrame: function(id) {
-			
+			removeFrame: function(frameId) {
+				var frameElm = document.getElementById(frameId);
+				frameElm.parentNode.removeChild(frameElm);
 			}
 		}
 	</script>
@@ -95,45 +97,41 @@
 					
 					ok( (glow.lang !== undefined), 'my instance of glow has the module defined.' );
 					
-					var trimmed = glow.lang.trim("  Hello World  ");
+					var trimmed = glow.lang.trim('  Hello World  ');
 					equals( trimmed, 'Hello World', 'my instance of glow has module methods that can be called.' );
 				}
 				start();
-				
-				// cleanup
-				testHelper.removeFrame(frameId);
 			}			
 		});
 		
-		test('load and loaded', function() {
+		test('load', function() {
 			expect(6);
 			
-			Glow.instances = {}; // reset
-			Glow.packages = {};  // reset
-			var myGlow = Glow('src');
+			stop();
+			var frameId = testHelper.addFrame('t_load.html', checkLoad);
 			
-			stop(); // wait for core package to be available
-			
-			myGlow.base = '../../packages/';
-			// multiple loads of the same package should not add multiple script tags to the page
-			myGlow.load('core').loaded(function(glow) { /*debug*///console.log('loaded callback invoked.');
-				start();
-			
-				ok( true, 'loaded callback is invoked.' );
-				ok( glow, 'loaded callback receives a glow argument.' );
-				ok( glow.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
-				
-				// we should invoke this loaded callback immediately because the package is already avilable
-				myGlow.load('core');
-				myGlow.loaded(function(glow) {
-					ok( true, 'second loaded callback is invoked.' );
-					ok( glow.lang, 'second loaded callback receives a glow argument which has been populated.' );
+			function checkLoad(frame) {
+				with (frame) {
+					glow.base = '../../packages/';
+					glow.load('core').loaded(function(g) {
+						ok( true, 'loaded callback is invoked.' );
+						ok( g, 'loaded callback receives a glow argument.' );
+						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
 					
-					// count how many script tags were added for core (should be 1)
-					coreScriptTags = testHelper.getScriptTagsBySrc(myGlow.base + 'src/core.js');
-					equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
-				});
-			});
+						g.load('core');
+						g.loaded(function(g) {
+							ok( true, 'second loaded callback is invoked.' );
+							ok( g.lang, 'second loaded callback receives a glow argument which has been populated.' );
+							
+							// count how many script tags were added for core (should be 1)
+							var coreScriptTags = testHelper.getScriptTagsBySrc('src/core.js', frame);
+							equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
+						});
+						
+						start();
+					});
+				}
+			}
 		});
 	</script>
 
