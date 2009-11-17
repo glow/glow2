@@ -84,7 +84,7 @@
 		test('provide', function() {
 			expect(6);
 			
-			stop();
+			stop(3000);
 			testHelper.addFrame('t_provide.html', function(frame) {
 				with (frame) {
 					ok( (Glow.instances['src'] !== undefined), 'reference to src glow instance is defined.' );
@@ -104,7 +104,7 @@
 		test('load', function() {
 			expect(6);
 			
-			stop();
+			stop(3000);
 			var frameId = testHelper.addFrame('t_load.html', checkLoad);
 			
 			function checkLoad(frame) {
@@ -134,30 +134,12 @@
 		test('ready', function() {
 			expect(1);
 			
-			stop();
+			stop(3000); // wait at most 1 second for ready callback to run
 			var frameId = testHelper.addFrame('t_ready.html', checkReady);
 			
 			function checkReady(frame) {
-				with (frame) {
-					glow.base = '../../packages/';
-					glow.load('core').loaded(function(g) {
-						ok( true, 'loaded callback is invoked.' );
-						ok( g, 'loaded callback receives a glow argument.' );
-						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
-					
-						g.load('core');
-						g.loaded(function(g) {
-							ok( true, 'second loaded callback is invoked.' );
-							ok( g.lang, 'second loaded callback receives a glow argument which has been populated.' );
-							
-							// count how many script tags were added for core (should be 1)
-							var coreScriptTags = testHelper.getScriptTagsBySrc('src/core.js', frame);
-							equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
-						});
-						
-						start();
-					});
-				}
+				ok( true, 'ready callback is invoked.' );
+				start();
 			}
 		});
 	</script>
