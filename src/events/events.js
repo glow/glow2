@@ -11,7 +11,7 @@ Glow.provide({
 	version: 'src',
 	builder: function(glow) {
 		glow.events = glow.events || {};
-		
+		alert("arghsdf");
 		/**
 		@name glow.events.addListeners
 		@function
@@ -317,7 +317,7 @@ Glow.provide({
 			       var vector = rocketEvent.getVector();
 		       });
 	       */
-		*/
+		
 		glow.events.Event = function ( obj ) {
 			if( obj ) {
 				glow.lang.apply( this, obj );
@@ -493,13 +493,15 @@ Glow.provide({
 			       return false;
 		       });
 	       */
-		glow.events.Event.prototype.preventDefault = function () {
+		/*glow.events.Event.prototype.preventDefault = function () {
 			if (this[psuedoPreventDefaultKey]) { return; }
 			this[psuedoPreventDefaultKey] = true;
 			if (this.nativeEvent && this.nativeEvent.preventDefault) {
 				this.nativeEvent.preventDefault();
 				this.nativeEvent.returnValue = false;
-		};
+				
+			}
+		};*/
 	}
 });
 
@@ -526,9 +528,9 @@ Glow.provide({
 			       // go ahead and show
 		       }
 	       */
-		glow.events.Event.prototype.defaultPrevented = function () {
+		/*glow.events.Event.prototype.defaultPrevented = function () {
 			return !! this[psuedoPreventDefaultKey];
-		};
+		};*/
 	}
 });
 
@@ -563,7 +565,7 @@ Glow.provide({
 				function (e) { e.stopPropagation(); }
 			);
 		*/
-		glow.events.Event.prototype.stopPropagation = function () {
+		/*glow.events.Event.prototype.stopPropagation = function () {
 			if (this[psuedoStopPropagationKey]) { return; }
 			this[psuedoStopPropagationKey] = true;
 			var e = this.nativeEvent;
@@ -571,7 +573,7 @@ Glow.provide({
 				e.cancelBubble = true;
 				if (e.stopPropagation) { e.stopPropagation(); }
 			}
-		};
+		};*/
 	}
 });
 
@@ -592,13 +594,13 @@ Glow.provide({
 			True if event propagation has been prevented.
 
 		*/
-		glow.events.Event.prototype.propagationStopped = function () {
+		/*glow.events.Event.prototype.propagationStopped = function () {
 			return !! this[psuedoStopPropagationKey];
 		};
 		
 		//cleanup to avoid mem leaks in IE
 		if (glow.env.ie < 8 || glow.env.webkit < 500) {
 			r.addListener(window, "unload", clearEvents);
-		}
+		}*/
 	}
 });
