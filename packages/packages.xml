@@ -2,6 +2,7 @@
 	<core>
 		<js>
 			<file>src/header/core.js</file>
+			<file>src/core/ready.js</file>
 			<file>src/lang/lang.js</file>
 			<file>src/dom/dom.js</file>
 			<file>src/events/events.js</file>

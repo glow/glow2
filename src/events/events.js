@@ -11,7 +11,7 @@ Glow.provide({
 	version: 'src',
 	builder: function(glow) {
 		glow.events = glow.events || {};
-		alert("arghsdf");
+		//alert("arghsdf");
 		/**
 		@name glow.events.addListeners
 		@function

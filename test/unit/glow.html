@@ -102,21 +102,23 @@
 		});
 		
 		test('load', function() {
-			expect(6);
+			expect(7);
 			
-			stop(3000);
+			stop(4000);
 			var frameId = testHelper.addFrame('t_load.html', checkLoad);
 			
 			function checkLoad(frame) {
 				with (frame) {
-					glow.base = '../../packages/';
+					glow.loaded(function(g) {
+						ok( true, 'loaded callback is invoked immediately when no load().' );
+					});
+					
 					glow.load('core').loaded(function(g) {
 						ok( true, 'loaded callback is invoked.' );
 						ok( g, 'loaded callback receives a glow argument.' );
 						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
 					
-						g.load('core');
-						g.loaded(function(g) {
+						g.load('core').loaded(function(g) {
 							ok( true, 'second loaded callback is invoked.' );
 							ok( g.lang, 'second loaded callback receives a glow argument which has been populated.' );
 							
@@ -124,24 +126,40 @@
 							var coreScriptTags = testHelper.getScriptTagsBySrc('src/core.js', frame);
 							equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
 						});
-						
 						start();
 					});
 				}
 			}
 		});
 		
+		test('loaded', function() {
+			expect(2);
+			
+			stop(3000); // wait at most 1 second for ready callback to run
+			var frameId = testHelper.addFrame('t_loaded.html', checkLoaded);
+			
+			function checkLoaded(frame) {
+				equals( frame.loadedRan[0], 'one', 'loaded callback is invoked once.' );
+				equals( frame.loadedRan[1], 'two', 'loaded callback is invoked twice.' );
+				start();
+			}
+		});
+		
 		test('ready', function() {
-			expect(1);
+			expect(3);
 			
 			stop(3000); // wait at most 1 second for ready callback to run
 			var frameId = testHelper.addFrame('t_ready.html', checkReady);
 			
 			function checkReady(frame) {
-				ok( true, 'ready callback is invoked.' );
+				ok(frame.elementFound, 'dom elements are available in ready().');
+				equals( frame.readyRan[0], 'one', 'ready callback is invoked once.' );
+				equals( frame.readyRan[1], 'two', 'ready callback is invoked twice.' );
 				start();
 			}
 		});
+		
+		
 	</script>
 
 </head>
