@@ -64,7 +64,7 @@ var Glow = function(version, opts) {
 		@param {String} ... One or more package names.
 		@description Include packages, which will rovide some modules to your glow.
 	 */
-	glow.load = function() { /*debug*///console.log('glow.load()');
+	glow.load = function() { /*debug*///console.log('glow.load('+Array.prototype.join.call(arguments, ', ')+')');
 		for (var i = 0, len = arguments.length; i < len; i++) {
 			var packageName = arguments[i];
 			
@@ -113,6 +113,7 @@ var Glow = function(version, opts) {
 				break;
 			}
 		}
+
 		// if there are any packages that are less than complete, do nothing
 		if (notCompleted == 0) {
 			// run and remove each available onloaded callback
@@ -231,7 +232,7 @@ Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSou
 	@param {Number} packageDef.version The version of the package that is now complete.
 	@description Tell the instance that onloaded can run.
  */
-Glow.complete = function(def) {  /*debug*///console.log('Glow.complete("'+def.packageName+'")');
+Glow.complete = function(def) { /*debug*///console.log('Glow.complete("'+def.packageName+'")');
 	var glow = Glow.instances[def.version];
 	
 	glow.packages[def.packageName] = Glow.STATE.completed;

@@ -15,6 +15,7 @@
 		
 		window.glow =
 		Glow('src', {base: '../../packages/'})
+			.load('core')
 			.loaded(function(glow) {
 				window.env = glow.env;
 				window.loadedRan.push('one');

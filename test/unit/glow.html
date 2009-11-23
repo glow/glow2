@@ -13,8 +13,8 @@
 	<script type="text/javascript">
 		testHelper = {
 			getScriptTagsBySrc: function(src, w) {
-				w = w || window;
-				var scriptTags = w.document.getElementsByTagName('script');
+				if (!w) { w = window; }
+				var scriptTags = w.document.getElementsByTagName('script');
 				var found = [];
 				for (var i = 0, len = scriptTags.length; i < len; i++) {
 					if ( scriptTags[i].src.indexOf(src) > -1 ) {
@@ -29,10 +29,12 @@
 				iframe.width = "1px";
 				iframe.height = "1px";
 				iframe.style.border = 'none';
-				iframe.name = iframe.id = "iframe_" +new Date().getTime(); // prevent Safari from caching iframe data.
+				iframe.id = "iframe_" +new Date().getTime(); // prevent Safari from caching iframe data.
 				iframe.src= src;
 				
-				document.body.appendChild(iframe);			
+				document.body.appendChild(iframe);
+				
+				frames[frames.length-1].name = iframe.name = iframe.id;
 				
 				if (callback) {
 					if (!window.callbacks) { window.callbacks = {}; }					
@@ -94,7 +96,7 @@
 					
 					ok( (glow.lang !== undefined), 'my instance of glow has the module defined.' );
 					
-					var trimmed = glow.lang.trim('  Hello World  ');
+					var trimmed = glow.lang.trim('  Hello World  ');
 					equals( trimmed, 'Hello World', 'my instance of glow has module methods that can be called.' );
 				}
 				start();
@@ -135,7 +137,7 @@
 		test('loaded', function() {
 			expect(4);
 			
-			stop(3000); // wait at most 1 second for ready callback to run
+			stop(3000);
 			var frameId = testHelper.addFrame('t_loaded.html', checkLoaded);
 			
 			function checkLoaded(frame) {
@@ -150,7 +152,7 @@
 		test('ready', function() {
 			expect(4);
 			
-			stop(3000); // wait at most 1 second for ready callback to run
+			stop(3000);
 			var frameId = testHelper.addFrame('t_ready.html', checkReady);
 			
 			function checkReady(frame) {
