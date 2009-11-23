@@ -10,15 +10,20 @@
 	
 	<script type="text/javascript">
 		window.loadedRan = [];
+		window.env = null;
+		window.widgets = null;
 		
 		window.glow =
 		Glow('src', {base: '../../packages/'})
-			.loaded(function(g) {
-				loadedRan.push('one');
+			.loaded(function(glow) {
+				window.env = glow.env;
+				window.loadedRan.push('one');
 			})
-			.loaded(function(g) {
-				loadedRan.push('two');
-					
+			.load('widgets')
+			.loaded(function(glow) {
+				window.loadedRan.push('two');
+				window.widgets = glow.widgets;
+				
 				if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }
 			})
 	</script>

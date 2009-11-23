@@ -88,7 +88,7 @@ Glow.provide({
 			
 			processingReadyQueue = true;
 			while (readyQueue.length) {
-				(readyQueue.shift())();
+				(readyQueue.shift())(glow);
 				
 				// check if the previous function has created a blocker
 				if (blockersActive) { break; }
@@ -108,7 +108,7 @@ Glow.provide({
 			glow._addReadyBlock('glow_domReady'); // wait for dom to be ready
 			
 			function onReady() { /*debug*///console.log('onReady()');
-				runDomReadyQueue();
+				runReadyQueue();
 				glow._removeReadyBlock('glow_domReady');
 				document.readyState == 'complete';
 			}

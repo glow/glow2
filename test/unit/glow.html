@@ -113,12 +113,12 @@
 						ok( true, 'loaded callback is invoked immediately when no load().' );
 					});
 					
-					glow.load('core').loaded(function(g) {
+					glow.loaded(function(g) {
 						ok( true, 'loaded callback is invoked.' );
 						ok( g, 'loaded callback receives a glow argument.' );
 						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
 					
-						g.load('core').loaded(function(g) {
+						g.load().loaded(function(g) {
 							ok( true, 'second loaded callback is invoked.' );
 							ok( g.lang, 'second loaded callback receives a glow argument which has been populated.' );
 							
@@ -133,12 +133,14 @@
 		});
 		
 		test('loaded', function() {
-			expect(2);
+			expect(4);
 			
 			stop(3000); // wait at most 1 second for ready callback to run
 			var frameId = testHelper.addFrame('t_loaded.html', checkLoaded);
 			
 			function checkLoaded(frame) {
+				ok(frame.env, 'core package is available in loaded callback.');
+				ok(frame.widgets, 'loaded widgets package is available in loaded callback.');
 				equals( frame.loadedRan[0], 'one', 'loaded callback is invoked once.' );
 				equals( frame.loadedRan[1], 'two', 'loaded callback is invoked twice.' );
 				start();
@@ -146,13 +148,14 @@
 		});
 		
 		test('ready', function() {
-			expect(3);
+			expect(4);
 			
 			stop(3000); // wait at most 1 second for ready callback to run
 			var frameId = testHelper.addFrame('t_ready.html', checkReady);
 			
 			function checkReady(frame) {
-				ok(frame.elementFound, 'dom elements are available in ready().');
+				ok(frame.elementFound, 'dom elements are available in ready callback.');
+				ok(frame.env, 'core package is available in ready callback.');
 				equals( frame.readyRan[0], 'one', 'ready callback is invoked once.' );
 				equals( frame.readyRan[1], 'two', 'ready callback is invoked twice.' );
 				start();

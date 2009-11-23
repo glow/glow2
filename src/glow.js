@@ -131,7 +131,7 @@ var Glow = function(version, opts) {
 	 */
 	glow.ready = function(onReadyCallback) { /*debug*///console.log('ember glow.ready()');
 		glow.loaded(function(glow) {
-			glow.ready(onReadyCallback);
+			glow.ready( function() { onReadyCallback(glow); } );
 		});
 		
 		return glow;
