@@ -129,9 +129,9 @@ var Glow = function(version, opts) {
 		@param {Function} onReadyCallback Called when all the packages load and the DOM is available.
 		@description Do something when all the packages load and the DOM is ready.
 	 */
-	glow.onready = function(onReadyCallback) { /*debug*///console.log('glow.onready()');
-		glow.loaded(function(g) {
-			g.ready(onReadyCallback);
+	glow.ready = function(onReadyCallback) { /*debug*///console.log('ember glow.ready()');
+		glow.loaded(function(glow) {
+			glow.ready(onReadyCallback);
 		});
 		
 		return glow;

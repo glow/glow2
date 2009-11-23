@@ -14,12 +14,12 @@
 		
 		window.glow =
 		Glow('src', {base: '../../packages/'})
-			.onready(function(g) {
+			.ready(function(g) {
 				readyRan.push('one');
 				
 				elementFound = document.getElementById('test-element');
 			})
-			.onready(function(g) {
+			.ready(function(g) {
 				readyRan.push('two');
 					
 				if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }

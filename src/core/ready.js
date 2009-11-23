@@ -10,17 +10,16 @@ Glow.provide({
 				ie = opera ? NaN : (/msie ([\w\.]+)/.exec(ua) || nanArray)[1],
 				gecko = (/rv:([\w\.]+).*gecko\//.exec(ua) || nanArray)[1],
 				webkit = (/applewebkit\/([\w\.]+)/.exec(ua) || nanArray)[1],
-				khtml = (/khtml\/([\w\.]+)/.exec(ua) || nanArray)[1],
-				toNum = parseFloat;
+				khtml = (/khtml\/([\w\.]+)/.exec(ua) || nanArray)[1];
 
 			return {
-				gecko   : toNum(gecko),
-				ie      : toNum(ie),
-				opera   : toNum(opera),
-				webkit  : toNum(webkit),
-				khtml   : toNum(khtml),
-				version : ie || gecko || webkit || opera || khtml,
-				standardsMode : document.compatMode != "BackCompat" && (!ie || ie >= 6)
+				gecko: parseFloat(gecko),
+				ie: parseFloat(ie),
+				opera: parseFloat(opera),
+				webkit: parseFloat(webkit),
+				khtml: parseFloat(khtml),
+				version: ie || gecko || webkit || opera || khtml,
+				standardsMode : document.compatMode != 'BackCompat' && (!ie || ie >= 6)
 			}
 		}();
 			
@@ -31,7 +30,7 @@ Glow.provide({
 			
 		glow._readyBlockers = {};
 	
-		glow.ready = function (f) { /*debug*///console.log('glow.ready()');
+		glow.ready = function (f) { /*debug*///console.log('core glow.ready()');
 			if (this.isReady) {
 				f();
 			}
@@ -43,9 +42,10 @@ Glow.provide({
 		
 		glow.onDomReady = function(f) {
 			//just run function if already ready
-			if (this.isDomReady) {
+			if (glow.isDomReady) {
 				f();
-			} else {
+			}
+			else {
 				domReadyQueue.push(f);
 			}
 		};
@@ -84,101 +84,106 @@ Glow.provide({
 	
 		function runReadyQueue() { /*debug*///console.log('runReadyQueue()');
 			// if we're already processing the queue, just exit, the other instance will take care of it
-			if (processingReadyQueue) return;
+			if (processingReadyQueue) { return; }
+			
 			processingReadyQueue = true;
 			while (readyQueue.length) {
 				(readyQueue.shift())();
 				
 				// check if the previous function has created a blocker
-				if (blockersActive) {
-					break;
-				}
+				if (blockersActive) { break; }
 			}
 			processingReadyQueue = false;
 		}
-
-	
-//// watch for document to complete
-		(function() {
-			function glowReady() { /*debug*///console.log('glowReady()');
+		
+		/**
+			@private
+			@function
+			@name bindReady
+			@description Add listener to document to detect when page is ready.
+		 */
+		function bindReady() {
+			//don't do this stuff if the dom is already ready
+			if (glow.isDomReady) { return; }
+			glow._addReadyBlock('glow_domReady'); // wait for dom to be ready
+			
+			function onReady() { /*debug*///console.log('onReady()');
 				runDomReadyQueue();
 				glow._removeReadyBlock('glow_domReady');
 				document.readyState == 'complete';
 			}
-			
-			//don't do this stuff if the dom is already ready
-			if (glow.isDomReady) { return; }
-			
-			glow._addReadyBlock('glow_domReady'); // wait for dom to be ready
-			
+					
 			if (document.readyState == 'complete') { // already here!
-				glowReady();
+				onReady();
 			}
-			else if ( document.attachEvent ) { // like IE
+			else if (document.attachEvent) { // like IE
 				// might be an iframe...
 				document.attachEvent(
 					'onreadystatechange',
 					function() {
-						if (document.readyState === 'complete') {
+						if (document.readyState == 'complete') {
 							document.detachEvent('onreadystatechange', arguments.callee);
-							glowReady();
+							onReady();
 						}
 					}
 				);
 				
 				// not an iframe...
-				if (document.documentElement.doScroll && window == window.top ) {
+				if (document.documentElement.doScroll && window == top) {
 					(function() {
 						try {
 							document.documentElement.doScroll('left');
-						} catch( error ) {
-							setTimeout( arguments.callee, 0 );
+						}
+						catch(error) {
+							setTimeout(arguments.callee, 0);
 							return;
 						}
 				
 						// and execute any waiting functions
-						glowReady();
+						onReady();
 					})();
 				}
 			}
-			if (glow.env.webkit < 525.13 && document.readyState) { // like pre Safari 3.1
-				var f = function(){
+			else if (glow.env.webkit < 525.13 && document.readyState) { // like pre Safari 3.1
+				(function() {
 					if ( /loaded|complete/.test(document.readyState) ) {
-						glowReady();
-					} else {
-						setTimeout(f, 0);
+						onReady();
 					}
-				};
-				f();
+					else {
+						setTimeout(arguments.callee, 0);
+					}
+				})();
 			}
 			else if (document.addEventListener) { // like Mozilla, Opera and recent webkit
 				document.addEventListener( 
 					'DOMContentLoaded',
 					function(){
 						document.removeEventListener('DOMContentLoaded', arguments.callee, false);
-						glowReady();
+						onReady();
 					},
 					false
 				);
 			}
 			else {
-				// TODO throw an error?
+				throw new Error('Unable to bind glow ready listener to document.');
 			}
-		})();
-////
+		}
 	
-		// TODO for v2 we should switch this to 'notSupported' as it's a blacklist
-		glow.isSupported = !(
-			//here are the browsers we don't support
+		glow.notSupported = ( // here are the browsers we don't support
 			glow.env.ie < 6 ||
 			(glow.env.gecko < 1.9 && !/^1\.8\.1/.test(env.version)) ||
 			glow.env.opera < 9 ||
 			glow.env.webkit < 412
 		);
+		// deprecated
+		glow.isSupported = !glow.notSupported;
+		
 		// block 'ready' if browser isn't supported
-		if (!glow.isSupported) {
-			glow._addReadyBlock("glow_browserSupport");
+		if (glow.notSupported) {
+			glow._addReadyBlock('glow_browserSupport');
 		}
+		
+		bindReady();
 	}
 });
 // end-source: core/ready.js
