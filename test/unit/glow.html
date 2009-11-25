@@ -5,8 +5,8 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
 	<title>test: glow</title>
 	
-	<script src="qunit.js" type="text/javascript"></script>
-	<link rel="stylesheet" rev="stylesheet" href="qunit.css" type="text/css" media="screen">
+	<script src="../lib/qunit.js" type="text/javascript"></script>
+	<link rel="stylesheet" rev="stylesheet" href="../lib/qunit.css" type="text/css" media="screen">
 
 	<script src="../../src/glow.js" type="text/javascript"></script>
 	
@@ -87,7 +87,7 @@
 			expect(6);
 			
 			stop(3000);
-			testHelper.addFrame('t_provide.html', function(frame) {
+			testHelper.addFrame('../data/t_provide.html', function(frame) {
 				with (frame) {
 					ok( (Glow.instances['@SRC@'] !== undefined), 'reference to src glow instance is defined.' );
 					ok( (Glow.instances['@SRC@'].lang !== undefined), 'namespace lang is defined there.' );
@@ -107,7 +107,7 @@
 			expect(8);
 			
 			stop(4000);
-			var frameId = testHelper.addFrame('t_load.html', checkLoad);
+			var frameId = testHelper.addFrame('../data/t_load.html', checkLoad);
 			
 			function checkLoad(frame) {
 				with (frame) {
@@ -139,7 +139,7 @@
 			expect(4);
 			
 			stop(3000);
-			var frameId = testHelper.addFrame('t_loaded.html', checkLoaded);
+			var frameId = testHelper.addFrame('../data/t_loaded.html', checkLoaded);
 			
 			function checkLoaded(frame) {
 				ok(frame.env, 'core package is available in loaded callback.');
@@ -154,7 +154,7 @@
 			expect(4);
 			
 			stop(3000);
-			var frameId = testHelper.addFrame('t_ready.html', checkReady);
+			var frameId = testHelper.addFrame('../data/t_ready.html', checkReady);
 			
 			function checkReady(frame) {
 				ok(frame.elementFound, 'dom elements are available in ready callback.');
