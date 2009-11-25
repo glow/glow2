@@ -1,6 +1,6 @@
 // start-source: core/ready.js
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		var ua = navigator.userAgent.toLowerCase();
 		

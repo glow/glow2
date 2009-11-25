@@ -6,7 +6,7 @@
  */
 		 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.widgets = glow.widgets || {};
 		

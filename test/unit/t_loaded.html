@@ -14,7 +14,7 @@
 		window.widgets = null;
 		
 		window.glow =
-		Glow('src', {base: '../../packages/'})
+		Glow('@SRC@', {base: '../../packages/'})
 			.load('core')
 			.loaded(function(glow) {
 				window.env = glow.env;

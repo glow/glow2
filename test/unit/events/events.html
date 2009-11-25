@@ -18,13 +18,13 @@
 		test('Test basic events', function() {
 			expect(1);
 			
-			var glow = Glow('src').load("core.js");
+			var glow = Glow('@SRC@').load("core.js");
 				console.log(glow.events);
 				ok( (glow.events !== undefined), 'my instance of glow has the module defined.' );
 			
 		});
 		
-		var providedGlow = Glow('src'); // set up for the next test
+		var providedGlow = Glow('@SRC@'); // set up for the next test
 	</script>
 
 

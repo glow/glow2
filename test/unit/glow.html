@@ -89,10 +89,10 @@
 			stop(3000);
 			testHelper.addFrame('t_provide.html', function(frame) {
 				with (frame) {
-					ok( (Glow.instances['src'] !== undefined), 'reference to src glow instance is defined.' );
-					ok( (Glow.instances['src'].lang !== undefined), 'namespace lang is defined there.' );
-					ok( (Glow.instances['src'].lang.trim !== undefined), 'method lang.trim is defined there.' );
-					ok( (Glow.instances['src'].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
+					ok( (Glow.instances['@SRC@'] !== undefined), 'reference to src glow instance is defined.' );
+					ok( (Glow.instances['@SRC@'].lang !== undefined), 'namespace lang is defined there.' );
+					ok( (Glow.instances['@SRC@'].lang.trim !== undefined), 'method lang.trim is defined there.' );
+					ok( (Glow.instances['@SRC@'].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
 					
 					ok( (glow.lang !== undefined), 'my instance of glow has the module defined.' );
 					

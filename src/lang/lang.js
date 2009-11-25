@@ -5,7 +5,7 @@
  */
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.lang = glow.lang || {};
 		
@@ -23,7 +23,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.lang = glow.lang || {};
 		

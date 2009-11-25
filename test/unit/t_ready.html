@@ -13,7 +13,7 @@
 		window.elementFound = null;
 		window.env - null;
 		
-		Glow('src', {base: '../../packages/'})
+		Glow('@SRC@', {base: '../../packages/'})
 			.ready(function(glow) {
 				// dom elements in the body are available when this runs?
 				window.elementFound = document.getElementById('test-element');

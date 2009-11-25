@@ -73,7 +73,8 @@ var Glow = function(version, opts) {
 			// if the package is already injected don't inject it again
 			if (glow.packages[packageName] < Glow.STATE.injected) {
 				glow.packages[packageName] = Glow.STATE.injected;
-				_injectJs(glow.base + glow.version + '/' + packageName + '.js');
+				
+				_injectJs(_makePath(glow.version, packageName, 'js'));
 			}
 		}
 		
@@ -158,8 +159,8 @@ var Glow = function(version, opts) {
 			}
 		}
 		
-		// version 'src' is special, use to refer to a working copy of glow
-		if (version == 'src') { return 'src'; }
+		// src version is special, use it to refer to your working copy of glow
+		if (version == '@SRC@') { return '@SRC@'; }
 		
 		throw new Error('Version "'+version+'"does not exist');
 	}
@@ -179,6 +180,18 @@ var Glow = function(version, opts) {
 		scriptElement.src = src;
 		scriptElement.className = 'Glow-injected';
 		headElement.appendChild(scriptElement);
+	}
+	
+	
+	/**
+		@name _makePath
+		@private
+		@function
+		@description Build a path to a package file from the package properties.
+	 */
+	function _makePath(version, packageName, fileType) { /*debug*///console.log('_makePath("'+version+', '"+packageName+"', '"+fileType+"'")');
+		version = (version == '@SRC@')? 'src' : version;
+		return glow.base + version + '/' + packageName + '.' + fileType;
 	}
 	
 	/**

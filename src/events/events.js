@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		//alert("arghsdf");
@@ -38,7 +38,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -65,7 +65,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -92,7 +92,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -137,7 +137,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -268,7 +268,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -465,7 +465,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -508,7 +508,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -537,7 +537,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -580,7 +580,7 @@ Glow.provide({
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
