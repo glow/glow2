@@ -65,8 +65,14 @@ var Glow = function(version, opts) {
 		@description Include packages, which will rovide some modules to your glow.
 	 */
 	glow.load = function() { /*debug*///console.log('glow.load('+Array.prototype.join.call(arguments, ', ')+')');
-		for (var i = 0, len = arguments.length; i < len; i++) {
-			var packageName = arguments[i];
+		var map,
+			packageName,
+			files;
+		
+		map = _getMap(glow.version);
+		
+		for (var i = 0, li = arguments.length; i < li; i++) {
+			packageName = arguments[i];
 			
 			if (!glow.packages[packageName]) glow.packages[packageName] = 0;
 			
@@ -74,7 +80,11 @@ var Glow = function(version, opts) {
 			if (glow.packages[packageName] < Glow.STATE.injected) {
 				glow.packages[packageName] = Glow.STATE.injected;
 				
-				_injectJs(_makePath(glow.version, packageName, 'js'));
+				for (var j = 0, lj = map.length; j < lj; j++) {
+					if (map[j].indexOf(packageName+':') == 0) {
+						_injectFiles(map[j]);
+					}
+				}
 			}
 		}
 		
@@ -150,11 +160,11 @@ var Glow = function(version, opts) {
 		// TODO: an empty version means: the very latest version
 		
 		var versions = Glow.versions,
-			matchThis = '^' + version + '.';
+			matchThis = version + '.';
 		
 		var i = versions.length;
 		while (--i > -1) {
-			if ( ('^' + versions[i] + '.').indexOf(matchThis) == 0 ) {
+			if ( ( versions[i] + '.').indexOf(matchThis) == 0 ) {
 				return versions[i];
 			}
 		}
@@ -162,7 +172,32 @@ var Glow = function(version, opts) {
 		// src version is special, use it to refer to your working copy of glow
 		if (version == '@SRC@') { return '@SRC@'; }
 		
-		throw new Error('Version "'+version+'"does not exist');
+		throw new Error('Version "'+version+'" does not exist');
+	}
+	
+	/**
+		@name _injectFiles
+		@private
+		@function
+		@param {string} packageFiles Like 'packageName:file1.js,file2.js,file3.css'
+		@description Parse out filenames and inject them into the page.
+	 */
+	function _injectFiles(packageFiles) { /*debug*///console.log('_injectfiles("'+packageFiles+'")');
+		var files,
+			filename;
+			
+		files = packageFiles.split(':')[1].split(',');
+		
+		for (var i = 0, li = files.length; i < li; i++) {
+			filename = files[i];
+			
+			if (/\.js$/.test(filename)) {
+				_injectJs(_makePath(glow.version, filename));
+			}
+			else if (/\.css$/.test(filename)) {
+				_injectCss(_makePath(glow.version, filename));
+			}
+		}
 	}
 	
 	/**
@@ -182,6 +217,23 @@ var Glow = function(version, opts) {
 		headElement.appendChild(scriptElement);
 	}
 	
+	/**
+		@name _injectCss
+		@private
+		@function
+		@description Start asynchronously loading an external css file.
+	 */
+	function _injectCss(src) { /*debug*///console.log('_injectCss("'+src+'")');
+		if (src === undefined) { throw new Error('Glow-_injectCss requires a "src" argument.'); }
+
+		var headElement = document.getElementsByTagName('head')[0];
+		var link = document.createElement('link');
+		link.href = src;
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.className = 'gloaded async';
+		headElement.appendChild(link);
+	}
 	
 	/**
 		@name _makePath
@@ -189,9 +241,9 @@ var Glow = function(version, opts) {
 		@function
 		@description Build a path to a package file from the package properties.
 	 */
-	function _makePath(version, packageName, fileType) { /*debug*///console.log('_makePath("'+version+', '"+packageName+"', '"+fileType+"'")');
+	function _makePath(version, filename) { /*debug*///console.log('_makePath("'+version+', '"+filename+")');
 		version = (version == '@SRC@')? 'src' : version;
-		return glow.base + version + '/' + packageName + '.' + fileType;
+		return glow.base + version + '/' + filename;
 	}
 	
 	/**
@@ -205,6 +257,30 @@ var Glow = function(version, opts) {
 		throw new Error('Glow-_findBase is not implemented yet.');
 	}
 	
+	/**
+		@name _getMap
+		@private
+		@function
+		@description Find the file map for a given version.
+		@param {string} version Resolved identifier, like '2.0.0'.
+		@returns {object} A map of package names to files list.
+	 */
+	function _getMap(version) { /*debug*///console.log('_getMap("'+version+'")');
+		var versions = Glow.versions,
+			files = Glow.files,
+			map,
+			versionFound;
+		
+		var i = versions.length;
+		while (--i > -1) {
+			if (files[versions[i]]) { map = files[versions[i]]; }
+			if (versions[i] == version) { versionFound = true; }
+			if (versionFound && map) return map;
+		}
+		
+		throw new Error('No files are defined for version "' + version + '".');
+	}
+	
 	// TODO many instances of the same version should refer to the same object
 	Glow.instances[glow.version] = glow;
 	
@@ -214,8 +290,15 @@ var Glow = function(version, opts) {
 	return glow;
 }
 
-// must be in order: newest to latest
-Glow.versions = ['2.0.0'];
+// versions must be in order: newest to latest
+// like 'version:filesOffset'
+Glow.versions = ['2.0.0', '@SRC@'];
+Glow.files = {
+	'2.0.0': [
+		'core:core.js',
+		'widgets:widgets.js,widgets.css'
+	]
+};
 Glow.instances = {};
 
 /**
