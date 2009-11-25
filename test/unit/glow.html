@@ -83,6 +83,22 @@
 			Glow.versions = originalVersions;
 		});
 		
+		test('tags', function() {
+			expect(3);
+			
+			stop(3000);
+			testHelper.addFrame('../data/t_tags.html', checkTags);
+			
+			function checkTags(frame) {
+				with (frame) {
+					ok( (typeof glow !== 'undefined'), 'glow is defined.' );
+					ok( (typeof glow.lang !== 'undefined'), 'glow.lang is defined.' );
+					ok( (typeof glow.widgets !== 'undefined'), 'glow.widgets is defined.' );
+				}
+				start();
+			}
+		});
+			
 		test('provide', function() {
 			expect(6);
 			
