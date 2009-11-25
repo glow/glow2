@@ -104,7 +104,7 @@
 		});
 		
 		test('load', function() {
-			expect(7);
+			expect(8);
 			
 			stop(4000);
 			var frameId = testHelper.addFrame('t_load.html', checkLoad);
@@ -119,6 +119,7 @@
 						ok( true, 'loaded callback is invoked.' );
 						ok( g, 'loaded callback receives a glow argument.' );
 						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
+						ok( g.widgets, 'loaded callback receives a glow with widgets package provided.' );
 					
 						g.load().loaded(function(g) {
 							ok( true, 'second loaded callback is invoked.' );

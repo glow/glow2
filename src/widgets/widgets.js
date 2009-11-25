@@ -16,6 +16,10 @@ Glow.provide({
 		 */
 		glow.widgets.Panel = function() {
 		};
+		
+		glow.loaded(function() {
+			glow.widgets.toArray = glow.lang.toArray;
+		});
 	}
 });
 
