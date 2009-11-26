@@ -9,7 +9,7 @@
 
 Glow.provide({
 	version: '@SRC@',
-	builder: function(glow) {
+	builder: function(glow) { /*!debug*/glow.debug.log('providing: glow.lang.trim');/*gubed!*/
 		glow.lang = glow.lang || {};
 		
 		/**

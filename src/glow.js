@@ -54,11 +54,8 @@ var Glow = function(version, opts) {
 	var undefined; // local, which we know is truly undefined
 	
 	/*!debug*/
-		(function() {
-			/*!include:glowbug.js*/
-			if (typeof glowbug != 'undefined') { Glow.debug = glowbug; }
-			
-		})();
+		/*!include:glowbug.js*/
+		if (typeof glowbug != 'undefined') { Glow.debug = glowbug; }
 	/*gubed!*/
 	
 	/**
