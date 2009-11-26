@@ -63,6 +63,12 @@
 			Glow.files = {
 				'2.0.0 rc-1': ['core:core.js']
 			};
+			Glow.files = {
+				'2.0.0 rc-1': {
+					packages: ['core'],
+					files: { core: ['core.js'] }
+				}
+			};
 		
 			var glow = Glow('2');
 		
@@ -122,7 +128,7 @@
 			});			
 		});
 		
-		test('load', function() {
+		test('load()', function() {
 			expect(8);
 			
 			stop(4000);

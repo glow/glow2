@@ -46,14 +46,9 @@ var Glow = function(version, opts) {
 		version: _resolveVersion(version),
 		onloaded: [],
 		base: opts.base || '',
-		packages: {}             // packageName: loadState
-	};
-	
-	Glow.STATE = {
-		injected:  1,
-		completed: 2,
-		loaded:    3,
-		readied:   4
+		_packageStatus: {},    // track which packages are already done. like: {packageName: (undefined|false|true)}
+		_buildQueue: {},       // when packages complete they go here. like: {packageName: [builders]}
+		_buildQueueCache: []   // as builders are provided we stash them here
 	};
 	
 	var undefined; // local, which we know is truly undefined
@@ -64,25 +59,26 @@ var Glow = function(version, opts) {
 		@param {String} ... One or more package names.
 		@description Include packages, which will rovide some modules to your glow.
 	 */
-	glow.load = function() { /*debug*///console.log('glow.load('+Array.prototype.join.call(arguments, ', ')+')');
+	glow.load = function(/*...*/) { /*debug*///console.log('glow.load('+Array.prototype.join.call(arguments, ', ')+')');
 		var map,
-			packageName,
-			files;
+			packageName;
 		
 		map = _getMap(glow.version);
 		
 		for (var i = 0, li = arguments.length; i < li; i++) {
 			packageName = arguments[i];
 			
-			if (!glow.packages[packageName]) glow.packages[packageName] = 0;
-			
-			// if the package is already injected don't inject it again
-			if (glow.packages[packageName] < Glow.STATE.injected) {
-				glow.packages[packageName] = Glow.STATE.injected;
+			// package is not built yet
+			if (glow._packageStatus[packageName] === undefined) {
+				glow._packageStatus[packageName] = false; // add a placeholder for it
 				
-				for (var j = 0, lj = map.length; j < lj; j++) {
-					if (map[j].indexOf(packageName+':') == 0) {
-						_injectFiles(map[j]);
+				// the package files were not added to the page yet
+				if (!glow._buildQueue[packageName]) {
+					glow._buildQueue[packageName] = []; // add a placeholder for them
+					
+					// add the files required for this package to the page
+					if (map.files[packageName]) {
+						_injectFiles(map.files[packageName]);
 					}
 				}
 			}
@@ -107,31 +103,54 @@ var Glow = function(version, opts) {
 		return glow;
 	}
 	
-	// TODO can this function be moved to a more sensible place?
+	glow._tryBuildAll = function() { /*debug*///console.log('glow._tryBuildAll()');
+		var depends = ['core', 'more', 'widgets'], // the order in which to build TODO: should be in the map
+			packageName,
+			builder;
+		
+		// if any requested packages are not yet complete, we can skip building
+		for (var p in glow._buildQueue) {
+			if (glow._buildQueue[p].length == 0) { // _buildQueue is only given builders when it is complete
+				return false;
+			}
+		}
+		
+		// all packages have all their builders, now we can build them in the right order
+		for (var i = 0, li = depends.length; i < li; i++) {
+			packageName = depends[i];
+			if (glow._buildQueue[packageName]) {
+				for (var j = 0, lj = glow._buildQueue[packageName].length; j < lj; j++) {
+					builder = glow._buildQueue[packageName][j];
+					builder(glow);
+				}
+			}
+			glow._packageStatus[packageName] = true; // indicate that it's now been added to glow
+		}
+		
+		return true;
+	}
+	
 	/**
 		@name _runCallbacks
 		@private
 		@function
 		@description Try to run any pending 'onloaded' callbacks.
 	 */
-	glow._runCallbacks = function() { /*debug*///console.log('glow._runCallbacks()');
+	glow._runCallbacks = function() { /*debug*///console.log('glow._runCallbacks() ' + glow.onloaded.length);
 		//if there are no onloaded callbacks in the list, do nothing
 		if (glow.onloaded.length == 0) { return; }
-		var notCompleted = 0;
-		for (var p in glow.packages) {
-			if (glow.packages[p] < Glow.STATE.completed) {
-				notCompleted++;
-				break;
+		
+		// if there are any packages that are still not built, do nothing
+		for (var p in glow._packageStatus) {
+			if (!glow._packageStatus[p]) {
+				return
 			}
 		}
 
-		// if there are any packages that are less than complete, do nothing
-		if (notCompleted == 0) {
-			// run and remove each available onloaded callback
-			while (glow.onloaded.length) {
-				var f = glow.onloaded.shift();
-				f(glow);
-			}
+		// run and remove each available onloaded callback
+		while (glow.onloaded.length) {
+			var f = glow.onloaded.shift();
+			f(glow);
 		}
 	}
 	
@@ -183,13 +202,10 @@ var Glow = function(version, opts) {
 		@description Parse out filenames and inject them into the page.
 	 */
 	function _injectFiles(packageFiles) { /*debug*///console.log('_injectfiles("'+packageFiles+'")');
-		var files,
-			filename;
+		var filename;
 			
-		files = packageFiles.split(':')[1].split(',');
-		
-		for (var i = 0, li = files.length; i < li; i++) {
-			filename = files[i];
+		for (var i = 0, li = packageFiles.length; i < li; i++) {
+			filename = packageFiles[i];
 			
 			if (/\.js$/.test(filename)) {
 				_injectJs(_makePath(glow.version, filename));
@@ -281,7 +297,6 @@ var Glow = function(version, opts) {
 		throw new Error('No files are defined for version "' + version + '".');
 	}
 	
-	// TODO many instances of the same version should refer to the same object
 	Glow.instances[glow.version] = glow;
 	
 	// we always load core
@@ -294,10 +309,13 @@ var Glow = function(version, opts) {
 // like 'version:filesOffset'
 Glow.versions = ['2.0.0', '@SRC@'];
 Glow.files = {
-	'2.0.0': [
-		'core:core.js',
-		'widgets:widgets.js,widgets.css'
-	]
+	'2.0.0': {
+		packages: ['core', 'widgets'],
+		files: {
+			core: ['core.js'],
+			widgets: ['widgets.js', 'widgets.css']
+		}
+	}
 };
 Glow.instances = {};
 
@@ -313,7 +331,7 @@ Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSou
 	}
 	var glow = Glow.instances[def.version];
 	if (def.builder) {
-		def.builder(glow);
+		glow._buildQueueCache.push(def.builder);
 	}
 	else {
 		throw new Error('Glow.provide requires a builder().');
@@ -331,7 +349,12 @@ Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSou
 Glow.complete = function(def) { /*debug*///console.log('Glow.complete("'+def.packageName+'")');
 	var glow = Glow.instances[def.version];
 	
-	glow.packages[def.packageName] = Glow.STATE.completed;
+	// flush builder cache into the queue
+	glow._buildQueue[def.packageName] = glow._buildQueueCache;
+	glow._buildQueueCache = [];
 	
-	glow._runCallbacks();
+	// try to build the queue
+	if (glow._tryBuildAll()) {
+		glow._runCallbacks();
+	}
 }
