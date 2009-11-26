@@ -1,4 +1,10 @@
 <packages>
+	<glow>
+		<js>
+			<file>src/glow.js</file>
+		</js>
+		<css></css>
+	</glow>
 	<core>
 		<js>
 			<file>src/header/core.js</file>

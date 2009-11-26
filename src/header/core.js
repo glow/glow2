@@ -8,3 +8,10 @@ if (typeof Glow == 'undefined') {
 	glow = (typeof glow == 'undefined')? {} : glow;
 	Glow = { provide: function(module) { module.builder(glow); }, complete: function(){} };
 }
+
+/*!debug*/
+	(function() {
+		/*!include:glowbug.js*/;
+		if (typeof glowbug != 'undefined') { glow.debug = glowbug; }
+	})();
+/*gubed!*/

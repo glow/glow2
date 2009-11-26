@@ -136,5 +136,21 @@ function knitFiles($files, $base='') {
 	foreach ($files as $file) {
   		$content .= file_get_contents($base . $file) . "\n";
   	}
+  	
+  	$content = parseInclude($content, $base);
+  	
   	return $content;
 }
+
+/**
+ */
+function parseInclude($content, $base='') {
+	$replacer = create_function('$args', 'return file_get_contents("'.$base.'".$args[1]);');
+
+	$content = preg_replace_callback('/\/\*!include:(.+?)\*\//', $replacer, $content);
+  	
+  	return $content;
+}
+
+
+

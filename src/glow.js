@@ -53,13 +53,21 @@ var Glow = function(version, opts) {
 	
 	var undefined; // local, which we know is truly undefined
 	
+	/*!debug*/
+		(function() {
+			/*!include:glowbug.js*/
+			if (typeof glowbug != 'undefined') { Glow.debug = glowbug; }
+			
+		})();
+	/*gubed!*/
+	
 	/**
 		@name glow.load
 		@function
 		@param {String} ... One or more package names.
 		@description Include packages, which will rovide some modules to your glow.
 	 */
-	glow.load = function(/*...*/) { /*debug*///console.log('glow.load('+Array.prototype.join.call(arguments, ', ')+')');
+	glow.load = function(/*...*/) { /*!debug*/Glow.debug.log('glow.load('+Array.prototype.join.call(arguments, ', ')+')');/*gubed!*/
 		var map,
 			packageName;
 		
@@ -93,7 +101,7 @@ var Glow = function(version, opts) {
 		@param {Function} onLoadCallback Called when all the packages load.
 		@description Do something when all the packages load.
 	 */
-	glow.loaded = function(onLoadCallback) { /*debug*///console.log('glow.loaded('+onLoadCallback+')');
+	glow.loaded = function(onLoadCallback) { /*!debug*/Glow.debug.log('glow.loaded('+onLoadCallback+')');/*gubed!*/
 		if (typeof onLoadCallback != 'function') { throw new Error('glow.loaded requires a "onLoadCallback" to be a function.'); }
 		
 		glow.onloaded.push(onLoadCallback);
@@ -103,7 +111,7 @@ var Glow = function(version, opts) {
 		return glow;
 	}
 	
-	glow._tryBuildAll = function() { /*debug*///console.log('glow._tryBuildAll()');
+	glow._tryBuildAll = function() { /*!debug*/Glow.debug.log('glow._tryBuildAll()');/*gubed!*/
 		var depends = ['core', 'more', 'widgets'], // the order in which to build TODO: should be in the map
 			packageName,
 			builder;
@@ -136,7 +144,7 @@ var Glow = function(version, opts) {
 		@function
 		@description Try to run any pending 'onloaded' callbacks.
 	 */
-	glow._runCallbacks = function() { /*debug*///console.log('glow._runCallbacks() ' + glow.onloaded.length);
+	glow._runCallbacks = function() { /*!debug*/Glow.debug.log('glow._runCallbacks() ' + glow.onloaded.length);/*gubed!*/
 		//if there are no onloaded callbacks in the list, do nothing
 		if (glow.onloaded.length == 0) { return; }
 		
@@ -160,7 +168,7 @@ var Glow = function(version, opts) {
 		@param {Function} onReadyCallback Called when all the packages load and the DOM is available.
 		@description Do something when all the packages load and the DOM is ready.
 	 */
-	glow.ready = function(onReadyCallback) { /*debug*///console.log('ember glow.ready()');
+	glow.ready = function(onReadyCallback) { /*!debug*/Glow.debug.log('ember glow.ready()');/*gubed!*/
 		glow.loaded(function(glow) {
 			glow.ready( function() { onReadyCallback(glow); } );
 		});
@@ -201,7 +209,7 @@ var Glow = function(version, opts) {
 		@param {string} packageFiles Like 'packageName:file1.js,file2.js,file3.css'
 		@description Parse out filenames and inject them into the page.
 	 */
-	function _injectFiles(packageFiles) { /*debug*///console.log('_injectfiles("'+packageFiles+'")');
+	function _injectFiles(packageFiles) { /*!debug*/Glow.debug.log('_injectfiles("'+packageFiles+'")');/*gubed!*/
 		var filename;
 			
 		for (var i = 0, li = packageFiles.length; i < li; i++) {
@@ -222,7 +230,7 @@ var Glow = function(version, opts) {
 		@function
 		@description Start asynchronously loading an external js file.
 	 */
-	function _injectJs(src) { /*debug*///console.log('_injectJs("'+src+'")');
+	function _injectJs(src) { /*!debug*/Glow.debug.log('_injectJs("'+src+'")');/*gubed!*/
 		if (src === undefined) { throw new Error('Glow-_injectJs requires a "src" argument.'); }
 		
 		var headElement = document.getElementsByTagName('head')[0];
@@ -239,7 +247,7 @@ var Glow = function(version, opts) {
 		@function
 		@description Start asynchronously loading an external css file.
 	 */
-	function _injectCss(src) { /*debug*///console.log('_injectCss("'+src+'")');
+	function _injectCss(src) { /*!debug*/Glow.debug.log('_injectCss("'+src+'")');/*gubed!*/
 		if (src === undefined) { throw new Error('Glow-_injectCss requires a "src" argument.'); }
 
 		var headElement = document.getElementsByTagName('head')[0];
@@ -257,7 +265,7 @@ var Glow = function(version, opts) {
 		@function
 		@description Build a path to a package file from the package properties.
 	 */
-	function _makePath(version, filename) { /*debug*///console.log('_makePath("'+version+', '"+filename+")');
+	function _makePath(version, filename) { /*!debug*/Glow.debug.log('_makePath("'+version+', "'+filename+'")');/*gubed!*/
 		version = (version == '@SRC@')? 'src' : version;
 		return glow.base + version + '/' + filename;
 	}
@@ -268,7 +276,7 @@ var Glow = function(version, opts) {
 		@function
 		@description Guess what the base filepath is to the package files.
 	 */
-	function _findBase() { /*debug*///console.log('_injectJs("'+src+'")');
+	function _findBase() { /*!debug*/Glow.debug.log('_injectJs("'+src+'")');/*gubed!*/
 		// TODO
 		throw new Error('Glow-_findBase is not implemented yet.');
 	}
@@ -281,7 +289,7 @@ var Glow = function(version, opts) {
 		@param {string} version Resolved identifier, like '2.0.0'.
 		@returns {object} A map of package names to files list.
 	 */
-	function _getMap(version) { /*debug*///console.log('_getMap("'+version+'")');
+	function _getMap(version) { /*!debug*/Glow.debug.log('_getMap("'+version+'")');/*gubed!*/
 		var versions = Glow.versions,
 			files = Glow.files,
 			map,
@@ -325,11 +333,13 @@ Glow.instances = {};
 	@param {Object} def Definition of the code to build.
 	@description provide some code to a Glow module.
  */
-Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSource()+'")');
-	if ( !Glow.instances[def.version] ) {
-		// TODO handle unrequested code here
-	}
+Glow.provide = function(def) { /*!debug*/Glow.debug.log('Glow.provide("'+def.toSource()+'")');/*gubed!*/
 	var glow = Glow.instances[def.version];
+	
+	if (!glow) {
+		alert(def.version);
+	}
+	
 	if (def.builder) {
 		glow._buildQueueCache.push(def.builder);
 	}
@@ -346,7 +356,7 @@ Glow.provide = function(def) { /*debug*///console.log('Glow.provide("'+def.toSou
 	@param {Number} packageDef.version The version of the package that is now complete.
 	@description Tell the instance that onloaded can run.
  */
-Glow.complete = function(def) { /*debug*///console.log('Glow.complete("'+def.packageName+'")');
+Glow.complete = function(def) { /*!debug*/Glow.debug.log('Glow.complete("'+def.packageName+'")');/*gubed!*/
 	var glow = Glow.instances[def.version];
 	
 	// flush builder cache into the queue
