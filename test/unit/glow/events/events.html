@@ -3,31 +3,109 @@
 <html lang="en">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<title>test: glow</title>
+	<title>test: glow events</title>
 	
-	<script src="../qunit.js" type="text/javascript"></script>
-	<link rel="stylesheet" rev="stylesheet" href="../qunit.css" type="text/css" media="screen">
+	<script src="../../lib/qunit.js" type="text/javascript"></script>
+	<link rel="stylesheet" rev="stylesheet" href="../../lib/qunit.css" type="text/css" media="screen">
 
-	<script src="../../../src/glow.js" type="text/javascript"></script>
+	<script src="../../../../packages/src/core.js" type="text/javascript"></script>
+	<script src="../../../../packages/src/widgets.js" type="text/javascript"></script>
 	
 
 	
 	<script type="text/javascript">
-		module('Glow');
+		module('Glow.events');
 		
-		test('Test basic events', function() {
-			expect(1);
+		
+		
+		test('Checks for existence of methods of glow.events', function() {
 			
-			var glow = Glow('@SRC@').load("core.js");
-				console.log(glow.events);
-				ok( (glow.events !== undefined), 'my instance of glow has the module defined.' );
+			expect(4);
+			
+			var attachTo = document.getElementById("qunit-banner");
+			console.log(attachTo);
+				
+			function callback(){
+				console.log("calledback");
+			}
+
+			var listener = glow.events.addListeners(
+				attachTo,
+				'click',
+				callback
+			);
+				
+			ok( (glow.events !== undefined), 'my instance of glow has the events defined.' );
+			var e = glow.events.fire(attachTo, 'trigger');
+			ok(e instanceof glow.events.Event, "generated event is glow.events.Event");
+			//ok( (glow.events.fire() !== undefined), 'glow.events.fire exists' );
+			//ok( (glow.events.addListeners() !== undefined), 'glow.events.addListeners exists' );
+			//ok( (glow.events.removeListeners() !== undefined), 'glow.events.removeListeners exists' );
+			ok( (glow.events.Target !== undefined), 'glow.events.Target exists' );
+			ok( (glow.events.Target.extend !== undefined), 'glow.events.Target.extend exists' );
 			
 		});
 		
-		var providedGlow = Glow('@SRC@'); // set up for the next test
+		
+	
+		module('Glow.events');
+		
+		
+		test('Event propogation and default behaviours', function() {
+			
+			expect(7);
+					
+			var attachTo = document.getElementById("qunit-banner");
+			console.log(attachTo);
+				
+			function callback(){
+				console.log("calledback");
+			}
+
+			var listener = glow.events.addListeners(
+				attachTo,
+				'click',
+				callback
+			);
+			
+			var e = glow.events.fire(attachTo, 'trigger');
+			ok(e instanceof glow.events.Event, "generated event is glow.events.Event");
+			ok( (glow.events.Event !== undefined), 'glow.events.Event exists' );
+			ok(! e.defaultPrevented(), "default is not prevented without call to preventDefault");
+			e.preventDefault()
+			ok( e.defaultPrevented(), "default is prevented after call to preventDefault" );
+			ok( ! e.propagationStopped(), "propagation is not stopped without call to stopPropagation" );
+			e.stopPropagation()
+			ok( e.propagationStopped(), "propagation is stopped after call to stopPropagation" );					
+			ok(glow.events.removeListeners(listener), "removeListener returns true when listener removed");
+			
+		});
+
+		/*module('Glow.events');
+		
+		Glow.base = '../../packages/';
+		
+		test('Event delegation to events.Target', function() {
+			expect(1);
+
+			var myApplication = {};
+		       
+			glow.events.Target.extend(myApplication);
+				
+			
+			myApplication.fire('load');
+			
+			myApplication.on('load', function(e) {
+				console.log('App loaded');
+					
+			});
+			ok( myApplication.fire('load'), "myApplication can fire events" );
+
+			
+		});*/
+		
+
 	</script>
-
-
 
 </head>
 <body>
@@ -35,5 +113,7 @@
 	<h2 id="qunit-banner"></h2>
 	<h2 id="qunit-userAgent"></h2>
 	<ol id="qunit-tests"></ol>
+
+
 </body>
 </html>
