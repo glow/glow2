@@ -46,9 +46,7 @@
 			
 		});
 		
-		
-	
-		module('Glow.events');
+
 		
 		
 		test('Event propogation and default behaviours', function() {
@@ -81,25 +79,27 @@
 			
 		});
 
-		module('Glow.events');
 		
 	
 		
 		test('Event delegation to events.Target', function() {
 			expect(1);
 
-			var myApplication = {};
-		       
+			var myApplication = {},
+			triggered = false;
+		        console.log(myApplication);
 			glow.events.Target.extend(myApplication);
 				
 			
-			myApplication.fire('load');
+			
 			
 			myApplication.on('load', function(e) {
-				console.log('App loaded');
+				triggered = true;
 					
 			});
-			ok( myApplication.fire('load'), "myApplication can fire events" );
+			
+			myApplication.fire('load');
+			ok(triggered == true, "myApplication can fire events - triggered: "+triggered );
 
 			
 		});

@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: 'src',
+	version: '@SRC@',
 	builder: function(glow) {
 		glow.events = glow.events || {};
 		
@@ -40,15 +40,19 @@ Glow.provide({
 			'on' method.
 		*/
 		glow.events.addListeners = function (attachTo, name, callback) {
+			/*!debug*/
 			console.log("events.addListeners");
+			/*!gubed*/
 			
 			var context;
 			if(context == undefined){
 				context = this;
 			}
 			if (! attachTo) { throw 'no attachTo parameter passed to addListener'; }
-
+			
+			/*!debug*/
 			console.log("attachto: "+attachTo+", name:"+""+name+", callback:"+callback+", context:"+context)
+			/*gubed!*/
 			
 			//needs glow.dom
 			if (attachTo) {
@@ -236,7 +240,9 @@ Glow.provide({
 		       myBall.fire('bounce');
 	       */
 		glow.events.Target = function () {
-			
+			/*!debug*/
+			console.log("Target");
+			/*gubed!*/
 		};
 
 		
@@ -263,7 +269,10 @@ Glow.provide({
 		       });
 	       */
 		glow.events.Target.extend = function (obj) {
-			console.log("events.Target.extend");
+			/*!debug*/
+			console.log("Target.extend");
+			console.log("Target.extend obj: "+obj);
+			/*gubed!*/
 			glow.lang.apply( obj, glow.events.Target.prototype );
 		};
 		
@@ -288,6 +297,10 @@ Glow.provide({
 		       });
 	       */
 		glow.events.Target.prototype.on = function(eventName, callback, thisVal) {
+			/*!debug*/
+			console.log("Target#on");
+			console.log("Target#on this: "+this)
+			/*gubed!*/
 			glow.events.addListeners(this, eventName, callback, thisVal);
 		}
 		
@@ -340,6 +353,9 @@ Glow.provide({
 	       */
 		
 		glow.events.Target.prototype.detach = function(name, callback) {
+			/*!debug*/
+			console.log("Target#detach");
+			/*gubed!*/
 			glow.events.removeListeners(name, callback);
 		}
 		
@@ -369,6 +385,10 @@ Glow.provide({
 		       myBall.fire( 'bounce', new BallBounceEvent(myBall) );
 	       */
 		glow.events.Target.prototype.fire = function(eventName, thisVal) {
+			/*!debug*/
+			console.log("Target#fire");
+			console.log("Target#fire this: "+this);
+			/*gubed!*/
 			glow.events.fire(this, eventName, thisVal);
 		}
 		
