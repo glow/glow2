@@ -43,5 +43,15 @@ Glow.provide({
 			}
 			return r;
 		};
+		
+		
+		
+		glow.lang.apply = function(destination, source) {
+					for (var i in source) {
+						destination[i] = source[i];
+					}
+					return destination;
+				};
+		
 	}
 });
