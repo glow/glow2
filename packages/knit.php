@@ -38,7 +38,12 @@ if ( !empty($args['delay']) ) {
 }
 
 printHeader($type);
-knitFiles($files, $conf['path_to_root'] . $version . '/');
+
+$content = knitFiles($files, $conf['path_to_root'] . $version . '/');
+if (!isset($args['debug']) || empty($args['debug']) or $args['debug'] == '0') {
+	$content = preg_replace(':/\*!debug\*/.*?/\*gubed!\*/:s', '', $content);
+}
+print($content);
 
 
 /**** functions ****/
@@ -127,9 +132,9 @@ function printHeader($type) {
 /**
  */
 function knitFiles($files, $base='') {
+	$content = '';
 	foreach ($files as $file) {
-  		readfile($base . $file);
-  		print "\n";
+  		$content .= file_get_contents($base . $file) . "\n";
   	}
-  	return $files;
+  	return $content;
 }

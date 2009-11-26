@@ -1,3 +1,6 @@
+/*!debug*/
+	// this will only appear in the debug version
+/*gubed!*/
 
 /**
 	@name glow.lang
