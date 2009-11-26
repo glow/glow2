@@ -8,10 +8,21 @@
 //-----------------------------------------------------------------
 
 Glow.provide({
-	version: '@SRC@',
+	version: 'src',
 	builder: function(glow) {
 		glow.events = glow.events || {};
-		//alert("arghsdf");
+		
+		/* storage variables */
+		var r = {};
+		var eventListeners = {};
+		var eventid = 1;
+		var listenersByEventId = {};
+		var objid = 1;
+		var listenersByObjId = {};
+		var psuedoPrivateEventKey = '__eventId' + glow.UID;
+		var psuedoPreventDefaultKey = psuedoPrivateEventKey + 'PreventDefault';
+		var psuedoStopPropagationKey = psuedoPrivateEventKey + 'StopPropagation';
+		
 		/**
 		@name glow.events.addListeners
 		@function
@@ -28,19 +39,48 @@ Glow.provide({
 			If you're wanting to add a listener to a single object, use its
 			'on' method.
 		*/
-		glow.events.addListeners = function () {
+		glow.events.addListeners = function (attachTo, name, callback) {
+			console.log("events.addListeners");
 			
+			var context;
+			if(context == undefined){
+				context = this;
+			}
+			if (! attachTo) { throw 'no attachTo parameter passed to addListener'; }
 
+			console.log("attachto: "+attachTo+", name:"+""+name+", callback:"+callback+", context:"+context)
+			
+			//needs glow.dom
+			if (attachTo) {
+				var listenerIds = [],
+					i = attachTo.length;
+
+				//attach the event for each element, return an array of listener ids
+				while (i--) {
+					listenerIds[i] = r.addListeners(attachTo[i], name, callback, context);
+				}
+				
+				return listenerIds;
+			}
+	
+			var objIdent;
+			if (! (objIdent = attachTo[psuedoPrivateEventKey])) {
+				objIdent = attachTo[psuedoPrivateEventKey] = objid++;
+			}
+			var ident = eventid++;
+			var listener = [ objIdent, name, callback, context, ident ];
+			listenersByEventId[ident] = listener;
+
+			var objListeners = listenersByObjId[objIdent];
+			if (! objListeners) { objListeners = listenersByObjId[objIdent] = {}; }
+			var objEventListeners = objListeners[name];
+			if (! objEventListeners) { objEventListeners = objListeners[name] = []; }
+			objEventListeners[objEventListeners.length] = listener;
+			
+			
+			return ident;
 		};
-	}
-});
 
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
 		
 		/**
 		@name glow.events.fire
@@ -53,48 +93,116 @@ Glow.provide({
 		
 		@description Convenience method to fire events on multiple items at once.
 		       If you're wanting to fire events on a single object, use its
-		       'on' method.
+		       'fire' method.
 	       */
-		glow.events.fire = function () {
+		glow.events.fire = function (attachedTo, name, e) {
+			console.log("events.fire");
+			if (! attachedTo) throw 'glow.events.fire: required parameter attachedTo not passed (name: ' + name + ')';
+   			if (! name) throw 'glow.events.fire: required parameter name not passed';
+			if (! e) { e = new glow.events.Event(); }
+			if ( e.constructor === Object ) { e = new glow.events.Event( e ) }
+
 			
 
+			e.type = name;
+			e.attachedTo = attachedTo;
+			if (! e.source) { e.source = attachedTo; }
+
+			if (attachedTo) {
+
+				//attachedTo.each(function(i){
+
+					callListeners(attachedTo, e);
+
+				//});
+
+			} else {
+
+				callListeners(attachedTo, e);
+
+			}
+
+			return e;
 		};
-	}
-});
 
-//-----------------------------------------------------------------
+		function callListeners(attachedTo, e) {
+			console.log("events.callListeners");
+			var objIdent,
+				objListeners,
+				objEventListeners = objListeners && objListeners[e.type];
 
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
-		
+			// 3 assignments, but stop assigning if any of them are false
+			(objIdent = attachedTo[psuedoPrivateEventKey]) &&
+			(objListeners = listenersByObjId[objIdent]) &&
+			(objEventListeners = objListeners[e.type]);
+
+			if (! objEventListeners) { return e; }
+
+			var listener;
+			var listeners = objEventListeners.slice(0);
+
+			// we make a copy of the listeners before calling them, as the event handlers may
+			// remove themselves (took me a while to track this one down)
+			for (var i = 0, len = listeners.length; i < len; i++) {
+				listener = listeners[i];
+				if ( listener[2].call(listener[3] || attachedTo, e) === false ) {
+					e.preventDefault();
+				}
+			}
+
+		}
 		/**
-		@name glow.events.removeAllListeners
+		@name glow.events.removeListeners
 		@function
 		@param {Object[]} items  Items to remove events from
 		    
 		@description Removes all listeners attached to a given object.
-			Yhis removes not only listeners you added, but listeners others
+			This removes not only listeners you added, but listeners others
 			added too. For this reason it should only be used as part of a cleanup
 			operation on objects that are about to be destroyed.
 			   
 			Glow will call this by default on its own classes like NodeList and
 			widgets.
 		   */
-		glow.events.removeAllListeners = function () {
+		glow.events.removeListeners = function (obj) {
+			console.log("events.removeListeners");
+			var i,
+				objId,
+				listenerIds = [],
+				listenerIdsLen = 0,
+				eventName,
+				events;
 			
-
+			
+			// cater for arrays & nodelists
+			if (obj instanceof Array) {
+				//call removeAllListeners for each array member
+				i = obj.length; while(i--) {
+					r.removeAllListeners(obj[i]);
+				}
+				return r;
+			}
+			
+			// get the objects id
+			objId = obj[psuedoPrivateEventKey];
+			
+			// if it doesn't have an id it doesn't have events... return
+			if (!objId) {
+				return r;
+			}
+			events = listenersByObjId[objId];
+			for (eventName in events) {
+				i = events[eventName].length; while(i--) {
+					listenerIds[listenerIdsLen++] = events[eventName][i][4];
+				}
+			}
+			// remove listeners for that object
+			if (listenerIds.length) {
+				r.removeListener( listenerIds );
+			}
+			return r;
 		};
-	}
-});
 
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
 		
 		/**
 		@name glow.events.Target
@@ -129,17 +237,8 @@ Glow.provide({
 	       */
 		glow.events.Target = function () {
 			
-
 		};
-	}
-});
 
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
 		
 		/**
 		@name glow.events.Target.extend
@@ -163,9 +262,9 @@ Glow.provide({
 			       alert('App loaded');
 		       });
 	       */
-		glow.events.Target.extend = function () {
-			
-
+		glow.events.Target.extend = function (obj) {
+			console.log("events.Target.extend");
+			glow.lang.apply( obj, glow.events.Target.prototype );
 		};
 		
 		/**
@@ -188,9 +287,12 @@ Glow.provide({
 			       // do stuff
 		       });
 	       */
+		glow.events.Target.prototype.on = function(eventName, callback, thisVal) {
+			glow.events.addListeners(this, eventName, callback, thisVal);
+		}
 		
 		/**
-		@name glow.events.Target#removeListener
+		@name glow.events.Target#detach
 		@function
 		@param {String}   eventName  Name of the event to listen for
 		@param {Function} callback   Callback to detach
@@ -208,7 +310,7 @@ Glow.provide({
 		       myObj.on('show', showListener);
 		       
 		       // remove listener
-		       myObj.removeListener('show', showListener);
+		       myObj.detach('show', showListener);
 		       
 		@example
 		       // note the following WILL NOT WORK
@@ -219,7 +321,7 @@ Glow.provide({
 		       });
 		       
 		       // remove listener
-		       myObj.removeListener('show', function() {
+		       myObj.detach('show', function() {
 			       alert('hi');
 		       });
 		       
@@ -236,6 +338,10 @@ Glow.provide({
 		       
 		       // the problem here is we lose chaining
 	       */
+		
+		glow.events.Target.prototype.detach = function(name, callback) {
+			glow.events.removeListeners(name, callback);
+		}
 		
 		/**
 		@name glow.events.Target#fire
@@ -262,15 +368,9 @@ Glow.provide({
 		       // BallBounceEvent extends glow.events.Event but has extra methods
 		       myBall.fire( 'bounce', new BallBounceEvent(myBall) );
 	       */
-	}
-});
-
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
+		glow.events.Target.prototype.fire = function(eventName, thisVal) {
+			glow.events.fire(this, eventName, thisVal);
+		}
 		
 		/**
 		@name glow.events.Event
@@ -319,8 +419,9 @@ Glow.provide({
 	       */
 		
 		glow.events.Event = function ( obj ) {
-			if( obj ) {
-				glow.lang.apply( this, obj );
+			console.log("events.Event");
+			if(obj) {
+				glow.lang.apply(this, obj);
 			}
 		};
 		
@@ -341,133 +442,7 @@ Glow.provide({
 			would be the 'li' element, and 'attachedTo' would be the 'ol'.
 		*/
 		
-		/**
-		@name glow.events.Event#pageX
-		@type Number
-		@description The horizontal position of the mouse pointer in the page in pixels.
-		
-			<p><em>Only available for mouse events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#pageY
-		@type Number
-		@description The vertical position of the mouse pointer in the page in pixels.
-		
-			<p><em>Only available for mouse events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#button
-		@type Number
-		@description  A number representing which button was pressed.
-		
-			<p><em>Only available for mouse events.</em></p>
-			
-			0 for the left button, 1 for the middle button or 2 for the right button.
-		*/
 
-		/**
-		@name glow.events.Event#relatedTarget
-		@type Element
-		@description The element that the mouse has come from or is going to.
-		
-			<p><em>Only available for mouse over/out events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#wheelDelta
-		@type Number
-		@description The number of clicks up (positive) or down (negative) that the user moved the wheel.
-		
-			<p><em>Only available for mouse wheel events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#ctrlKey
-		@type Boolean
-		@description Whether the ctrl key was pressed during the key event.
-		
-			<p><em>Only available for keyboard events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#shiftKey
-		@type Boolean
-		@description  Whether the shift key was pressed during the key event.
-		
-			<p><em>Only available for keyboard events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#altKey
-		@type Boolean
-		@description Whether the alt key was pressed during the key event.
-		
-			<p><em>Only available for keyboard events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#capsLock 			
-		@type Boolean | Undefined
-		@description Whether caps-lock was on during the key event
-		
-			<p><em>Only available for keyboard events.</em></p>
-		
-			If the key is not alphabetic, this property will be undefined 
-			as it is not possible to tell if caps-lock is on in this scenario.
-		*/
-		
-		/**
-		@name glow.events.Event#keyCode
-		@type Number
-		@description An integer number represention of the keyboard key that was pressed.
-		
-			<p><em>Only available for keyboard events.</em></p>
-		*/
-		
-		/**
-		@name glow.events.Event#key
-		@type String | Undefined
-		@description  A short identifier for the key for special keys.
-		
-			<p><em>Only available for keyboard events.</em></p>
-			
-			If the key was not a special key this property will be undefined.
-			
-			See the list of key identifiers in {@link glow.events.addKeyListener}
-		*/
-		
-		/**
-		@name glow.events.Event#charCode
-		@type Number | Undefined
-		@description The unicode character code for a printable character.
-		
-			<p><em>Only available for keyboard events.</em></p>
-			
-			This will be undefined if the key was not a printable character.
-		*/
-		
-		/**
-		@name glow.events.Event#chr
-		@type String
-		@description A printable character string.
-		
-			<p><em>Only available for keyboard events.</em></p>
-			
-			The string of the key that was pressed, for example 'j' or 's'.
-			
-			This will be undefined if the key was not a printable character.
-		*/
-	}
-});
-
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
 		
 		/**
 		@name glow.events.Event#preventDefault
@@ -493,7 +468,8 @@ Glow.provide({
 			       return false;
 		       });
 	       */
-		/*glow.events.Event.prototype.preventDefault = function () {
+		glow.events.Event.prototype.preventDefault = function () {
+			console.log("events.Event.preventDefault");
 			if (this[psuedoPreventDefaultKey]) { return; }
 			this[psuedoPreventDefaultKey] = true;
 			if (this.nativeEvent && this.nativeEvent.preventDefault) {
@@ -501,16 +477,9 @@ Glow.provide({
 				this.nativeEvent.returnValue = false;
 				
 			}
-		};*/
-	}
-});
+			
+		};
 
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
 		
 		/**
 		@name glow.events.Event#defaultPrevented
@@ -528,18 +497,11 @@ Glow.provide({
 			       // go ahead and show
 		       }
 	       */
-		/*glow.events.Event.prototype.defaultPrevented = function () {
+		glow.events.Event.prototype.defaultPrevented = function () {
+			console.log("events.Event.defaultPrevented");
 			return !! this[psuedoPreventDefaultKey];
-		};*/
-	}
-});
+		};
 
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
 		
 		/**
 		@name glow.events.Event#stopPropagation
@@ -565,7 +527,8 @@ Glow.provide({
 				function (e) { e.stopPropagation(); }
 			);
 		*/
-		/*glow.events.Event.prototype.stopPropagation = function () {
+		glow.events.Event.prototype.stopPropagation = function () {
+			console.log("events.Event.stopPropagation");
 			if (this[psuedoStopPropagationKey]) { return; }
 			this[psuedoStopPropagationKey] = true;
 			var e = this.nativeEvent;
@@ -573,16 +536,8 @@ Glow.provide({
 				e.cancelBubble = true;
 				if (e.stopPropagation) { e.stopPropagation(); }
 			}
-		};*/
-	}
-});
+		};
 
-//-----------------------------------------------------------------
-
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
-		glow.events = glow.events || {};
 		
 		/**
 		@name glow.events.Event#propagationStopped
@@ -594,12 +549,13 @@ Glow.provide({
 			True if event propagation has been prevented.
 
 		*/
-		/*glow.events.Event.prototype.propagationStopped = function () {
+		glow.events.Event.prototype.propagationStopped = function () {
+			console.log("events.Event.propagationStopped");
 			return !! this[psuedoStopPropagationKey];
 		};
 		
 		//cleanup to avoid mem leaks in IE
-		if (glow.env.ie < 8 || glow.env.webkit < 500) {
+		/*if (glow.env.ie < 8 || glow.env.webkit < 500) {
 			r.addListener(window, "unload", clearEvents);
 		}*/
 	}
