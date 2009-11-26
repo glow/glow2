@@ -33,6 +33,10 @@ list($package_name, $type) = explode('.', $package);
 
 $files = getFiles($packages, $package_name, $type);
 
+if ( !empty($args['delay']) ) {
+	sleep(min($args['delay'], 10)); // maximum sleepiness == 10
+}
+
 printHeader($type);
 knitFiles($files, $conf['path_to_root'] . $version . '/');
 
@@ -50,6 +54,24 @@ function getSafeArgs($unsafe_args) {
 		}
 		else {
 			$safe_args['package'] = $unsafe_args['package'];
+		}
+	}
+	
+	if ( !empty($unsafe_args['delay']) ) {
+		if (!preg_match('!^\d+$!', $unsafe_args['delay'])) {
+			throw new Exception('Argument "delay" ' . $unsafe_args['delay'] . ' must be an integer so cannot be used.');
+		}
+		else {
+			$safe_args['delay'] = $unsafe_args['delay'];
+		}
+	}
+	
+	if ( !empty($unsafe_args['debug']) ) {
+		if (!preg_match('!^\d+$!', $unsafe_args['debug'])) {
+			throw new Exception('Argument "debug" ' . $unsafe_args['debug'] . ' must be an integer so cannot be used.');
+		}
+		else {
+			$safe_args['debug'] = $unsafe_args['debug'];
 		}
 	}
 	
