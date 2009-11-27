@@ -16,12 +16,11 @@ Glow.provide({
 		var r = {};
 		var eventListeners = {};
 		var eventid = 1;
-		var listenersByEventId = {};
 		var objid = 1;
-		var listenersByObjId = {};
 		var psuedoPrivateEventKey = '__eventId' + glow.UID;
 		var psuedoPreventDefaultKey = psuedoPrivateEventKey + 'PreventDefault';
 		var psuedoStopPropagationKey = psuedoPrivateEventKey + 'StopPropagation';
+	
 		
 		/**
 		@name glow.events.addListeners
@@ -39,50 +38,54 @@ Glow.provide({
 			If you're wanting to add a listener to a single object, use its
 			'on' method.
 		*/
-		glow.events.addListeners = function (attachTo, name, callback) {
-			/*!debug*/
-			console.log("events.addListeners");
-			/*!gubed*/
-			
-			var context;
-			if(context == undefined){
-				context = this;
+		glow.events.addListeners = function (attachTo, name, callback, thisVal) {
+			var listenerIds = [],
+				i = attachTo.length,
+				objIdent,
+				listener,
+				eventsOnObject,
+				currentListeners
+				;
+		
+			if(thisVal == undefined){
+				thisVal = attachTo;
 			}
-			if (! attachTo) { throw 'no attachTo parameter passed to addListener'; }
 			
 			/*!debug*/
-			console.log("attachto: "+attachTo+", name:"+""+name+", callback:"+callback+", context:"+context)
+			if (! attachTo) { throw new Error('no attachTo parameter passed to addListener'); }
+			if (! name) { throw new Error('no name parameter passed to addListener'); }
+			if (! callback) { throw new Error('no callback parameter passed to addListener'); }
+			if (! thisVal) { throw new Error('no thisVal parameter passed to addListener'); }
 			/*gubed!*/
 			
-			//needs glow.dom
-			if (attachTo) {
-				var listenerIds = [],
-					i = attachTo.length;
+			
 
 				//attach the event for each element, return an array of listener ids
 				while (i--) {
-					listenerIds[i] = r.addListeners(attachTo[i], name, callback, context);
+						objIdent = attachTo[i][psuedoPrivateEventKey];
+						if (!objIdent){
+							objIdent = attachTo[i][psuedoPrivateEventKey] = objid++;
+						}
+					
+					listener = [ callback, thisVal ];
+					
+					eventsOnObject = eventListeners[objIdent];
+					if(!eventsOnObject){
+						eventsOnObject = eventListeners[objIdent] = {};
+					}
+					
+					currentListeners = eventsOnObject[name];
+					if(!currentListeners){
+						currentListeners = eventsOnObject[name] = [listener];
+					}
+					else{
+						currentListeners[currentListeners.length] = listener;
+					}
+					
+					
+					
+					
 				}
-				
-				return listenerIds;
-			}
-	
-			var objIdent;
-			if (! (objIdent = attachTo[psuedoPrivateEventKey])) {
-				objIdent = attachTo[psuedoPrivateEventKey] = objid++;
-			}
-			var ident = eventid++;
-			var listener = [ objIdent, name, callback, context, ident ];
-			listenersByEventId[ident] = listener;
-
-			var objListeners = listenersByObjId[objIdent];
-			if (! objListeners) { objListeners = listenersByObjId[objIdent] = {}; }
-			var objEventListeners = objListeners[name];
-			if (! objEventListeners) { objEventListeners = objListeners[name] = []; }
-			objEventListeners[objEventListeners.length] = listener;
-			
-			
-			return ident;
 		};
 
 		
@@ -91,7 +94,7 @@ Glow.provide({
 		@function
 		@param {Object[]} items      Array of objects to add listeners to
 		@param {String}   eventName  Name of the event to fire
-		@param {glow.events.Event|Object} [Event]  Event object to pass into listeners.
+		@param {glow.events.Event|Object} [event] Event object to pass into listeners.
 		       You can provide a simple object of key / value pairs which will
 		       be added as properties of a glow.events.Event instance.
 		
@@ -99,60 +102,62 @@ Glow.provide({
 		       If you're wanting to fire events on a single object, use its
 		       'fire' method.
 	       */
-		glow.events.fire = function (attachedTo, name, e) {
-			console.log("events.fire");
-			if (! attachedTo) throw 'glow.events.fire: required parameter attachedTo not passed (name: ' + name + ')';
-   			if (! name) throw 'glow.events.fire: required parameter name not passed';
-			if (! e) { e = new glow.events.Event(); }
-			if ( e.constructor === Object ) { e = new glow.events.Event( e ) }
-
+		glow.events.fire = function (items, eventName, event) {
+				/*!debug*/
+				if (! items) throw new Error('glow.events.fire: required parameter items not passed (items: ' + items + ')');
+				if (! eventName) throw new Error('glow.events.fire: required parameter name not passed (name: ' + name + ')');	
+				/*gubed!*/
 			
-
-			e.type = name;
-			e.attachedTo = attachedTo;
-			if (! e.source) { e.source = attachedTo; }
-
-			if (attachedTo) {
-
-				//attachedTo.each(function(i){
-
-					callListeners(attachedTo, e);
-
-				//});
-
-			} else {
-
-				callListeners(attachedTo, e);
-
+			
+			if (! event) { event = new glow.events.Event(); }
+			else if ( event.constructor === Object ) { event = new glow.events.Event( event ) }
+			
+			for(var i = 0, len = items.length; i < len; i++){
+				
+				callListeners(items[i], eventName, event);
 			}
-
-			return e;
+			
+			return event;
+			
+		
 		};
 
-		function callListeners(attachedTo, e) {
-			console.log("events.callListeners");
-			var objIdent,
-				objListeners,
-				objEventListeners = objListeners && objListeners[e.type];
-
-			// 3 assignments, but stop assigning if any of them are false
-			(objIdent = attachedTo[psuedoPrivateEventKey]) &&
-			(objListeners = listenersByObjId[objIdent]) &&
-			(objEventListeners = objListeners[e.type]);
-
-			if (! objEventListeners) { return e; }
-
-			var listener;
-			var listeners = objEventListeners.slice(0);
-
-			// we make a copy of the listeners before calling them, as the event handlers may
-			// remove themselves (took me a while to track this one down)
-			for (var i = 0, len = listeners.length; i < len; i++) {
-				listener = listeners[i];
-				if ( listener[2].call(listener[3] || attachedTo, e) === false ) {
-					e.preventDefault();
+		function callListeners(item, eventName, event) {
+		
+			/*!debug*/			
+			if (! item) throw new Error('glow.events.fire: required parameter item not passed (name: ' + name + ')');		
+			
+			/*gubed!*/
+			
+			
+			
+			
+			var objIdent = item[psuedoPrivateEventKey],
+				listenersForEvent,
+				returnVal;			
+		
+			
+			if(!objIdent){
+				return event;
+			}
+			
+			listenersForEvent = eventListeners[objIdent][eventName];
+			
+			if(!listenersForEvent){
+				return event;
+			}
+			
+			listenersForEvent = listenersForEvent.slice(0);
+			
+			for(var i = 0, len = listenersForEvent.length; i < len; i++){
+				
+				returnVal = listenersForEvent[i][0].call(listenersForEvent[i][1], event);
+				if(returnVal === false){
+						event.preventDefault();
 				}
 			}
+			
+			return event;
 
 		}
 		/**
@@ -168,44 +173,19 @@ Glow.provide({
 			Glow will call this by default on its own classes like NodeList and
 			widgets.
 		   */
-		glow.events.removeListeners = function (obj) {
-			console.log("events.removeListeners");
-			var i,
-				objId,
-				listenerIds = [],
-				listenerIdsLen = 0,
-				eventName,
-				events;
+		glow.events.removeListeners = function (items) {
+			/*!debug*/			
+			if (! items) throw new Error('glow.events.removeListeners: required parameter items not passed (items: ' + items + ')');		
+			/*gubed!*/
 			
 			
-			// cater for arrays & nodelists
-			if (obj instanceof Array) {
-				//call removeAllListeners for each array member
-				i = obj.length; while(i--) {
-					r.removeAllListeners(obj[i]);
-				}
-				return r;
+		/*	for(var i = 0, len = items.length; i < len; i++){
+				removeEvents(items[i]);
 			}
-			
-			// get the objects id
-			objId = obj[psuedoPrivateEventKey];
-			
-			// if it doesn't have an id it doesn't have events... return
-			if (!objId) {
-				return r;
-			}
-			events = listenersByObjId[objId];
-			for (eventName in events) {
-				i = events[eventName].length; while(i--) {
-					listenerIds[listenerIdsLen++] = events[eventName][i][4];
-				}
-			}
-			// remove listeners for that object
-			if (listenerIds.length) {
-				r.removeListener( listenerIds );
-			}
-			return r;
+		*/
+			return items;
 		};
+
 
 		
 		/**
@@ -240,9 +220,7 @@ Glow.provide({
 		       myBall.fire('bounce');
 	       */
 		glow.events.Target = function () {
-			/*!debug*/
-			console.log("Target");
-			/*gubed!*/
+			
 		};
 
 		
@@ -269,10 +247,7 @@ Glow.provide({
 		       });
 	       */
 		glow.events.Target.extend = function (obj) {
-			/*!debug*/
-			console.log("Target.extend");
-			console.log("Target.extend obj: "+obj);
-			/*gubed!*/
+			
 			glow.lang.apply( obj, glow.events.Target.prototype );
 		};
 		
@@ -297,11 +272,8 @@ Glow.provide({
 		       });
 	       */
 		glow.events.Target.prototype.on = function(eventName, callback, thisVal) {
-			/*!debug*/
-			console.log("Target#on");
-			console.log("Target#on this: "+this)
-			/*gubed!*/
-			glow.events.addListeners(this, eventName, callback, thisVal);
+			
+			glow.events.addListeners([this], eventName, callback, thisVal);
 		}
 		
 		/**
@@ -353,9 +325,7 @@ Glow.provide({
 	       */
 		
 		glow.events.Target.prototype.detach = function(name, callback) {
-			/*!debug*/
-			console.log("Target#detach");
-			/*gubed!*/
+			
 			glow.events.removeListeners(name, callback);
 		}
 		
@@ -363,7 +333,7 @@ Glow.provide({
 		@name glow.events.Target#fire
 		@function
 		@param {String} eventName Name of the event to fire
-		@param {glow.events.Event|Object} [Event] Event object to pass into listeners.
+		@param {glow.events.Event|Object} [event] Event object to pass into listeners.
 		       You can provide a simple object of key / value pairs which will
 		       be added as properties of a glow.events.Event instance.
 		
@@ -384,12 +354,9 @@ Glow.provide({
 		       // BallBounceEvent extends glow.events.Event but has extra methods
 		       myBall.fire( 'bounce', new BallBounceEvent(myBall) );
 	       */
-		glow.events.Target.prototype.fire = function(eventName, thisVal) {
-			/*!debug*/
-			console.log("Target#fire");
-			console.log("Target#fire this: "+this);
-			/*gubed!*/
-			glow.events.fire(this, eventName, thisVal);
+		glow.events.Target.prototype.fire = function(eventName, event) {			
+			return callListeners(this, eventName, event);
+			
 		}
 		
 		/**
@@ -439,7 +406,7 @@ Glow.provide({
 	       */
 		
 		glow.events.Event = function ( obj ) {
-			console.log("events.Event");
+			
 			if(obj) {
 				glow.lang.apply(this, obj);
 			}
@@ -489,7 +456,7 @@ Glow.provide({
 		       });
 	       */
 		glow.events.Event.prototype.preventDefault = function () {
-			console.log("events.Event.preventDefault");
+		
 			if (this[psuedoPreventDefaultKey]) { return; }
 			this[psuedoPreventDefaultKey] = true;
 			if (this.nativeEvent && this.nativeEvent.preventDefault) {
@@ -518,7 +485,7 @@ Glow.provide({
 		       }
 	       */
 		glow.events.Event.prototype.defaultPrevented = function () {
-			console.log("events.Event.defaultPrevented");
+			
 			return !! this[psuedoPreventDefaultKey];
 		};
 
@@ -548,7 +515,7 @@ Glow.provide({
 			);
 		*/
 		glow.events.Event.prototype.stopPropagation = function () {
-			console.log("events.Event.stopPropagation");
+			
 			if (this[psuedoStopPropagationKey]) { return; }
 			this[psuedoStopPropagationKey] = true;
 			var e = this.nativeEvent;
@@ -570,7 +537,7 @@ Glow.provide({
 
 		*/
 		glow.events.Event.prototype.propagationStopped = function () {
-			console.log("events.Event.propagationStopped");
+			
 			return !! this[psuedoStopPropagationKey];
 		};
 		
