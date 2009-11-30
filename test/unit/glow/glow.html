@@ -195,8 +195,8 @@
 			testHelper.addFrame('../data/t_depends.html', checkDepends);
 			
 			function checkDepends(frame, order) {
-				ok( order[0], 'foo', 'Packages that are first in the dependency are built first.' );
-				ok( order[1], 'bar', 'Packages that are second in the dependency are built second.' );
+				equals( order[0], 'foo', 'Packages that are first in the dependency are built first.' );
+				equals( order[1], 'bar', 'Packages that are second in the dependency are built second.' );
 
 				start();
 			}
