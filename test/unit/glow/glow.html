@@ -91,6 +91,20 @@
 			Glow.versions = originalVersions;
 		});
 		
+		test('globals', function() {
+			expect(2);
+			
+			stop(3000);
+			testHelper.addFrame('../data/t_globals.html', checkGlobals);
+			
+			function checkGlobals(frame, diff) {
+				equals( diff.length, 1, 'Glow adds 1 new global variable.' );
+				ok( diff[0], 'Glow', 'The only new global variable is named "Glow".' );
+
+				start();
+			}
+		});
+		
 		test('tags', function() {
 			expect(3);
 			
