@@ -1,12 +1,19 @@
 <?php
 
-/**
-  Given a query like: '?package=version/name.js' or '?package=version/name.css'
-  will dynamically pull together all the files to make that package.
-	
-  Uses the packages.xml file to decide which files belong to which packages.
-*/
-
+####
+#   Given a query like '?package=version/name.js' or '?package=version/name.css'
+#   will dynamically pull together all the files to make that package.
+#
+#   Uses the packages.xml file to decide which files belong to which packages.
+#
+#   To keep debugging code use ?package=version/name.debug.js
+#   Debugging code in content is delimited by /*!debug*/ and /*gubed!*/
+#
+#   To add a delay (seconds) use ?package=version/name.js&delay=3
+# 
+#   To knit a file into the middle of another add the following to the content:
+#   /*!include:filename.js*/
+####
 
 /**** configure ****/
 
@@ -28,10 +35,9 @@ if ( empty($args['package']) ) {
  	throw new Exception('Required GET parameter "package" is empty.');
 }
 
-list($version, $package) = explode('/', $args['package']);
-list($package_name, $type) = explode('.', $package);
+list($version, $packageName, $debug, $type) = parsePackageName($args['package']);
 
-$files = getFiles($packages, $package_name, $type);
+$files = getFiles($packages, $packageName, $type);
 
 if ( !empty($args['delay']) ) {
 	sleep(min($args['delay'], 10)); // maximum sleepiness == 10
@@ -40,7 +46,7 @@ if ( !empty($args['delay']) ) {
 printHeader($type);
 
 $content = knitFiles($files, $conf['path_to_root'] . $version . '/');
-if (!isset($args['debug']) || empty($args['debug']) or $args['debug'] == '0') {
+if (!$debug) {
 	$content = preg_replace(':/\*!debug\*/.*?/\*gubed!\*/:s', '', $content);
 }
 print($content);
@@ -54,7 +60,7 @@ function getSafeArgs($unsafe_args) {
 	$safe_args = array();
 	
 	if ( !empty($unsafe_args['package']) ) {
-		if (!preg_match('!([^/]+)/[a-z]+\.(js|css)$!', $unsafe_args['package'])) {
+		if (!preg_match('!([^/]+)/[a-z.]+\.(js|css)$!', $unsafe_args['package'])) {
 			throw new Exception('Argument "package" ' . $unsafe_args['package'] . ' has unsafe characters and cannot be used.');
 		}
 		else {
@@ -71,16 +77,27 @@ function getSafeArgs($unsafe_args) {
 		}
 	}
 	
-	if ( !empty($unsafe_args['debug']) ) {
-		if (!preg_match('!^\d+$!', $unsafe_args['debug'])) {
-			throw new Exception('Argument "debug" ' . $unsafe_args['debug'] . ' must be an integer so cannot be used.');
-		}
-		else {
-			$safe_args['debug'] = $unsafe_args['debug'];
-		}
+	return $safe_args;
+}
+
+/**
+ */
+function parsePackageName($package) {
+	list($version, $package) = explode('/', $package);
+	
+	$parts = explode('.', $package);
+
+	$type = array_pop($parts);
+	
+	$debug = 0;
+	if ($parts[count($parts)-1] == 'debug') {
+		$debug = 1;
+		array_pop($parts);
 	}
 	
-	return $safe_args;
+	$name = implode('.', $parts);
+	
+	return array($version, $name, $debug, $type);
 }
 
 /**
