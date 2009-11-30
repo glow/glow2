@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Woosh Test Suite</title>
+	<link rel="stylesheet" href="qunit/qunit/qunit.css" type="text/css" media="screen">
+	<script type="text/javascript" src="qunit/qunit/qunit.js"></script>
+	<script type="text/javascript" src="../woosh.js">
+		// add fake libraries
+		woosh.libs.fakeLib1 = ['unittests/assets/fakelib1/1.js', 'unittests/assets/fakelib1/2.js', 'unittests/assets/fakelib1/3.css'];
+		woosh.libs.fakeLib2 = ['unittests/assets/fakelib2/1.js', 'unittests/assets/fakelib2/2.js', 'unittests/assets/fakelib2/3.css'];
+		woosh.libs.nullLib1 = ['unittests/assets/nulllib1/1.js'];
+		woosh.libs.nullLib2 = ['unittests/assets/nulllib2/1.js'];
+	</script>
+	<script type="text/javascript" src="assets/fakelib1wooshtests.js"></script>
+	<script type="text/javascript" src="assets/fakelib2wooshtests.js"></script>
+	<script type="text/javascript" src="tests.js"></script>
+</head>
+<body>
+	<h1 id="qunit-header">Woosh Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+	
+	<div id="wooshOutput"></div>
+	
+	<div id="fakeLib1Elm"></div>
+	<div id="fakeLib2Elm"></div>
+	<div id="tableOutput"></div>
+</body>
+</html>
