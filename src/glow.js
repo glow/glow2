@@ -109,7 +109,8 @@ var Glow = function(version, opts) {
 	}
 	
 	glow._tryBuildAll = function() { /*!debug*/Glow.debug.log('glow._tryBuildAll()');/*gubed!*/
-		var depends = ['core', 'more', 'widgets'], // the order in which to build TODO: should be in the map
+		var map,
+			depends = [],
 			packageName,
 			builder;
 		
@@ -119,6 +120,9 @@ var Glow = function(version, opts) {
 				return false;
 			}
 		}
+		
+		map = _getMap(glow.version);
+		depends = map.packages;
 		
 		// all packages have all their builders, now we can build them in the right order
 		for (var i = 0, li = depends.length; i < li; i++) {
