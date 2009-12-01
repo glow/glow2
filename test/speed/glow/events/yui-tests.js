@@ -1,9 +1,9 @@
 // First param is the library name, as defined in woosh.libs
-woosh.addTests('glow2-src', {
+woosh.addTests('yui-300', {
 	'$preTest': function(prevTest, nextTest) {
 		if (!prevTest) {
 			window.MyObj = function() {};
-			MyObj.prototype = new glow.events.Target;
+			Y.augment(MyObj, Y.EventTarget);
 		}
 		
 		switch (nextTest) {
