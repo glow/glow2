@@ -14,5 +14,9 @@ woosh.addTests('glow-170', {
 	'Firing Custom Listeners': new woosh.Test(1, function() {
 		glow.events.fire(testObj, 'testEvent');
 		return eventsFired;
+	}),
+	'Removing Custom Listeners': new woosh.Test(1, function() {
+		glow.events.removeListener(testObj, "testEvent");
+		return;
 	})
 });

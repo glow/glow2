@@ -125,12 +125,8 @@ Glow.provide({
 		function callListeners(item, eventName, event) {
 		
 			/*!debug*/			
-			if (! item) throw new Error('glow.events.fire: required parameter item not passed (name: ' + name + ')');		
-			
-			/*gubed!*/
-			
-			
-			
+			if (! item) throw new Error('glow.events.fire: required parameter item not passed (item: ' + item + ')');		
+			/*gubed!*/		
 			
 			var objIdent = item[psuedoPrivateEventKey],
 				listenersForEvent,
@@ -161,7 +157,7 @@ Glow.provide({
 
 		}
 		/**
-		@name glow.events.removeListeners
+		@name glow.events.removeAllListeners
 		@function
 		@param {Object[]} items  Items to remove events from
 		    
@@ -173,21 +169,51 @@ Glow.provide({
 			Glow will call this by default on its own classes like NodeList and
 			widgets.
 		   */
-		glow.events.removeListeners = function (items) {
+		glow.events.removeAllListeners = function (items) {
 			/*!debug*/			
-			if (! items) throw new Error('glow.events.removeListeners: required parameter items not passed (items: ' + items + ')');		
+			if (! items) throw new Error('glow.events.removeListeners: required parameter items not passed (items: ' + items + ')');
 			/*gubed!*/
 			
 			
-		/*	for(var i = 0, len = items.length; i < len; i++){
-				removeEvents(items[i]);
+			for(var i = 0, len = items.length; i < len; i++){
+				if(eventListeners[items[i][psuedoPrivateEventKey]]){
+						delete (eventListeners[items[i][psuedoPrivateEventKey]]);
+				}
+				else{
+						return false;
+				}
 			}
-		*/
-			return items;
+		
+			return true;
 		};
 
 
+		/**
+		@name glow.events.removeListeners
+		@function
+		@param {Object[]} item  Item to remove events from
+		@param {Object[]} name  Name of the event to remove
+		@param {Object[]} thisVal  thisVal
+		@description Removes listeners for given object, with the given name with the given thisVal.
+			   
+			Glow will call this by default on its own classes like NodeList and
+			widgets.
+		   */
+		glow.events.removeListeners = function (items, name, thisVal) {
+			/*!debug*/			
+			if (! items) throw new Error('glow.events.removeListeners: required parameter items not passed (items: ' + items + ')');
+			/*gubed!*/
+			for(var i = 0, len = items.length; i < len; i++){
+				if(eventListeners[items[i][psuedoPrivateEventKey]]){
+						delete (eventListeners[items[i][psuedoPrivateEventKey][name]]);
+				}
+				else{
+						return false;
+				}
+			}
 		
+			return true;
+		};
 		/**
 		@name glow.events.Target
 		@class
@@ -319,14 +345,13 @@ Glow.provide({
 		       });
 		       
 		       // remove listener
-		       listenerHandle.remove();
+		       listenerHandle.detach();
 		       
 		       // the problem here is we lose chaining
 	       */
 		
-		glow.events.Target.prototype.detach = function(name, callback) {
-			
-			glow.events.removeListeners(name, callback);
+		glow.events.Target.prototype.detach = function(name, thisVal) {			
+			glow.events.removeListeners(this, name, thisVal);
 		}
 		
 		/**
