@@ -110,7 +110,7 @@ Glow.provide({
 			function onReady() { /*debug*///console.log('onReady()');
 				runReadyQueue();
 				glow._removeReadyBlock('glow_domReady');
-				document.readyState == 'complete';
+				document.readyState = 'complete';
 			}
 					
 			if (document.readyState == 'complete') { // already here!
