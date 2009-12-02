@@ -1,7 +1,7 @@
 setTimeout(
 	function() {
 		Glow.provide({
-			version: '@SRC@',
+			version: '1.0.0',
 			builder: function(glow) {
 				glow.foo = glow.foo || {};
 				
@@ -14,7 +14,7 @@ setTimeout(
 		});
 		
 		
-		Glow.complete({packageName: 'foo', version: '@SRC@'});
+		Glow.complete({packageName: 'foo', version: '1.0.0'});
 	}
 	,
 	1000

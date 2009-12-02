@@ -1,5 +1,5 @@
 Glow.provide({
-	version: '@SRC@',
+	version: '1.0.0',
 	builder: function(glow) {
 		glow.bar = glow.bar || {};
 		
@@ -12,4 +12,4 @@ Glow.provide({
 });
 
 
-Glow.complete({packageName: 'bar', version: '@SRC@'});
+Glow.complete({packageName: 'bar', version: '1.0.0'});

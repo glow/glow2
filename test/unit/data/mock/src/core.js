@@ -1,6 +1,6 @@
 
 Glow.provide({
-	version: '@SRC@',
+	version: '1.0.0',
 	builder: function(glow) {
 		var ua = navigator.userAgent.toLowerCase();
 		
@@ -187,4 +187,4 @@ Glow.provide({
 	}
 });
 
-Glow.complete({packageName: 'core', version: '@SRC@'});
+Glow.complete({packageName: 'core', version: '1.0.0'});
