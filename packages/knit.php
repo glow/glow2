@@ -162,7 +162,7 @@ function knitFiles($files, $base='') {
 /**
  */
 function parseInclude($content, $base='') {
-	$replacer = create_function('$args', 'return file_get_contents("'.$base.'".$args[1]);');
+	$replacer = create_function('$args', 'return file_get_contents("'.$base.'include/".$args[1]);');
 
 	$content = preg_replace_callback('/\/\*!include:(.+?)\*\//', $replacer, $content);
   	
