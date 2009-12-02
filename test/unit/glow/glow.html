@@ -10,6 +10,23 @@
 
 	<script type="text/javascript">
 		testHelper = {
+			getVersion: function() {
+				//return '@SRC@'; 
+				return '2.0.0';
+			}
+			,
+			getBase: function() {
+				//return '../../../packages/';
+				return '../../../dist/'; 
+			}
+			,
+			addPackage: function(packageName, w) {
+				if (typeof w == 'undefined') { w = window; };
+				var v = testHelper.getVersion();
+				if (v == '@SRC@') { v = 'src'; }
+				w.document.write('<script src="' + testHelper.getBase() + v + '/' + packageName + '" type="text/javascript"><'+'/script>')
+			}
+			,
 			getScriptTagsBySrc: function(src, w) {
 				if (!w) { w = window; }
 				var scriptTags = w.document.getElementsByTagName('script');
@@ -49,7 +66,10 @@
 		}
 	</script>
 	
-	<script src="../../../packages/src/glow.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		testHelper.addPackage('glow.js');
+	</script>
+	
 	<script type="text/javascript">
 		module('Glow');
 		
@@ -126,11 +146,12 @@
 			
 			stop(3000);
 			testHelper.addFrame('../data/t_provide.html', function(frame) {
+				var v = testHelper.getVersion();
 				with (frame) {
-					ok( (Glow.instances['@SRC@'] !== undefined), 'reference to src glow instance is defined.' );
-					ok( (Glow.instances['@SRC@'].lang !== undefined), 'namespace lang is defined there.' );
-					ok( (Glow.instances['@SRC@'].lang.trim !== undefined), 'method lang.trim is defined there.' );
-					ok( (Glow.instances['@SRC@'].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
+					ok( (Glow.instances[v] !== undefined), 'reference to src glow instance is defined.' );
+					ok( (Glow.instances[v].lang !== undefined), 'namespace lang is defined there.' );
+					ok( (Glow.instances[v].lang.trim !== undefined), 'method lang.trim is defined there.' );
+					ok( (Glow.instances[v].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
 					
 					ok( (glow.lang !== undefined), 'my instance of glow has the module defined.' );
 					
@@ -164,7 +185,7 @@
 							ok( g.lang, 'second loaded callback receives a glow argument which has been populated.' );
 							
 							// count how many script tags were added for core (should be 1)
-							var coreScriptTags = testHelper.getScriptTagsBySrc('src/core.js', frame);
+							var coreScriptTags = testHelper.getScriptTagsBySrc('/core.js', frame);
 							equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
 						});
 						start();
@@ -225,6 +246,7 @@
 	<h1 id="qunit-header">Unit Tests: glow.js</h1>
 	<h2 id="qunit-banner"></h2>
 	<h2 id="qunit-userAgent"></h2>
+	<div id="glow-version"><script type="text/javascript">document.write('Glow base: ' + testHelper.getBase() + '; ' + 'Glow version: ' + testHelper.getVersion());</script></div>
 	<ol id="qunit-tests"></ol>
 </body>
 </html>

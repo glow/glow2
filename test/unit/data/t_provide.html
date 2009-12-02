@@ -6,17 +6,17 @@
 	
 	<title>t Provide</title>
 	
-	<script src="../../../src/glowbug.js" type="text/javascript"></script>
-	<script src="../../../packages/src/glow.js" type="text/javascript"></script>
-	
 	<script type="text/javascript">
-		window.glow = Glow('@SRC@', {base: '../../../packages/'});
+		parent.testHelper.addPackage('glow.js', window);
 	</script>
 	
-	<!-- Knit your own! Glow.provide() is called in here... -->
-	<script src="../../../src/header/core.js" type="text/javascript"></script>
-	<script src="../../../src/lang/lang.js" type="text/javascript"></script>
-	<script src="../../../src/footer/core.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		window.glow = Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() }) ;
+	</script>
+	
+	<script type="text/javascript">
+		parent.testHelper.addPackage('core.js', window);
+	</script>
 	
 	<script type="text/javascript">
 		if (parent.callbacks[window.name]) {

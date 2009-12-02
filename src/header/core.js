@@ -13,7 +13,7 @@ if (typeof Glow == 'undefined') {
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		/*!include:glowbug.js*/;
+		/*!include:glowbug.js*/
 		if (typeof glowbug != 'undefined') { glow.debug = glowbug; }
 	}
 });
