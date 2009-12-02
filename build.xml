@@ -1,26 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <project name="glow" default="all" basedir=".">
+
 	<property file="build.properties" />
+	<property name="BUILD_DIR" value="build" />
+	<property name="DIST_DIR" value="dist/${VERSION}" />
 	<property name="JSDOC_JAR" value="${JSDOC_DIR}/jsrun.jar" />
-	<property name="JSDOC_TPL" value="jsdoc/templates/jsdoc" />
+	<property name="JSDOC_TPL" value="jsdoc/buildlates/jsdoc" />
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
+	
 	<target name="knit">
-		<mkdir dir="dist" />
-		<mkdir dir="dist/${VERSION}" />	
-		<concat destfile="dist/${VERSION}/core.js" fixlastline="yes" eol="lf">
+		<delete dir="${BUILD_DIR}" />
+		<mkdir dir="${BUILD_DIR}" />
+		
+		<concat destfile="${BUILD_DIR}/glow.js" fixlastline="yes" eol="lf">
+			<filelist files="${packages.glow.js.file}" />
+		</concat>
+		
+		<concat destfile="${BUILD_DIR}/core.js" fixlastline="yes" eol="lf">
 			<filelist files="${packages.core.js.file}" />
 		</concat>
 		
-		<concat destfile="dist/${VERSION}/widgets.js" fixlastline="yes" eol="lf">
+		<concat destfile="${BUILD_DIR}/widgets.js" fixlastline="yes" eol="lf">
 			<filelist files="${packages.widgets.js.file}" />
 		</concat>
 		
-		<concat destfile="dist/${VERSION}/widgets.css" fixlastline="yes" eol="lf">
+		<concat destfile="${BUILD_DIR}/widgets.css" fixlastline="yes" eol="lf">
 			<filelist files="${packages.widgets.css.file}" />
 		</concat>
 	</target>
+	
+	<target name="filter" depends="knit">
+		<!-- add version number -->
+		<replace dir="${BUILD_DIR}" includes="**/*.js,**/*.css">
+		   <replacefilter token="@SRC@" value="${VERSION}" />
+		</replace>
+		
+		<!-- evaluate includes -->
+		<loadfile property="include.glowbug.js" srcfile="src/include/glowbug.js"/>
+		<replaceregexp match="/\*!include:glowbug\.js\*/" flags="g">
+			<substitution expression="${include.glowbug.js}"/>
+			<fileset dir="${DIST_DIR}" includes="**/*.js,**/*.css"/>
+		</replaceregexp>
+	</target>
+	
+	<target name="debug" depends="filter">
+		<copy todir="${DIST_DIR}">
+			<fileset dir="${BUILD_DIR}">
+				<include name="**/*.js" />
+				<include name="**/*.css" />
+			</fileset>
+			<mapper type="regexp" from="(.*)\.(js|css)" to="\1.debug.\2"/>
+		</copy>
+	</target>
+	
+	<target name="minify" depends="filter">
+		<!-- remove debugging code -->
+		<replaceregexp match="/\*!debug\*/.*?/\*gubed!\*/" flags="gs" replace="">
+			<fileset dir="${BUILD_DIR}" includes="**/*.js"/>
+		</replaceregexp>
+		
+		<!-- compile -->
+		<exec executable="java" failonerror="true">
+			<arg value="-jar"/>
+			<arg value="compiler.jar" />
+			<arg value="--module_output_path_prefix"/>
+			<arg value="${BUILD_DIR}/"/>
+			<arg value="--js"/>
+			<arg value="${BUILD_DIR}/glow.js"/>
+			<arg value="--module"/>
+			<arg value="glow:1"/>
+			<arg value="--js"/>
+			<arg value="${BUILD_DIR}/core.js"/>
+			<arg value="--module"/>
+			<arg value="core:1:glow"/>
+			<arg value="--js"/>
+			<arg value="${BUILD_DIR}/widgets.js"/>
+			<arg value="--module"/>
+			<arg value="widgets:1:glow,core"/>
+		</exec>
+	</target>
+	
+	<target name="deploy" depends="minify">
+		<!-- copy to dist -->
+		<copy todir="${DIST_DIR}">
+			<fileset dir="${BUILD_DIR}">
+				<include name="**/*.js" />
+				<include name="**/*.css" />
+			</fileset>
+		</copy>
+	</target>
+	
 	<target name="apidocs">
-                <delete dir="/docs/${LINE}"/>
+		<delete dir="/docs/${LINE}"/>
 		<mkdir dir="/docs/${LINE}" />		
 		<exec executable="java" failonerror="true">
 			<arg value="-jar"/>
@@ -33,11 +105,13 @@
 			<arg value="src/" />
 		</exec>
 	</target>
-	<target name="all" depends="knit, apidocs">
+	
+	<target name="all" depends="knit, filter, debug, minify, deploy">
 		<echo message="" />
 		<echo message="**************************************" />
 		<echo message="Glow version ${VERSION} build complete" />
 		<echo message="**************************************" />
 		<echo message="" />
 	</target>
+	
 </project>
