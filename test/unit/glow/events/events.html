@@ -157,61 +157,80 @@
 	
 		
 		test('Event delegation to events.Target', function() {
-			expect(1);
+			expect(2);
 
 			var myApplication = {},
 			triggered4 = false;
 		  
 			glow.events.Target.extend(myApplication);			
-			
-			myApplication.on('load', function(e) {
+			function testListener(){
 				triggered4 = true;
-					
-			});
+			}
+			myApplication.on('load', testListener);
 			
 			myApplication.fire('load');
 	
 			ok(triggered4 == true, "myApplication can fire events - triggered: "+triggered4 );
 			
+			triggered4 = false;
+			myApplication.detach('load', testListener);
 			
+			myApplication.fire('load');
+					
+		    ok(triggered4 == true, "Event detached as event no longer firable" );
 		});
 		
 
 		test('glow.events.removeListeners', function() {
-		expect(2);
+		expect(4);
 					
 			var myObj7 = {},
 			myObj8 = {},
 			triggered5 = false;
 		
 				
-			function callback(){
+			function callback7(){
 				triggered5 = true;
 			}
 
 			var listener = glow.events.addListeners(
 				[myObj7],
 				'myToBeRemovedEvent',
-				callback
+				callback7
 			);
 			
 			
 				glow.events.fire([myObj7], 'myToBeRemovedEvent');
+				
 				ok(triggered5 == true, "event is setup and added and fires: "+triggered5 );
-				ok(glow.events.removeListeners([myObj7], "myToBeRemovedEvent"), "removeListeners returns true when listener removed");
-				//ok(!glow.events.removeListeners([myObj8]), "removeAllListeners returns false when trying to remove listeners from object without events");
+				
+				ok(glow.events.removeListeners([myObj7], "myToBeRemovedEvent", listener), "removeListeners returns true when listener removed");
+				
+				triggered5 = false;
+				glow.events.removeListeners([myObj7], "myToBeRemovedEvent", callback7);
+				glow.events.fire([myObj7], 'myToBeRemovedEvent');
+				
+				ok(triggered5 == false, "event was removed and couldn't be fired: "+triggered5);
+				
+				ok(!glow.events.removeListeners([myObj8], "myToBeRemovedEvent", callback7), "removeListeners returns false when trying to remove listeners from object without events");
 	});	
 	
 		test('glow.events.removeAllListeners', function() {
-			expect(2);
+			expect(5);
 						
 				var myObj7 = {},
 				myObj8 = {},
-				triggered5 = false;
+				objWithoutEvents = {},
+				triggered6 = false,
+				triggered7 = false;
 			
 					
 				function callback(){
-					triggered5 = true;
+					triggered6 = true;
+				}
+				
+				function callback2(){
+					triggered7 = true;
 				}
 	
 				var listener = glow.events.addListeners(
@@ -220,11 +239,30 @@
 					callback
 				);
 				
+				var listener2 = glow.events.addListeners(
+					[myObj8],
+					'myEvent',
+					callback2
+				);
+				
 				
 					glow.events.fire([myObj7], 'myToBeRemovedEvent');
-					ok(triggered5 == true, "event is setup and added and fires: "+triggered5 );
-					ok(glow.events.removeListeners([myObj7], "myToBeRemovedEvent"), "removeListeners returns true when listener removed");
-					//ok(!glow.events.removeListeners([myObj8]), "removeAllListeners returns false when trying to remove listeners from object without events");
+					
+					ok(triggered6 == true, "event is setup and added and fires: "+triggered6 );
+					
+					triggered6 = false;
+					
+					ok(glow.events.removeAllListeners([myObj7]), "removeAllListeners returns true when listener removed");
+					
+					glow.events.fire([myObj7], 'myToBeRemovedEvent');
+					
+					ok(triggered6 == false, "event was removed and couldn't be fired: "+triggered6);
+					
+					ok(!glow.events.removeAllListeners([objWithoutEvents]), "removeAllListeners returns false when trying to remove listeners from object without events");
+					
+					glow.events.fire([myObj8], 'myEvent');
+					
+					ok(triggered7 == true, "other events still work: "+triggered7 );
 			});	
 		</script>
 

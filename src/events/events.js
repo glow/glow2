@@ -47,9 +47,7 @@ Glow.provide({
 				currentListeners
 				;
 		
-			if(thisVal == undefined){
-				thisVal = attachTo;
-			}
+			
 			
 			/*!debug*/
 			if (! attachTo) { throw new Error('no attachTo parameter passed to addListener'); }
@@ -67,7 +65,7 @@ Glow.provide({
 							objIdent = attachTo[i][psuedoPrivateEventKey] = objid++;
 						}
 					
-					listener = [ callback, thisVal ];
+					listener = [ callback, thisVal || attachTo[i] ];
 					
 					eventsOnObject = eventListeners[objIdent];
 					if(!eventsOnObject){
@@ -88,6 +86,13 @@ Glow.provide({
 				}
 		};
 
+		/**
+		 * Private method for adding a single listener
+		 */
+		function _addListener(attachTo, name, callback, thisVal){
+				
+		};
+		
 		
 		/**
 		@name glow.events.fire
@@ -105,15 +110,17 @@ Glow.provide({
 		glow.events.fire = function (items, eventName, event) {
 				/*!debug*/
 				if (! items) throw new Error('glow.events.fire: required parameter items not passed (items: ' + items + ')');
-				if (! eventName) throw new Error('glow.events.fire: required parameter name not passed (name: ' + name + ')');	
+				if (! eventName) throw new Error('glow.events.fire: required parameter name not passed (name: ' + name + ')');
+				if (! event) throw new Error('glow.events.fire: required parameter event not passed (event: ' + event + ')');	
 				/*gubed!*/
 			
+		
 			
 			if (! event) { event = new glow.events.Event(); }
 			else if ( event.constructor === Object ) { event = new glow.events.Event( event ) }
-			
+	
 			for(var i = 0, len = items.length; i < len; i++){
-				
+	
 				callListeners(items[i], eventName, event);
 			}
 			
@@ -135,6 +142,10 @@ Glow.provide({
 			
 			if(!objIdent){
 				return event;
+			}
+			
+			if(!eventListeners[objIdent]){
+				return false;
 			}
 			
 			listenersForEvent = eventListeners[objIdent][eventName];
@@ -174,16 +185,17 @@ Glow.provide({
 			if (! items) throw new Error('glow.events.removeListeners: required parameter items not passed (items: ' + items + ')');
 			/*gubed!*/
 			
-			
+
 			for(var i = 0, len = items.length; i < len; i++){
-				if(eventListeners[items[i][psuedoPrivateEventKey]]){
-						delete (eventListeners[items[i][psuedoPrivateEventKey]]);
-				}
-				else{
+				var objIdent = items[i][psuedoPrivateEventKey];
+				if(!objIdent){
 						return false;
 				}
+				else{
+						delete ( eventListeners[objIdent] );
+				}
 			}
-		
+
 			return true;
 		};
 
@@ -192,28 +204,53 @@ Glow.provide({
 		@name glow.events.removeListeners
 		@function
 		@param {Object[]} item  Item to remove events from
-		@param {Object[]} name  Name of the event to remove
-		@param {Object[]} thisVal  thisVal
+		@param {String} eventName  Name of the event to remove
+		@param {Function} callback  callback
 		@description Removes listeners for given object, with the given name with the given thisVal.
 			   
 			Glow will call this by default on its own classes like NodeList and
 			widgets.
 		   */
-		glow.events.removeListeners = function (items, name, thisVal) {
-			/*!debug*/			
-			if (! items) throw new Error('glow.events.removeListeners: required parameter items not passed (items: ' + items + ')');
-			/*gubed!*/
-			for(var i = 0, len = items.length; i < len; i++){
-				if(eventListeners[items[i][psuedoPrivateEventKey]]){
-						delete (eventListeners[items[i][psuedoPrivateEventKey][name]]);
-				}
-				else{
+		glow.events.removeListeners = function (item, eventName, callback) {
+			
+				for(var i = 0, len = item.length; i < len; i++){
+						
+					var objIdent = item[i][psuedoPrivateEventKey],
+						listenersForEvent;
+				
+					if(!objIdent){
 						return false;
-				}
-			}
+					}
+					
+					if(!eventListeners[objIdent]){
+						return false;
+					}
 		
+					listenersForEvent = eventListeners[objIdent][eventName];
+					if(!listenersForEvent){
+						return false;
+					}
+				
+						
+				
+					
+				
+					for(var i = 0, len = listenersForEvent.length; i < len; i++){
+												
+						if(listenersForEvent[i][0] == callback){
+								listenersForEvent.splice(i, 1);
+								break;
+						}
+		
+					}
+					
+				}
+				
+			
 			return true;
+			
 		};
+		
 		/**
 		@name glow.events.Target
 		@class
@@ -307,7 +344,8 @@ Glow.provide({
 		@function
 		@param {String}   eventName  Name of the event to listen for
 		@param {Function} callback   Callback to detach
-		
+		@param {Object}   [thisVal]  Value of 'this' within the callback.
+		       By default, this is the object being listened to.
 		@description Remove an event listener
 		
 		@returns this
@@ -350,8 +388,8 @@ Glow.provide({
 		       // the problem here is we lose chaining
 	       */
 		
-		glow.events.Target.prototype.detach = function(name, thisVal) {			
-			glow.events.removeListeners(this, name, thisVal);
+		glow.events.Target.prototype.detach = function(eventName, callback) {
+			glow.events.removeListeners(this, eventName, callback);
 		}
 		
 		/**

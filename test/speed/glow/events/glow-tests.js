@@ -27,8 +27,16 @@ woosh.addTests('glow-170', {
 		glow.events.fire(testObj, 'testEvent');
 		return eventsFired;
 	}),
-	'Removing Custom Listeners': new woosh.Test(1, function() {
-		glow.events.removeListener(testObj, "testEvent");
-		return;
+	'Removing Custom Listeners': new woosh.Test(10000, function() {
+		var obj = {};
+		function testListener() {}
+		var listener = glow.events.addListener(obj, 'test', testListener);
+		glow.events.removeListener(listener);	
+		
+		var listener = glow.events.addListener(obj, 'test', testListener);
+		glow.events.removeListener(listener);
+		
+		var listener = glow.events.addListener(obj, 'test', testListener);
+		glow.events.removeListener(listener);	
 	})
 });

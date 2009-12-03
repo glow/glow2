@@ -33,8 +33,16 @@ woosh.addTests('glow2-src', {
 		testObj.fire('testEvent');
 		return eventsFired;
 	}),
-	'Removing Custom Listeners': new woosh.Test(1, function() {
-		testObj.detach(testObj, 'testEvent');
-		return;
+	'Removing Custom Listeners': new woosh.Test(10000, function() {
+		var obj = new MyObj();
+		function testListener() {}
+		obj.on('test', testListener);
+		obj.detach('test', testListener);	
+		
+		obj.on('test', testListener);
+		obj.detach('test', testListener);	
+	
+		obj.on('test', testListener);
+		obj.detach('test', testListener);
 	})
 });
