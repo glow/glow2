@@ -15,11 +15,14 @@
 		}
 	</script>
 	
-	<script src="../../../packages/src/glow.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		parent.testHelper.addPackage('glow.js', window);
+	</script>
 	
 	<script type="text/javascript">
+		Glow.versions = ['1.0.0'];
 		Glow.files = {
-			'2.0.0': {
+			'1.0.0': {
 				packages: ['core', 'foo', 'bar'],
 				files: {
 					core: ['core.js'],
@@ -29,7 +32,7 @@
 			}
 		};
 
-		Glow('@SRC@', {base: './mock/'})
+		Glow('1.0.0', {base: './mock/'})
 		.load('bar', 'foo')
 		.loaded(function(g) {
 			if (parent.callbacks && parent.callbacks[window.name]) {

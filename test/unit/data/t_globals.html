@@ -15,10 +15,13 @@
 		}
 	</script>
 	
-	<script src="../../../packages/src/glow.js" type="text/javascript"></script>
+	<!--script src="../../../packages/src/glow.js" type="text/javascript"></script-->
+	<script type="text/javascript">
+		parent.testHelper.addPackage('glow.js', window);
+	</script>
 	
 	<script type="text/javascript">
-		Glow('@SRC@', {base: '../../../packages/'})
+		Glow( parent.testHelper.getVersion(), { base: parent.testHelper.getBase() } )
 		.load('widgets')
 		.loaded(function(g) {
 			// do nothing
