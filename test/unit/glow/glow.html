@@ -7,24 +7,63 @@
 	
 	<script src="../lib/qunit/qunit/qunit.js" type="text/javascript"></script>
 	<link rel="stylesheet" rev="stylesheet" href="../lib/qunit/qunit/qunit.css" type="text/css" media="screen">
+	
+	<script type="text/javascript">
+		window.conf = {
+			base: './',
+			source: '../../../packages/',
+			build: '../../../build/',
+			version: '@SRC@',
+			buildDate: 'unbuilt'
+		};
+		
+		// base can be set from the get params. Like: ?from=build
+		function setBase() {
+			var params = (window.location || { search: '', protocol: 'file:' }).search.slice(1).split('&');
+			
+			window.conf.base = window.conf.source; // default
+			for (var i = 0; i < params.length; i++) {
+				params[i] = decodeURIComponent(params[i]);
+				if (params[i] === 'from=build') {
+					window.conf.base = window.conf.build;
+					break;
+				}
+			}
+		}
+		
+		setBase();
+		
+		// sets the version, only called when base is not built
+		function meta(opts) {
+			window.conf.version = opts.version;
+			window.conf.buildDate = opts.buildDate;
+		}
+		
+		// calls meta()
+		if (window.conf.base == window.conf.build) {
+			document.write('<script src="' + window.conf.base + '/meta.js" type="text/javascript"><'+'/script>');
+		}
 
+	</script>
+	
+	
 	<script type="text/javascript">
 		testHelper = {
 			getVersion: function() {
-				//return '@SRC@'; 
-				return '2.0.0';
+				return window.conf.version; 
 			}
 			,
 			getBase: function() {
-				//return '../../../packages/';
-				return '../../../dist/'; 
+				return window.conf.base;
 			}
 			,
 			addPackage: function(packageName, w) {
+				var version = testHelper.getVersion(),
+					base = testHelper.getBase();
+				
+				if (version == '@SRC@') { version = 'src'; }
 				if (typeof w == 'undefined') { w = window; };
-				var v = testHelper.getVersion();
-				if (v == '@SRC@') { v = 'src'; }
-				w.document.write('<script src="' + testHelper.getBase() + v + '/' + packageName + '" type="text/javascript"><'+'/script>')
+				w.document.write('<script src="' + base + version + '/' + packageName + '" type="text/javascript"><'+'/script>')
 			}
 			,
 			getScriptTagsBySrc: function(src, w) {
@@ -74,18 +113,16 @@
 		module('Glow');
 		
 		test('resolveVersion', function() {
-			expect(5);
+			expect(4);
 			
 			// setup
-			var originalVersions = Glow.versions;
+			//var originalVersions = Glow.versions; // TODO keep files too
+			
 			Glow.versions = ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'];
 			Glow.files = {
-				'2.0.0 rc-1': ['core:core.js']
-			};
-			Glow.files = {
 				'2.0.0 rc-1': {
-					packages: ['core'],
-					files: { core: ['core.js'] }
+					'packages': ['core'],
+					'files': { 'core': ['core.js'] }
 				}
 			};
 		
@@ -102,13 +139,8 @@
 			
 				equals(glow.version, '2.1.0 rc-1', 'glow.version is set to the latest exact version.');
 			
-			try { glow = Glow('3'); }
-			catch(e) {
-				ok( true, 'an undefined version throws an error.' );
-			}
-			
 			// tear down
-			Glow.versions = originalVersions;
+			//Glow.versions = originalVersions;
 		});
 		
 		test('globals', function() {
@@ -237,8 +269,6 @@
 				start();
 			}
 		});
-		
-		
 	</script>
 
 </head>
@@ -247,7 +277,7 @@
 	<h2 id="qunit-banner"></h2>
 	<div id="qunit-testrunner-toolbar"></div>
 	<h2 id="qunit-userAgent"></h2>
-	<div id="glow-version"><script type="text/javascript">document.write('Glow base: ' + testHelper.getBase() + '; ' + 'Glow version: ' + testHelper.getVersion());</script></div>
+	<div id="glow-version"><script type="text/javascript">document.write('Glow: base: ' + window.conf.base + '; version: ' + window.conf.version+ '; build date: ' + window.conf.buildDate);</script></div>
 	<ol id="qunit-tests"></ol>
 </body>
 </html>
