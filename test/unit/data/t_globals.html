@@ -7,15 +7,13 @@
 	<title>t Globals</title>
 	
 	<script type="text/javascript">
-		globals1 = {};
-		globals2 = {};
+		globals = {};
 		
 		for (var p in window) {
-			if (typeof globals1[p] == 'undefined') { globals1[p] = true; }
+			if (typeof globals[p] == 'undefined') { globals[p] = true; }
 		}
 	</script>
 	
-	<!--script src="../../../packages/src/glow.js" type="text/javascript"></script-->
 	<script type="text/javascript">
 		parent.testHelper.addPackage('glow.js', window);
 	</script>
@@ -27,16 +25,10 @@
 			// do nothing
 		})
 		.ready(function(g) {
-			for (var p in window) {
-				if (typeof globals2[p] == 'undefined') { globals2[p] = true; }
-			}
-			
 			var diff = [];
 			
-			for (var p in globals2) {
-				if (typeof globals1[p] == 'undefined') {
-					diff.push(p);
-				}
+			for (var p in window) {
+				if (typeof globals[p] == 'undefined') { diff.push(p); }
 			}
 			
 			if (parent.callbacks && parent.callbacks[window.name]) {

@@ -44,7 +44,7 @@
 			@description A JavaScript library that's somewhat nifty.
 		 */
 		var glow = {
-			base: opts.base || '',
+			base: opts.base,
 			version: _resolveVersion(version),
 			_onloaded: [],
 			_packageStatus: {},    // track which packages are already done. like: {packageName: (undefined|false|true)}
@@ -69,7 +69,7 @@
 			@param {String} ... One or more package names.
 			@description Include packages, which will rovide some modules to your glow.
 		 */
-		glow.load = function(/*...*/) { /*!debug*/Glow.debug.log('glow.load('+Array.prototype.join.call(arguments, ', ')+')');/*gubed!*/
+		glow.load = function(/*...*/) {
 			var map,
 				packageName;
 			
@@ -85,10 +85,10 @@
 					// the package files were not added to the page yet
 					if (!glow._buildQueue[packageName]) {
 						glow._buildQueue[packageName] = []; // add a placeholder for them
-						
+		
 						// add the files required for this package to the page
-						if (map.files[packageName]) {
-							_injectFiles(map.files[packageName]);
+						if (map['files'][packageName]) {
+							_injectFiles(map['files'][packageName]);
 						}
 					}
 				}
@@ -103,7 +103,7 @@
 			@param {Function} onLoadCallback Called when all the packages load.
 			@description Do something when all the packages load.
 		 */
-		glow.loaded = function(onLoadCallback) { /*!debug*/Glow.debug.log('glow.loaded('+onLoadCallback+')');/*gubed!*/
+		glow.loaded = function(onLoadCallback) {
 			if (typeof onLoadCallback != 'function') { throw new Error('glow.loaded requires a "onLoadCallback" to be a function.'); }
 			
 			glow._onloaded.push(onLoadCallback);
@@ -127,7 +127,7 @@
 			}
 			
 			map = _getMap(glow.version);
-			depends = map.packages;
+			depends = map['packages'];
 			
 			// all packages have all their builders, now we can build them in the right order
 			for (var i = 0, li = depends.length; i < li; i++) {
@@ -150,14 +150,14 @@
 			@function
 			@description Try to run any pending '_onloaded' callbacks.
 		 */
-		glow._runCallbacks = function() { /*!debug*/Glow.debug.log('glow._runCallbacks() ' + glow._onloaded.length);/*gubed!*/
+		glow._runCallbacks = function() {
 			//if there are no _onloaded callbacks in the list, do nothing
 			if (glow._onloaded.length == 0) { return; }
 			
 			// if there are any packages that are still not built, do nothing
 			for (var p in glow._packageStatus) {
 				if (!glow._packageStatus[p]) {
-					return
+					return;
 				}
 			}
 	
@@ -204,7 +204,7 @@
 			
 			// src version is special, use it to refer to your working copy of glow
 			if (version == '@'+'SRC@') { return '@'+'SRC@'; }
-			
+		
 			throw new Error('Version "'+version+'" does not exist');
 		}
 		
@@ -286,7 +286,7 @@
 		 */
 		function _findBase() { /*!debug*/Glow.debug.log('_injectJs("'+src+'")');/*gubed!*/
 			// TODO
-			throw new Error('Glow-_findBase is not implemented yet.');
+			//throw new Error('Glow-_findBase is not implemented yet.');
 		}
 		
 		/**
@@ -307,7 +307,7 @@
 			while (--i > -1) {
 				if (files[versions[i]]) { map = files[versions[i]]; }
 				if (versions[i] == version) { versionFound = true; }
-				if (versionFound && map) return map;
+				if (versionFound && map) { return map; }
 			}
 			
 			throw new Error('No files are defined for version "' + version + '".');
@@ -323,7 +323,7 @@
 	
 	// versions must be in order: newest to latest
 	// like 'version:filesOffset'
-	Glow.versions = ['2.0.0', '@SRC@'];
+	Glow.versions = ['2.0.0', '@'+'SRC@'];
 	Glow.files = {
 		'2.0.0': {
 			'packages': ['core', 'widgets'],
@@ -341,7 +341,7 @@
 		@param {Object} def Definition of the code to build.
 		@description provide some code to a Glow module.
 	 */
-	Glow.provide = function(def) { /*!debug*/Glow.debug.log('Glow.provide("'+def.toSource()+'")');/*gubed!*/
+	Glow.provide = function(def) { /*!debug*/Glow.debug.log('Glow.provide()');/*gubed!*/
 		var glow = Glow.instances[def.version];
 		
 		if (!glow) {
@@ -364,7 +364,7 @@
 		@param {Number} packageDef.version The version of the package that is now complete.
 		@description Tell the instance that _onloaded can run.
 	 */
-	Glow.complete = function(def) { /*!debug*/Glow.debug.log('Glow.complete("'+def.packageName+'")');/*gubed!*/
+	Glow.complete = function(def) {
 		var glow = Glow.instances[def.version];
 		
 		// flush builder cache into the queue

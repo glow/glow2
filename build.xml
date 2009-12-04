@@ -3,16 +3,30 @@
 <project name="glow" default="all" basedir=".">
 
 	<property file="build.properties" />
-	<property name="BUILD_DIR" value="build" />
+	<property name="BUILD_DIR" value="build/${VERSION}" />
 	<property name="DIST_DIR" value="dist/${VERSION}" />
 	<property name="JSDOC_JAR" value="${JSDOC_DIR}/jsrun.jar" />
 	<property name="JSDOC_TPL" value="jsdoc/buildlates/jsdoc" />
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
 	
-	<target name="knit">
+	<target name="setup">
 		<delete dir="${BUILD_DIR}" />
 		<mkdir dir="${BUILD_DIR}" />
 		
+		<delete dir="${DIST_DIR}" />
+		<mkdir dir="${DIST_DIR}" />
+	</target>
+	
+	<target name="meta">
+		<tstamp>
+			<format property="BUILT_DATE" pattern="d MMMM yyyy hh:mm aa" offset="0" unit="hour" locale="en,UK" />
+		</tstamp>
+		<echo file="${BUILD_DIR}/../meta.js" append="false">
+			meta({ version: '${VERSION}', buildDate: '${BUILT_DATE}' });
+		</echo>
+	</target>
+	
+	<target name="knit">
 		<concat destfile="${BUILD_DIR}/glow.js" fixlastline="yes" eol="lf">
 			<filelist files="${packages.glow.js.file}" />
 		</concat>
@@ -78,6 +92,10 @@
 			<arg value="${BUILD_DIR}/widgets.js"/>
 			<arg value="--module"/>
 			<arg value="widgets:1:glow,core"/>
+			
+			<!--arg value="-
+			-compilation_level" />
+			<arg value="ADVANCED_OPTIMIZATIONS" /-->
 		</exec>
 	</target>
 	
@@ -106,7 +124,7 @@
 		</exec>
 	</target>
 	
-	<target name="all" depends="knit, filter, debug, minify, deploy">
+	<target name="all" depends="setup, meta, knit, filter, debug, minify, deploy">
 		<echo message="" />
 		<echo message="**************************************" />
 		<echo message="Glow version ${VERSION} build complete" />
