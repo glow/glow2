@@ -73,7 +73,7 @@
 			var map,
 				packageName;
 			
-			map = _getMap(glow.version);
+			map = Glow.map(glow.version);
 			
 			for (var i = 0, li = arguments.length; i < li; i++) {
 				packageName = arguments[i];
@@ -87,7 +87,7 @@
 						glow._buildQueue[packageName] = []; // add a placeholder for them
 		
 						// add the files required for this package to the page
-						if (map['files'][packageName]) {
+						if (map['files'][packageName]) { // use stringy names for closure-compiler?
 							_injectFiles(map['files'][packageName]);
 						}
 					}
@@ -126,8 +126,8 @@
 				}
 			}
 			
-			map = _getMap(glow.version);
-			depends = map['packages'];
+			map = Glow.map(glow.version);
+			depends = map['packages']; // use stringy name for closure-compiler?
 			
 			// all packages have all their builders, now we can build them in the right order
 			for (var i = 0, li = depends.length; i < li; i++) {
@@ -192,9 +192,9 @@
 		function _resolveVersion(version) {
 			// TODO: an empty version means: the very latest version
 			
-			var versions = Glow.versions,
+			var versions = Glow._map.versions,
 				matchThis = version + '.';
-			
+		
 			var i = versions.length;
 			while (--i > -1) {
 				if ( ( versions[i] + '.').indexOf(matchThis) == 0 ) {
@@ -289,30 +289,6 @@
 			//throw new Error('Glow-_findBase is not implemented yet.');
 		}
 		
-		/**
-			@name _getMap
-			@private
-			@function
-			@description Find the file map for a given version.
-			@param {string} version Resolved identifier, like '2.0.0'.
-			@returns {object} A map of package names to files list.
-		 */
-		function _getMap(version) { /*!debug*/Glow.debug.log('_getMap("'+version+'")');/*gubed!*/
-			var versions = Glow.versions,
-				files = Glow.files,
-				map,
-				versionFound;
-			
-			var i = versions.length;
-			while (--i > -1) {
-				if (files[versions[i]]) { map = files[versions[i]]; }
-				if (versions[i] == version) { versionFound = true; }
-				if (versionFound && map) { return map; }
-			}
-			
-			throw new Error('No files are defined for version "' + version + '".');
-		}
-		
 		Glow.instances[glow.version] = glow;
 		
 		// we always load core
@@ -321,18 +297,38 @@
 		return glow;
 	}
 	
-	// versions must be in order: newest to latest
-	// like 'version:filesOffset'
-	Glow.versions = ['2.0.0', '@'+'SRC@'];
-	Glow.files = {
-		'2.0.0': {
-			'packages': ['core', 'widgets'],
-			'files': {
-				'core': ['core.js'],
-				'widgets': ['widgets.js', 'widgets.css']
+	/**
+		@name Glow.map
+		@function
+		@description Find the file map for a given version.
+		@param {string} version Resolved identifier, like '2.0.0'.
+		@returns {object} A map of package names to files list.
+	 */
+	Glow.map = function(version) {
+		var versions = Glow._map['versions'],
+			data = Glow._map['data'],
+			map = null,
+			versionFound = false;
+		
+		var i = versions.length;
+		while (--i > -1) {
+			if (data[versions[i]]) { map = data[versions[i]]; }
+			if (versions[i] == version) { versionFound = true; }
+			if (versionFound && map) { return map; }
+		}
+		
+		throw new Error('No map data defined for version "' + version + '".');
+	}
+	Glow._map = { // versions must be in order: newest to latest
+		versions: ['2.0.0', '@'+'SRC@'],
+		data: {
+			'2.0.0': {
+				'packages': ['core', 'widgets'],
+				'files': { 'core': ['core.js'], 'widgets': ['widgets.js', 'widgets.css'] }
 			}
 		}
 	};
+
 	Glow.instances = {};
 	
 	/**
@@ -378,10 +374,9 @@
 	}
 	
 	// exports
-	window['Glow']     = Glow;
-	Glow['versions']   = Glow.versions;
-	Glow['instances']  = Glow.instances;
-	Glow['files']      = Glow.files;
-	Glow['provide']    = Glow.provide;
-	Glow['complete']   = Glow.complete;
+	window['Glow']    = Glow;
+	Glow['provide']   = Glow.provide;
+	Glow['complete']  = Glow.complete;
+	Glow['map']       = Glow.map;
+	Glow['instances'] = Glow.instances;
 })();

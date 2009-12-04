@@ -84,7 +84,7 @@
 				iframe.height = "1px";
 				iframe.style.border = 'none';
 				iframe.id = "iframe_" +new Date().getTime(); // prevent Safari from caching iframe data.
-				iframe.src= src;
+				iframe.src= src+'?nocache='+new Date().getTime();
 				
 				document.body.appendChild(iframe);
 				
@@ -118,11 +118,13 @@
 			// setup
 			//var originalVersions = Glow.versions; // TODO keep files too
 			
-			Glow.versions = ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'];
-			Glow.files = {
-				'2.0.0 rc-1': {
-					'packages': ['core'],
-					'files': { 'core': ['core.js'] }
+			Glow._map = {
+				versions: ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'],
+				data: {
+					'2.0.0 rc-1': {
+						'packages': ['core'],
+						'files': { 'core': ['core.js'] }
+					}
 				}
 			};
 		
@@ -150,7 +152,7 @@
 			testHelper.addFrame('../data/t_globals.html', checkGlobals);
 			
 			function checkGlobals(frame, diff) {
-				equals( diff.length, 1, 'Glow adds 1 new global variable.' );
+				equals( diff.length, 1, 'Glow adds 1 new global variable: ' + diff.join(',') );
 				ok( diff[0], 'Glow', 'The only new global variable is named "Glow".' );
 
 				start();

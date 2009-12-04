@@ -20,14 +20,12 @@
 	</script>
 	
 	<script type="text/javascript">
-		Glow.versions = ['1.0.0'];
-		Glow.files = {
-			'1.0.0': {
-				packages: ['core', 'foo', 'bar'],
-				files: {
-					core: ['core.js'],
-					foo: ['foo.js'],
-					bar: ['bar.js']
+		Glow._map = {
+			versions: ['1.0.0'],
+			data: {
+				'1.0.0': {
+					packages: ['core', 'foo', 'bar'],
+					files: { core: ['core.js'], foo: ['foo.js'], bar: ['bar.js'] }
 				}
 			}
 		};
