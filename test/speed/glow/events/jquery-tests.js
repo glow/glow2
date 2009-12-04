@@ -24,5 +24,11 @@ woosh.addTests('jq-132', {
 	'Firing Custom Listeners': new woosh.Test(20000, function() {
 		$(testObj).trigger('testEvent');
 		return eventsFired;
+	}),
+	'Removing Custom Listeners': new woosh.Test(10000, function() {
+		var obj = {};
+		$(obj).unbind('testEvent', function() {})
+			  .unbind('testEvent', function() {})
+			  .unbind('testEvent', function() {});
 	})
 });
