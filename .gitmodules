@@ -1,3 +1,6 @@
 [submodule "test/speed/lib/woosh"]
 	path = test/speed/lib/woosh
 	url = http://github.com/jakearchibald/Woosh.git
+[submodule "test/unit/lib/qunit"]
+	path = test/unit/lib/qunit
+	url = http://github.com/phae/qunit.git
