@@ -30,7 +30,7 @@ Glow.provide({
 			
 		glow._readyBlockers = {};
 	
-		glow.ready = function (f) { /*debug*///console.log('core glow.ready()');
+		glow.ready = function (f) {
 			if (this.isReady) {
 				f();
 			}
@@ -110,24 +110,12 @@ Glow.provide({
 			function onReady() { /*debug*///console.log('onReady()');
 				runReadyQueue();
 				glow._removeReadyBlock('glow_domReady');
-				document.readyState = 'complete';
 			}
 					
 			if (document.readyState == 'complete') { // already here!
 				onReady();
 			}
 			else if (document.attachEvent) { // like IE
-				// might be an iframe...
-				document.attachEvent(
-					'onreadystatechange',
-					function() {
-						if (document.readyState == 'complete') {
-							document.detachEvent('onreadystatechange', arguments.callee);
-							onReady();
-						}
-					}
-				);
-				
 				// not an iframe...
 				if (document.documentElement.doScroll && window == top) {
 					(function() {
@@ -142,6 +130,18 @@ Glow.provide({
 						// and execute any waiting functions
 						onReady();
 					})();
+				}
+				else {
+					// an iframe...
+					document.attachEvent(
+						'onreadystatechange',
+						function() {
+							if (document.readyState == 'complete') {
+								document.detachEvent('onreadystatechange', arguments.callee);
+								onReady();
+							}
+						}
+					);
 				}
 			}
 			else if (glow.env.webkit < 525.13 && document.readyState) { // like pre Safari 3.1
