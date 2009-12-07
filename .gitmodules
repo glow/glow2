@@ -4,3 +4,6 @@
 [submodule "test/unit/lib/qunit"]
 	path = test/unit/lib/qunit
 	url = http://github.com/phae/qunit.git
+[submodule "src/dom/_sizzle/sizzle"]
+	path = src/dom/_sizzle/sizzle
+	url = http://github.com/jeresig/sizzle.git
