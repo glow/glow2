@@ -1,12 +1,14 @@
 <packages>
 	<glow>
 		<js>
+			<file>src/header/license.txt</file>
 			<file>src/glow.js</file>
 		</js>
 		<css></css>
 	</glow>
 	<core>
 		<js>
+			<file>src/header/license.txt</file>
 			<file>src/header/core.js</file>
 			<file>src/core/ready.js</file>
 			<file>src/lang/lang.js</file>
@@ -30,10 +32,12 @@
 	</more>
 	<widgets>
 		<js>
+			<file>src/header/license.txt</file>
 			<file>src/widgets/widgets.js</file>
 			<file>src/footer/widgets.js</file>
 		</js>
 		<css>
+			<file>src/header/license.txt</file>
 			<file>src/widgets/widgets.css</file>
 		</css>
 	</widgets>

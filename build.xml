@@ -3,64 +3,98 @@
 <project name="glow" default="all" basedir=".">
 
 	<property file="build.properties" />
-	<property name="BUILD_DIR" value="build/${VERSION}" />
-	<property name="DIST_DIR" value="dist/${VERSION}" />
-	<property name="JSDOC_JAR" value="${JSDOC_DIR}/jsrun.jar" />
-	<property name="JSDOC_TPL" value="jsdoc/buildlates/jsdoc" />
+	<property name="INCLUDE_DIR"  value="src/include/" />
+	
+	<property name="BUILD_DIR"    value="build/" />
+	<property name="BUILDSRC_DIR" value="${BUILD_DIR}${VERSION}" />
+	
+	<property name="DIST_DIR"     value="dist/" />
+	<property name="DISTSRC_DIR"  value="${DIST_DIR}${VERSION}" />
+	
+	<property name="JSDOC_DIR"    value="${BUILD_DIR}lib/jsdoc-toolkit/" />
+	<property name="CC_JAR"       value="${BUILD_DIR}lib/compiler.jar" />
+	<property name="YUI_JAR"      value="${BUILD_DIR}lib/yuicompressor-2.4.2.jar" />
+	
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
 	
 	<target name="setup">
-		<delete dir="${BUILD_DIR}" />
-		<mkdir dir="${BUILD_DIR}" />
+		<delete dir="${BUILDSRC_DIR}" />
+		<mkdir dir="${BUILDSRC_DIR}" />
 		
 		<delete dir="${DIST_DIR}" />
 		<mkdir dir="${DIST_DIR}" />
 	</target>
 	
 	<target name="meta">
+		<echo message="creating meta file" />
+		
 		<tstamp>
 			<format property="BUILT_DATE" pattern="d MMMM yyyy hh:mm aa" offset="0" unit="hour" locale="en,UK" />
 		</tstamp>
-		<echo file="${BUILD_DIR}/../meta.js" append="false">
+		<echo file="${BUILD_DIR}/meta.js" append="false">
 			meta({ version: '${VERSION}', buildDate: '${BUILT_DATE}' });
 		</echo>
 	</target>
 	
 	<target name="knit">
-		<concat destfile="${BUILD_DIR}/glow.js" fixlastline="yes" eol="lf">
+		<echo message="Combining files to build packages" />
+		
+		<concat destfile="${BUILDSRC_DIR}/glow.js" fixlastline="yes" eol="lf">
 			<filelist files="${packages.glow.js.file}" />
 		</concat>
 		
-		<concat destfile="${BUILD_DIR}/core.js" fixlastline="yes" eol="lf">
+		<concat destfile="${BUILDSRC_DIR}/core.js" fixlastline="yes" eol="lf">
 			<filelist files="${packages.core.js.file}" />
 		</concat>
 		
-		<concat destfile="${BUILD_DIR}/widgets.js" fixlastline="yes" eol="lf">
+		<concat destfile="${BUILDSRC_DIR}/widgets.js" fixlastline="yes" eol="lf">
 			<filelist files="${packages.widgets.js.file}" />
 		</concat>
 		
-		<concat destfile="${BUILD_DIR}/widgets.css" fixlastline="yes" eol="lf">
+		<concat destfile="${BUILDSRC_DIR}/widgets.css" fixlastline="yes" eol="lf">
 			<filelist files="${packages.widgets.css.file}" />
 		</concat>
 	</target>
 	
 	<target name="filter" depends="knit">
-		<!-- add version number -->
-		<replace dir="${BUILD_DIR}" includes="**/*.js,**/*.css">
-		   <replacefilter token="@SRC@" value="${VERSION}" />
-		</replace>
+		<echo message="Adding includes to source" />
 		
-		<!-- evaluate includes -->
-		<loadfile property="include.glowbug.js" srcfile="src/include/glowbug.js"/>
+		<loadfile property="include.glowbug.js" srcfile="${INCLUDE_DIR}glowbug.js"/>
 		<replaceregexp match="/\*!include:glowbug\.js\*/" flags="g">
 			<substitution expression="${include.glowbug.js}"/>
-			<fileset dir="${DIST_DIR}" includes="**/*.js,**/*.css"/>
+			<fileset dir="${BUILDSRC_DIR}" includes="**/*.js"/>
 		</replaceregexp>
+		
+		<echo message="Adding real version number to source"/>
+		
+		<replace dir="${BUILDSRC_DIR}" includes="**/*.js,**/*.css">
+		   <replacefilter token="@SRC@" value="${VERSION}" />
+		</replace>
 	</target>
 	
-	<target name="debug" depends="filter">
-		<copy todir="${DIST_DIR}">
-			<fileset dir="${BUILD_DIR}">
+	<target name="apidocs" depends="filter">
+		<echo message="Generating API documentation from JsDoc: ${JSDOC_DIR}" />
+		
+		<delete dir="${DIST_DIR}docs/${VERSION}" />
+		
+		<exec executable="java" failonerror="true">
+			<arg value="-jar"/>
+	        <arg value="${JSDOC_DIR}jsrun.jar"/>
+			<arg value="${JSDOC_DIR}app/run.js" />
+			<arg value="-n" />
+			<arg value="-v" />
+			<arg value="-t=${JSDOC_DIR}templates/jsdoc/" />
+			<arg value="-d=${DIST_DIR}docs/${VERSION}/" />
+			<arg value="-r=1" />			
+			<arg value="${BUILDSRC_DIR}" />
+		</exec>
+	</target>
+	
+	<target name="debug" depends="apidocs">
+		<echo message="Creating debug version" />
+		
+		<copy todir="${BUILDSRC_DIR}">
+			<fileset dir="${BUILDSRC_DIR}">
 				<include name="**/*.js" />
 				<include name="**/*.css" />
 			</fileset>
@@ -69,62 +103,38 @@
 	</target>
 	
 	<target name="minify" depends="filter">
-		<!-- remove debugging code -->
+		<echo message="Removing debugging code" />
+		
 		<replaceregexp match="/\*!debug\*/.*?/\*gubed!\*/" flags="gs" replace="">
-			<fileset dir="${BUILD_DIR}" includes="**/*.js"/>
+			<fileset dir="${BUILDSRC_DIR}" includes="**/*.js,**/*.css" excludes="**/*.debug.*" />
 		</replaceregexp>
 		
-		<!-- compile -->
-		<exec executable="java" failonerror="true">
-			<arg value="-jar"/>
-			<arg value="compiler.jar" />
-			<arg value="--module_output_path_prefix"/>
-			<arg value="${BUILD_DIR}/"/>
-			<arg value="--js"/>
-			<arg value="${BUILD_DIR}/glow.js"/>
-			<arg value="--module"/>
-			<arg value="glow:1"/>
-			<arg value="--js"/>
-			<arg value="${BUILD_DIR}/core.js"/>
-			<arg value="--module"/>
-			<arg value="core:1:glow"/>
-			<arg value="--js"/>
-			<arg value="${BUILD_DIR}/widgets.js"/>
-			<arg value="--module"/>
-			<arg value="widgets:1:glow,core"/>
-			
-			<!--arg value="-
-			-compilation_level" />
-			<arg value="ADVANCED_OPTIMIZATIONS" /-->
-		</exec>
+		<echo message="Creating minified files" />
+		
+		<apply executable="java" parallel="false" failonerror="true">
+			<arg line="-jar"/>
+			<arg path="${YUI_JAR}"/>
+			<arg value="--preserve-semi" />
+			<srcfile/>
+			<fileset dir="${BUILDSRC_DIR}" includes="**/*.js,**/*.css"  excludes="**/*.debug.*" />
+			<redirector>
+				<outputmapper type="glob" from="*" to="${BUILDSRC_DIR}/*" />
+			</redirector>
+		</apply>
 	</target>
 	
-	<target name="deploy" depends="minify">
-		<!-- copy to dist -->
-		<copy todir="${DIST_DIR}">
-			<fileset dir="${BUILD_DIR}">
+	<target name="dist" depends="minify">
+		<echo message="Moving minified files to dist folder" />
+		
+		<copy todir="${DISTSRC_DIR}" >
+			<fileset dir="${BUILDSRC_DIR}">
 				<include name="**/*.js" />
 				<include name="**/*.css" />
 			</fileset>
 		</copy>
 	</target>
 	
-	<target name="apidocs">
-		<delete dir="/docs/${LINE}"/>
-		<mkdir dir="/docs/${LINE}" />		
-		<exec executable="java" failonerror="true">
-			<arg value="-jar"/>
-	                <arg value="${JSDOC_JAR}"/>
-			<arg value="${JSDOC_DIR}/app/run.js" />
-			<arg value="-n" />
-			<arg value="-t=${JSDOC_TPL}/" />
-			<arg value="-d=docs/${LINE}/" />
-			<arg value="-r=4" />			
-			<arg value="src/" />
-		</exec>
-	</target>
-	
-	<target name="all" depends="setup, meta, knit, filter, debug, minify, deploy">
+	<target name="all" depends="setup, meta, knit, filter, apidocs, debug, minify, dist">
 		<echo message="" />
 		<echo message="**************************************" />
 		<echo message="Glow version ${VERSION} build complete" />
