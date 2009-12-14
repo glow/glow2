@@ -15,14 +15,14 @@
 			<file>src/events/events.js</file>
 			<file>src/events/DomEvent.js</file>
 			<file>src/events/KeyboardEvent.js</file>
-			<file>src/dom/dom.js</file>
-			<file>src/dom/_sizzle/header.js</file>
-			<file>src/dom/_sizzle/sizzle/sizzle.js</file>
-			<file>src/dom/_sizzle/footer.js</file>
-			<file>src/dom/transversal.js</file>
-			<file>src/dom/manipulation.js</file>
-			<file>src/dom/attributes.js</file>
-			<file>src/dom/appearance.js</file>
+			<file>src/ElementList/ElementList.js</file>
+			<file>src/ElementList/_sizzle/header.js</file>
+			<file>src/ElementList/_sizzle/sizzle/sizzle.js</file>
+			<file>src/ElementList/_sizzle/footer.js</file>
+			<file>src/ElementList/transversal.js</file>
+			<file>src/ElementList/manipulation.js</file>
+			<file>src/ElementList/attributes.js</file>
+			<file>src/ElementList/appearance.js</file>
 			<file>src/footer/core.js</file>
 		</js>
 		<css></css>
