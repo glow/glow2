@@ -1,22 +1,21 @@
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		var dom = glow.dom,
-			ElementListProto = dom.ElementList.prototype;
+		var ElementListProto = ElementList.prototype;
 		
 		/**
-			@name glow.dom.ElementList#after
+			@name glow.ElementList#after
 			@function
 			@description Inserts elements after each element.
 				If there is more than one element in the list, the elements
 				will be inserted after the first element and clones will be
 				inserted after each subsequent element.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to insert
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to insert
 				Strings will be treated as HTML strings if they begin with <, else
 				they'll be treated as a CSS selector.
 			
-			@returns {glow.dom.ElementList} Original element list
+			@returns {glow.ElementList} Original element list
 			
 			@example
 				// adds a paragraph after each heading
@@ -25,18 +24,18 @@ Glow.provide({
 		ElementListProto.after = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#before
+			@name glow.ElementList#before
 			@function
 			@description Inserts elements before each element.
 				If there is more than one element in the ElementList, the elements
 				will be inserted before the first element and clones will be
 				inserted before each subsequent element.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to insert
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to insert
 				Strings will be treated as HTML strings if they begin with <, else
 				they'll be treated as a CSS selector.
 			
-			@returns {glow.dom.ElementList} Original element list
+			@returns {glow.ElementList} Original element list
 			
 			@example
 				// adds a div before each paragraph
@@ -45,18 +44,18 @@ Glow.provide({
 		ElementListProto.before = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#append
+			@name glow.ElementList#append
 			@function
 			@description Appends elements to each element in the list
 				If there is more than one element in the ElementList, then the given elements
 				are appended to the first element and clones are appended to the other
 				elements.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to append
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to append
 				Strings will be treated as HTML strings if they begin with <, else
 				they'll be treated as a CSS selector.
 			
-			@returns {glow.dom.ElementList} Original element list
+			@returns {glow.ElementList} Original element list
 			
 			@example
 				// ends every paragraph with '...'
@@ -65,18 +64,18 @@ Glow.provide({
 		ElementListProto.append = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#prepend
+			@name glow.ElementList#prepend
 			@function
 			@description Prepends elements to each element in the list
 				If there is more than one element in the ElementList, then the given elements
 				are prepended to the first element and clones are prepended to the other
 				elements.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to prepend
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to prepend
 				Strings will be treated as HTML strings if they begin with <, else
 				they'll be treated as a CSS selector.
 			
-			@returns {glow.dom.ElementList} Original element list
+			@returns {glow.ElementList} Original element list
 			
 			@example
 				// prepends every paragraph with 'Paragraph: '
@@ -85,17 +84,17 @@ Glow.provide({
 		ElementListProto.prepend = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#appendTo
+			@name glow.ElementList#appendTo
 			@function
 			@description Append to another element(s)
 				If appending to more than one element, the ElementList is appended
 				to the first element and clones are appended to the others.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to append to
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to append to
 				Strings will be treated as HTML strings if they begin with <, else
 				they'll be treated as a CSS selector.
 			
-			@returns {glow.dom.ElementList} The appended elements
+			@returns {glow.ElementList} The appended elements
 				This includes clones if clones were made.
 			
 			@example
@@ -105,17 +104,17 @@ Glow.provide({
 		ElementListProto.appendTo = function(elements) {};
 
 		/**
-			@name glow.dom.ElementList#prependTo
+			@name glow.ElementList#prependTo
 			@function
 			@description Prepend to another element(s)
 				If prepending to more than one element, the ElementList is prepended
 				to the first element and clones are prepended to the others.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to prepend to
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to prepend to
 				Strings will be treated as HTML strings if they begin with <, else
 				they'll be treated as a CSS selector.
 			
-			@returns {glow.dom.ElementList} The prepended elements
+			@returns {glow.ElementList} The prepended elements
 				This includes clones if clones were made.
 			
 			@example
@@ -125,16 +124,16 @@ Glow.provide({
 		ElementListProto.prependTo = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#insertAfter
+			@name glow.ElementList#insertAfter
 			@function
 			@description Insert the ElementList after other elements
 				If inserting after more than one element, the ElementList is inserted
 				after the first element and clones are inserted after the others.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to insert after
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to insert after
 				Strings will be treated as CSS selectors.
 				
-			@returns {glow.dom.ElementList} Inserted elements
+			@returns {glow.ElementList} Inserted elements
 				This includes clones if clones were made.
 			
 			@example
@@ -144,16 +143,16 @@ Glow.provide({
 		ElementListProto.insertAfter = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#insertBefore
+			@name glow.ElementList#insertBefore
 			@function
 			@description Insert the ElementList before other elements
 				If inserting before more than one element, the ElementList is inserted
 				before the first element and clones are inserted before the others.
 				
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to insert before
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to insert before
 				Strings will be treated as CSS selectors.
 				
-			@returns {glow.dom.ElementList} Inserted elements
+			@returns {glow.ElementList} Inserted elements
 				This includes clones if clones were made.
 			
 			@example
@@ -163,13 +162,13 @@ Glow.provide({
 		ElementListProto.insertBefore = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#destroy
+			@name glow.ElementList#destroy
 			@function
 			@description Removes each element from the document
 				The element, attached listeners & attached data will be
 				destroyed to free up memory.
 				
-			@returns {glow.dom.ElementList} An empty ElementList
+			@returns {glow.ElementList} An empty ElementList
 			
 			@example
 				// destroy all links in the document
@@ -178,13 +177,13 @@ Glow.provide({
 		ElementListProto.destroy = function() {};
 		
 		/**
-			@name glow.dom.ElementList#remove
+			@name glow.ElementList#remove
 			@function
 			@description Removes each element from the document
 				If you no longer need the elements, consider using
-				{@link glow.dom.ElementList#destroy destroy}
+				{@link glow.ElementList#destroy destroy}
 				
-			@returns {glow.dom.ElementList} The removed elements
+			@returns {glow.ElementList} The removed elements
 
 			@example
 				// take all the links out of a document
@@ -193,11 +192,11 @@ Glow.provide({
 		ElementListProto.remove = function() {};
 		
 		/**
-			@name glow.dom.ElementList#empty
+			@name glow.ElementList#empty
 			@function
 			@description Removes the elements' contents
 
-			@returns {glow.dom.ElementList} Original elements
+			@returns {glow.ElementList} Original elements
 
 			@example
 				// remove the contents of all textareas
@@ -206,22 +205,22 @@ Glow.provide({
 		ElementListProto.empty = function() {};
 
 		/**
-			@name glow.dom.ElementList#replaceWith
+			@name glow.ElementList#replaceWith
 			@function
 			@description Replace elements with another
 			
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to insert into the document
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to insert into the document
 				If there is more than one element in the ElementList, then the given elements
 				replace the first element, clones are appended to the other	elements.
 				
-			@returns {glow.dom.ElementList} The replaced elements
-				Call {@link glow.dom.ElementList#destroy destroy} on these if you
+			@returns {glow.ElementList} The replaced elements
+				Call {@link glow.ElementList#destroy destroy} on these if you
 				no longer need them
 		*/
 		ElementListProto.replaceWith = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#wrap
+			@name glow.ElementList#wrap
 			@function
 			@description Wraps the given ElementList with the specified element(s).
 				The given ElementList items will always be placed in the first
@@ -229,11 +228,11 @@ Glow.provide({
 				
 				Each item in a given ElementList will be wrapped individually.
 			
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} wrapper Element to use as a wrapper
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} wrapper Element to use as a wrapper
 				Strings will be treated as HTML strings if they begin with <, else
 				they'll be treated as a CSS selector.
 			
-			@returns {glow.dom.ElementList} The ElementList with new wrapper parents
+			@returns {glow.ElementList} The ElementList with new wrapper parents
 				
 			@example
 				// <span id="mySpan">Hello</span>
@@ -249,11 +248,11 @@ Glow.provide({
 		ElementListProto.wrap = function(wrapper) {};
 		
 		/**
-			@name glow.dom.ElementList#unwrap
+			@name glow.ElementList#unwrap
 			@function
 			@description Removes the parent of each item in the list
 			
-			@returns {glow.dom.ElementList} The now unwrapped elements
+			@returns {glow.ElementList} The now unwrapped elements
 			
 			@example
 				// Before: <div><p><span id="mySpan">Hello</span></p></div>
@@ -264,14 +263,14 @@ Glow.provide({
 		ElementListProto.unwrap = function() {};
 		
 		/**
-			@name glow.dom.ElementList#clone
+			@name glow.ElementList#clone
 			@function
 			@description Clones each element in the ElementList
 			
 			@param {Boolean} [elementsOnly=false] Just clone elements?
 				By default, events and data will also be cloned, setting this to true prevents this
 			
-			@returns {glow.dom.ElementList} New ElementList of the clones
+			@returns {glow.ElementList} New ElementList of the clones
 			
 			@example
 				// get a copy of all heading elements
@@ -280,7 +279,7 @@ Glow.provide({
 		ElementListProto.clone = function() {};
 		
 		/**
-			@name glow.dom.ElementList#html
+			@name glow.ElementList#html
 			@function
 			@description Gets / sets HTML content
 				Either gets content of the first element, or sets the content
@@ -290,7 +289,7 @@ Glow.provide({
 				If omitted, the html for the first element in the list is
 				returned.
 			
-			@returns {glow.dom.ElementList | string}
+			@returns {glow.ElementList | string}
 				Returns the original ElementList when setting,
 				or the HTML content when getting.
 				
@@ -305,7 +304,7 @@ Glow.provide({
 		ElementListProto.html = function(html) {};
 		
 		/**
-			@name glow.dom.ElementList#text
+			@name glow.ElementList#text
 			@function
 			@description Gets / set the text content
 				Either gets content of the first element, or sets the content
@@ -315,7 +314,7 @@ Glow.provide({
 				If omitted, the test for the first element in the list is
 				returned.
 			
-			@returns {glow.dom.ElementList | String}
+			@returns {glow.ElementList | String}
 				Returns the original ElementList when setting,
 				or the text content when getting.
 

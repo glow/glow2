@@ -1,11 +1,10 @@
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		var dom = glow.dom,
-			ElementListProto = dom.ElementList.prototype;
+		var ElementListProto = glow.ElementList.prototype;
 		
 		/**
-			@name glow.dom.ElementList#css
+			@name glow.ElementList#css
 			@function
 			@description Get / set a CSS property value
 			
@@ -17,7 +16,7 @@ Glow.provide({
 			
 				If value is omitted, the value for the given property will be returned
 				
-			@returns {glow.dom.NodeList | string} Returns the ElementList when setting value, or the CSS value when getting values.
+			@returns {glow.NodeList | string} Returns the ElementList when setting value, or the CSS value when getting values.
 				CSS values are strings. For instance, "height" will return
 				"25px" for an element 25 pixels high. You can use
 				parseInt to convert these values.
@@ -46,7 +45,7 @@ Glow.provide({
 		ElementListProto.css = function(property, value) {};
 		
 		/**
-			@name glow.dom.ElementList#height
+			@name glow.ElementList#height
 			@function
 			@description Gets / set element height
 				Return value does not include the padding or border of the element in
@@ -58,7 +57,7 @@ Glow.provide({
 			@param {Number} [height] New height in pixels for each element in the list
 				If ommited, the height of the first element is returned
 			
-			@returns {glow.dom.ElementList | number}
+			@returns {glow.ElementList | number}
 				Height of first element, or original ElementList when setting heights.
 			
 			@example
@@ -80,7 +79,7 @@ Glow.provide({
 		ElementListProto.height = function(height) {};
 		
 		/**
-			@name glow.dom.ElementList#width
+			@name glow.ElementList#width
 			@function
 			@description Gets / set element width
 				Return value does not include the padding or border of the element in
@@ -92,7 +91,7 @@ Glow.provide({
 			@param {Number} [width] New width in pixels for each element in the list
 				If ommited, the width of the first element is returned
 			
-			@returns {glow.dom.ElementList | number}
+			@returns {glow.ElementList | number}
 				width of first element, or original ElementList when setting widths.
 			
 			@example
@@ -114,7 +113,7 @@ Glow.provide({
 		ElementListProto.width = function(width) {};
 		
 		/**
-			@name glow.dom.ElementList#scrollLeft
+			@name glow.ElementList#scrollLeft
 			@function
 			@description Gets/sets the number of pixels the element has scrolled horizontally
 				To get/set the scroll position of the window, use this method on
@@ -123,7 +122,7 @@ Glow.provide({
 			@param {Number} [val] New left scroll position
 				Omit this to get the current scroll position
 				
-			@returns {glow.dom.ElementList | number}
+			@returns {glow.ElementList | number}
 				Current scrollLeft value, or ElementList when setting scroll position.
 
 			@example
@@ -143,7 +142,7 @@ Glow.provide({
 		ElementListProto.scrollLeft = function(val) {};
 		
 		/**
-			@name glow.dom.ElementList#scrollTop
+			@name glow.ElementList#scrollTop
 			@function
 			@description Gets/sets the number of pixels the element has scrolled vertically
 				To get/set the scroll position of the window, use this method on
@@ -152,7 +151,7 @@ Glow.provide({
 			@param {Number} [val] New top scroll position
 				Omit this to get the current scroll position
 				
-			@returns {glow.dom.ElementList | number}
+			@returns {glow.ElementList | number}
 				Current scrollTop value, or ElementList when setting scroll position.
 
 			@example
@@ -172,11 +171,11 @@ Glow.provide({
 		ElementListProto.scrollTop = function(val) {};
 		
 		/**
-			@name glow.dom.ElementList#hide
+			@name glow.ElementList#hide
 			@function
 			@description Hides all items in the ElementList.
 			
-			@returns {glow.dom.ElementList}
+			@returns {glow.ElementList}
 			
 			@example
 				// Hides all list items within #myList
@@ -185,11 +184,11 @@ Glow.provide({
 		ElementListProto.hide = function() {};
 		
 		/**
-			@name glow.dom.ElementList#show
+			@name glow.ElementList#show
 			@function
 			@description Shows all hidden items in the ElementList.
 			
-			@returns {glow.dom.ElementList}
+			@returns {glow.ElementList}
 			
 			@example
 				// Show element with ID myDiv
@@ -202,7 +201,7 @@ Glow.provide({
 		ElementListProto.show = function() {};
 
 		/**
-			@name glow.dom.ElementList#offset
+			@name glow.ElementList#offset
 			@function
 			@description Gets the offset from the top left of the document.
 				If the ElementList contains multiple items, the offset of the
@@ -217,7 +216,7 @@ Glow.provide({
 		ElementListProto.offset = function() {};
 		
 		/**
-			@name glow.dom.ElementList#position
+			@name glow.ElementList#position
 			@function
 			@description Get the top & left position of an element relative to its positioned parent
 				This is useful if you want to make a position:static element position:absolute

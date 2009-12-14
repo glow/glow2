@@ -1,16 +1,10 @@
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		/**
-			@name glow.dom
-			@namespace
-			@description Accessing and manipulating the DOM
-		*/
-		var dom = {},
-			ElementListProto;
+		var ElementListProto;
 		
 		/**
-			@name glow.dom.ElementList
+			@name glow.ElementList
 			@constructor
 			@description An array-like collection of DOM Elements
 				It is recommended to create an ElementList using {@link glow},
@@ -19,7 +13,7 @@ Glow.provide({
 				
 			@example
 				// empty ElementList
-				var myElementList = new glow.dom.ElementList();
+				var myElementList = new glow.ElementList();
 
 			@example
 				// using glow to return a ElementList then chaining methods
@@ -27,13 +21,13 @@ Glow.provide({
 			
 			@see <a href="../furtherinfo/creatingelementlists/">Creating ElementLists</a>
 			@see <a href="../furtherinfo/workingwithelementlists/">Working with ElementLists</a>
-			@see {@link glow.dom.XmlElementList XmlElementList} - An XML-specific ElementList
+			@see {@link glow.XmlElementList XmlElementList} - An XML-specific ElementList
 		*/
 		function ElementList() {}
 		ElementListProto = ElementList.prototype;
 		
 		/**
-			@name glow.dom.ElementList#length
+			@name glow.ElementList#length
 			@type Number
 			@description Number of elements in the ElementList
 			@example
@@ -43,12 +37,12 @@ Glow.provide({
 		ElementListProto.length = 0;
 		
 		/**
-			@name glow.dom.ElementList#eq
+			@name glow.ElementList#eq
 			@function
 			@description Compares the ElementList to another
 				Returns true if both ElementLists contain the same items in the same order
 			
-			@param {HTMLElement | HTMLElement[] | glow.dom.ElementList} elementList The ElementList to compare to.
+			@param {HTMLElement | HTMLElement[] | glow.ElementList} elementList The ElementList to compare to.
 				If an HTMLElement or array of HTMLElements is provided, it will
 				be converted into an ElementList
 			
@@ -61,14 +55,14 @@ Glow.provide({
 		ElementListProto.eq = function(elementList) {};
 		
 		/**
-			@name glow.dom.ElementList#push
+			@name glow.ElementList#push
 			@function
 			@description Adds elements to the ElementList
 			
-			@param {string | HTMLElement | HTMLElement[] | glow.dom.ElementList} elements Element(s) to add to the ElementList
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to add to the ElementList
 				Strings will be treated as CSS selectors / HTML strings.
 			
-			@returns {glow.dom.ElementList}
+			@returns {glow.ElementList}
 			
 			@example
 				myElementList.push('<div>Foo</div>').push('h1');
@@ -76,7 +70,7 @@ Glow.provide({
 		ElementListProto.push = function(elements) {};
 		
 		/**
-			@name glow.dom.ElementList#slice
+			@name glow.ElementList#slice
 			@function
 			@description Get a section of an ElementList
 				Operates in the same way as a string / array's slice method
@@ -88,7 +82,7 @@ Glow.provide({
 				By default, this is the end of the list. A negative end specifies
 				a position measured from the end of the list.
 			
-			@returns {glow.dom.ElementList} A new sliced ElementList
+			@returns {glow.ElementList} A new sliced ElementList
 			
 			@example
 			var myElementList = glow("<div></div><p></p>");
@@ -98,7 +92,7 @@ Glow.provide({
 		ElementListProto.slice = function(start, end) {};
 		
 		/**
-			@name glow.dom.ElementList#sort
+			@name glow.ElementList#sort
 			@function
 			@description Sort the elements in the list
 			
@@ -109,7 +103,7 @@ Glow.provide({
 				
 				If none is provided, elements will be sorted in document order
 			
-			@returns {glow.dom.ElementList} A new sorted ElementList
+			@returns {glow.ElementList} A new sorted ElementList
 			
 			@example
 			//get links in alphabetical (well, lexicographical) order
@@ -120,7 +114,7 @@ Glow.provide({
 		ElementListProto.sort = function(func) {};
 		
 		/**
-			@name glow.dom.ElementList#item
+			@name glow.ElementList#item
 			@function
 			@description Get a single item from the list as an ElementList
 				Negative numbers can be used to get items from the end of the
@@ -128,7 +122,7 @@ Glow.provide({
 			
 			@param {number} index The numeric index of the node to return.
 			
-			@returns {glow.dom.ElementList} A new ElementList containing a single item
+			@returns {glow.ElementList} A new ElementList containing a single item
 			
 			@example
 				// get the html from the fourth element
@@ -141,7 +135,7 @@ Glow.provide({
 		ElementListProto.item = function(index) {};
 		
 		/**
-			@name glow.dom.ElementList#each
+			@name glow.ElementList#each
 			@function
 			@description Calls a function for each item in the list.
 			
@@ -153,7 +147,7 @@ Glow.provide({
 				
 				Returning false from this function stops subsequent itterations
 			
-			@returns {glow.dom.ElementList}
+			@returns {glow.ElementList}
 			
 			@example
 				// add "link number: x" to each link, where x is the index of the link
@@ -173,12 +167,12 @@ Glow.provide({
 		ElementListProto.each = function(callback) {};
 		
 		/**
-			@name glow.dom.ElementList#filter
+			@name glow.ElementList#filter
 			@function
 			@description Filter the ElementList
 			 
 			@param {Function|string} test Filter test
-				If a string is provided, it is used in a call to {@link glow.dom.ElementList#is ElementList#is}.
+				If a string is provided, it is used in a call to {@link glow.ElementList#is ElementList#is}.
 				
 				If a function is provided it will be passed a single argument
 				representing the index of the current item in the ElementList.
@@ -186,7 +180,7 @@ Glow.provide({
 				Inside the function 'this' refers to the HTMLElement.
 				Return true to keep the element, or false to remove it.
 			 
-			@returns {glow.dom.ElementList} A new ElementList containing the filtered nodes
+			@returns {glow.ElementList} A new ElementList containing the filtered nodes
 			 
 			@example
 				// return images with a width greater than 320
@@ -202,7 +196,7 @@ Glow.provide({
 
 		
 		/**
-			@name glow.dom.ElementList#is
+			@name glow.ElementList#is
 			@function
 			@description Tests if an element in the list matches CSS selector
 				Returns true if at least one element in the list matches
@@ -220,7 +214,6 @@ Glow.provide({
 		ElementListProto.is = function(selector) {};
 		
 		// export
-		dom.ElementList = ElementList;
-		glow.dom = dom;
+		glow.ElementList = ElementList;
 	}
 });
