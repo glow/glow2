@@ -1,7 +1,7 @@
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		var ElementListProto = ElementList.prototype;
+		var ElementListProto = glow.ElementList.prototype;
 		
 		/**
 			@name glow.ElementList#after
