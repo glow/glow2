@@ -1,15 +1,19 @@
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		var ElementListProto;
+		var ElementListProto, undefined,
+			// vars to aid compression
+			document = window.document;
 		
 		/**
 			@name glow.ElementList
 			@constructor
 			@description An array-like collection of DOM Elements
 				It is recommended to create an ElementList using {@link glow},
-				but you can also use this constructor to create an empty ElementList,
-				or look at elements in another frame.
+				but you can also use this constructor.
+				
+			@param {string | glow.ElementList | HTMLElement | HTMLElement[]} elms Items to populate the ElementList with.
+				This parameter will be passed to {@link glow.ElementList#push}
 				
 			@example
 				// empty ElementList
@@ -23,7 +27,10 @@ Glow.provide({
 			@see <a href="../furtherinfo/workingwithelementlists/">Working with ElementLists</a>
 			@see {@link glow.XmlElementList XmlElementList} - An XML-specific ElementList
 		*/
-		function ElementList() {}
+		function ElementList(elms) {
+			// call push if we've been given elements
+			elms && this.push(elms);
+		}
 		ElementListProto = ElementList.prototype;
 		
 		/**
@@ -35,6 +42,127 @@ Glow.provide({
 				glow('p').length;
 		*/
 		ElementListProto.length = 0;
+		
+		/**
+			@name glow.ElementList#_strToNodes
+			@private
+			@function
+			@description Converts a string to an array of nodes
+			
+			@param {string} str HTML string
+			
+			@returns {Node[]} Array of nodes (including text / comment nodes)
+		*/
+		ElementListProto._strToNodes = (function() {
+			var	tmpDiv = document.createElement("div"),
+				// these wraps are in the format [depth to children, opening html, closing html]
+				tableWrap = [1, '<table>', '</table>'],
+				emptyWrap = [0, '', ''],
+				// webkit won't accept <link> elms to be the only child of an element,
+				// it steals them and hides them in the head for some reason. Using
+				// broken html fixes it for some reason
+				paddingWrap = [1, 'b<div>', '</div>'],
+				trWrap = [3, '<table><tbody><tr>', '</tr></tbody></table>'],
+				wraps = {
+					caption: tableWrap,
+					thead: tableWrap,
+					th: trWrap,
+					colgroup: tableWrap,
+					tbody: tableWrap,
+					tr: [2, '<table><tbody>', '</tbody></table>'],
+					td: trWrap,
+					tfoot: tableWrap,
+					option: [1, '<select>', '</select>'],
+					legend: [1, '<fieldset>', '</fieldset>'],
+					link: paddingWrap,
+					script: paddingWrap,
+					style: paddingWrap
+				};
+			
+			function strToNodes(str) {
+				var r = [],
+					tagName = ( /^\s*<([^\s>]+)/.exec(str) || [] )[1],
+					// This matches str content with potential elements that cannot
+					// be a child of <div>.  elmFilter declared at top of page.
+					wrap = wraps[tagName] || emptyWrap, 
+					nodeDepth = wrap[0],
+					childElm = tmpDiv,
+					rLen = 0;
+				
+				// Create the new element using the node tree contents available in filteredElm.
+				childElm.innerHTML = (wrap[1] + str + wrap[2]);
+				
+				// Strip newElement down to just the required elements' parent
+				while(nodeDepth--) {
+					childElm = childElm.lastChild;
+				}
+				
+				// pull nodes out of child
+				while (childElm.firstChild) {
+					r[rLen++] = childElm.removeChild(childElm.firstChild);
+				}
+				return r;
+			}
+			
+			return strToNodes;
+		})();
+		
+		// takes a collection and returns an array
+		function collectionToArray(collection) {
+			var i   = collection.length,
+				arr = [];
+				
+			while (i--) {
+				arr[i] = collection[i];
+			}
+			
+			return arr;
+		}
+		
+		var arrayPush = Array.prototype.push;
+		
+		/**
+			@name glow.ElementList#push
+			@function
+			@description Adds elements to the ElementList
+			
+			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to add to the ElementList
+				Strings will be treated as CSS selectors / HTML strings.
+			
+			@returns {glow.ElementList}
+			
+			@example
+				myElementList.push('<div>Foo</div>').push('h1');
+		*/
+		ElementListProto.push = function(elements) {
+			if (typeof elements == 'string') {
+				// if the string begins <, treat it as html, otherwise it's a selector
+				if (elements.charAt(0) == '<') {
+					elements = this._strToNodes(elements);
+				} else {
+					elements = glow._sizzle(elements)
+				}
+				arrayPush.apply(this, elements);
+			}
+			else if (elements.nodeType || elements.window) {
+				this[0] = elements;
+				this.length = 1;
+			}
+			else if (elements.length !== undefined) {
+				if (elements.constructor != Array) {
+					// convert array-like objects into an array
+					elements = collectionToArray(elements);
+				}
+				arrayPush.apply(this, elements);
+			}
+			/*!debug*/
+			else {
+				glow.debug.warn('glow.ElementList#push: Ignoring incorrect argument type, failing silently');
+			}
+			/*gubed!*/
+
+			return this;
+		};
 		
 		/**
 			@name glow.ElementList#eq
@@ -53,21 +181,6 @@ Glow.provide({
 			glow('#blah').eq( document.getElementById('blah') );
 		*/
 		ElementListProto.eq = function(elementList) {};
-		
-		/**
-			@name glow.ElementList#push
-			@function
-			@description Adds elements to the ElementList
-			
-			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to add to the ElementList
-				Strings will be treated as CSS selectors / HTML strings.
-			
-			@returns {glow.ElementList}
-			
-			@example
-				myElementList.push('<div>Foo</div>').push('h1');
-		*/
-		ElementListProto.push = function(elements) {};
 		
 		/**
 			@name glow.ElementList#slice
@@ -152,7 +265,7 @@ Glow.provide({
 			@example
 				// add "link number: x" to each link, where x is the index of the link
 				glow("a").each(function(i) {
-					glow(this).append(' link number: ' + i);
+					glow(this).append('<span> link number: ' + i + '</span>');
 				});
 			@example
 				// breaking out of an each loop
