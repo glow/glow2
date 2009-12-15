@@ -3,7 +3,7 @@
 	url = http://github.com/jakearchibald/Woosh.git
 [submodule "test/unit/lib/qunit"]
 	path = test/unit/lib/qunit
-	url = http://github.com/phae/qunit.git
+	url = http://github.com/jquery/qunit.git
 [submodule "src/ElementList/_sizzle/sizzle"]
 	path = src/ElementList/_sizzle/sizzle
 	url = http://github.com/jeresig/sizzle.git
