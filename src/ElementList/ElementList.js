@@ -72,7 +72,7 @@ Glow.provide({
 					tr: [2, '<table><tbody>', '</tbody></table>'],
 					td: trWrap,
 					tfoot: tableWrap,
-					option: [1, '<select>', '</select>'],
+					option: [1, '<select multiple="multiple">', '</select>'],
 					legend: [1, '<fieldset>', '</fieldset>'],
 					link: paddingWrap,
 					script: paddingWrap,
@@ -87,7 +87,9 @@ Glow.provide({
 					wrap = wraps[tagName] || emptyWrap, 
 					nodeDepth = wrap[0],
 					childElm = tmpDiv,
-					rLen = 0;
+					exceptTbody,
+					rLen = 0,
+					firstChild;
 				
 				// Create the new element using the node tree contents available in filteredElm.
 				childElm.innerHTML = (wrap[1] + str + wrap[2]);
@@ -98,9 +100,20 @@ Glow.provide({
 				}
 				
 				// pull nodes out of child
-				while (childElm.firstChild) {
-					r[rLen++] = childElm.removeChild(childElm.firstChild);
+				if (wrap == tableWrap && str.indexOf('<tbody') == -1) {
+					// IE7 (and earlier) sometimes gives us a <tbody> even though we didn't ask for one
+					while (firstChild = childElm.firstChild) {
+						if (firstChild.nodeName != 'TBODY') {
+							r[rLen++] = firstChild;
+						}
+						childElm.removeChild(firstChild);
+					}
+				} else {
+					while (firstChild = childElm.firstChild) {
+						r[rLen++] = childElm.removeChild(firstChild);
+					}
 				}
+				
 				return r;
 			}
 			
@@ -145,8 +158,12 @@ Glow.provide({
 				arrayPush.apply(this, elements);
 			}
 			else if (elements.nodeType || elements.window) {
-				this[0] = elements;
-				this.length = 1;
+				if (this.length) {
+					arrayPush.call(this, elements);
+				} else {
+					this[0] = elements;
+					this.length = 1;
+				}
 			}
 			else if (elements.length !== undefined) {
 				if (elements.constructor != Array) {
