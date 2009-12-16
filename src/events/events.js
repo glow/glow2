@@ -169,10 +169,12 @@ Glow.provide({
 	/**
 	@name glow.events.removeListeners
 	@function
-	@param {Object[]} item  Item to remove events from
-	@decription Returns a list of events attached to the given item(s).
-	widgets.
-	
+	@param {Object[]} item Item to remove events from
+	@param {String} eventName Name of the event to remove
+	@param {Function} callback callback
+	@decription Removes listeners for given object, with the given name with the given thisVal.
+		Glow will call this by default on its own classes like NodeList and
+		widgets.
 	*/
 	
 	glow.events.removeListeners = function (item, eventName, callback) {
@@ -211,9 +213,7 @@ Glow.provide({
 	@function
 	@param {Object[]} item  Item to find events for
 	@decription Removes listeners for given object, with the given name with the given thisVal.
-		   
-	Glow will call this by default on its own classes like NodeList and
-	widgets.
+
 	*/	
 	glow.events.getListeners = function(item){
 		eventListeners;
