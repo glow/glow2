@@ -129,3 +129,47 @@ test('Multiple pushes', 7, function() {
 	equal(myNodeList[1], byId('innerDiv2'), 'Item 1 as expected (pushed innerDiv2 as node)');
 	equal(myNodeList.length, 2, 'Length updated');
 });
+
+module('glow.NodeList#eq');
+
+test('glow.NodeList#eq with NodeList arg', 8, function() {
+	var nodeListOne = new glow.NodeList(),
+		nodeListTwo = new glow.NodeList();
+	
+	equal(typeof nodeListOne.eq, 'function', 'glow.NodeList#eq is function');
+	
+	strictEqual(nodeListOne.eq(nodeListTwo), true, 'Empty nodelists are equal');
+	
+	nodeListOne = new glow.NodeList('#innerDiv1, #innerDiv2');
+	nodeListTwo = new glow.NodeList( byId('innerDiv1') ).push( byId('innerDiv2') );
+	
+	strictEqual(nodeListOne.eq(nodeListTwo), true, 'Populated nodeslists are equal');
+	
+	nodeListOne = new glow.NodeList('#innerDiv1');
+	nodeListTwo = new glow.NodeList( byId('innerDiv1') ).push( byId('innerDiv2') );
+	
+	strictEqual(nodeListOne.eq(nodeListTwo), false, 'NodeLists that share some elements are not equal');
+	strictEqual(nodeListTwo.eq(nodeListOne), false, 'NodeLists that share some elements are not equal (reversed)');
+	
+	nodeListOne = new glow.NodeList('#innerDiv1, #innerEm1');
+	nodeListTwo = new glow.NodeList('#innerDiv1, #innerEm2');
+	
+	strictEqual(nodeListOne.eq(nodeListTwo), false, 'Unequal lists with same length');
+	
+	nodeListOne = new glow.NodeList('#innerDiv1');
+	nodeListTwo = new glow.NodeList();
+	
+	strictEqual(nodeListOne.eq(nodeListTwo), false, 'Populated NodeLists are not equal to empty ones');
+	strictEqual(nodeListTwo.eq(nodeListOne), false, 'Empty NodeLists are not equal to populated ones');
+});
+
+test('glow.NodeList#eq with NodeList arg', 4, function() {
+	var myNodeList = new glow.NodeList('#innerDiv1');
+	
+	strictEqual(myNodeList.eq( byId('innerDiv1') ), true, 'NodeList equals same node');
+	strictEqual(myNodeList.eq( byId('innerDiv2') ), false, 'NodeList not equal to different node');
+	
+	myNodeList = new glow.NodeList('#innerDiv1, #innerDiv2');
+	strictEqual(myNodeList.eq( [byId('innerDiv1'), byId('innerDiv2')] ), true, 'NodeList equals array of equal nodes');
+	strictEqual(myNodeList.eq( [byId('innerDiv1'), byId('innerEm2')] ), false, 'NodeList not equal to array of unequal nodes');
+});

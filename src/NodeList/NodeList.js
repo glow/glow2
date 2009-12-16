@@ -187,17 +187,41 @@ Glow.provide({
 			@description Compares the NodeList to another
 				Returns true if both NodeLists contain the same items in the same order
 			
-			@param {Node | Node[] | glow.NodeList} nodeList The NodeList to compare to.
-				If an Node or array of Nodes is provided, it will
-				be converted into an NodeList
+			@param {string | Node | Node[] | glow.NodeList} nodeList The NodeList to compare to.
+				If the parameter isn't a NodeList, it'll be used to create
+				a new NodeList first.
 			
 			@returns {boolean}
 			
+			@see {@link glow.NodeList#is} for testing if a NodeList item matches a selector
+			
 			@example
-			// the following returns true
-			glow('#blah').eq( document.getElementById('blah') );
+				// the following returns true
+				glow('#blah').eq( document.getElementById('blah') );
 		*/
-		NodeListProto.eq = function(nodeList) {};
+		NodeListProto.eq = function(nodeList) {
+			var len = this.length,
+				i = len;
+			
+			// normalise param to NodeList
+			if ( !(nodeList instanceof NodeList) ) {
+				nodeList = new NodeList(nodeList);
+			}
+			
+			// quickly return false if lengths are different
+			if (len != nodeList.length) {
+				return false;
+			}
+			
+			// loop through and return false on inequality
+			while (i--) {
+				if (this[i] != nodeList[i]) {
+					return false;
+				}
+			}
+			
+			return true;
+		};
 		
 		/**
 			@name glow.NodeList#slice
