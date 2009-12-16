@@ -173,3 +173,30 @@ test('glow.NodeList#eq with NodeList arg', 4, function() {
 	strictEqual(myNodeList.eq( [byId('innerDiv1'), byId('innerDiv2')] ), true, 'NodeList equals array of equal nodes');
 	strictEqual(myNodeList.eq( [byId('innerDiv1'), byId('innerEm2')] ), false, 'NodeList not equal to array of unequal nodes');
 });
+
+module('glow.NodeList#slice');
+
+test('glow.NodeList#slice', 16, function() {
+	// nodelist of 4 elements
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em');
+	
+	equal(typeof myNodeList.slice, 'function', 'glow.NodeList#slice is function');
+	
+	equal(myNodeList.slice(0).constructor, glow.NodeList, 'slice returns NodeList');
+	ok(myNodeList.slice(0) != myNodeList, 'slice returns new NodeList');
+	ok(myNodeList.slice(0).eq(myNodeList), 'slice(0) has no effect');
+	
+	ok(myNodeList.slice(0, 0).eq( new glow.NodeList() ), 'slice(0, 0) returns empty NodeList');
+	ok(myNodeList.slice(1, 1).eq( new glow.NodeList() ), 'slice(1, 1) returns empty NodeList');
+	ok(myNodeList.slice(-1, -1).eq( new glow.NodeList() ), 'slice(-1, -1) returns empty NodeList');
+	
+	ok(myNodeList.slice(1).eq( [ myNodeList[1], myNodeList[2], myNodeList[3] ] ), 'slice(1) correct');
+	ok(myNodeList.slice(2).eq( [ myNodeList[2], myNodeList[3] ] ), 'slice(2) correct');
+	ok(myNodeList.slice(-1).eq( [ myNodeList[3] ] ), 'slice(-1) correct');
+	ok(myNodeList.slice(-2).eq( [ myNodeList[2], myNodeList[3] ] ), 'slice(-2) correct');
+	ok(myNodeList.slice(1, 2).eq( [ myNodeList[1] ] ), 'slice(1, 2) correct');
+	ok(myNodeList.slice(1, 3).eq( [ myNodeList[1], myNodeList[2] ] ), 'slice(1, 3) correct');
+	ok(myNodeList.slice(-3, -1).eq( [ myNodeList[1], myNodeList[2] ] ), 'slice(-3, -1) correct');
+	ok(myNodeList.slice(1, -1).eq( [ myNodeList[1], myNodeList[2] ] ), 'slice(1, -1) correct');
+	ok(myNodeList.slice(-3, 3).eq( [ myNodeList[1], myNodeList[2] ] ), 'slice(-3, 3) correct');
+});

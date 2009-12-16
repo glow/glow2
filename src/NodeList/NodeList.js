@@ -3,7 +3,8 @@ Glow.provide({
 	builder: function(glow) {
 		var NodeListProto, undefined,
 			// vars to aid compression
-			document = window.document;
+			document = window.document,
+			arraySlice = Array.prototype.slice;
 		
 		/**
 			@name glow.NodeList
@@ -122,6 +123,12 @@ Glow.provide({
 		
 		// takes a collection and returns an array
 		function collectionToArray(collection) {
+			// we can optimise here for some browsers
+			// We can't use this trick on IE collections that are com-based, like HTMLCollections
+			// Thankfully they don't have a constructor, so that's how we detect those
+			if (collection.constructor) {
+				return arraySlice.call(collection, 0);
+			}
 			var i   = collection.length,
 				arr = [];
 				
@@ -243,7 +250,9 @@ Glow.provide({
 			myNodeList.slice(1, 2); // selects the paragraph
 			myNodeList.slice(-1); // same thing, selects the paragraph
 		*/
-		NodeListProto.slice = function(start, end) {};
+		NodeListProto.slice = function(/*start, end*/) {
+			return new NodeList( arraySlice.apply(this, arguments) );
+		};
 		
 		/**
 			@name glow.NodeList#sort
