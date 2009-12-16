@@ -4,39 +4,29 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	
-	<title>t Globals</title>
-	
-	<script type="text/javascript">
-		globals1 = {};
-		globals2 = {};
-		
-		for (var p in window) {
-			if (typeof globals1[p] == 'undefined') { globals1[p] = true; }
-		}
-	</script>
+	<title>t Depends</title>
 	
 	<script type="text/javascript">
 		parent.testHelper.addPackage('glow.js', window);
 	</script>
 	
 	<script type="text/javascript">
-		Glow._map = {
+		var mockMap = {
 			versions: ['1.0.0'],
-			data: {
-				'1.0.0': {
-					packages: ['core', 'foo', 'bar'],
-					files: { core: ['core.js'], foo: ['foo.js'], bar: ['bar.js'] }
-				}
+			'1.0.0': {
+				core: ['core.js'],
+				foo:  ['core', 'foo.js'],
+				bar:  ['foo', 'bar.js']
 			}
 		};
 
-		Glow('1.0.0', {base: './mock/'})
-		.load('bar', 'foo')
+		Glow('1.0.0', {base: './mock/', map: mockMap})
+		.load('foo', 'bar')
 		.loaded(function(g) {
 			if (parent.callbacks && parent.callbacks[window.name]) {
 				parent.callbacks[window.name](window, g.order);
 			}
-		})
+		});
 	</script>
 </head>
 <body>

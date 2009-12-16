@@ -37,6 +37,8 @@ if ( empty($args['package']) ) {
 
 list($version, $packageName, $debug, $type) = parsePackageName($args['package']);
 
+if ($version == '@SRC@') { $version = 'src'; }
+
 $files = getFiles($packages, $packageName, $type);
 
 if ( !empty($args['delay']) ) {

@@ -1,1 +1,1 @@
-Glow.complete({packageName: 'widgets', version: '@SRC@'});
+Glow.complete('widgets', '@SRC@');

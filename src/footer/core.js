@@ -1,1 +1,1 @@
-Glow.complete({packageName: 'core', version: '@SRC@'});
+Glow.complete('core', '@SRC@');

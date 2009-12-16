@@ -7,9 +7,8 @@
 	@namespace
  */
 
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) { /*!debug*/glow.debug.log('providing: glow.lang.trim');/*gubed!*/
+Glow.provide(
+	function(glow) {
 		glow.lang = glow.lang || {};
 		
 		/**
@@ -21,13 +20,12 @@ Glow.provide({
 			return str.replace(/^\s*((?:[\S\s]*\S)?)\s*$/, '$1');
 		};
 	}
-});
+);
 
 //-----------------------------------------------------------------
 
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
+Glow.provide(
+	function(glow) {
 		glow.lang = glow.lang || {};
 		
 		/**
@@ -47,14 +45,12 @@ Glow.provide({
 			return r;
 		};
 		
-		
-		
 		glow.lang.apply = function(destination, source) {
-					for (var i in source) {
-						destination[i] = source[i];
-					}
-					return destination;
-				};
+			for (var i in source) {
+				destination[i] = source[i];
+			}
+			return destination;
+		};
 		
 	}
-});
+);

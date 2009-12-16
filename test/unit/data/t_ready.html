@@ -16,19 +16,32 @@
 		window.env = null;
 		
 		Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
+			.load('core')
+			.loaded(function(){
+				window.readyRan.push('zero');
+			})
 			.ready(function(glow) {
 				// dom elements in the body are available when this runs?
 				window.elementFound = document.getElementById('test-element');
-				// core package is available when this runs?
-				window.env = glow.env;
+				
 				// the first callback runs?
 				window.readyRan.push('one');
 			})
 			.ready(function(glow) {
 				// the second callback runs?
 				window.readyRan.push('two');
+				
+				// setting a ready callback after the document is already ready...
+				glow.load('widgets')
+				.loaded(function(){ /*debug*///report('~ pushed three');
+					window.readyRan.push('three');
+				})
+				.ready(function(){ /*debug*///report('~ pushed four');
 					
-				if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }
+					window.readyRan.push('four');
+					
+					if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }
+				});
 			})
 	</script>
 	

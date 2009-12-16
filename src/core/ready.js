@@ -1,7 +1,6 @@
 // start-source: core/ready.js
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
+Glow.provide(
+	function(glow) {
 		var ua = navigator.userAgent.toLowerCase();
 		
 		glow.env = function(){
@@ -30,7 +29,7 @@ Glow.provide({
 			
 		glow._readyBlockers = {};
 	
-		glow.ready = function (f) {
+		glow.ready = function (f) { /*debug*///report('core ready()');
 			if (this.isReady) {
 				f();
 			}
@@ -50,20 +49,18 @@ Glow.provide({
 			}
 		};
 		
-		glow._addReadyBlock = function(name) {
-			if (name in glow._readyBlockers) {
-				throw new Error("Blocker '" + name +"' already exists");
-			}
-			glow._readyBlockers[name] = true;
+		glow._addReadyBlock = function(name) { /*debug*///report('_addReadyBlock('+name+')');
+			if (typeof glow._readyBlockers[name] === 'undefined') { glow._readyBlockers[name] = 0; }
+			glow._readyBlockers[name]++;
 			glow.isReady = false;
-			blockersActive++;
+			blockersActive++; /*debug*///report('  &#187; blockersActive '+blockersActive+'.');
 			return glow;
 		}
 			
-		glow._removeReadyBlock = function(name) {
+		glow._removeReadyBlock = function(name) { /*debug*///report('_removeReadyBlock('+name+')');
 			if (glow._readyBlockers[name]) {
-				glow._readyBlockers[name] = false;
-				blockersActive--;
+				glow._readyBlockers[name]--;
+				blockersActive--;  /*debug*///report('  &#187; blockersActive '+blockersActive+'.');
 				// if we're out of blockers
 				if (!blockersActive) {
 					// call our queue
@@ -102,23 +99,24 @@ Glow.provide({
 			@name bindReady
 			@description Add listener to document to detect when page is ready.
 		 */
-		function bindReady() {
+		function bindReady() { /*debug*///report('bindReady()');
 			//don't do this stuff if the dom is already ready
 			if (glow.isDomReady) { return; }
 			glow._addReadyBlock('glow_domReady'); // wait for dom to be ready
 			
-			function onReady() { /*debug*///console.log('onReady()');
+			function onReady() { /*debug*///report('onReady()');
 				runReadyQueue();
 				glow._removeReadyBlock('glow_domReady');
 			}
 					
 			if (document.readyState == 'complete') { // already here!
+				 /*debug*///report('already complete');
 				onReady();
 			}
 			else if (document.attachEvent) { // like IE
 				// not an iframe...
 				if (document.documentElement.doScroll && window == top) {
-					(function() {
+					(function() {  /*debug*///report('doScroll');
 						try {
 							document.documentElement.doScroll('left');
 						}
@@ -135,7 +133,7 @@ Glow.provide({
 					// an iframe...
 					document.attachEvent(
 						'onreadystatechange',
-						function() {
+						function() { /*debug*///report('onreadystatechange');
 							if (document.readyState == 'complete') {
 								document.detachEvent('onreadystatechange', arguments.callee);
 								onReady();
@@ -144,8 +142,8 @@ Glow.provide({
 					);
 				}
 			}
-			else if (glow.env.webkit < 525.13 && document.readyState) { // like pre Safari 3.1
-				(function() {
+			else if (document.readyState) { // like pre Safari
+				(function() { /*debug*///report('loaded|complete');
 					if ( /loaded|complete/.test(document.readyState) ) {
 						onReady();
 					}
@@ -157,7 +155,7 @@ Glow.provide({
 			else if (document.addEventListener) { // like Mozilla, Opera and recent webkit
 				document.addEventListener( 
 					'DOMContentLoaded',
-					function(){
+					function(){ /*debug*///report('glow DOMContentLoaded');
 						document.removeEventListener('DOMContentLoaded', arguments.callee, false);
 						onReady();
 					},
@@ -185,5 +183,5 @@ Glow.provide({
 		
 		bindReady();
 	}
-});
+);
 // end-source: core/ready.js
