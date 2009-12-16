@@ -212,11 +212,24 @@ Glow.provide({
 	@name glow.events.getListeners
 	@function
 	@param {Object[]} item  Item to find events for
-	@decription Removes listeners for given object, with the given name with the given thisVal.
+	@decription Returns a list of listeners attached for the given item.
 
 	*/	
 	glow.events.getListeners = function(item){
-		eventListeners;
+		for(var i = 0, len = item.length; i < len; i++){
+			var objIdent = item[i][psuedoPrivateEventKey];
+			if(!objIdent){
+					console.log("this far");
+					return false;
+			}
+			else{
+					// todo: need to return listeners in a sensible format
+					return eventListeners[objIdent];
+					
+			}
+		}
+
+	
 		return false;
 	};
 	

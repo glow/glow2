@@ -266,7 +266,7 @@
 			});
 		
 		
-		test('event reporting', function() {
+		test('Event reporting', function() {
 			expect(3);
 				
 				var myObj9 = {};
@@ -279,10 +279,10 @@
 					callback
 				);
 				ok(glow.events.hasListener([myObj9], 'testClick') == true, "hasListener returns true that TestEvent has given event attached" );
-				ok(glow.events.hasListener([myObj9], 'nonExistentEvent') == false, 'hasListener returns false when checking for an event that is not attached');
+				ok(glow.events.hasListener([myObj9], 'notAnEvent') == false, 'hasListener returns false when checking for an event that is not attached');
 				
 				
-				ok(glow.events.getListeners([myObj9], 'testClick') == {}, 'getListeners returns the correct list of attached listeners for a given item');
+				ok(glow.events.getListeners([myObj9]), 'getListeners returns the correct list of attached listeners for a given item');
 				
 			});
 		
