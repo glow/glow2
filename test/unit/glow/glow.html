@@ -46,7 +46,6 @@
 
 	</script>
 	
-	
 	<script type="text/javascript">
 		testHelper = {
 			getVersion: function() {
@@ -89,6 +88,7 @@
 				document.body.appendChild(iframe);
 				
 				frames[frames.length-1].name = iframe.name = iframe.id;
+				frames[frames.length-1].report = report;
 				
 				if (callback) {
 					if (!window.callbacks) { window.callbacks = {}; }					
@@ -106,6 +106,32 @@
 	</script>
 	
 	<script type="text/javascript">
+		// cross-browser debugging console
+		function report(msg) {
+			if (0 && window.console && console.log) {
+				console.log(msg);
+				return;
+			}
+			
+			if (!report.log) { report.log = []; }
+			report.log.push(msg);
+			if (!report.w) {
+				report.w = window.open('', 'report', 'width=350,height=250,menubar=0,toolbar=1,status=0,scrollbars=1,resizable=1');
+			}
+			
+			if (report.w) {
+				report.w.document.writeln(
+					'<html><head><title>Console<\/title><\/head>'
+					+ '<body style="font: 11px monaco"><pre><div>'
+					+ report.log.join('<\/div><div>')
+					+ '<\/div><\/pre><\/body><\/html>'
+				)
+				report.w.document.close();
+			}
+		}
+	</script>
+	
+	<script type="text/javascript">
 		testHelper.addPackage('glow.js');
 	</script>
 	
@@ -113,36 +139,31 @@
 		module('Glow');
 		
 		test('resolveVersion', function() {
-			expect(4);
+			expect(5);
 			
-			// setup
-			//var originalVersions = Glow.versions; // TODO keep files too
-			
-			Glow._map = {
-				versions: ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0'],
-				data: {
-					'2.0.0 rc-1': {
-						'packages': ['core'],
-						'files': { 'core': ['core.js'] }
-					}
+			var testMap = {
+				versions: ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0', '@SRC@'],
+				'2.0.0 rc-1': {
+					'core': ['core.js']
 				}
 			};
-		
-			var glow = Glow('2');
+			
+			var glow = Glow('2', {map: testMap});
 		
 				ok( (glow !== undefined), 'glow is defined.' );
 				equals(glow.version, '2.1.0', 'glow.version is set to the latest minor+bugfix version.');
 			
-			glow = Glow('2.0');
+			glow = Glow('2.0', {map: testMap});
 			
 				equals(glow.version, '2.0.1', 'glow.version is set to the latest bugfix version.');
 			
-			glow = Glow('2.1.0 rc-1');
+			glow = Glow('2.1.0 rc-1', {map: testMap});
 			
 				equals(glow.version, '2.1.0 rc-1', 'glow.version is set to the latest exact version.');
 			
-			// tear down
-			//Glow.versions = originalVersions;
+			glow = Glow('@SRC@', {map: testMap});
+			
+				equals(glow.version, '@SRC@', 'glow.version is set to the src directory when given a placeholder.');
 		});
 		
 		test('globals', function() {
@@ -152,14 +173,14 @@
 			testHelper.addFrame('../data/t_globals.html', checkGlobals);
 			
 			function checkGlobals(frame, diff) {
-				equals( diff.length, 1, 'Glow adds 1 new global variable: ' + diff.join(',') );
-				ok( diff[0], 'Glow', 'The only new global variable is named "Glow".' );
+				equals( diff.length, 1, 'Glow adds 1 new global variable: [' + diff.join(',') + '].length' );
+				equals( diff[0], 'Glow', 'The only new global variable is named "Glow".' );
 
 				start();
 			}
 		});
 		
-		test('tags', function() {
+		test('commando', function() {
 			expect(3);
 			
 			stop(3000);
@@ -176,28 +197,24 @@
 		});
 			
 		test('provide', function() {
-			expect(6);
+			expect(4);
 			
 			stop(3000);
 			testHelper.addFrame('../data/t_provide.html', function(frame) {
 				var v = testHelper.getVersion();
-				with (frame) {
-					ok( (Glow.instances[v] !== undefined), 'reference to src glow instance is defined.' );
-					ok( (Glow.instances[v].lang !== undefined), 'namespace lang is defined there.' );
-					ok( (Glow.instances[v].lang.trim !== undefined), 'method lang.trim is defined there.' );
-					ok( (Glow.instances[v].lang.toArray !== undefined), 'method lang.toArray is defined there.' );
-					
-					ok( (glow.lang !== undefined), 'my instance of glow has the module defined.' );
-					
-					var trimmed = glow.lang.trim('  Hello World  ');
-					equals( trimmed, 'Hello World', 'my instance of glow has module methods that can be called.' );
-				}
+				var glow = frame.Glow(v);
+				
+				ok( (glow !== undefined), 'reference to src glow instance is defined.' );
+				ok( (glow.lang !== undefined), 'namespace lang is defined there.' );
+				ok( (glow.lang.trim !== undefined), 'method lang.trim is defined there.' );
+				ok( (glow.lang.toArray !== undefined), 'method lang.toArray is defined there.' );
+				
 				start();
 			});			
 		});
 		
 		test('load()', function() {
-			expect(8);
+			expect(7);
 			
 			stop(4000);
 			var frameId = testHelper.addFrame('../data/t_load.html', checkLoad);
@@ -209,18 +226,16 @@
 					});
 					
 					glow.loaded(function(g) {
-						ok( true, 'loaded callback is invoked.' );
+						ok( true, 'second loaded callback is invoked.' );
 						ok( g, 'loaded callback receives a glow argument.' );
 						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
 						ok( g.widgets, 'loaded callback receives a glow with widgets package provided.' );
 					
-						g.load().loaded(function(g) {
-							ok( true, 'second loaded callback is invoked.' );
-							ok( g.lang, 'second loaded callback receives a glow argument which has been populated.' );
-							
-							// count how many script tags were added for core (should be 1)
-							var coreScriptTags = testHelper.getScriptTagsBySrc('/core.js', frame);
-							equals(coreScriptTags.length, 1, 'a script tag with the correct src is injected by load(), but only once.' );
+						g
+						.load('core')
+						.loaded(function(g) {
+							ok( true, 'loaded callback after load() is invoked.' );
+							ok( g.lang, 'receives a glow argument which has been populated.' );
 						});
 						start();
 					});
@@ -258,16 +273,19 @@
 		});
 		
 		test('ready', function() {
-			expect(4);
+			expect(6);
 			
 			stop(3000);
 			var frameId = testHelper.addFrame('../data/t_ready.html', checkReady);
 			
 			function checkReady(frame) {
 				ok(frame.elementFound, 'dom elements are available in ready callback.');
-				ok(frame.env, 'core package is available in ready callback.');
-				equals( frame.readyRan[0], 'one', 'ready callback is invoked once.' );
-				equals( frame.readyRan[1], 'two', 'ready callback is invoked twice.' );
+				
+				equals( frame.readyRan[0], 'zero', 'loaded callback is invoked first.' );
+				equals( frame.readyRan[1], 'one', 'ready callback is invoked once.' );
+				equals( frame.readyRan[2], 'two', 'ready callback is invoked twice.' );
+				equals( frame.readyRan[3], 'three', 'after ready, loaded callback is invoked first.' );
+				equals( frame.readyRan[4], 'four', 'after ready, another ready callback is invoked second.' );
 				start();
 			}
 		});
