@@ -1,27 +1,6 @@
 // start-source: core/ready.js
 Glow.provide(
 	function(glow) {
-		var ua = navigator.userAgent.toLowerCase();
-		
-		glow.env = function(){
-			var nanArray = [0, NaN],
-				opera = (/opera[\s\/]([\w\.]+)/.exec(ua) || nanArray)[1],
-				ie = opera ? NaN : (/msie ([\w\.]+)/.exec(ua) || nanArray)[1],
-				gecko = (/rv:([\w\.]+).*gecko\//.exec(ua) || nanArray)[1],
-				webkit = (/applewebkit\/([\w\.]+)/.exec(ua) || nanArray)[1],
-				khtml = (/khtml\/([\w\.]+)/.exec(ua) || nanArray)[1];
-
-			return {
-				gecko: parseFloat(gecko),
-				ie: parseFloat(ie),
-				opera: parseFloat(opera),
-				webkit: parseFloat(webkit),
-				khtml: parseFloat(khtml),
-				version: ie || gecko || webkit || opera || khtml,
-				standardsMode : document.compatMode != 'BackCompat' && (!ie || ie >= 6)
-			}
-		}();
-			
 		var readyQueue = [],
 			domReadyQueue = [],
 			blockersActive = 0,
