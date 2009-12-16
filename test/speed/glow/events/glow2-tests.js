@@ -44,5 +44,12 @@ woosh.addTests('glow2-src', {
 	
 		obj.on('test', testListener);
 		obj.detach('test', testListener);
+	}),
+	'Checking for a listener': new woosh.Test(10000, function() {
+		var obj = new MyObj();
+		function testListener() {}
+		obj.on('test', testListener);
+		glow.events.hasListener([obj],'test');	
+		
 	})
 });

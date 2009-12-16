@@ -47,15 +47,6 @@ Glow.provide({
 			eventsOnObject,
 			currentListeners;
 	
-		/*!debug*/
-		if (! attachTo) { throw new Error('no attachTo parameter passed to addListener'); }
-		if (! name) { throw new Error('no name parameter passed to addListener'); }
-		if (! callback) { throw new Error('no callback parameter passed to addListener'); }
-		if (! thisVal) { throw new Error('no thisVal parameter passed to addListener'); }
-		/*gubed!*/
-			
-			
-
 		//attach the event for each element, return an array of listener ids
 		while (i--) {
 			objIdent = attachTo[i][psuedoPrivateEventKey];
@@ -94,12 +85,6 @@ Glow.provide({
 	*/
 		
 	glow.events.fire = function (items, eventName, event) {
-		/*!debug*/
-		if (! items) throw new Error('glow.events.fire: required parameter items not passed (items: ' + items + ')');
-		if (! eventName) throw new Error('glow.events.fire: required parameter name not passed (name: ' + name + ')');
-		if (! event) throw new Error('glow.events.fire: required parameter event not passed (event: ' + event + ')');	
-		/*gubed!*/
-			
 		if (! event) {
 			event = new glow.events.Event();
 		}
@@ -121,10 +106,6 @@ Glow.provide({
 	 * */
 	
 	function callListeners(item, eventName, event) {		
-		/*!debug*/			
-		if (! item) throw new Error('glow.events.fire: required parameter item not passed (item: ' + item + ')');		
-		/*gubed!*/		
-			
 		var objIdent = item[psuedoPrivateEventKey],
 			listenersForEvent,
 			returnVal;			
@@ -171,35 +152,29 @@ Glow.provide({
 	*/
 	
 	glow.events.removeAllListeners = function (items) {
-			/*!debug*/			
-			if (! items) throw new Error('glow.events.removeListeners: required parameter items not passed (items: ' + items + ')');
-			/*gubed!*/
-			
-
-			for(var i = 0, len = items.length; i < len; i++){
-				var objIdent = items[i][psuedoPrivateEventKey];
-				if(!objIdent){
-						return false;
-				}
-				else{
-						delete ( eventListeners[objIdent] );
-				}
+		for(var i = 0, len = items.length; i < len; i++){
+			var objIdent = items[i][psuedoPrivateEventKey];
+			if(!objIdent){
+					return false;
 			}
+			else{
+					delete ( eventListeners[objIdent] );
+			}
+		}
 
-			return true;
-		};
+		return true;
+	};
 
 
 	/**
 	@name glow.events.removeListeners
 	@function
-	@param {Object[]} item  Item to remove events from
-	@param {String} eventName  Name of the event to remove
-	@param {Function} callback  callback
+	@param {Object[]} item Item to remove events from
+	@param {String} eventName Name of the event to remove
+	@param {Function} callback callback
 	@decription Removes listeners for given object, with the given name with the given thisVal.
-		   
-	Glow will call this by default on its own classes like NodeList and
-	widgets.
+		Glow will call this by default on its own classes like NodeList and
+		widgets.
 	*/
 	
 	glow.events.removeListeners = function (item, eventName, callback) {
@@ -232,7 +207,66 @@ Glow.provide({
 		
 		return true;			
 	};
+	
+	/**
+	@name glow.events.getListeners
+	@function
+	@param {Object[]} item  Item to find events for
+	@decription Returns a list of listeners attached for the given item.
+
+	*/	
+	glow.events.getListeners = function(item){
+		for(var i = 0, len = item.length; i < len; i++){
+			var objIdent = item[i][psuedoPrivateEventKey];
+			if(!objIdent){
+					console.log("this far");
+					return false;
+			}
+			else{
+					// todo: need to return listeners in a sensible format
+					return eventListeners[objIdent];
+					
+			}
+		}
+
+	
+		return false;
+	};
+	
+	/**
+	@name glow.events.hasListener
+	@function
+	@param {Object[]} item  Item to find events for
+	@param {String}   eventName  Name of the event to match
+	@decription Returns true if an event is found for the item supplied
+	
+	*/
+	
+	glow.events.hasListener = function (item, eventName) {
+		for(var i = 0, len = item.length; i < len; i++){	
+			var objIdent = item[i][psuedoPrivateEventKey],
+				listenersForEvent;
+				
+			if(!objIdent){
+				return false;
+			}
+			
+			if(!eventListeners[objIdent]){
+				return false;
+			}
 		
+			listenersForEvent = eventListeners[objIdent][eventName];
+			if(!listenersForEvent){
+				return false;
+			}
+			else{
+				return true;							
+			}					
+		}
+		
+		return false;			
+	};
+	
 	/**
 	@name glow.events.Target
 	@class
