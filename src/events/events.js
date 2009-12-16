@@ -245,15 +245,10 @@ Glow.provide({
 			listenersForEvent = eventListeners[objIdent][eventName];
 			if(!listenersForEvent){
 				return false;
-			}			
-							
-			for(var i = 0, len = listenersForEvent.length; i < len; i++){						
-	
-					return true;
-
-		
 			}
-					
+			else{
+				return true;							
+			}					
 		}
 		
 		return false;			
