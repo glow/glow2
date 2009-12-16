@@ -1,50 +1,50 @@
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		var ElementListProto, undefined,
+		var NodeListProto, undefined,
 			// vars to aid compression
 			document = window.document;
 		
 		/**
-			@name glow.ElementList
+			@name glow.NodeList
 			@constructor
-			@description An array-like collection of DOM Elements
-				It is recommended to create an ElementList using {@link glow},
+			@description An array-like collection of DOM Nodes
+				It is recommended to create an NodeList using {@link glow},
 				but you can also use this constructor.
 				
-			@param {string | glow.ElementList | HTMLElement | HTMLElement[]} elms Items to populate the ElementList with.
-				This parameter will be passed to {@link glow.ElementList#push}
+			@param {string | glow.NodeList | Node | Node[]} contents Items to populate the NodeList with.
+				This parameter will be passed to {@link glow.NodeList#push}
 				
 			@example
-				// empty ElementList
-				var myElementList = new glow.ElementList();
+				// empty NodeList
+				var myNodeList = new glow.NodeList();
 
 			@example
-				// using glow to return a ElementList then chaining methods
+				// using glow to return a NodeList then chaining methods
 				glow("p").addClass("eg").append("<b>Hello!</b>");
 			
-			@see <a href="../furtherinfo/creatingelementlists/">Creating ElementLists</a>
-			@see <a href="../furtherinfo/workingwithelementlists/">Working with ElementLists</a>
-			@see {@link glow.XmlElementList XmlElementList} - An XML-specific ElementList
+			@see <a href="../furtherinfo/creatingnodelists/">Creating NodeLists</a>
+			@see <a href="../furtherinfo/workingwithnodelists/">Working with NodeLists</a>
+			@see {@link glow.XmlNodeList XmlNodeList} - An XML-specific NodeList
 		*/
-		function ElementList(elms) {
-			// call push if we've been given elements
-			elms && this.push(elms);
+		function NodeList(contents) {
+			// call push if we've been given stuff to add
+			contents && this.push(contents);
 		}
-		ElementListProto = ElementList.prototype;
+		NodeListProto = NodeList.prototype;
 		
 		/**
-			@name glow.ElementList#length
+			@name glow.NodeList#length
 			@type Number
-			@description Number of elements in the ElementList
+			@description Number of nodes in the NodeList
 			@example
 				// get the number of paragraphs on the page
 				glow('p').length;
 		*/
-		ElementListProto.length = 0;
+		NodeListProto.length = 0;
 		
 		/**
-			@name glow.ElementList#_strToNodes
+			@name glow.NodeList#_strToNodes
 			@private
 			@function
 			@description Converts a string to an array of nodes
@@ -53,7 +53,7 @@ Glow.provide({
 			
 			@returns {Node[]} Array of nodes (including text / comment nodes)
 		*/
-		ElementListProto._strToNodes = (function() {
+		NodeListProto._strToNodes = (function() {
 			var	tmpDiv = document.createElement("div"),
 				// these wraps are in the format [depth to children, opening html, closing html]
 				tableWrap = [1, '<table>', '</table>'],
@@ -135,46 +135,46 @@ Glow.provide({
 		var arrayPush = Array.prototype.push;
 		
 		/**
-			@name glow.ElementList#push
+			@name glow.NodeList#push
 			@function
-			@description Adds elements to the ElementList
+			@description Adds nodes to the NodeList
 			
-			@param {string | HTMLElement | HTMLElement[] | glow.ElementList} elements Element(s) to add to the ElementList
+			@param {string | Node | Node[] | glow.NodeList} nodes Node(s) to add to the NodeList
 				Strings will be treated as CSS selectors / HTML strings.
 			
-			@returns {glow.ElementList}
+			@returns {glow.NodeList}
 			
 			@example
-				myElementList.push('<div>Foo</div>').push('h1');
+				myNodeList.push('<div>Foo</div>').push('h1');
 		*/
-		ElementListProto.push = function(elements) {
-			if (typeof elements == 'string') {
+		NodeListProto.push = function(nodes) {
+			if (typeof nodes == 'string') {
 				// if the string begins <, treat it as html, otherwise it's a selector
-				if (elements.charAt(0) == '<') {
-					elements = this._strToNodes(elements);
+				if (nodes.charAt(0) == '<') {
+					nodes = this._strToNodes(nodes);
 				} else {
-					elements = glow._sizzle(elements)
+					nodes = glow._sizzle(nodes)
 				}
-				arrayPush.apply(this, elements);
+				arrayPush.apply(this, nodes);
 			}
-			else if (elements.nodeType || elements.window) {
+			else if (nodes.nodeType || nodes.window) {
 				if (this.length) {
-					arrayPush.call(this, elements);
+					arrayPush.call(this, nodes);
 				} else {
-					this[0] = elements;
+					this[0] = nodes;
 					this.length = 1;
 				}
 			}
-			else if (elements.length !== undefined) {
-				if (elements.constructor != Array) {
+			else if (nodes.length !== undefined) {
+				if (nodes.constructor != Array) {
 					// convert array-like objects into an array
-					elements = collectionToArray(elements);
+					nodes = collectionToArray(nodes);
 				}
-				arrayPush.apply(this, elements);
+				arrayPush.apply(this, nodes);
 			}
 			/*!debug*/
 			else {
-				glow.debug.warn('glow.ElementList#push: Ignoring incorrect argument type, failing silently');
+				glow.debug.warn('glow.NodeList#push: Ignoring incorrect argument type, failing silently');
 			}
 			/*gubed!*/
 
@@ -182,14 +182,14 @@ Glow.provide({
 		};
 		
 		/**
-			@name glow.ElementList#eq
+			@name glow.NodeList#eq
 			@function
-			@description Compares the ElementList to another
-				Returns true if both ElementLists contain the same items in the same order
+			@description Compares the NodeList to another
+				Returns true if both NodeLists contain the same items in the same order
 			
-			@param {HTMLElement | HTMLElement[] | glow.ElementList} elementList The ElementList to compare to.
-				If an HTMLElement or array of HTMLElements is provided, it will
-				be converted into an ElementList
+			@param {Node | Node[] | glow.NodeList} nodeList The NodeList to compare to.
+				If an Node or array of Nodes is provided, it will
+				be converted into an NodeList
 			
 			@returns {boolean}
 			
@@ -197,12 +197,12 @@ Glow.provide({
 			// the following returns true
 			glow('#blah').eq( document.getElementById('blah') );
 		*/
-		ElementListProto.eq = function(elementList) {};
+		NodeListProto.eq = function(nodeList) {};
 		
 		/**
-			@name glow.ElementList#slice
+			@name glow.NodeList#slice
 			@function
-			@description Get a section of an ElementList
+			@description Get a section of an NodeList
 				Operates in the same way as a string / array's slice method
 			
 			@param {number} start Start index
@@ -212,17 +212,17 @@ Glow.provide({
 				By default, this is the end of the list. A negative end specifies
 				a position measured from the end of the list.
 			
-			@returns {glow.ElementList} A new sliced ElementList
+			@returns {glow.NodeList} A new sliced NodeList
 			
 			@example
-			var myElementList = glow("<div></div><p></p>");
-			myElementList.slice(1, 2); // selects the paragraph
-			myElementList.slice(-1); // same thing, selects the paragraph
+			var myNodeList = glow("<div></div><p></p>");
+			myNodeList.slice(1, 2); // selects the paragraph
+			myNodeList.slice(-1); // same thing, selects the paragraph
 		*/
-		ElementListProto.slice = function(start, end) {};
+		NodeListProto.slice = function(start, end) {};
 		
 		/**
-			@name glow.ElementList#sort
+			@name glow.NodeList#sort
 			@function
 			@description Sort the elements in the list
 			
@@ -233,7 +233,7 @@ Glow.provide({
 				
 				If none is provided, elements will be sorted in document order
 			
-			@returns {glow.ElementList} A new sorted ElementList
+			@returns {glow.NodeList} A new sorted NodeList
 			
 			@example
 			//get links in alphabetical (well, lexicographical) order
@@ -241,43 +241,43 @@ Glow.provide({
 				return glow(elementA).text() < glow(elementB).text() ? -1 : 1;
 			})
 		*/
-		ElementListProto.sort = function(func) {};
+		NodeListProto.sort = function(func) {};
 		
 		/**
-			@name glow.ElementList#item
+			@name glow.NodeList#item
 			@function
-			@description Get a single item from the list as an ElementList
+			@description Get a single item from the list as an NodeList
 				Negative numbers can be used to get items from the end of the
 				list.
 			
 			@param {number} index The numeric index of the node to return.
 			
-			@returns {glow.ElementList} A new ElementList containing a single item
+			@returns {glow.NodeList} A new NodeList containing a single item
 			
 			@example
 				// get the html from the fourth element
-				myElementList.item(3).html();
+				myNodeList.item(3).html();
 				
 			@example
 				// add a class name to the last item
-				myElementList.item(-1).addClass('last');
+				myNodeList.item(-1).addClass('last');
 		*/
-		ElementListProto.item = function(index) {};
+		NodeListProto.item = function(index) {};
 		
 		/**
-			@name glow.ElementList#each
+			@name glow.NodeList#each
 			@function
 			@description Calls a function for each item in the list.
 			
 			@param {Function} callback The function to run for each node.
 				The function will be passed a single argument representing
-				the index of the current item in the ElementList.
+				the index of the current item in the NodeList.
 				
-				Inside the function 'this' refers to the HTMLElement.
+				Inside the function 'this' refers to the Node.
 				
 				Returning false from this function stops subsequent itterations
 			
-			@returns {glow.ElementList}
+			@returns {glow.NodeList}
 			
 			@example
 				// add "link number: x" to each link, where x is the index of the link
@@ -294,23 +294,23 @@ Glow.provide({
 					}
 				});
 		*/
-		ElementListProto.each = function(callback) {};
+		NodeListProto.each = function(callback) {};
 		
 		/**
-			@name glow.ElementList#filter
+			@name glow.NodeList#filter
 			@function
-			@description Filter the ElementList
+			@description Filter the NodeList
 			 
 			@param {Function|string} test Filter test
-				If a string is provided, it is used in a call to {@link glow.ElementList#is ElementList#is}.
+				If a string is provided, it is used in a call to {@link glow.NodeList#is NodeList#is}.
 				
 				If a function is provided it will be passed a single argument
-				representing the index of the current item in the ElementList.
+				representing the index of the current item in the NodeList.
 				
-				Inside the function 'this' refers to the HTMLElement.
+				Inside the function 'this' refers to the Node.
 				Return true to keep the element, or false to remove it.
 			 
-			@returns {glow.ElementList} A new ElementList containing the filtered nodes
+			@returns {glow.NodeList} A new NodeList containing the filtered nodes
 			 
 			@example
 				// return images with a width greater than 320
@@ -320,13 +320,13 @@ Glow.provide({
 			
 			@example
 				// Get items that don't have an alt attribute
-				myElementList.filter(':not([href])');
+				myNodeList.filter(':not([href])');
 		*/
-		ElementListProto.filter = function(test) {};
+		NodeListProto.filter = function(test) {};
 
 		
 		/**
-			@name glow.ElementList#is
+			@name glow.NodeList#is
 			@function
 			@description Tests if an element in the list matches CSS selector
 				Returns true if at least one element in the list matches
@@ -337,13 +337,13 @@ Glow.provide({
 			@returns {boolean}
 			
 			@example
-				if ( myElementList.is(':visible') ) {
+				if ( myNodeList.is(':visible') ) {
 					// ...
 				}
 		*/
-		ElementListProto.is = function(selector) {};
+		NodeListProto.is = function(selector) {};
 		
 		// export
-		glow.ElementList = ElementList;
+		glow.NodeList = NodeList;
 	}
 });

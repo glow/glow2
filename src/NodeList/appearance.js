@@ -1,10 +1,10 @@
 Glow.provide({
 	version: '@SRC@',
 	builder: function(glow) {
-		var ElementListProto = glow.ElementList.prototype;
+		var NodeListProto = glow.NodeList.prototype;
 		
 		/**
-			@name glow.ElementList#css
+			@name glow.NodeList#css
 			@function
 			@description Get / set a CSS property value
 			
@@ -16,7 +16,7 @@ Glow.provide({
 			
 				If value is omitted, the value for the given property will be returned
 				
-			@returns {glow.NodeList | string} Returns the ElementList when setting value, or the CSS value when getting values.
+			@returns {glow.NodeList | string} Returns the NodeList when setting value, or the CSS value when getting values.
 				CSS values are strings. For instance, "height" will return
 				"25px" for an element 25 pixels high. You can use
 				parseInt to convert these values.
@@ -42,10 +42,10 @@ Glow.provide({
 					'color'		 : '#00cc99'
 				});
 		*/
-		ElementListProto.css = function(property, value) {};
+		NodeListProto.css = function(property, value) {};
 		
 		/**
-			@name glow.ElementList#height
+			@name glow.NodeList#height
 			@function
 			@description Gets / set element height
 				Return value does not include the padding or border of the element in
@@ -57,8 +57,8 @@ Glow.provide({
 			@param {Number} [height] New height in pixels for each element in the list
 				If ommited, the height of the first element is returned
 			
-			@returns {glow.ElementList | number}
-				Height of first element, or original ElementList when setting heights.
+			@returns {glow.NodeList | number}
+				Height of first element, or original NodeList when setting heights.
 			
 			@example
 				// get the height of #myDiv
@@ -76,10 +76,10 @@ Glow.provide({
 				// get the height of the window
 				glow(window).height();
 		*/
-		ElementListProto.height = function(height) {};
+		NodeListProto.height = function(height) {};
 		
 		/**
-			@name glow.ElementList#width
+			@name glow.NodeList#width
 			@function
 			@description Gets / set element width
 				Return value does not include the padding or border of the element in
@@ -91,8 +91,8 @@ Glow.provide({
 			@param {Number} [width] New width in pixels for each element in the list
 				If ommited, the width of the first element is returned
 			
-			@returns {glow.ElementList | number}
-				width of first element, or original ElementList when setting widths.
+			@returns {glow.NodeList | number}
+				width of first element, or original NodeList when setting widths.
 			
 			@example
 				// get the width of #myDiv
@@ -110,10 +110,10 @@ Glow.provide({
 				// get the width of the window
 				glow(window).width();
 		*/
-		ElementListProto.width = function(width) {};
+		NodeListProto.width = function(width) {};
 		
 		/**
-			@name glow.ElementList#scrollLeft
+			@name glow.NodeList#scrollLeft
 			@function
 			@description Gets/sets the number of pixels the element has scrolled horizontally
 				To get/set the scroll position of the window, use this method on
@@ -122,8 +122,8 @@ Glow.provide({
 			@param {Number} [val] New left scroll position
 				Omit this to get the current scroll position
 				
-			@returns {glow.ElementList | number}
-				Current scrollLeft value, or ElementList when setting scroll position.
+			@returns {glow.NodeList | number}
+				Current scrollLeft value, or NodeList when setting scroll position.
 
 			@example
 				// get the scroll left value of #myDiv
@@ -139,10 +139,10 @@ Glow.provide({
 				glow(window).scrollLeft();
 				// scrollPos is a number, eg: 45
 		*/
-		ElementListProto.scrollLeft = function(val) {};
+		NodeListProto.scrollLeft = function(val) {};
 		
 		/**
-			@name glow.ElementList#scrollTop
+			@name glow.NodeList#scrollTop
 			@function
 			@description Gets/sets the number of pixels the element has scrolled vertically
 				To get/set the scroll position of the window, use this method on
@@ -151,8 +151,8 @@ Glow.provide({
 			@param {Number} [val] New top scroll position
 				Omit this to get the current scroll position
 				
-			@returns {glow.ElementList | number}
-				Current scrollTop value, or ElementList when setting scroll position.
+			@returns {glow.NodeList | number}
+				Current scrollTop value, or NodeList when setting scroll position.
 
 			@example
 				// get the scroll top value of #myDiv
@@ -168,27 +168,27 @@ Glow.provide({
 				glow(window).scrollTop();
 				// scrollPos is a number, eg: 45
 		*/
-		ElementListProto.scrollTop = function(val) {};
+		NodeListProto.scrollTop = function(val) {};
 		
 		/**
-			@name glow.ElementList#hide
+			@name glow.NodeList#hide
 			@function
-			@description Hides all items in the ElementList.
+			@description Hides all items in the NodeList.
 			
-			@returns {glow.ElementList}
+			@returns {glow.NodeList}
 			
 			@example
 				// Hides all list items within #myList
 				glow("#myList li").hide();
 		*/
-		ElementListProto.hide = function() {};
+		NodeListProto.hide = function() {};
 		
 		/**
-			@name glow.ElementList#show
+			@name glow.NodeList#show
 			@function
-			@description Shows all hidden items in the ElementList.
+			@description Shows all hidden items in the NodeList.
 			
-			@returns {glow.ElementList}
+			@returns {glow.NodeList}
 			
 			@example
 				// Show element with ID myDiv
@@ -198,13 +198,13 @@ Glow.provide({
 				// Show all list items within #myList
 				glow("#myList li").show();
 		*/
-		ElementListProto.show = function() {};
+		NodeListProto.show = function() {};
 
 		/**
-			@name glow.ElementList#offset
+			@name glow.NodeList#offset
 			@function
 			@description Gets the offset from the top left of the document.
-				If the ElementList contains multiple items, the offset of the
+				If the NodeList contains multiple items, the offset of the
 				first item is returned.
 				
 			@returns {Object}
@@ -213,10 +213,10 @@ Glow.provide({
 			@example
 				glow("#myDiv").offset().top
 		*/
-		ElementListProto.offset = function() {};
+		NodeListProto.offset = function() {};
 		
 		/**
-			@name glow.ElementList#position
+			@name glow.NodeList#position
 			@function
 			@description Get the top & left position of an element relative to its positioned parent
 				This is useful if you want to make a position:static element position:absolute
@@ -229,6 +229,6 @@ Glow.provide({
 				// get the top distance from the positioned parent
 				glow("#elm").position().top
 		*/
-		ElementListProto.position = function() {};
+		NodeListProto.position = function() {};
 	}
 });
