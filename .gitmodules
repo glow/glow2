@@ -4,6 +4,6 @@
 [submodule "test/unit/lib/qunit"]
 	path = test/unit/lib/qunit
 	url = http://github.com/jquery/qunit.git
-[submodule "src/ElementList/_sizzle/sizzle"]
-	path = src/ElementList/_sizzle/sizzle
+[submodule "src/NodeList/_sizzle/sizzle"]
+	path = src/NodeList/_sizzle/sizzle
 	url = http://github.com/jeresig/sizzle.git
