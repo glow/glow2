@@ -2,7 +2,8 @@ Glow.provide(function(glow) {
 	var NodeListProto, undefined,
 		// shortcuts to aid compression
 		document = window.document,
-		arraySlice = Array.prototype.slice;
+		arraySlice = Array.prototype.slice,
+		arrayPush = Array.prototype.push;
 	
 	/**
 		@name glow.NodeList
@@ -120,24 +121,30 @@ Glow.provide(function(glow) {
 	})();
 	
 	// takes a collection and returns an array
-	function collectionToArray(collection) {
-		// we can optimise here for some browsers
-		// We can't use this trick on IE collections that are com-based, like HTMLCollections
-		// Thankfully they don't have a constructor, so that's how we detect those
-		if (collection.constructor) {
-			return arraySlice.call(collection, 0);
-		}
-		var i   = collection.length,
-			arr = [];
-			
-		while (i--) {
-			arr[i] = collection[i];
-		}
-		
-		return arr;
-	}
+	var collectionToArray = function(collection) {
+		return arraySlice.call(collection, 0);
+	};
 	
-	var arrayPush = Array.prototype.push;
+	try {
+		// look out for an IE bug
+		arraySlice.call( document.documentElement.childNodes, 0 );
+	}
+	catch(e) {
+		collectionToArray = function(collection) {
+			// We can't use this trick on IE collections that are com-based, like HTMLCollections
+			// Thankfully they don't have a constructor, so that's how we detect those
+			if (collection.constructor && !collection.constructor.nodeType) {
+				return arraySlice.call(collection, 0);
+			}
+			var i   = collection.length,
+				arr = [];
+				
+			while (i--) {
+				arr[i] = collection[i];
+			}
+			return arr;
+		}
+	}
 	
 	/**
 		@name glow.NodeList#push
@@ -376,7 +383,29 @@ Glow.provide(function(glow) {
 			// Get items that don't have an alt attribute
 			myNodeList.filter(':not([href])');
 	*/
-	NodeListProto.filter = function(test) {};
+	NodeListProto.filter = function(test) {
+		/*!debug*/
+			if ( /^function|string$/.test(test) ) {
+				glow.debug.error('Incorrect param in glow.NodeList#filter. Expected function/string, got ' + typeof test);
+			}
+		/*gubed!*/
+		var r = [],
+			ri = 0;
+		
+		if (typeof test == 'string') {
+			r = glow._sizzle.matches(test, this);
+			
+		}
+		else {	
+			for (var i = 0, len = this.length; i<len; i++) {
+				if ( test.call(this[i], i, this) ) {
+					r[ri++] = this[i];
+				}
+			}
+		}
+		
+		return new NodeList(r);
+	};
 
 	
 	/**
