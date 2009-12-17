@@ -220,3 +220,21 @@ test('glow.NodeList#sort', 4, function() {
 	
 	ok(myNodeList.sort(lex).eq( [ byId('innerEm2'), byId('innerEm1'), byId('innerDiv2'), byId('innerDiv1') ] ), 'sort with function');
 });
+
+module('glow.NodeList#item');
+
+test('glow.NodeList#sort', 9, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em');
+	
+	equal(typeof myNodeList.item, 'function', 'glow.NodeList#item is function');
+	
+	equal(myNodeList.item(0).constructor, glow.NodeList, 'returns NodeList');
+	notEqual(myNodeList.item(0), myNodeList, 'returns new NodeList');
+	
+	ok(myNodeList.item(0).eq( myNodeList[0] ), 'item(0)');
+	ok(myNodeList.item(1).eq( myNodeList[1] ), 'item(1)');
+	ok(myNodeList.item(-1).eq( myNodeList[3] ), 'item(-1)');
+	ok(myNodeList.item(-2).eq( myNodeList[2] ), 'item(-2)');
+	ok(myNodeList.item(300).eq( [] ), 'item(300) returns empty list');
+	ok(myNodeList.item(-300).eq( [] ), 'item(-300) returns empty list');
+});

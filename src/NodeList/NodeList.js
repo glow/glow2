@@ -1,6 +1,6 @@
 Glow.provide(function(glow) {
 	var NodeListProto, undefined,
-		// vars to aid compression
+		// shortcuts to aid compression
 		document = window.document,
 		arraySlice = Array.prototype.slice;
 	
@@ -276,14 +276,7 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.sort = function(func) {
 		var items = collectionToArray(this),
-			sortedElms;
-		
-		if (func) {
-			sortedElms = items.sort(func);
-		}
-		else {
-			sortedElms = glow._sizzle.uniqueSort(items);
-		}
+			sortedElms = func ? items.sort(func) : glow._sizzle.uniqueSort(items);
 		
 		return new NodeList(sortedElms);
 	};
@@ -307,7 +300,11 @@ Glow.provide(function(glow) {
 			// add a class name to the last item
 			myNodeList.item(-1).addClass('last');
 	*/
-	NodeListProto.item = function(index) {};
+	NodeListProto.item = function(index) {
+		// TODO: test which of these methods is faster (use the current one unless significantly slower)
+		return this.slice(index, (index + 1) || this.length);
+		// return new NodeList( index < 0 ? this[this.length + index] : this[index] );
+	};
 	
 	/**
 		@name glow.NodeList#each
