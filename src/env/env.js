@@ -1,4 +1,4 @@
-Glow.provide({version: '@SRC@', builder:function(glow) {
+Glow.provide(function(glow) {
 	/**
 		@name glow.env
 		@namespace
@@ -105,4 +105,4 @@ Glow.provide({version: '@SRC@', builder:function(glow) {
 	
 	// export
 	glow.env = env;
-}});
+});

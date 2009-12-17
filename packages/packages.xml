@@ -15,15 +15,15 @@
 			<file>src/lang/lang.js</file>
 			<!--file>src/events/events.js</file>
 			<file>src/events/DomEvent.js</file>
-			<file>src/events/KeyboardEvent.js</file>
-			<file>src/ElementList/ElementList.js</file>
-			<file>src/ElementList/_sizzle/header.js</file>
-			<file>src/ElementList/_sizzle/sizzle/sizzle.js</file>
-			<file>src/ElementList/_sizzle/footer.js</file>
-			<file>src/ElementList/transversal.js</file>
-			<file>src/ElementList/manipulation.js</file>
-			<file>src/ElementList/attributes.js</file>
-			<file>src/ElementList/appearance.js</file-->
+			<file>src/events/KeyboardEvent.js</file-->
+			<file>src/NodeList/NodeList.js</file>
+			<file>src/NodeList/_sizzle/header.js</file>
+			<file>src/NodeList/_sizzle/sizzle/sizzle.js</file>
+			<file>src/NodeList/_sizzle/footer.js</file>
+			<file>src/NodeList/transversal.js</file>
+			<file>src/NodeList/manipulation.js</file>
+			<file>src/NodeList/attributes.js</file>
+			<file>src/NodeList/appearance.js</file>
 			<file>src/footer/core.js</file>
 		</js>
 		<css></css>
