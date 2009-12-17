@@ -257,24 +257,38 @@ Glow.provide({
 		/**
 			@name glow.NodeList#sort
 			@function
-			@description Sort the elements in the list
+			@description Sort the elements in the list.
+				Items will already be in document order if a CSS selector
+				was used to fetch them.
 			
 			@param {Function} [func] Function to determine sort order
 				This function will be passed 2 elements (elementA, elementB). The function
 				should return a number less than 0 to sort elementA lower than elementB
 				and greater than 0 to sort elementA higher than elementB.
 				
-				If none is provided, elements will be sorted in document order
+				If no function is provided, elements will be sorted in document order.
 			
 			@returns {glow.NodeList} A new sorted NodeList
 			
 			@example
-			//get links in alphabetical (well, lexicographical) order
-			var links = glow("a").sort(function(elementA, elementB) {
-				return glow(elementA).text() < glow(elementB).text() ? -1 : 1;
-			})
+				//get links in alphabetical (well, lexicographical) order
+				var links = glow("a").sort(function(elementA, elementB) {
+					return glow(elementA).text() < glow(elementB).text() ? -1 : 1;
+				})
 		*/
-		NodeListProto.sort = function(func) {};
+		NodeListProto.sort = function(func) {
+			var items = collectionToArray(this),
+				sortedElms;
+			
+			if (func) {
+				sortedElms = items.sort(func);
+			}
+			else {
+				sortedElms = glow._sizzle.uniqueSort(items);
+			}
+			
+			return new NodeList(sortedElms);
+		};
 		
 		/**
 			@name glow.NodeList#item

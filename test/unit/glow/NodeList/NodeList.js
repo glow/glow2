@@ -200,3 +200,23 @@ test('glow.NodeList#slice', 16, function() {
 	ok(myNodeList.slice(1, -1).eq( [ myNodeList[1], myNodeList[2] ] ), 'slice(1, -1) correct');
 	ok(myNodeList.slice(-3, 3).eq( [ myNodeList[1], myNodeList[2] ] ), 'slice(-3, 3) correct');
 });
+
+module('glow.NodeList#sort');
+
+// these tests are minimal when a function isn't given as Sizzle does all the hard work, and has its own tests
+test('glow.NodeList#sort', 4, function() {
+	var myNodeList = new glow.NodeList( [ byId('innerEm2'), byId('innerEm1'), byId('innerDiv2'), byId('innerDiv1') ] );
+	
+	equal(typeof myNodeList.sort, 'function', 'glow.NodeList#sort is function');
+	
+	ok(myNodeList.sort().eq( [ byId('innerDiv1'), byId('innerDiv2'), byId('innerEm1'), byId('innerEm2') ] ), 'sort without args orders by document order');
+	ok(myNodeList.sort() != myNodeList, 'sort returns new NodeList');
+	
+	myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em');
+	
+	function lex(elementA, elementB) {
+		return elementA.innerHTML < elementB.innerHTML ? -1 : 1;
+	}
+	
+	ok(myNodeList.sort(lex).eq( [ byId('innerEm2'), byId('innerEm1'), byId('innerDiv2'), byId('innerDiv1') ] ), 'sort with function');
+});
