@@ -25,8 +25,17 @@ $conf = array(
 
 /**** main ****/
 
+function errorHandler($msg) {
+	$msg = str_replace("'", "\\'", $msg);
+	$msg = preg_replace("/[\r\n]/", " ", $msg);
+    echo "\nalert('Knit Error: $msg.');\n";
+    exit(1);
+}
+
 error_reporting(E_ALL); 
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+set_exception_handler('errorHandler');
+
 
 $args = getSafeArgs($_GET); // note: $_GET is already URL decoded
 $packages = getPackages($conf['path_to_packagelist']);
@@ -104,16 +113,16 @@ function parsePackageName($package) {
 
 /**
  */
-function getPackages($address) {
-	if ( !file_exists($address) || !is_readable($address) ) {
-		throw new Exception('No file can be read from that address for the package list.');
+function getPackages($xmlPath) {
+	if ( !file_exists($xmlPath) || !is_readable($xmlPath) ) {
+		throw new Exception("Cannot read any file at '$xmlPath'.");
 	}
 	
 	try {
-		$packages = simplexml_load_file($address);
+		$packages = simplexml_load_file($xmlPath);
 	}
 	catch(Exception $e) {
-		throw new Exception('The file at that address cannot be parsed as XML.');
+		throw new Exception("The file at '$xmlPath' cannot be parsed as XML.");
 	}
 	
 	return $packages;
@@ -124,7 +133,7 @@ function getPackages($address) {
 function getFiles($packages, $package_name, $type) {
 	@$file_list = $packages->xpath("/packages/$package_name/$type");
 	if ( empty($file_list) ) {
-		throw new Exception('No data is defined for the package with that name and type.');
+		throw new Exception("No data is defined for the package named '$package_name'.");
 	}
 	
 	$files = array();
@@ -152,8 +161,14 @@ function printHeader($type) {
  */
 function knitFiles($files, $base='') {
 	$content = '';
+	
 	foreach ($files as $file) {
-  		$content .= file_get_contents($base . $file) . "\n";
+		$path = $base . $file;
+		
+		if ( !file_exists($path) || !is_readable($path) ) {
+			throw new Exception("Cannot read any file at '$path'.");
+		}
+		$content .= file_get_contents($base . $file) . "\n";
   	}
   	
   	$content = parseInclude($content, $base);
@@ -170,6 +185,7 @@ function parseInclude($content, $base='') {
   	
   	return $content;
 }
+
 
 
 
