@@ -13,9 +13,9 @@
 			<file>src/env/env.js</file>
 			<file>src/core/ready.js</file>
 			<file>src/lang/lang.js</file>
-			<!--file>src/events/events.js</file>
+			<file>src/events/events.js</file>
 			<file>src/events/DomEvent.js</file>
-			<file>src/events/KeyboardEvent.js</file-->
+			<file>src/events/KeyboardEvent.js</file>
 			<file>src/NodeList/NodeList.js</file>
 			<file>src/NodeList/_sizzle/header.js</file>
 			<file>src/NodeList/_sizzle/sizzle/sizzle.js</file>

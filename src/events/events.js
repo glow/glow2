@@ -7,9 +7,7 @@
 
 //-----------------------------------------------------------------
 
-Glow.provide({
-	version: '@SRC@',
-	builder: function(glow) {
+Glow.provide(function(glow) {
 	glow.events = glow.events || {};
 		
 	/* storage variables */
@@ -618,6 +616,4 @@ Glow.provide({
 		return !! this[psuedoStopPropagationKey];
 	};
 		
-		
-	}
 });
