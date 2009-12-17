@@ -223,7 +223,7 @@ test('glow.NodeList#sort', 4, function() {
 
 module('glow.NodeList#item');
 
-test('glow.NodeList#sort', 9, function() {
+test('glow.NodeList#item', 9, function() {
 	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em');
 	
 	equal(typeof myNodeList.item, 'function', 'glow.NodeList#item is function');
@@ -237,4 +237,45 @@ test('glow.NodeList#sort', 9, function() {
 	ok(myNodeList.item(-2).eq( myNodeList[2] ), 'item(-2)');
 	ok(myNodeList.item(300).eq( [] ), 'item(300) returns empty list');
 	ok(myNodeList.item(-300).eq( [] ), 'item(-300) returns empty list');
+});
+
+module('glow.NodeList#each');
+
+test('glow.NodeList#each', 3, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		log = [];
+	
+	equal(typeof myNodeList.each, 'function', 'glow.NodeList#each is function');
+	equal(myNodeList.each( function(){} ), myNodeList, 'returns same nodelist');
+	
+	myNodeList.each(function(i, list) {
+		log.push( [this.innerHTML, i, list == myNodeList] );
+	});
+	
+	deepEqual(log, [
+		['D', 0, true],
+		['C', 1, true],
+		['B', 2, true],
+		['A', 3, true]
+	], 'each called correct number of times with correct params')
+});
+
+test('breaking out of the loop', 2, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		log = [],
+		returnedNodeList;
+	
+	returnedNodeList = myNodeList.each(function(i, list) {
+		log.push( [this.innerHTML, i, list == myNodeList] );
+		if (i == 1) {
+			return false;
+		}
+	});
+	
+	equal(returnedNodeList, myNodeList, 'returns same nodelist');
+	
+	deepEqual(log, [
+		['D', 0, true],
+		['C', 1, true]
+	], 'was able to break out of the each loop')
 });

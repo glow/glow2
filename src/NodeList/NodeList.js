@@ -336,7 +336,19 @@ Glow.provide(function(glow) {
 				}
 			});
 	*/
-	NodeListProto.each = function(callback) {};
+	NodeListProto.each = function(callback) {
+		/*!debug*/
+			if (typeof callback != 'function') {
+				glow.debug.error('Incorrect param in glow.NodeList#each. Expected "function", got ' + typeof callback);
+			}
+		/*gubed!*/
+		for (var i = 0, len = this.length; i<len; i++) {
+			if ( callback.call(this[i], i, this) === false ) {
+				break;
+			}
+		}
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#filter
