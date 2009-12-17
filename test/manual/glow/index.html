@@ -5,12 +5,6 @@
 	<title>Manual Test: Glow</title>
 	
 	<script type="text/javascript" src="../lib/showSrc.js"></script>
-	<script type="text/javascript">
-		// make scripts visible in the page...
-// 		window.onload = function() {
-// 			manualTests.showSrc();
-// 		}
-	</script>
 	
 	<script type="text/javascript" src="../lib/log4javascript.js"></script>
 	<script type="text/javascript">
@@ -53,16 +47,6 @@
 			);
 		})();
 	</script>
-	
-	<script type="text/javascript">
-// 		(function() {
-// 			var oldOnload = window.onload;
-// 			window.onload = function() {
-// 				log.info('The window onload event fired.');
-// 				oldOnload();
-// 			}
-// 		})();
-	</script>
 </head>
 
 <body>
@@ -101,9 +85,13 @@
 	<ul>
 		<li>Does the loaded callback run?</li>
 		<li>Does the ready callback run?</li>
-		<li>Does the loaded callback run before the ready callback?</li>
+		<li>Do the callbacks run in the right order: loaded then ready?</li>
 	</ul>
 	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
 	<div id="log-messages"></div>
 </body>
 </html>

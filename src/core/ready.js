@@ -1,4 +1,5 @@
 // start-source: core/ready.js
+/*debug*///log.info('executing core/ready.js');
 Glow.provide(
 	function(glow) {
 		var readyQueue = [],
@@ -7,8 +8,9 @@ Glow.provide(
 			processingReadyQueue = false;
 			
 		glow._readyBlockers = {};
-	
-		glow.ready = function (f) { /*debug*///report('core ready()');
+		
+ 		/*debug*///log.info('overwriting Glow ready with glow.ready');	
+		glow.ready = function (f) { /*debug*///log.info('glow.ready()');
 			if (this.isReady) {
 				f();
 			}
@@ -28,18 +30,18 @@ Glow.provide(
 			}
 		};
 		
-		glow._addReadyBlock = function(name) { /*debug*///report('_addReadyBlock('+name+')');
+		glow._addReadyBlock = function(name) { /*debug*///log.info('_addReadyBlock('+name+')');
 			if (typeof glow._readyBlockers[name] === 'undefined') { glow._readyBlockers[name] = 0; }
 			glow._readyBlockers[name]++;
 			glow.isReady = false;
-			blockersActive++; /*debug*///report('  &#187; blockersActive '+blockersActive+'.');
+			blockersActive++; /*debug*///log.info('  &#187; blockersActive '+blockersActive+'.');
 			return glow;
 		}
 			
-		glow._removeReadyBlock = function(name) { /*debug*///report('_removeReadyBlock('+name+')');
+		glow._removeReadyBlock = function(name) { /*debug*///log.info('_removeReadyBlock('+name+')');
 			if (glow._readyBlockers[name]) {
 				glow._readyBlockers[name]--;
-				blockersActive--;  /*debug*///report('  &#187; blockersActive '+blockersActive+'.');
+				blockersActive--;  /*debug*///log.info('  &#187; blockersActive '+blockersActive+'.');
 				// if we're out of blockers
 				if (!blockersActive) {
 					// call our queue
@@ -48,6 +50,11 @@ Glow.provide(
 				}
 			}
 			return glow;
+		}
+		
+		// add blockers for any packages that started loading before core (this package) was built
+		for (var i = 0, len = glow._build.loading.length; i < len; i++) {
+			glow._addReadyBlock('glow_loading_'+glow._build.loading[i]);
 		}
 		
 		function runDomReadyQueue() {
@@ -78,24 +85,26 @@ Glow.provide(
 			@name bindReady
 			@description Add listener to document to detect when page is ready.
 		 */
-		function bindReady() { /*debug*///report('bindReady()');
+		function bindReady() { /*debug*///log.info('bindReady()');
 			//don't do this stuff if the dom is already ready
 			if (glow.isDomReady) { return; }
 			glow._addReadyBlock('glow_domReady'); // wait for dom to be ready
 			
-			function onReady() { /*debug*///report('onReady()');
+			function onReady() { /*debug*///log.info('onReady()');
 				runReadyQueue();
 				glow._removeReadyBlock('glow_domReady');
 			}
 					
 			if (document.readyState == 'complete') { // already here!
-				 /*debug*///report('already complete');
+				 /*debug*///log.info('already complete');
 				onReady();
 			}
-			else if (document.attachEvent) { // like IE
+			else if (glow.env.ie && document.attachEvent) { /*debug*///log.info('bindready() - document.attachEvent');
+				// like IE
+				
 				// not an iframe...
 				if (document.documentElement.doScroll && window == top) {
-					(function() {  /*debug*///report('doScroll');
+					(function() {  /*debug*///log.info('doScroll');
 						try {
 							document.documentElement.doScroll('left');
 						}
@@ -112,7 +121,7 @@ Glow.provide(
 					// an iframe...
 					document.attachEvent(
 						'onreadystatechange',
-						function() { /*debug*///report('onreadystatechange');
+						function() { /*debug*///log.info('onreadystatechange');
 							if (document.readyState == 'complete') {
 								document.detachEvent('onreadystatechange', arguments.callee);
 								onReady();
@@ -121,8 +130,9 @@ Glow.provide(
 					);
 				}
 			}
-			else if (document.readyState) { // like pre Safari
-				(function() { /*debug*///report('loaded|complete');
+			else if (document.readyState) { /*debug*///log.info('bindready() - document.readyState');
+				// like pre Safari
+				(function() { /*debug*///log.info('loaded|complete');
 					if ( /loaded|complete/.test(document.readyState) ) {
 						onReady();
 					}
@@ -131,10 +141,11 @@ Glow.provide(
 					}
 				})();
 			}
-			else if (document.addEventListener) { // like Mozilla, Opera and recent webkit
+			else if (document.addEventListener) {/*debug*///log.info('bindready() - document.addEventListener');
+				// like Mozilla, Opera and recent webkit
 				document.addEventListener( 
 					'DOMContentLoaded',
-					function(){ /*debug*///report('glow DOMContentLoaded');
+					function(){ /*debug*///log.info('glow DOMContentLoaded');
 						document.removeEventListener('DOMContentLoaded', arguments.callee, false);
 						onReady();
 					},
