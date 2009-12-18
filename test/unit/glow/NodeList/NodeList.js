@@ -229,6 +229,7 @@ test('glow.NodeList#sort', 4, function() {
 	}
 	
 	ok(myNodeList.sort(lex).eq( [ byId('innerEm2'), byId('innerEm1'), byId('innerDiv2'), byId('innerDiv1') ] ), 'sort with function');
+	
 });
 
 module('glow.NodeList#item');
@@ -318,7 +319,7 @@ test('function arg', 6, function() {
 	ok(returnedNodeList.eq('#innerDiv2, #innerEm1'), 'Filtered the nodes');
 });
 
-test('string arg', 5, function() {
+test('string arg', 6, function() {
 	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
 		returnedNodeList;
 	
@@ -330,4 +331,25 @@ test('string arg', 5, function() {
 	returnedNodeList = myNodeList.filter('em');
 	
 	ok(returnedNodeList.eq('#innerEm1, #innerEm2'), 'Filtered the nodes');
+	
+	myNodeList = new glow.NodeList( byId('elmWithTextNodes').childNodes );
+	ok(myNodeList.filter('span').eq( byId('elmWithTextNodes').childNodes[1] ), 'Copes with text nodes');
+});
+
+module('glow.NodeList#is');
+
+// these tests are simple because Sizzle does most of the work, they have their own tests
+test('glow.NodeList#is', 8, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		emptyNodeList = new glow.NodeList();
+	
+	equal(typeof myNodeList.is, 'function', 'glow.NodeList#is is function');
+	
+	strictEqual(myNodeList.is('#innerDiv1'), true, 'Picks up ID on first item');
+	strictEqual(myNodeList.is('#innerEm1'), false, 'Only operates on first item');
+	strictEqual(myNodeList.item(0).is('div'), true, 'Works with tag name');
+	strictEqual(myNodeList.item(0).is('em'), false, 'Works with tag name');
+	strictEqual(myNodeList.item(1).is('#twoInnerDivs div'), true, 'Works with deep searching');
+	strictEqual(myNodeList.item(1).is('#twoInnerEms div'), false, 'Works with deep searching');
+	strictEqual(emptyNodeList.is('div'), false, 'Handles empty NodeLists');
 });

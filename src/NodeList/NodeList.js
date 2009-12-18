@@ -133,7 +133,7 @@ Glow.provide(function(glow) {
 		collectionToArray = function(collection) {
 			// We can't use this trick on IE collections that are com-based, like HTMLCollections
 			// Thankfully they don't have a constructor, so that's how we detect those
-			if (collection.constructor && !collection.constructor.nodeType) {
+			if (collection instanceof Object) {
 				return arraySlice.call(collection, 0);
 			}
 			var i   = collection.length,
@@ -385,7 +385,7 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.filter = function(test) {
 		/*!debug*/
-			if ( /^function|string$/.test(test) ) {
+			if ( !/^(function|string)$/.test(typeof test) ) {
 				glow.debug.error('Incorrect param in glow.NodeList#filter. Expected function/string, got ' + typeof test);
 			}
 		/*gubed!*/
@@ -411,9 +411,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#is
 		@function
-		@description Tests if an element in the list matches CSS selector
-			Returns true if at least one element in the list matches
-			the selector.
+		@description Tests if the first element matches a CSS selector
 
 		@param {string} selector CSS selector
 		
@@ -424,7 +422,12 @@ Glow.provide(function(glow) {
 				// ...
 			}
 	*/
-	NodeListProto.is = function(selector) {};
+	NodeListProto.is = function(selector) {
+		if ( !this[0] ) {
+			return false;
+		}
+		return !!glow._sizzle.matches(selector, [this[0]]).length;
+	};
 	
 	// export
 	glow.NodeList = NodeList;
