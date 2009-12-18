@@ -20,7 +20,7 @@
 			<file>src/NodeList/_sizzle/header.js</file>
 			<file>src/NodeList/_sizzle/sizzle/sizzle.js</file>
 			<file>src/NodeList/_sizzle/footer.js</file>
-			<file>src/NodeList/transversal.js</file>
+			<file>src/NodeList/traversal.js</file>
 			<file>src/NodeList/manipulation.js</file>
 			<file>src/NodeList/attributes.js</file>
 			<file>src/NodeList/appearance.js</file>
