@@ -394,7 +394,6 @@ Glow.provide(function(glow) {
 		
 		if (typeof test == 'string') {
 			r = glow._sizzle.matches(test, this);
-			
 		}
 		else {	
 			for (var i = 0, len = this.length; i<len; i++) {
