@@ -40,7 +40,7 @@ test('NodeList creation via html element', 6, function() {
 	equal(myNodeList.length, 1, 'Length populated');
 });
 
-test('NodeList creation via array / collection / NodeList', 9, function() {
+test('NodeList creation via array / collection / NodeList', 12, function() {
 	var elms = [ byId('innerDiv1'), byId('innerDiv2') ],
 		myNodeList = new glow.NodeList(elms);
 	
@@ -59,6 +59,16 @@ test('NodeList creation via array / collection / NodeList', 9, function() {
 	equal(myNodeList[0], byId('innerEm1'), 'Item 0 as expected (added via NodeList)');
 	equal(myNodeList[1], byId('innerEm2'), 'Item 1 as expected');
 	equal(myNodeList.length, 2, 'Length populated');
+	
+	myNodeList = new glow.NodeList( byId('elmWithConstructor').getElementsByTagName('div') );
+	ok(myNodeList.length, 'Elements found (trying to trip IE up with constructor)');
+	
+	(function(){
+		myNodeList = new glow.NodeList(arguments);
+	
+		equal(myNodeList[0], byId('innerEm1'), 'Item 0 as expected (added via arguments)');
+		equal(myNodeList.length, 1, 'Length populated');
+	})( byId('innerEm1') );
 });
 
 test('NodeList creation via html string', 33, function() {
@@ -219,4 +229,127 @@ test('glow.NodeList#sort', 4, function() {
 	}
 	
 	ok(myNodeList.sort(lex).eq( [ byId('innerEm2'), byId('innerEm1'), byId('innerDiv2'), byId('innerDiv1') ] ), 'sort with function');
+	
+});
+
+module('glow.NodeList#item');
+
+test('glow.NodeList#item', 9, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em');
+	
+	equal(typeof myNodeList.item, 'function', 'glow.NodeList#item is function');
+	
+	equal(myNodeList.item(0).constructor, glow.NodeList, 'returns NodeList');
+	notEqual(myNodeList.item(0), myNodeList, 'returns new NodeList');
+	
+	ok(myNodeList.item(0).eq( myNodeList[0] ), 'item(0)');
+	ok(myNodeList.item(1).eq( myNodeList[1] ), 'item(1)');
+	ok(myNodeList.item(-1).eq( myNodeList[3] ), 'item(-1)');
+	ok(myNodeList.item(-2).eq( myNodeList[2] ), 'item(-2)');
+	ok(myNodeList.item(300).eq( [] ), 'item(300) returns empty list');
+	ok(myNodeList.item(-300).eq( [] ), 'item(-300) returns empty list');
+});
+
+module('glow.NodeList#each');
+
+test('glow.NodeList#each', 3, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		log = [];
+	
+	equal(typeof myNodeList.each, 'function', 'glow.NodeList#each is function');
+	equal(myNodeList.each( function(){} ), myNodeList, 'returns same nodelist');
+	
+	myNodeList.each(function(i, list) {
+		log.push( [this.innerHTML, i, list == myNodeList] );
+	});
+	
+	deepEqual(log, [
+		['D', 0, true],
+		['C', 1, true],
+		['B', 2, true],
+		['A', 3, true]
+	], 'each called correct number of times with correct params')
+});
+
+test('breaking out of the loop', 2, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		log = [],
+		returnedNodeList;
+	
+	returnedNodeList = myNodeList.each(function(i, list) {
+		log.push( [this.innerHTML, i, list == myNodeList] );
+		if (i == 1) {
+			return false;
+		}
+	});
+	
+	equal(returnedNodeList, myNodeList, 'returns same nodelist');
+	
+	deepEqual(log, [
+		['D', 0, true],
+		['C', 1, true]
+	], 'was able to break out of the each loop')
+});
+
+module('glow.NodeList#filter');
+
+test('function arg', 6, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		filterLog = [],
+		eachLog = [],
+		returnedNodeList;
+	
+	equal(typeof myNodeList.filter, 'function', 'glow.NodeList#filter is function');
+	equal(myNodeList.filter( function(){} ).constructor, glow.NodeList, 'returns nodelist');
+	notEqual(myNodeList.filter( function(){} ), myNodeList, 'returns new nodelist');
+	ok(myNodeList.filter( function(){} ).eq([]), 'empty filter returns empty nodelist');
+	
+	myNodeList.each(function(i, list) {
+		eachLog.push( [this.innerHTML, i, list == myNodeList] );
+	});
+	
+	returnedNodeList = myNodeList.filter(function(i, list) {
+		filterLog.push( [this.innerHTML, i, list == myNodeList] );
+		// filter out elements without innerHTML of C or B
+		return /^[CB]$/.test(this.innerHTML);
+	});
+	
+	deepEqual(eachLog, filterLog, 'Same loop & args as each()');
+	
+	ok(returnedNodeList.eq('#innerDiv2, #innerEm1'), 'Filtered the nodes');
+});
+
+test('string arg', 6, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		returnedNodeList;
+	
+	equal(myNodeList.filter('em').constructor, glow.NodeList, 'returns nodelist');
+	notEqual(myNodeList.filter('em'), myNodeList, 'returns new nodelist');
+	ok(myNodeList.filter('*').eq(myNodeList), '* returns same nodes');
+	ok(myNodeList.filter('').eq([]), 'empty string returns no nodes');
+	
+	returnedNodeList = myNodeList.filter('em');
+	
+	ok(returnedNodeList.eq('#innerEm1, #innerEm2'), 'Filtered the nodes');
+	
+	myNodeList = new glow.NodeList( byId('elmWithTextNodes').childNodes );
+	ok(myNodeList.filter('span').eq( byId('elmWithTextNodes').childNodes[1] ), 'Copes with text nodes');
+});
+
+module('glow.NodeList#is');
+
+// these tests are simple because Sizzle does most of the work, they have their own tests
+test('glow.NodeList#is', 8, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		emptyNodeList = new glow.NodeList();
+	
+	equal(typeof myNodeList.is, 'function', 'glow.NodeList#is is function');
+	
+	strictEqual(myNodeList.is('#innerDiv1'), true, 'Picks up ID on first item');
+	strictEqual(myNodeList.is('#innerEm1'), false, 'Only operates on first item');
+	strictEqual(myNodeList.item(0).is('div'), true, 'Works with tag name');
+	strictEqual(myNodeList.item(0).is('em'), false, 'Works with tag name');
+	strictEqual(myNodeList.item(1).is('#twoInnerDivs div'), true, 'Works with deep searching');
+	strictEqual(myNodeList.item(1).is('#twoInnerEms div'), false, 'Works with deep searching');
+	strictEqual(emptyNodeList.is('div'), false, 'Handles empty NodeLists');
 });

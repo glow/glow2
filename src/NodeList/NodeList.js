@@ -1,8 +1,9 @@
 Glow.provide(function(glow) {
 	var NodeListProto, undefined,
-		// vars to aid compression
+		// shortcuts to aid compression
 		document = window.document,
-		arraySlice = Array.prototype.slice;
+		arraySlice = Array.prototype.slice,
+		arrayPush = Array.prototype.push;
 	
 	/**
 		@name glow.NodeList
@@ -120,24 +121,30 @@ Glow.provide(function(glow) {
 	})();
 	
 	// takes a collection and returns an array
-	function collectionToArray(collection) {
-		// we can optimise here for some browsers
-		// We can't use this trick on IE collections that are com-based, like HTMLCollections
-		// Thankfully they don't have a constructor, so that's how we detect those
-		if (collection.constructor) {
-			return arraySlice.call(collection, 0);
-		}
-		var i   = collection.length,
-			arr = [];
-			
-		while (i--) {
-			arr[i] = collection[i];
-		}
-		
-		return arr;
-	}
+	var collectionToArray = function(collection) {
+		return arraySlice.call(collection, 0);
+	};
 	
-	var arrayPush = Array.prototype.push;
+	try {
+		// look out for an IE bug
+		arraySlice.call( document.documentElement.childNodes, 0 );
+	}
+	catch(e) {
+		collectionToArray = function(collection) {
+			// We can't use this trick on IE collections that are com-based, like HTMLCollections
+			// Thankfully they don't have a constructor, so that's how we detect those
+			if (collection instanceof Object) {
+				return arraySlice.call(collection, 0);
+			}
+			var i   = collection.length,
+				arr = [];
+				
+			while (i--) {
+				arr[i] = collection[i];
+			}
+			return arr;
+		}
+	}
 	
 	/**
 		@name glow.NodeList#push
@@ -276,14 +283,7 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.sort = function(func) {
 		var items = collectionToArray(this),
-			sortedElms;
-		
-		if (func) {
-			sortedElms = items.sort(func);
-		}
-		else {
-			sortedElms = glow._sizzle.uniqueSort(items);
-		}
+			sortedElms = func ? items.sort(func) : glow._sizzle.uniqueSort(items);
 		
 		return new NodeList(sortedElms);
 	};
@@ -307,7 +307,11 @@ Glow.provide(function(glow) {
 			// add a class name to the last item
 			myNodeList.item(-1).addClass('last');
 	*/
-	NodeListProto.item = function(index) {};
+	NodeListProto.item = function(index) {
+		// TODO: test which of these methods is faster (use the current one unless significantly slower)
+		return this.slice(index, (index + 1) || this.length);
+		// return new NodeList( index < 0 ? this[this.length + index] : this[index] );
+	};
 	
 	/**
 		@name glow.NodeList#each
@@ -339,7 +343,19 @@ Glow.provide(function(glow) {
 				}
 			});
 	*/
-	NodeListProto.each = function(callback) {};
+	NodeListProto.each = function(callback) {
+		/*!debug*/
+			if (typeof callback != 'function') {
+				glow.debug.error('Incorrect param in glow.NodeList#each. Expected "function", got ' + typeof callback);
+			}
+		/*gubed!*/
+		for (var i = 0, len = this.length; i<len; i++) {
+			if ( callback.call(this[i], i, this) === false ) {
+				break;
+			}
+		}
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#filter
@@ -367,15 +383,34 @@ Glow.provide(function(glow) {
 			// Get items that don't have an alt attribute
 			myNodeList.filter(':not([href])');
 	*/
-	NodeListProto.filter = function(test) {};
+	NodeListProto.filter = function(test) {
+		/*!debug*/
+			if ( !/^(function|string)$/.test(typeof test) ) {
+				glow.debug.error('Incorrect param in glow.NodeList#filter. Expected function/string, got ' + typeof test);
+			}
+		/*gubed!*/
+		var r = [],
+			ri = 0;
+		
+		if (typeof test == 'string') {
+			r = glow._sizzle.matches(test, this);
+		}
+		else {	
+			for (var i = 0, len = this.length; i<len; i++) {
+				if ( test.call(this[i], i, this) ) {
+					r[ri++] = this[i];
+				}
+			}
+		}
+		
+		return new NodeList(r);
+	};
 
 	
 	/**
 		@name glow.NodeList#is
 		@function
-		@description Tests if an element in the list matches CSS selector
-			Returns true if at least one element in the list matches
-			the selector.
+		@description Tests if the first element matches a CSS selector
 
 		@param {string} selector CSS selector
 		
@@ -386,7 +421,12 @@ Glow.provide(function(glow) {
 				// ...
 			}
 	*/
-	NodeListProto.is = function(selector) {};
+	NodeListProto.is = function(selector) {
+		if ( !this[0] ) {
+			return false;
+		}
+		return !!glow._sizzle.matches(selector, [this[0]]).length;
+	};
 	
 	// export
 	glow.NodeList = NodeList;
