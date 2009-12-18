@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow commando</title>
+	
+	<script type="text/javascript" src="../lib/showSrc.js"></script>
+	
+	<script type="text/javascript" src="../lib/log4javascript.js"></script>
+	<script type="text/javascript">
+		// set up logging...
+		(function () {
+			var log4jsLog,
+				logOutputElementId = "log-messages";
+			
+			if (logOutputElementId) { // in-page log
+				log4jsLog = log4javascript.getLogger("main");
+				log4jsLog.addAppender(new log4javascript.InPageAppender(logOutputElementId));
+			}
+			else { // use pop-up window
+				log4jsLog = log4javascript.getDefaultLogger();
+			}
+			
+			// exports
+			window.log = log4jsLog;
+		})();
+	</script>
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript">
+		// include glow.js in the page...
+		(function() {
+			var coreSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/core.js';
+			var widgetsSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/widgets.js';
+			
+			log.info('Writing script tag for core at ' + coreSrc + '.');
+			
+			document.write(
+				'<script type="text/javascript" src="' + coreSrc + '"> \
+				<' + '/script>'
+			);
+			
+			log.info('Writing script tag for widgets at ' + widgetsSrc + '.');
+			
+			document.write(
+				'<script type="text/javascript" src="' + widgetsSrc + '"> \
+				<' + '/script>'
+			);
+		})();
+	</script>
+</head>
+
+<body>
+	<h1>Glow commando</h1>
+	
+	<h2>Loading packages into glow via script tags.</h2>
+	
+	<p>
+		This is provided as a manual test to ensure that pckages load correctly via script tags.
+	</p>
+	
+	<script type="text/javascript" class="showSrc">
+		if (glow) {
+			log.info('The glow instance is created '+glow+'.');
+		}
+		else {
+			log.error('The glow instance is not defined.');
+		}
+		
+		if (glow.widgets) {
+			log.info('The widgets package is created '+glow.widgets+'.');
+		}
+		else {
+			log.error('The widgets package is not defined.');
+		}
+	</script>
+	
+	<ul>
+		<li>Is glow defined?</li>
+		<li>Is glow.sidgets defined?</li>
+	</ul>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+	<div id="log-messages"></div>
+</body>
+</html>
