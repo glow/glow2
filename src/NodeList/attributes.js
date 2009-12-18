@@ -14,6 +14,13 @@ Glow.provide(function(glow) {
 		glow("#login a").addClass("highlight");
 	*/
 	NodeListProto.addClass = function(name) {
+		for (var i = 0, length = this.length; i < length; i++) {
+			if (this[i].nodeType !== 1) { continue; }
+			if ((" " + this[i].className + " ").indexOf(" " + name + " ") == -1) {
+				this[i].className += ((this[i].className)? " " : "") + name;
+			}
+		}
+		return this;
 	};
 	
 	/**
