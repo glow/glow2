@@ -1,4 +1,3 @@
-if (typeof Glow == 'undefined') {
-	glow = (typeof glow == 'undefined')? {} : glow;
-	Glow = { provide: function(builder) { builder(glow); }, complete: function(){} };
+if (!window.Glow) { // loading packages via user SCRIPT tags?
+	throw new Error('Cannot load widgets.js before core.js');
 }

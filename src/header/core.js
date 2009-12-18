@@ -1,6 +1,6 @@
-if (typeof Glow == 'undefined') {
-	glow = (typeof glow == 'undefined')? {} : glow;
-	Glow = { provide: function(builder) { builder(glow); }, complete: function(){} };
+if (!window.Glow) { // loading packages via user SCRIPT tags?
+	Glow = { provide: function(f) { f(glow); }, complete: function(n, v){ glow.version = v; } };
+	if (!window.glow) { glow = { load: function(){ throw new Error('Method load() is not available without glow.js'); } }; }
 }
 
 /*!debug*/

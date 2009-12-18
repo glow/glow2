@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow load</title>
+	
+	<script type="text/javascript" src="../lib/showSrc.js"></script>
+	
+	<script type="text/javascript" src="../lib/log4javascript.js"></script>
+	<script type="text/javascript">
+		// set up logging...
+		(function () {
+			var log4jsLog,
+				logOutputElementId = "log-messages";
+			
+			if (logOutputElementId) { // in-page log
+				log4jsLog = log4javascript.getLogger("main");
+				log4jsLog.addAppender(new log4javascript.InPageAppender(logOutputElementId));
+			}
+			else { // use pop-up window
+				log4jsLog = log4javascript.getDefaultLogger();
+			}
+			
+			// exports
+			window.log = log4jsLog;
+		})();
+	</script>
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript">
+		// include glow.js in the page...
+		(function() {
+			var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
+			
+			log.info('Writing script tag for Glow at ' + glowSrc + '.');
+			
+			document.write(
+				'<script type="text/javascript" src="' + glowSrc + '"> \
+				<' + '/script>'
+			);
+		})();
+	</script>
+</head>
+
+<body>
+	<h1>Glow load</h1>
+	
+	<h2>Loading packages into glow.</h2>
+	
+	<p>
+		This is provided as a manual test to ensure that Glow correctly loads packages.
+	</p>
+	
+	<script type="text/javascript" class="showSrc">
+		try {
+			glow = new Glow(conf.version, {base: conf.base});
+		}
+		catch(e) {}
+		
+		if (glow) {
+			log.info('The glow instance is created '+glow+'.');
+		}
+		else {
+			log.error('The glow instance is not defined.');
+		}
+		
+		glow.load('widgets')
+		.loaded(function(glow) {
+			log.info('The loaded callback ran.');
+		})
+		.ready(function(glow) {
+			var last = document.getElementById('last-element');
+			if (!last) { log.error('The ready callback ran before last page element available.'); }
+			else { log.info('The ready callback ran.'); }
+		});
+	</script>
+	
+	<ul>
+		<li>Does the loaded callback run?</li>
+		<li>Does the ready callback run?</li>
+		<li>Do the callbacks run in the right order: loaded then ready?</li>
+	</ul>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+	<div id="log-messages"></div>
+</body>
+</html>
+<span id="last-element"></span>
