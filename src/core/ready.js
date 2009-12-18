@@ -53,8 +53,10 @@ Glow.provide(
 		}
 		
 		// add blockers for any packages that started loading before core (this package) was built
-		for (var i = 0, len = glow._build.loading.length; i < len; i++) {
-			glow._addReadyBlock('glow_loading_'+glow._build.loading[i]);
+		if (glow._build) { // only defined when using big Glow
+			for (var i = 0, len = glow._build.loading.length; i < len; i++) {
+				glow._addReadyBlock('glow_loading_'+glow._build.loading[i]);
+			}
 		}
 		
 		function runDomReadyQueue() {
