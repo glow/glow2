@@ -29,37 +29,55 @@ Glow.provide(function(glow) {
 			return r.get(unique(ret));
 	};
 	/**
-		@name glow.dom.NodeList#prev
+		@name glow.ElementList#prev
 		@function
-		@description Gets the previous sibling element for each node as a new NodeList.
-
-		@returns {glow.dom.NodeList}
-
-			A new NodeList containing the previous sibling elements.
-
+		@description Gets the previous sibling element for each node in the ElementList.
+			If a filter is provided, the previous item that matches the filter is returned, or
+			none if no match is found.
+		@param {Function|string} [filter] Filter test
+			If a string is provided, it is used in a call to {@link glow.ElementList#is ElementList#is}.
+			If a function is provided it will be passed 2 arguments, the index of the current item,
+			and the ElementList being itterated over.
+			Inside the function 'this' refers to the HTMLElement.
+			Return true to keep the node, or false to remove it.
+		@returns {glow.ElementList}
+			A new ElementList containing the previous sibling elements that match the (optional)
+			filter.
 		@example
-			// gets the elements before #myLink (if there is one)
-			var previous = glow.dom.get("#myLink").previous();
+			// gets the element before #myLink (if there is one)
+			var next = glow.get("#myLink").prev();
+		@example
+			// get the previous sibling link element before #skipLink
+			glow.get('#skipLink').prev('a')
 	*/
-	NodeListProto.prev = function() {
-		return getNextOrPrev(this, "previous");
+	NodeListProto.prev = function(filter) {
+		
 	};
 	
 	/**
-		@name glow.dom.NodeList#next
+		@name glow.ElementList#next
 		@function
-		@description Gets the next sibling element for each node as a new NodeList.
-
-		@returns {glow.dom.NodeList}
-
-			A new NodeList containing the next sibling elements.
-
+		@description Gets the next sibling element for each node in the ElementList.
+			If a filter is provided, the next item that matches the filter is returned, or
+			none if no match is found.
+		@param {Function|string} [filter] Filter test
+			If a string is provided, it is used in a call to {@link glow.ElementList#is ElementList#is}.
+			If a function is provided it will be passed 2 arguments, the index of the current item,
+			and the ElementList being itterated over.
+			Inside the function 'this' refers to the HTMLElement.
+			Return true to keep the node, or false to remove it.
+		@returns {glow.ElementList}
+			A new ElementList containing the next sibling elements that match the (optional)
+			filter.
 		@example
 			// gets the element following #myLink (if there is one)
-			var next = glow.dom.get("#myLink").next();
+			var next = glow.get("#myLink").next();
+		@example
+			// get the next sibling link element after #skipLink
+			glow.get('#skipLink').next('a')
 	*/
-	NodeListProto.next = function(property, value) {
-		return getNextOrPrev(this, "next");	
+	NodeListProto.next = function(filter) {
+			
 	};
 	
 	
@@ -105,7 +123,12 @@ Glow.provide(function(glow) {
 		@name glow.dom.NodeList#ancestors
 		@function
 		@description Gets the unique ancestor nodes of each node as a new NodeList.
-
+		@param {Function|string} [filter] Filter test
+			If a string is provided, it is used in a call to {@link glow.ElementList#is ElementList#is}.
+			If a function is provided it will be passed 2 arguments, the index of the current item,
+			and the ElementList being itterated over.
+			Inside the function 'this' refers to the HTMLElement.
+			Return true to keep the node, or false to remove it.
 		@returns {glow.dom.NodeList}
 			Returns NodeList
 
@@ -113,7 +136,7 @@ Glow.provide(function(glow) {
 			// get ancestor elements for anchor elements 
 			var ancestors = glow.dom.get("a").ancestors();
 	*/
-	NodeListProto.ancestors = function() {
+	NodeListProto.ancestors = function(filter) {
 		var ret = [],
 			ri = 0,
 			i = 0,
@@ -129,7 +152,9 @@ Glow.provide(function(glow) {
 				}								
 			i++;
 		}
-				
+		if(filter){
+			ret.filter(filter);
+		}
 		return r.get(unique(ret));
 	};
 	
@@ -163,43 +188,18 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#contains
 		@function
-		@description Get / set a CSS property value
+		@description Find if a NodeList contains the given element
 		
-		@param {string | Object} property The CSS property name, or object of property-value pairs to set
+		@param {string | Object} Element to check for
 		
-		@param {string | number} [value] The value to apply
-			Number values will be treated as 'px' unless the CSS property
-			accepts a unitless value.
 		
 			If value is omitted, the value for the given property will be returned
 			
-		@returns {glow.NodeList | string} Returns the NodeList when setting value, or the CSS value when getting values.
-			CSS values are strings. For instance, "height" will return
-			"25px" for an element 25 pixels high. You can use
-			parseInt to convert these values.
-		
-		@example
-			// get value from first node
-			glow("#subNav").css("display");
-		
-		@example
-			// set left padding to 10px on all nodes
-			glow("#subNav li").css("padding-left", "2em");
-		
-		@example
-			// where appropriate, px is assumed when no unit is passed
-			glow("#mainPromo").css("margin-top", 300);
-		
-		@example
-			// set multiple CSS values at once
-			// NOTE: Property names containing a hyphen such as font-weight must be quoted
-			glow("#myDiv").css({
-				'font-weight': 'bold',
-				'padding'	 : '10px',
-				'color'		 : '#00cc99'
-			});
+		@returns {glow.dom.NodeList}
+
+			Returns a new NodeList containing all the child nodes
 	*/
-	NodeListProto.contains = function(property, value) {};
+	NodeListProto.contains = function(element) {};
 	
 
 	
