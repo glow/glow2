@@ -28,7 +28,7 @@
 			var diff = [];
 			
 			for (var p in window) {
-				if (typeof globals[p] == 'undefined') { diff.push(p); }
+				if (typeof globals[p] == 'undefined') { if (p.indexOf('[[') !== 0) diff.push(p); }
 			}
 			
 			if (parent.callbacks && parent.callbacks[window.name]) {

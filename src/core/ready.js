@@ -57,9 +57,13 @@ Glow.provide(
 			for (var i = 0, len = glow._build.loading.length; i < len; i++) {
 				glow._addReadyBlock('glow_loading_'+glow._build.loading[i]);
 			}
+			
+			for (var j = 0, lenj = glow._build.callbacks.length; j < lenj; j++) {
+				if (glow._addReadyBlock) { glow._addReadyBlock('glow_loading_loadedcallback'); }
+			}
 		}
 		
-		function runDomReadyQueue() {
+		function runDomReadyQueue() { /*debug*///log.info('runDomReadyQueue()');
 			glow.isDomReady = true;
 			// run all functions in the array
 			for (var i = 0, len = domReadyQueue.length; i < len; i++) {
@@ -67,13 +71,16 @@ Glow.provide(
 			}
 		}
 	
-		function runReadyQueue() { /*debug*///console.log('runReadyQueue()');
+		function runReadyQueue() { /*debug*///log.info('runReadyQueue()');
 			// if we're already processing the queue, just exit, the other instance will take care of it
 			if (processingReadyQueue) { return; }
 			
+			/*debug*///log.info('readyQueue: '+readyQueue.length);
 			processingReadyQueue = true;
 			while (readyQueue.length) {
-				(readyQueue.shift())(glow);
+				var callback = readyQueue.shift();
+				/*debug*///log.info('callback: '+callback);
+				callback(glow);
 				
 				// check if the previous function has created a blocker
 				if (blockersActive) { break; }
