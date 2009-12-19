@@ -316,26 +316,26 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#each
 		@function
-		@description Calls a function for each item in the list.
+		@description Calls a function for each node in the list.
 		
-		@param {Function} callback The function to run for each node.
-			The function will be passed a single argument representing
-			the index of the current item in the NodeList.
+		@param {Function} callback The function to call for each node.
+			The function will be passed 2 arguments, the index of the current item,
+			and the NodeList being itterated over.
 			
 			Inside the function 'this' refers to the Node.
 			
-			Returning false from this function stops subsequent itterations
+			Returning false from this function stops further itterations
 		
 		@returns {glow.NodeList}
 		
 		@example
 			// add "link number: x" to each link, where x is the index of the link
-			glow("a").each(function(i) {
-				glow(this).append('<span> link number: ' + i + '</span>');
+			glow("a").each(function(i, nodeList) {
+				glow(this).append(' link number: ' + i);
 			});
 		@example
 			// breaking out of an each loop
-			glow("a").each(function(i) {
+			glow("a").each(function(i, nodeList) {
 				// do stuff
 				if ( glow(this).hasClass('whatever') ) {
 					// we don't want to process any more links
@@ -363,13 +363,16 @@ Glow.provide(function(glow) {
 		@description Filter the NodeList
 		 
 		@param {Function|string} test Filter test
-			If a string is provided, it is used in a call to {@link glow.NodeList#is NodeList#is}.
+			If a string is provided it's treated as a CSS selector. Elements
+			which match the CSS selector are added to the new NodeList.
 			
-			If a function is provided it will be passed a single argument
-			representing the index of the current item in the NodeList.
+			If 'test' is a function, it will be called per node in the NodeList.
 			
-			Inside the function 'this' refers to the Node.
-			Return true to keep the element, or false to remove it.
+			The function is passed 2 arguments, the index of the current item,
+			and the ElementList being itterated over.
+			
+			Inside the function 'this' refers to the HTMLElement.
+			Return true to add the element to the new NodeList.
 		 
 		@returns {glow.NodeList} A new NodeList containing the filtered nodes
 		 
@@ -381,7 +384,7 @@ Glow.provide(function(glow) {
 		
 		@example
 			// Get items that don't have an alt attribute
-			myNodeList.filter(':not([href])');
+			myElementList.filter(':not([alt])');
 	*/
 	NodeListProto.filter = function(test) {
 		/*!debug*/
