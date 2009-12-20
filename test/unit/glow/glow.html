@@ -274,7 +274,7 @@
 		});
 		
 		test('ready', function() {
-			expect(4);
+			expect(5);
 			
 			stop(3000);
 			var frameId = testHelper.addFrame('../data/t_ready.html', checkReady);
@@ -285,6 +285,7 @@
 				equals( frame.readyRan[0], 'one', 'first ready callback runs.' );
 				equals( frame.readyRan[1], 'two', 'second ready callback runs.' );
 				equals( frame.readyRan[2], 'three', 'ready callback runs after page is ready.' );
+				equals( frame.readyRan[3], 'four', 'ready callback runs after window.onload.' );
 				start();
 			}
 		});
@@ -298,11 +299,12 @@
 			function checkReady(frame) {
 				ok(frame.elementFound, 'dom elements are available in ready callback.');
 				
-				equals( frame.readyRan[0], 'zero', 'loaded callback is invoked first.' );
-				equals( frame.readyRan[1], 'one', 'ready callback is invoked once.' );
-				equals( frame.readyRan[2], 'two', 'ready callback is invoked twice.' );
-				equals( frame.readyRan[3], 'three', 'after ready, loaded callback is invoked first.' );
-				equals( frame.readyRan[4], 'four', 'after ready, another ready callback is invoked second.' );
+				equals( frame.readyRan[0], 'zero', 'loaded callback runs first.' );
+				equals( frame.readyRan[1], 'one', 'ready callback runs once.' );
+				equals( frame.readyRan[2], 'two', 'ready callback runs twice.' );
+				equals( frame.readyRan[3], 'three', 'after ready, loaded callback runs first.' );
+				equals( frame.readyRan[4], 'four', 'after ready, another ready callback runs second.' );
+				
 				start();
 			}
 		});

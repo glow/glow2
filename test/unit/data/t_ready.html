@@ -13,9 +13,8 @@
 	<script type="text/javascript">
 		window.readyRan = [];
 		window.elementFound = null;
-		window.env = null;
 		
-		Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
+		window.globalGlow = Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
 			.ready(function(glow) {
 				// dom elements in the body are available when this runs?
 				window.elementFound = document.getElementById('test-element');
@@ -28,12 +27,25 @@
 				window.readyRan.push('two');
 				
 				// setting a ready callback after the document is already ready...
-				glow.ready(function(){
+				glow.ready(function(glow){
 					window.readyRan.push('three');
-					
-					if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }
 				});
-			})
+			});
+			
+			(function() {
+				var originalOnload = window.onload || function(){};
+				
+				window.onload = function() { /*debug*///log.info('window.onload');
+					originalOnload();
+					
+					globalGlow.ready(function(glow){
+						window.readyRan.push('four');
+						
+						/*debug*///log.info(window.readyRan.join(', '));
+						parent.callbacks[window.name](window);
+					});
+				}
+			})();
 	</script>
 	
 </head>
