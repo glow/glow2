@@ -92,9 +92,6 @@ if (!document.readyState) {
 			}
 		}
 		
-		// src version is special, use it to refer to your working copy of glow
-		if (version == '@'+'SRC@') { return 'src'; }
-	
 		throw new Error('Version "'+version+'" does not exist');
 	}
 	
@@ -190,8 +187,8 @@ if (!document.readyState) {
 
 		// now that we have the name and version we can move the builders out of provided cache
 		glow = Glow._build.instances[version];
-		if (!glow) { /*debug*///log.info('Cannot complete, unnknown version of glow: '+version);
-			throw new Error('Cannot complete, unnknown version of glow: '+version);
+		if (!glow) { /*debug*///log.info('Cannot complete, unknown version of glow: '+version);
+			throw new Error('Cannot complete, unknown version of glow: '+version);
 		}
 		glow._build.builders[name] = Glow._build.provided;
 		Glow._build.provided = [];
@@ -300,7 +297,8 @@ if (!document.readyState) {
 	 */
 	glow.prototype.loaded = function(onLoadCallback) { /*debug*///log.info('glow.loaded('+typeof onLoadCallback+') for version '+this.version);
 		this._build.callbacks.push(onLoadCallback);
-	
+		if (this._addReadyBlock) { this._addReadyBlock('glow_loading_loadedcallback'); }
+		
 		this._release();
 		
 		return this;
@@ -318,12 +316,13 @@ if (!document.readyState) {
 		if (this._build.loading.length !== 0) { /*debug*///log.info('waiting for '+this._build.loading.length+' to finish.');
 			return;
 		}
-		/*debug*///log.info('running loaded callbacks for version "'+this.version+'"');
+		/*debug*///log.info('running '+this._build.callbacks.length+' loaded callbacks for version "'+this.version+'"');
 		
 		// run and remove each available _onloaded callback
 		while (this._build.callbacks.length) {
 			callback = this._build.callbacks.shift();
 			callback(this);
+			if (this._removeReadyBlock) { this._removeReadyBlock('glow_loading_loadedcallback'); }
 		}
 	}
 	
