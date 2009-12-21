@@ -6,7 +6,7 @@ setTimeout(
 				glow.dom = glow.dom || {};
 				
 				glow.dom.one = 1;
-				log.info(' [2] built dom.one 2.0.0');
+				log.info(' (2) built dom.one 2.0.0');
 			}
 		);
 		

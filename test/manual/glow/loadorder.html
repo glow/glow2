@@ -82,18 +82,18 @@
 		
 		glow211.load('more')
 		.loaded(function(glow) {
-			if (!glow.more) { throw new Error('Cannot run callback 1 for glow 2.1.0 before glow.more is loaded.'); }
+			if (!glow.more) { throw new Error('Cannot run callback 1 for glow 2.1.1 before glow.more is loaded.'); }
 			
-			log.info('_____ ran onLoaded callback 1 for glow version '+glow.version);
+			log.info('____ ran onLoaded callback 1 for glow version 2.1.1');
 		})
 		.ready(function(glow) {
-			log.info('_____ ran ready callback 1 for glow version '+glow.version);
+			log.info('____ ran ready callback 1 for glow version 2.1.1');
 		});
 		
 		glow200.loaded(function(glow) {
-			if (!glow.widgets) { throw new Error('Cannot run callback before widgets is loaded.'); }
+			if (!glow.widgets) { throw new Error('Cannot run callback 1 for glow 2.0.0 before widgets is loaded.'); }
 			
-			log.info('_____ ran onLoaded callback 1 for glow version '+glow.version);
+			log.info('____ ran onLoaded callback 1 for glow version 2.0.0');
 		});
 		
 		log.info('includes finished.');
@@ -103,15 +103,15 @@
 				glow211
 				.load('widgets')
 				.loaded(function(glow) {
-					if (!glow.widgets) { throw new Error('Cannot run callback before widgets is loaded.'); }
+					if (!glow.widgets) { throw new Error('Cannot run callback 2 for glow 2.1.1 before widgets is loaded.'); }
 					
-					log.info('_____ ran onLoaded callback 2 for glow version '+glow.version);
+					log.info('____ ran onLoaded callback 2 for glow version 2.1.1');
 				})
 				.ready(function(glow) {
-					log.info('_____ ran ready callback 2 for glow version '+glow.version);
+					log.info('____ ran ready callback 2 for glow version 2.1.1');
 				});
 			},
-			1500
+			2000
 		);
 	</script>
 	
