@@ -5,17 +5,51 @@
 	<property file="build.properties" />
 	<property name="INCLUDE_DIR"  value="src/include/" />
 	
+	<property name="DEPS_DIR"     value="deps/" />
 	<property name="BUILD_DIR"    value="build/" />
-	<property name="BUILDSRC_DIR" value="${BUILD_DIR}${VERSION}" />
+	<property name="BUILDSRC_DIR" value="${BUILD_DIR}${VERSION}/" />
+	<property name="BUILDLIB_DIR" value="${BUILD_DIR}lib/" />
 	
 	<property name="DIST_DIR"     value="dist/" />
 	<property name="DISTSRC_DIR"  value="${DIST_DIR}${VERSION}" />
 	
-	<property name="JSDOC_DIR"    value="${BUILD_DIR}lib/jsdoc-toolkit/" />
-	<property name="CC_JAR"       value="${BUILD_DIR}lib/compiler.jar" />
-	<property name="YUI_JAR"      value="${BUILD_DIR}lib/yuicompressor-2.4.2.jar" />
+	<property name="JSDOC_DIR"    value="${BUILDLIB_DIR}/jsdoc-toolkit/" />
+	<property name="YUI_JAR"      value="${BUILDLIB_DIR}yuicompressor/build/yuicompressor-2.4.2.jar" />
 	
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
+	
+	<target name="deps">
+		<delete dir="${DEPS_DIR}" />
+		<mkdir dir="${DEPS_DIR}" />
+		
+		<tempfile property="temp.zip" destDir="${BUILDLIB_DIR}" suffix=".zip" deleteonexit="yes" />
+		
+		<get dest="${temp.zip}" src="${JSDOC_URL}" />
+		<unzip dest="${BUILDLIB_DIR}" src="${temp.zip}">
+			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
+		</unzip>
+		
+		<get dest="${temp.zip}" src="${YUICOMPRESSOR_URL}" />
+		<unzip dest="${BUILDLIB_DIR}" src="${temp.zip}">
+			<regexpmapper from="^[^\/]*\/(.*)" to="yuicompressor/\1"/>
+		</unzip>
+	
+		<untar dest="src/NodeList/_sizzle/sizzle/" compression="gzip">
+			<url url="${SIZZLE_URL}"/>
+			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
+		</untar>
+
+		<untar dest="test/unit/lib/qunit/" compression="gzip">
+			<url url="${QUNIT_URL}"/>
+			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
+		</untar>
+		
+		<untar dest="test/speed/lib/woosh" compression="gzip">
+			<url url="${WOOSH_URL}"/>
+			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
+		</untar>
+	</target>
+		
 	
 	<target name="setup">
 		<delete dir="${BUILDSRC_DIR}" />
