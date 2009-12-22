@@ -1,0 +1,5 @@
+src/NodeList/_sizzle/sizzle
+test/unit/lib/qunit
+test/speed/lib/woosh
+build/lib/jsdoc-toolkit
+build/lib/yuicompressor

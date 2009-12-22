@@ -5,7 +5,6 @@
 	<property file="build.properties" />
 	<property name="INCLUDE_DIR"  value="src/include/" />
 	
-	<property name="DEPS_DIR"     value="deps/" />
 	<property name="BUILD_DIR"    value="build/" />
 	<property name="BUILDSRC_DIR" value="${BUILD_DIR}${VERSION}/" />
 	<property name="BUILDLIB_DIR" value="${BUILD_DIR}lib/" />
@@ -13,39 +12,51 @@
 	<property name="DIST_DIR"     value="dist/" />
 	<property name="DISTSRC_DIR"  value="${DIST_DIR}${VERSION}" />
 	
+	<property name="SIZZLE_DIR"   value="src/NodeList/_sizzle/sizzle/" />
+	<property name="QUNIT_DIR"    value="test/unit/lib/qunit/" />
+	<property name="WOOSH_DIR"    value="test/speed/lib/woosh/" />
+	
 	<property name="JSDOC_DIR"    value="${BUILDLIB_DIR}/jsdoc-toolkit/" />
-	<property name="YUI_JAR"      value="${BUILDLIB_DIR}yuicompressor/build/yuicompressor-2.4.2.jar" />
+	<property name="YUI_DIR"      value="${BUILDLIB_DIR}/yuicompressor/" />
+	<property name="YUI_JAR"      value="${YUI_DIR}build/yuicompressor-2.4.2.jar" />
 	
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
 	
 	<target name="deps">
-		<delete dir="${DEPS_DIR}" />
-		<mkdir dir="${DEPS_DIR}" />
+		<tempfile property="temp.zip" suffix=".zip" deleteonexit="yes" />
 		
-		<tempfile property="temp.zip" destDir="${BUILDLIB_DIR}" suffix=".zip" deleteonexit="yes" />
-		
+		<delete dir="${JSDOC_DIR}" />
+		<mkdir dir="${JSDOC_DIR}" />
 		<get dest="${temp.zip}" src="${JSDOC_URL}" />
-		<unzip dest="${BUILDLIB_DIR}" src="${temp.zip}">
+		<unzip dest="${JSDOC_DIR}" src="${temp.zip}">
+			<regexpmapper from="^[^\/]*\/[^\/]*\/(.*)" to="\1"/>
+		</unzip>
+		
+		<delete dir="${YUI_DIR}" />
+		<mkdir dir="${YUI_DIR}" />
+		<get dest="${temp.zip}" src="${YUICOMPRESSOR_URL}" />
+		<unzip dest="${YUI_DIR}" src="${temp.zip}">
 			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
 		</unzip>
-		
-		<get dest="${temp.zip}" src="${YUICOMPRESSOR_URL}" />
-		<unzip dest="${BUILDLIB_DIR}" src="${temp.zip}">
-			<regexpmapper from="^[^\/]*\/(.*)" to="yuicompressor/\1"/>
-		</unzip>
 	
-		<untar dest="src/NodeList/_sizzle/sizzle/" compression="gzip">
-			<url url="${SIZZLE_URL}"/>
+		<delete dir="${SIZZLE_DIR}" />
+		<mkdir dir="${SIZZLE_DIR}" />
+		<get dest="${temp.zip}" src="${SIZZLE_URL}" />
+		<untar dest="${SIZZLE_DIR}" src="${temp.zip}" compression="gzip">
 			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
 		</untar>
 
-		<untar dest="test/unit/lib/qunit/" compression="gzip">
-			<url url="${QUNIT_URL}"/>
+		<delete dir="${QUNIT_DIR}" />
+		<mkdir dir="${QUNIT_DIR}" />
+		<get dest="${temp.zip}" src="${QUNIT_URL}" />
+		<untar dest="${QUNIT_DIR}" src="${temp.zip}" compression="gzip">
 			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
 		</untar>
 		
-		<untar dest="test/speed/lib/woosh" compression="gzip">
-			<url url="${WOOSH_URL}"/>
+		<delete dir="${WOOSH_DIR}" />
+		<mkdir dir="${WOOSH_DIR}" />
+		<get dest="${temp.zip}" src="${WOOSH_URL}" />
+		<untar dest="${WOOSH_DIR}" src="${temp.zip}" compression="gzip">
 			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
 		</untar>
 	</target>
