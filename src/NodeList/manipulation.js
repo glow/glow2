@@ -14,30 +14,32 @@ Glow.provide(function(glow) {
 		return fragment;
 	}
 	
-	// insert some elements before / after each item in a nodelist
-	// This is to avoid duplication between #after and #before
-	function insertElms(elements, after, nodelist) {
-		if (!nodelist.length) { return nodelist; }
-
-		var toAdd,
-			toAddNext = createFragment( new glow.NodeList(elements) ),
-			nodeListItem,
-			nodeListItemParent;
-		
-		for (var i = 0, leni = nodelist.length, lasti = leni - 1; i<leni; i++) {
-			nodeListItem = nodelist[i];
-			toAdd = toAddNext;
+	// generate the #before and #after methods
+	// 1 for #after, 0 for #before
+	function insertElms(after) {
+		return function(elements) {
+			if (!this.length) { return this; }
+	
+			var toAdd,
+				toAddNext = createFragment( new glow.NodeList(elements) ),
+				item,
+				itemParent;
 			
-			// we can only append after if the element has a parent right?
-			if ( nodeListItemParent = nodeListItem.parentNode ) {
-				if (i != lasti) { // if not the last item
-					toAddNext = toAdd.cloneNode(true);
+			for (var i = 0, leni = this.length, lasti = leni - 1; i<leni; i++) {
+				item = this[i];
+				toAdd = toAddNext;
+				
+				// we can only append after if the element has a parent right?
+				if ( itemParent = item.parentNode ) {
+					if (i != lasti) { // if not the last item
+						toAddNext = toAdd.cloneNode(true);
+					}
+					itemParent.insertBefore(toAdd, after ? item.nextSibling : item);
 				}
-				nodeListItemParent.insertBefore(toAdd, after ? nodeListItem.nextSibling : nodeListItem);
 			}
+			
+			return this;
 		}
-		
-		return nodelist;
 	}
 	
 	/**
@@ -59,9 +61,7 @@ Glow.provide(function(glow) {
 			// adds a paragraph after each heading
 			glow('h1, h2, h3').after('<p>...</p>');
 	*/
-	NodeListProto.after = function(elements) {
-		return insertElms(elements, true, this);
-	};
+	NodeListProto.after = insertElms(1);
 	
 	/**
 		@name glow.NodeList#before
@@ -81,9 +81,7 @@ Glow.provide(function(glow) {
 			// adds a div before each paragraph
 			glow('p').before('<div>Here comes a paragraph!</div>');
 	*/
-	NodeListProto.before = function(elements) {
-		return insertElms(elements, false, this);
-	};
+	NodeListProto.before = insertElms(0);
 	
 	/**
 		@name glow.NodeList#append
