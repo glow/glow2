@@ -1,6 +1,6 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype;
-
+	console.log("loaded");
 	/**
 		@name glow.dom.NodeList#parent
 		@function
@@ -51,7 +51,7 @@ Glow.provide(function(glow) {
 			glow.get('#skipLink').prev('a')
 	*/
 	NodeListProto.prev = function(filter) {
-		
+		return this;
 	};
 	
 	/**
@@ -82,40 +82,11 @@ Glow.provide(function(glow) {
 	
 	
 	/**
-	@name glow.dom.get
+	@name glow.dom.NodeList#get
 	@function
-	@description Returns a {@link glow.dom.NodeList NodeList} from CSS selectors and/or Elements.
-
-	@param {String | String[] | Element | Element[] | glow.dom.NodeList} nodespec+ One or more CSS selector strings, Elements or {@link glow.dom.NodeList NodeLists}.
-
-		Will also accept arrays of these types, or any combinations thereof.
-
-		Supported CSS selectors:
-
-		<ul>
-			<li>Universal selector "*".</li>
-			<li>Type selector "div"</li>
-			<li>Class selector ".myClass"</li>
-			<li>ID selector "#myDiv"</li>
-			<li>Child selector "ul > li"</li>
-			<li>Grouping "div, p"</li>
-		</ul>
-
-	@returns {glow.dom.NodeList}
-
-	@example
-		// Nodelist with all links in element with id "nav"
-		var myNodeList = glow.dom.get("#nav a");
-
-	@example
-		// NodeList containing the nodes passed in
-		var myNodeList = glow.dom.get(someNode, anotherNode);
-
-	@example
-		// NodeList containing elements in the first form
-		var myNodeList = glow.dom.get(document.forms[0].elements);
+	
 	*/
-	NodeListProto.get = function(property, value) {};
+	NodeListProto.get = function() {};
 	
 	
 	
