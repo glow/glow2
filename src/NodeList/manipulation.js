@@ -14,6 +14,32 @@ Glow.provide(function(glow) {
 		return fragment;
 	}
 	
+	// insert some elements before / after each item in a nodelist
+	// This is to avoid duplication between #after and #before
+	function insertElms(elements, after, nodelist) {
+		if (!nodelist.length) { return nodelist; }
+
+		var toAdd,
+			toAddNext = createFragment( new glow.NodeList(elements) ),
+			nodeListItem,
+			nodeListItemParent;
+		
+		for (var i = 0, leni = nodelist.length, lasti = leni - 1; i<leni; i++) {
+			nodeListItem = nodelist[i];
+			toAdd = toAddNext;
+			
+			// we can only append after if the element has a parent right?
+			if ( nodeListItemParent = nodeListItem.parentNode ) {
+				if (i != lasti) { // if not the last item
+					toAddNext = toAdd.cloneNode(true);
+				}
+				nodeListItemParent.insertBefore(toAdd, after ? nodeListItem.nextSibling : nodeListItem);
+			}
+		}
+		
+		return nodelist;
+	}
+	
 	/**
 		@name glow.NodeList#after
 		@function
@@ -34,27 +60,7 @@ Glow.provide(function(glow) {
 			glow('h1, h2, h3').after('<p>...</p>');
 	*/
 	NodeListProto.after = function(elements) {
-		if (!this.length) { return this; }
-
-		var toAppend,
-			toAppendNext = createFragment( new glow.NodeList(elements) ),
-			nodeListItem,
-			nodeListItemParent;
-		
-		for (var i = 0, leni = this.length, lasti = leni - 1; i<leni; i++) {
-			nodeListItem = this[i];
-			toAppend = toAppendNext;
-			
-			// we can only append after if the element has a parent right?
-			if ( nodeListItemParent = nodeListItem.parentNode ) {
-				if (i != lasti) { // if not the last item
-					toAppendNext = toAppend.cloneNode(true);
-				}
-				nodeListItemParent.insertBefore(toAppend, nodeListItem.nextSibling);
-			}
-		}
-		
-		return this;
+		return insertElms(elements, true, this);
 	};
 	
 	/**
@@ -75,7 +81,9 @@ Glow.provide(function(glow) {
 			// adds a div before each paragraph
 			glow('p').before('<div>Here comes a paragraph!</div>');
 	*/
-	NodeListProto.before = function(elements) {};
+	NodeListProto.before = function(elements) {
+		return insertElms(elements, false, this);
+	};
 	
 	/**
 		@name glow.NodeList#append

@@ -127,3 +127,88 @@ test('glow.NodeList#after empty lists', 5, function() {
 	equal(new glow.NodeList('<span>hey</span>').after('<b></b>')[0].innerHTML, 'hey', 'Node with no parent');
 	
 });
+
+module('glow.NodeList#before', {setup:setup, teardown:teardown});
+
+test('glow.NodeList#before html string (single elm)', 6, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		returnNodeList;
+		
+	equal(typeof myNodeList.before, 'function', 'glow.NodeList#before is a function');
+	
+	returnNodeList = myNodeList.before('<span>Hello</span>');
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	myNodeList.each(function(i) {
+		equal(this.previousSibling.innerHTML, 'Hello', 'Span #' + (i+1) + ' created');
+	});
+});
+
+test('glow.NodeList#before html string (multiple elm)', 17, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		returnNodeList;
+		
+	returnNodeList = myNodeList.before('<span>Hello</span>World<!-- comment --><span>Foobar</span>');
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	new glow.NodeList('#twoInnerDivs div, #twoInnerEms em').each(function(i) {
+		equal(this.previousSibling.previousSibling.previousSibling.previousSibling.nodeName, 'SPAN', 'Span 1 in elm #' + (i+1) + ' created');
+		equal(this.previousSibling.previousSibling.previousSibling.nodeType, 3, 'Text node in elm #' + (i+1) + ' created');
+		equal(this.previousSibling.previousSibling.nodeType, 8, 'Comment node in elm #' + (i+1) + ' created');
+		equal(this.previousSibling.nodeName, 'SPAN', 'Span 1 in elm #' + (i+1) + ' created');
+	});
+});
+
+test('glow.NodeList#before html element (single elm)', 7, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		elementToMove = new glow.NodeList('span.elementToMove'),
+		returnNodeList;
+
+	returnNodeList = myNodeList.before( elementToMove[0] );
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal( new glow.NodeList('span.elementToMove').length, 4, '4 elements with class "elementToMove"' );
+	
+	myNodeList.each(function(i) {
+		equal(this.previousSibling.innerHTML, 'toMove', 'Span #' + (i+1) + ' created');
+	});
+	
+	strictEqual( myNodeList[0].previousSibling, elementToMove[0], 'Element moved' );
+});
+
+test('glow.NodeList#before html element (multiple elms)', 21, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		elementsToMove = new glow.NodeList('span.elementToMove, span.elementToMove2'),
+		returnNodeList;
+
+	returnNodeList = myNodeList.before(elementsToMove);
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal( new glow.NodeList('span.elementToMove').length, 4, '4 elements with class "elementToMove"' );
+	equal( new glow.NodeList('span.elementToMove2').length, 4, '4 elements with class "elementToMove2"' );
+	
+	new glow.NodeList('#twoInnerDivs div, #twoInnerEms em').each(function(i) {
+		equal(this.previousSibling.previousSibling.nodeName, 'SPAN', 'Span 1 in elm #' + (i+1) + ' created');
+		equal(this.previousSibling.previousSibling.innerHTML, 'toMove', 'Span 1 in elm #' + (i+1) + ' has correct innerHTML');
+		equal(this.previousSibling.nodeName, 'SPAN', 'Span 2 in elm #' + (i+1) + ' created');
+		equal(this.previousSibling.innerHTML, 'toMove2', 'Span 2 in elm #' + (i+1) + ' has correct innerHTML');
+	});
+	
+	strictEqual( myNodeList[0].previousSibling.previousSibling, elementsToMove[0], 'Element moved' );
+	strictEqual( myNodeList[0].previousSibling, elementsToMove[1], 'Element moved' );
+});
+
+test('glow.NodeList#before empty lists', 5, function() {
+	var emptyList = new glow.NodeList(),
+		populatedList = new glow.NodeList('#innerDiv1');
+	
+	equal(emptyList.before('<span></span>').constructor, glow.NodeList, 'Empty nodelist');
+	equal(populatedList.before(undefined)[0].innerHTML, 'D', 'Undefined param results in no change to nodelist');
+	equal(populatedList.before(null)[0].innerHTML, 'D', 'Null param results in no change to nodelist');
+	equal(populatedList.before(emptyList)[0].innerHTML, 'D', 'Empty nodelist param results in no change to nodelist');
+	equal(new glow.NodeList('<span>hey</span>').before('<b></b>')[0].innerHTML, 'hey', 'Node with no parent');
+	
+});
