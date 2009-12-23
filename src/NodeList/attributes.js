@@ -1,6 +1,30 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype;
-
+	
+	/**
+		@private
+		@name glow.NodeList-dom0BooleanAttribute
+		@description The HTML attributes names that should be converted from true/false
+		to ATTRIBUTENAME/undefined (i.e. boolean attributes like checked="checked").
+	*/
+	var dom0BooleanAttribute = {
+		checked  : true,
+		disabled : true
+	};
+	
+	/**
+		@private
+		@name glow.NodeList-dom0PropertyMapping
+		@description Mapping of HTML attribute names to DOM0 property names.
+	*/
+	var dom0PropertyMapping = {
+		checked     : 'checked',
+		'class'     : 'className',
+		disabled    : 'disabled',
+		'for'       : 'htmlFor',
+		maxlength   : 'maxLength'
+	};
+			
 	/**
 	@name glow.NodeList#addClass
 	@function
@@ -14,10 +38,11 @@ Glow.provide(function(glow) {
 		glow("#login a").addClass("highlight");
 	*/
 	NodeListProto.addClass = function(name) {
-		for (var i = 0, length = this.length; i < length; i++) {
-			if (this[i].nodeType !== 1) { continue; }
-			if ((" " + this[i].className + " ").indexOf(" " + name + " ") == -1) {
-				this[i].className += ((this[i].className)? " " : "") + name;
+		for (var i = 0, leni = this.length; i < leni; i++) {
+			if (this[i].nodeType !== 1) { continue; } // ignore non-elements
+			
+			if ((' ' + this[i].className + ' ').indexOf(' ' + name + ' ') === -1) {
+				this[i].className += ((this[i].className)? ' ' : '') + name;
 			}
 		}
 		return this;
@@ -47,10 +72,13 @@ Glow.provide(function(glow) {
 	@param {string | Object} name The name of the attribute, or an object of name/value pairs
 	@param {string} [value] The value to set the attribute to.
 
-	@returns {string | glow.NodeList}
+	@returns {string | undefined | glow.NodeList}
 
-		When setting attributes it returns the NodeList, otherwise
-		returns the attribute value.
+		When setting attributes this method returns its own NodeList, otherwise
+		returns the attribute value. The attribute name is always treated as
+		case-insensitive. When getting, the returned value will be of type string unless
+		that particular attribute was never set and there is no default value, in which
+		case the returned value will be undefined.
 
 	@example
 		var myNodeList = glow(".myImgClass");
@@ -67,9 +95,62 @@ Glow.provide(function(glow) {
 		  alt: "Cat jumping through a field"
 		});
 	 */
-	NodeListProto.attr = function(name, value) {
+	NodeListProto.attr = function(/*arguments*/) {
+		var that = this,           // assist compressor
+			args = arguments,      // assist compressor
+			argsLen = args.length, // assist compressor
+			
+			keyvals = args[0],     // using this API: attr({key: val})
+			
+			name = args[0],        // or using this API: attr(name, value)
+			value = args[1];
+
+		if (that.length === 0) { return argsLen > 1 ? that : undefined; }
+		
+		// setting multiple attributes
+		if (typeof keyvals === 'object') {
+			for (var key in keyvals) {
+				if (keyvals.hasOwnProperty(key)) { that.attr(key, keyvals[key]); } // recursive
+			}
+			return that;
+		}
+		
+		// passed a name and value, setting an attribute on every node
+		if (argsLen > 1) {
+			// in IE6 and IE7 the attribute name needs to be translated into dom property name
+			if (glow.env.ie < 8 && dom0PropertyMapping[name]) { name = dom0PropertyMapping[name]; }
+			
+			for (var i = 0, leni = that.length; i < leni; i++) {
+				if (that[i].nodeType === 1) { that[i].setAttribute(name, value, 0); }
+			}
+			
+			return that;
+		}
+		
+		// getting the first node's attribute value
+		if (dom0PropertyMapping[name]) { // attribute name needs to be translated into dom property name
+			// in ie, 0: case-insensitive, 2: as string
+			value = that[0].getAttribute(dom0PropertyMapping[name], 0, 2);
+			
+			if (dom0BooleanAttribute[name]) {
+				return value ? name : undefined;
+			}
+			else if (dom0AttributeMappings[name]) {
+				return dom0AttributeMappings[name](value);
+			}
+			
+			return value;
+		}
+		else {
+			if (glow.env.ie < 8) { // IE6 and IE7 return wrong things for undefined attribues via getAttribute()
+				if (that[0].getAttributeNode(name, 0) === null) { return undefined; }
+			}
+			
+			// in IE, 0: case-insensitive, 2: as string
+			return that[0].getAttribute(name, 0, 2);
+		}
 	};
-	
+		
 	/**
 	@name glow.NodeList#data
 	@function
