@@ -16,30 +16,47 @@ Glow.provide(function(glow) {
 	}
 	
 	// generate the #before and #after methods
-	// 1 for #after, 0 for #before
-	function afterAndBefore(after) {
+	// after: 1 for #(insert)after, 0 for #(insert)before
+	// insert: 1 for #insert(After|Before), 0 for #(after|before)
+	function afterAndBefore(after, insert) {
 		return function(elements) {
 			if (!this.length) { return this; }
+			elements = new glow.NodeList(elements);
 	
-			var fragmentToAdd,
-				nextFragmentToAdd = createFragment( new glow.NodeList(elements) ),
+			var toAddList,
+				toAddToList,
+				fragmentToAdd,
+				nextFragmentToAdd,
 				item,
 				itemParent;
 			
-			for (var i = 0, leni = this.length, lasti = leni - 1; i<leni; i++) {
-				item = this[i];
+			// set the element we're going to add to, and the elements we're going to add
+			if (insert) {
+				toAddToList = elements;
+				toAddList = new glow.NodeList(this);
+			}
+			else {
+				toAddToList = this;
+				toAddList = new glow.NodeList(elements);
+			}
+			
+			nextFragmentToAdd = createFragment(toAddList);
+			
+			for (var i = 0, leni = toAddToList.length, lasti = leni - 1; i<leni; i++) {
+				item = toAddToList[i];
 				fragmentToAdd = nextFragmentToAdd;
 				
 				// we can only append after if the element has a parent right?
 				if (itemParent = item.parentNode) {
 					if (i != lasti) { // if not the last item
 						nextFragmentToAdd = fragmentToAdd.cloneNode(true);
+						insert && toAddList.push(nextFragmentToAdd.childNodes);
 					}
 					itemParent.insertBefore(fragmentToAdd, after ? item.nextSibling : item);
 				}
 			}
 			
-			return this;
+			return insert ? toAddList : toAddToList;
 		}
 	}
 	
@@ -226,7 +243,7 @@ Glow.provide(function(glow) {
 			// adds a paragraph after each heading
 			glow('<p>HAI!</p>').insertAfter('h1, h2, h3');
 	*/
-	NodeListProto.insertAfter = function(elements) {};
+	NodeListProto.insertAfter = afterAndBefore(1, 1);
 	
 	/**
 		@name glow.NodeList#insertBefore
@@ -245,7 +262,7 @@ Glow.provide(function(glow) {
 			// adds a div before each paragraph
 			glow('<div>Here comes a paragraph!</div>').insertBefore('p');
 	*/
-	NodeListProto.insertBefore = function(elements) {};
+	NodeListProto.insertBefore = afterAndBefore(0, 1);
 	
 	/**
 		@name glow.NodeList#destroy
