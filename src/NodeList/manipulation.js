@@ -1,17 +1,87 @@
 Glow.provide(function(glow) {
-	var NodeListProto = glow.NodeList.prototype;
+	var NodeListProto = glow.NodeList.prototype,
+		undefined;
+	
+	// create a fragment from a collection of nodes
+	function createFragment(nodes) {
+		var fragment = document.createDocumentFragment(),
+			i = 0,
+			node;
+		
+		while ( node = nodes[i++] ) {
+			fragment.appendChild(node);
+		}
+		
+		return fragment;
+	}
+	
+	// generate the #before and #after methods
+	// 1 for #after, 0 for #before
+	function afterAndBefore(after) {
+		return function(elements) {
+			if (!this.length) { return this; }
+	
+			var toAdd,
+				toAddNext = createFragment( new glow.NodeList(elements) ),
+				item,
+				itemParent;
+			
+			for (var i = 0, leni = this.length, lasti = leni - 1; i<leni; i++) {
+				item = this[i];
+				toAdd = toAddNext;
+				
+				// we can only append after if the element has a parent right?
+				if (itemParent = item.parentNode) {
+					if (i != lasti) { // if not the last item
+						toAddNext = toAdd.cloneNode(true);
+					}
+					itemParent.insertBefore(toAdd, after ? item.nextSibling : item);
+				}
+			}
+			
+			return this;
+		}
+	}
+	
+	// generate the #append and #prepend methods
+	// 1 for #append, 0 for #prepend
+	function appendAndPrepend(append) {
+		return function(elements) {
+			if (!this.length) { return this; }
+	
+			var toAdd,
+				toAddNext = createFragment( new glow.NodeList(elements) ),
+				item;
+			
+			for (var i = 0, leni = this.length, lasti = leni - 1; i<leni; i++) {
+				item = this[i];
+				toAdd = toAddNext;
+				
+				// avoid trying to append to non-elements
+				if (item.nodeType == 1) {
+					if (i != lasti) { // if not the last item
+						toAddNext = toAdd.cloneNode(true);
+					}
+					item.insertBefore(toAdd, append ? null : item.firstChild);
+				}
+			}
+			
+			return this;
+		}
+	}
 	
 	/**
 		@name glow.NodeList#after
 		@function
-		@description Inserts elements after each element.
-			If there is more than one element in the list, the elements
-			will be inserted after the first element and clones will be
-			inserted after each subsequent element.
+		@description Inserts nodes after each nodes.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to insert
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Node(s) to insert
 			Strings will be treated as HTML strings if they begin with <, else
 			they'll be treated as a CSS selector.
+			
+			If there is more than one node in the NodeList, 'nodes'
+			will be inserted after the first element and clones will be
+			inserted after each subsequent element.
 		
 		@returns {glow.NodeList} Original element list
 		
@@ -19,7 +89,7 @@ Glow.provide(function(glow) {
 			// adds a paragraph after each heading
 			glow('h1, h2, h3').after('<p>...</p>');
 	*/
-	NodeListProto.after = function(elements) {};
+	NodeListProto.after = afterAndBefore(1);
 	
 	/**
 		@name glow.NodeList#before
@@ -39,7 +109,7 @@ Glow.provide(function(glow) {
 			// adds a div before each paragraph
 			glow('p').before('<div>Here comes a paragraph!</div>');
 	*/
-	NodeListProto.before = function(elements) {};
+	NodeListProto.before = afterAndBefore(0);
 	
 	/**
 		@name glow.NodeList#append
@@ -59,7 +129,7 @@ Glow.provide(function(glow) {
 			// ends every paragraph with '...'
 			glow('p').append('<span>...</span>');
 	*/
-	NodeListProto.append = function(elements) {};
+	NodeListProto.append = appendAndPrepend(1);
 	
 	/**
 		@name glow.NodeList#prepend
@@ -79,7 +149,7 @@ Glow.provide(function(glow) {
 			// prepends every paragraph with 'Paragraph: '
 			glow('p').prepend('<span>Paragraph: </span>');
 	*/
-	NodeListProto.prepend = function(elements) {};
+	NodeListProto.prepend = appendAndPrepend(0);
 	
 	/**
 		@name glow.NodeList#appendTo
@@ -263,18 +333,37 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#clone
 		@function
-		@description Clones each element in the NodeList
+		@description Clones each node in the NodeList, along with data & event listeners
 		
-		@param {Boolean} [elementsOnly=false] Just clone elements?
-			By default, events and data will also be cloned, setting this to true prevents this
-		
-		@returns {glow.NodeList} New NodeList of the clones
+		@returns {glow.NodeList}
+			Returns a new NodeList containing clones of all the nodes in
+			the NodeList
 		
 		@example
 			// get a copy of all heading elements
-			var myClones = glow("h1, h2, h3, h4, h5, h6").clone();
+			var myClones = glow.get("h1, h2, h3, h4, h5, h6").clone();
 	*/
-	NodeListProto.clone = function() {};
+	
+	NodeListProto.clone = function() {
+		return new glow.NodeList(
+			createFragment(this).cloneNode(true).childNodes
+		)
+	};
+	
+	/**
+		@name glow.NodeList#copy
+		@function
+		@description Copies each node in the NodeList, excluding data & event listeners
+		
+		@returns {glow.NodeList}
+			Returns a new NodeList containing copies of all the nodes in
+			the NodeList
+		
+		@example
+			// get a copy of all heading elements
+			var myCopies = glow.get("h1, h2, h3, h4, h5, h6").copy();
+	*/
+	NodeListProto.copy = function() {};
 	
 	/**
 		@name glow.NodeList#html

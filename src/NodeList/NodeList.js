@@ -428,7 +428,7 @@ Glow.provide(function(glow) {
 		if ( !this[0] ) {
 			return false;
 		}
-		return !!glow._sizzle.matches(selector, [this[0]]).length;
+		return !!glow._sizzle.matches( selector, [ this[0] ] ).length;
 	};
 	
 	// export
