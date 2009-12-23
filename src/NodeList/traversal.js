@@ -1,6 +1,6 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype;
-	console.log("loaded");
+
 	/**
 		@name glow.dom.NodeList#parent
 		@function
