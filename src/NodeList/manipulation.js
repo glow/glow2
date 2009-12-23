@@ -16,57 +16,92 @@ Glow.provide(function(glow) {
 	}
 	
 	// generate the #before and #after methods
-	// 1 for #after, 0 for #before
-	function afterAndBefore(after) {
+	// after: 1 for #(insert)after, 0 for #(insert)before
+	// insert: 1 for #insert(After|Before), 0 for #(after|before)
+	function afterAndBefore(after, insert) {
 		return function(elements) {
 			if (!this.length) { return this; }
+			elements = new glow.NodeList(elements);
 	
-			var toAdd,
-				toAddNext = createFragment( new glow.NodeList(elements) ),
+			var toAddList,
+				toAddToList,
+				fragmentToAdd,
+				nextFragmentToAdd,
 				item,
 				itemParent;
 			
-			for (var i = 0, leni = this.length, lasti = leni - 1; i<leni; i++) {
-				item = this[i];
-				toAdd = toAddNext;
+			// set the element we're going to add to, and the elements we're going to add
+			if (insert) {
+				toAddToList = elements;
+				toAddList = new glow.NodeList(this);
+			}
+			else {
+				toAddToList = this;
+				toAddList = new glow.NodeList(elements);
+			}
+			
+			nextFragmentToAdd = createFragment(toAddList);
+			
+			for (var i = 0, leni = toAddToList.length, lasti = leni - 1; i<leni; i++) {
+				item = toAddToList[i];
+				fragmentToAdd = nextFragmentToAdd;
 				
 				// we can only append after if the element has a parent right?
 				if (itemParent = item.parentNode) {
 					if (i != lasti) { // if not the last item
-						toAddNext = toAdd.cloneNode(true);
+						nextFragmentToAdd = fragmentToAdd.cloneNode(true);
+						insert && toAddList.push(nextFragmentToAdd.childNodes);
 					}
-					itemParent.insertBefore(toAdd, after ? item.nextSibling : item);
+					itemParent.insertBefore(fragmentToAdd, after ? item.nextSibling : item);
 				}
 			}
 			
-			return this;
+			return insert ? toAddList : toAddToList;
 		}
 	}
 	
-	// generate the #append and #prepend methods
-	// 1 for #append, 0 for #prepend
-	function appendAndPrepend(append) {
+	// generate the #append, #appendTo, #prepend and #prependTo methods
+	// append: 1 for #append(To), 0 for #prepend(To)
+	// to: 1 for #(append|prepend)To, 0 for #(append|prepend)
+	function appendAndPrepend(append, to) {
 		return function(elements) {
 			if (!this.length) { return this; }
+			elements = new glow.NodeList(elements);
 	
-			var toAdd,
-				toAddNext = createFragment( new glow.NodeList(elements) ),
+			var toAddList,
+				toAddToList,
+				fragmentToAdd,
+				nextFragmentToAdd,
 				item;
+				
+			// set the element we're going to add to, and the elements we're going to add
+			if (to) {
+				toAddToList = elements;
+				toAddList = new glow.NodeList(this);
+			}
+			else {
+				toAddToList = this;
+				toAddList = new glow.NodeList(elements);
+			}
 			
-			for (var i = 0, leni = this.length, lasti = leni - 1; i<leni; i++) {
-				item = this[i];
-				toAdd = toAddNext;
+			nextFragmentToAdd = createFragment(toAddList);
+			
+			for (var i = 0, leni = toAddToList.length, lasti = leni - 1; i<leni; i++) {
+				item = toAddToList[i];
+				fragmentToAdd = nextFragmentToAdd;
 				
 				// avoid trying to append to non-elements
 				if (item.nodeType == 1) {
 					if (i != lasti) { // if not the last item
-						toAddNext = toAdd.cloneNode(true);
+						nextFragmentToAdd = fragmentToAdd.cloneNode(true);
+						// add the clones to the return element for appendTo / prependTo
+						to && toAddList.push(nextFragmentToAdd.childNodes);
 					}
-					item.insertBefore(toAdd, append ? null : item.firstChild);
+					item.insertBefore(fragmentToAdd, append ? null : item.firstChild);
 				}
 			}
 			
-			return this;
+			return to ? toAddList : toAddToList;
 		}
 	}
 	
@@ -169,7 +204,7 @@ Glow.provide(function(glow) {
 			// appends '...' to every paragraph
 			glow('<span>...</span>').appendTo('p');
 	*/
-	NodeListProto.appendTo = function(elements) {};
+	NodeListProto.appendTo = appendAndPrepend(1, 1);
 
 	/**
 		@name glow.NodeList#prependTo
@@ -189,7 +224,7 @@ Glow.provide(function(glow) {
 			// prepends 'Paragraph: ' to every paragraph
 			glow('<span>Paragraph: </span>').prependTo('p');
 	*/
-	NodeListProto.prependTo = function(elements) {};
+	NodeListProto.prependTo = appendAndPrepend(0, 1);
 	
 	/**
 		@name glow.NodeList#insertAfter
@@ -208,7 +243,7 @@ Glow.provide(function(glow) {
 			// adds a paragraph after each heading
 			glow('<p>HAI!</p>').insertAfter('h1, h2, h3');
 	*/
-	NodeListProto.insertAfter = function(elements) {};
+	NodeListProto.insertAfter = afterAndBefore(1, 1);
 	
 	/**
 		@name glow.NodeList#insertBefore
@@ -227,7 +262,7 @@ Glow.provide(function(glow) {
 			// adds a div before each paragraph
 			glow('<div>Here comes a paragraph!</div>').insertBefore('p');
 	*/
-	NodeListProto.insertBefore = function(elements) {};
+	NodeListProto.insertBefore = afterAndBefore(0, 1);
 	
 	/**
 		@name glow.NodeList#destroy
