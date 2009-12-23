@@ -147,7 +147,9 @@ Glow.provide(function(glow) {
 			}
 			
 			// in IE, 0: case-insensitive, 2: as string
-			return that[0].getAttribute(name, 0, 2);
+			var attr = that[0].getAttribute(name, 0, 2);
+			
+			return (attr === null)? undefined : attr;
 		}
 	};
 		
@@ -194,7 +196,8 @@ Glow.provide(function(glow) {
 			// ...
 		}
 	*/
-	NodeListProto.hasAttr = function(name) {
+	NodeListProto.hasAttr = function (name) {
+		if (this.length) { return this.attr(name) !== undefined; }
 	};
 	
 	/**
@@ -213,7 +216,10 @@ Glow.provide(function(glow) {
 			// ...
 		}
 	*/
-	NodeListProto.hasClass = function(name) {
+	NodeListProto.hasClass = function (name) {
+		if (this.length && this[0].nodeType === 1) {
+			return ( (' ' + this[0].className + ' ').indexOf(' ' + name + ' ') > -1 );
+		}
 	};
 	
 	/**
@@ -269,7 +275,17 @@ Glow.provide(function(glow) {
 	@example
 		glow("a").removeAttr("target");
 	*/
-	NodeListProto.removeAttr = function(name) {
+	NodeListProto.removeAttr = function (name) {
+		var mapping = glow.env.ie && dom0PropertyMapping[name],
+			that = this;
+
+		for (var i = 0, leni = that.length; i < leni; i++) {
+			if (that[i].nodeType === 1) {
+				if (mapping) { that[i][mapping] = ''; }
+				else { that[i].removeAttribute(name); }
+			}
+		}
+		return that;
 	};
 	
 	/**
@@ -284,7 +300,24 @@ Glow.provide(function(glow) {
 	@example
 		glow("#footer #login a").removeClass("highlight");
 	*/
-	NodeListProto.removeClass = function(name) {};
+	NodeListProto.removeClass = function (name) {
+		var that = this
+			oldClasses = [],
+			newClasses = [];
+
+		for (var i = 0, leni = that.length; i < leni; i++) {
+			oldClasses = (that[i].className||'').split(' ');
+			newClasses = [];
+
+			for (var j = 0, lenj = oldClasses.length; j < lenj; j++) {
+				if (oldClasses[j] && oldClasses[j] !== name) {
+					newClasses.push(oldClasses[j]);
+				}
+			}
+			that[i].className = (newClasses.length)? newClasses.join(' ') : '';
+		}
+		return that;
+	};
 	
 	/**
 	@name glow.NodeList#removeData

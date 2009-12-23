@@ -84,3 +84,85 @@ test('glow.NodeList#attr', 14, function() {
 	
 	equal(title, undefined, 'Getting an attribute from an empty list returns undefined.');
 });
+
+test('glow.NodeList#hasAttr', 6, function() {
+	var myNodeList = new glow.NodeList('<p title="" lang="en-uk"></p>text<span title="someTitle"></span><!-- comment -->');
+	
+	// test this: getting an attribute
+	var hasLang = myNodeList.hasAttr('lang'),
+		hasTitle = myNodeList.hasAttr('title'),
+		hasNonexist = myNodeList.hasAttr('flyingspaghettimonster'),
+		hasDomprop = myNodeList.hasAttr('childNodes');
+	
+	equal(hasLang, true, 'Test if a defined node has a defined attribute.');
+	// NOTE: An undefined attribute with a default value MAY be set automatically the browser
+	equal(hasTitle, true, 'Test if a node has an empty but defined attribute.');
+	equal(hasNonexist, false, 'Test if a node has a non-existent attribute.');
+	equal(hasDomprop, false, 'Test if a node has an undefined attribute with same name as dom property.');
+	
+	myNodeList = new glow.NodeList();
+	equal(myNodeList.hasAttr('unicorns'), undefined, 'Test if an attribute of an empty node list is undefined.');
+	
+	myNodeList = new glow.NodeList(myNodeList[1]);
+	equal(myNodeList.hasAttr('rainbows'), undefined, 'Attribute of an text node is undefined.');
+});
+
+test('glow.NodeList#hasClass', 6, function() {
+	var myNodeList = new glow.NodeList('<p class="one two three"></p>text');
+	
+	// test this: getting an attribute
+	var hasClass0 = myNodeList.hasClass('shooby'),
+		hasClass1 = myNodeList.hasClass('one'),
+		hasClass2 = myNodeList.hasClass('two'),
+		hasClass3 = myNodeList.hasClass('three');
+	
+	equal(hasClass0, false, 'Test if nonexistent class exists.');
+	equal(hasClass1, true, 'Test if first class exists.');
+	equal(hasClass2, true, 'Test if middle class exists.');
+	equal(hasClass3, true, 'Test if last class exists.');
+	
+	myNodeList = new glow.NodeList();
+	equal(myNodeList.hasClass('unicorns'), undefined, 'Class of an empty node list is undefined.');
+	
+	myNodeList = new glow.NodeList(myNodeList[1]);
+	equal(myNodeList.hasClass('rainbows'), undefined, 'Class of an text node is undefined.');
+	
+});
+
+test('glow.NodeList#removeAttr', 4, function() {
+	var myNodeList = new glow.NodeList('<p title="aTitle" lang="en-uk"></p><span title="someTitle"></span><!-- comment -->');
+	
+	myNodeList.removeAttr('lang');
+	myNodeList.removeAttr('title');
+	myNodeList.removeAttr('unicorns');
+	
+	var hasLang = myNodeList.attr('lang'),
+		hasTitle1 = myNodeList.attr('title'),
+		hasNonexist = myNodeList.attr('unicorns');
+	
+	equal(hasLang||undefined, undefined, 'Removed an attribute from first element.');
+	equal(hasTitle1||undefined, undefined, 'Removed another attribute from first element.');
+	equal(hasNonexist, undefined, 'Removed non-existent attribute from first element.');
+	
+	myNodeList = new glow.NodeList(myNodeList[1]);
+	
+	var hasTitle2 = myNodeList.attr('title');
+	equal(hasTitle2||undefined, undefined, 'Removed an attribute from second element.');
+});
+
+test('glow.NodeList#removeClass', 6, function() {
+	var myNodeList = new glow.NodeList('<p class=" one   two three"></p><span class="two two"></span><span class="two"></span><span></span>');
+	
+	myNodeList.removeClass('two');
+	
+	equal(myNodeList[0].className, 'one three', 'Removed a middle class.');
+	equal(myNodeList[1].className, '', 'Removed a repeated class from second element.');
+	equal(myNodeList[2].className, '', 'Removed a single class from second element.');
+	equal(myNodeList[3].className, '', 'Removed a non-existent class from second element.');
+	
+	myNodeList.removeClass('one');
+	equal(myNodeList[0].className, 'three', 'Removed the first class.');
+	
+	myNodeList.removeClass('three');
+	equal(myNodeList[0].className, '', 'Removed the last class.');
+});
