@@ -996,3 +996,90 @@ test('glow.NodeList#insertBefore on detatched elements & non-elements', 13, func
 	equal(childNodeList[9].nodeName, 'DIV', 'Correct Node');
 	equal(childNodeList.length, 10, 'Correct length');
 });
+
+module('glow.NodeList#destroy', {setup:setup, teardown:teardown});
+
+test('glow.NodeList#destroy removes elements', 5, function() {
+	var myNodeList = new glow.NodeList( byId('elmWithMixedNodes').childNodes ),
+		returnNodeList;
+	
+	equal(typeof myNodeList.destroy, 'function', 'glow.NodeList#destroy is a function');
+	
+	returnNodeList = myNodeList.destroy();
+	
+	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
+	notEqual(returnNodeList, myNodeList, 'New nodelist returned');
+	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+	
+	strictEqual( byId('elmWithMixedNodes').childNodes.length, 0, 'Elements have been removed from document' );
+	
+	myNodeList.each(function() {
+		if (this.parentNode) {
+			ok(false, 'Node has no parent node');
+		}
+	});
+});
+
+test('glow.NodeList#destroy edge cases', 6, function() {
+	// empty nodelist
+	var myNodeList = new glow.NodeList(),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.destroy();
+	
+	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
+	notEqual(returnNodeList, myNodeList, 'New nodelist returned');
+	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+	
+	// elements with no parent
+	myNodeList = new glow.NodeList('<div></div>Hello<!--comment-->');
+	returnNodeList = myNodeList.destroy();
+	
+	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
+	notEqual(returnNodeList, myNodeList, 'New nodelist returned');
+	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+});
+
+test('glow.NodeList#destroy removes events', 1, function() {
+	ok(false, 'Todo (waiting on DOM events)');
+});
+
+test('glow.NodeList#destroy removes data', 1, function() {
+	ok(false, 'Todo (waiting on #data)');
+});
+
+module('glow.NodeList#remove', {setup:setup, teardown:teardown});
+
+test('glow.NodeList#remove removes elements', 3, function() {
+	var myNodeList = new glow.NodeList( byId('elmWithMixedNodes').childNodes ),
+		returnNodeList;
+	
+	equal(typeof myNodeList.remove, 'function', 'glow.NodeList#remove is a function');
+	
+	returnNodeList = myNodeList.remove();
+	
+	equal(returnNodeList, myNodeList, 'Same Nodelist returned');
+	
+	strictEqual( byId('elmWithMixedNodes').childNodes.length, 0, 'Elements have been removed from parent' );
+	
+	myNodeList.each(function() {
+		if (this.parentNode) {
+			ok(false, 'Node has no parent node');
+		}
+	});
+});
+
+test('glow.NodeList#remove edge cases', 2, function() {
+	var myNodeList = new glow.NodeList(),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.remove();
+	
+	equal(returnNodeList, myNodeList, 'Same Nodelist returned');
+	
+	// elements with no parent
+	myNodeList = new glow.NodeList('<div></div>Hello<!--comment-->');
+	returnNodeList = myNodeList.remove();
+	
+	equal(returnNodeList, myNodeList, 'Same Nodelist returned');
+});

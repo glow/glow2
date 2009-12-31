@@ -1,5 +1,6 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype,
+		document = window.document,
 		undefined;
 	
 	// create a fragment from a collection of nodes
@@ -271,13 +272,22 @@ Glow.provide(function(glow) {
 			The element, attached listeners & attached data will be
 			destroyed to free up memory.
 			
+			Detroyed elements may not be reused in some browsers.
+			
 		@returns {glow.NodeList} An empty NodeList
 		
 		@example
 			// destroy all links in the document
 			glow("a").destroy();
 	*/
-	NodeListProto.destroy = function() {};
+	var tmpDiv = document.createElement('div');
+	
+	NodeListProto.destroy = function() {
+		// TODO: destory data & events
+		this.appendTo(tmpDiv);
+		tmpDiv.innerHTML = '';
+		return new glow.NodeList();
+	};
 	
 	/**
 		@name glow.NodeList#remove
@@ -292,7 +302,20 @@ Glow.provide(function(glow) {
 			// take all the links out of a document
 			glow("a").remove();
 	*/
-	NodeListProto.remove = function() {};
+	NodeListProto.remove = function() {
+		var parent,
+			node,
+			i = this.length;
+		
+		while(i--) {
+			node = this[i];
+			if (parent = node.parentNode) {
+				parent.removeChild(node);
+			}
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#empty
