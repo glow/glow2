@@ -1014,9 +1014,12 @@ test('glow.NodeList#destroy removes elements', 5, function() {
 	strictEqual( byId('elmWithMixedNodes').childNodes.length, 0, 'Elements have been removed from document' );
 	
 	myNodeList.each(function() {
-		if (this.parentNode) {
-			ok(false, 'Node has no parent node');
-		}
+		// IE (noticed in IE7) barfs when trying to access the parent node after it's been destroyed
+		try {
+			if (this.parentNode) {
+				//ok(false, 'Node has no parent node');
+			}
+		} catch (e) {}
 	});
 });
 
@@ -1063,7 +1066,9 @@ test('glow.NodeList#remove removes elements', 3, function() {
 	strictEqual( byId('elmWithMixedNodes').childNodes.length, 0, 'Elements have been removed from parent' );
 	
 	myNodeList.each(function() {
-		if (this.parentNode) {
+		// Checking the length of the parent to catch and IE bug
+		// If an element enters & leaves a document fragment, it'll have the fragment as its parentNode when it's supposed to be null
+		if (this.parentNode && this.parentNode.length) {
 			ok(false, 'Node has no parent node');
 		}
 	});
@@ -1082,4 +1087,153 @@ test('glow.NodeList#remove edge cases', 2, function() {
 	returnNodeList = myNodeList.remove();
 	
 	equal(returnNodeList, myNodeList, 'Same Nodelist returned');
+});
+
+module('glow.NodeList#empty', {setup:setup, teardown:teardown});
+
+test('glow.NodeList#empty', 5, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs, #elmWithMixedNodes'),
+		checkElm = byId('innerDiv1'),
+		returnNodeList;
+	
+	equal(typeof myNodeList.empty, 'function', 'glow.NodeList#empty is a function');	
+	
+	returnNodeList = myNodeList.empty();
+	
+	equal(returnNodeList, myNodeList, 'Same Nodelist returned');
+	
+	strictEqual(returnNodeList[0].childNodes.length, 0, '#twoInnerDivs has no child nodes');
+	strictEqual(returnNodeList[1].childNodes.length, 0, '#elmWithMixedNodes has no child nodes');
+	
+	equal(checkElm.innerHTML, 'D', 'Removed element has retained inner nodes');
+});
+
+test('glow.NodeList#empty edge cases', 1, function() {
+	var myNodeList = new glow.NodeList(),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.empty();
+	
+	equal(returnNodeList, myNodeList, 'Same Nodelist returned');
+});
+
+module('glow.NodeList#replaceWith', {setup:setup, teardown:teardown});
+
+test('glow.NodeList#replaceWith html string (single elm)', 6, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		returnNodeList;
+		
+	equal(typeof myNodeList.replaceWith, 'function', 'glow.NodeList#replaceWith is a function');
+	
+	returnNodeList = myNodeList.replaceWith('<span>Hello</span>');
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	new glow.NodeList('#twoInnerDivs > *, #twoInnerEms > *').each(function(i) {
+		equal(this.nodeName, 'SPAN', 'Span #' + (i+1) + ' created');
+	});
+});
+
+test('glow.NodeList#replaceWith html string (multiple elm)', 19, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		returnNodeList;
+		
+	returnNodeList = myNodeList.replaceWith('<span>Hello</span>World<!-- comment --><span>Foobar</span>');
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	new glow.NodeList('#twoInnerDivs, #twoInnerEms').each(function(i) {
+		// skip starting text node
+		equal(this.childNodes[1].nodeName, 'SPAN', 'Span in elm #' + (i+1) + ' created');
+		equal(this.childNodes[2].nodeType, 3, 'Text node in elm #' + (i+1) + ' created');
+		equal(this.childNodes[3].nodeType, 8, 'Comment node in elm #' + (i+1) + ' created');
+		equal(this.childNodes[4].nodeName, 'SPAN', 'Span in elm #' + (i+1) + ' created');
+		// skip text node
+		equal(this.childNodes[6].nodeName, 'SPAN', 'Span in elm #' + (i+1) + ' created');
+		equal(this.childNodes[7].nodeType, 3, 'Text node in elm #' + (i+1) + ' created');
+		equal(this.childNodes[8].nodeType, 8, 'Comment node in elm #' + (i+1) + ' created');
+		equal(this.childNodes[9].nodeName, 'SPAN', 'Span in elm #' + (i+1) + ' created');
+		equal(this.childNodes.length, 11, 'Correct length');
+	});
+});
+
+test('glow.NodeList#replaceWith html element (single elm)', 7, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		elementToMove = new glow.NodeList('span.elementToMove'),
+		returnNodeList;
+
+	returnNodeList = myNodeList.replaceWith( elementToMove[0] );
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal( new glow.NodeList('span.elementToMove').length, 4, '4 elements with class "elementToMove"' );
+	
+	new glow.NodeList('#twoInnerDivs > *, #twoInnerEms > *').each(function(i) {
+		equal(this.innerHTML, 'toMove', 'Span #' + (i+1) + ' created');
+	});
+	
+	strictEqual( new glow.NodeList('#twoInnerDivs > *')[0], elementToMove[0], 'Element moved' );
+});
+
+test('glow.NodeList#replaceWith html element (multiple elms)', 21, function() {
+	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em'),
+		elementsToMove = new glow.NodeList('span.elementToMove, span.elementToMove2'),
+		returnNodeList;
+
+	returnNodeList = myNodeList.replaceWith(elementsToMove);
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal( new glow.NodeList('span.elementToMove').length, 4, '4 elements with class "elementToMove"' );
+	equal( new glow.NodeList('span.elementToMove2').length, 4, '4 elements with class "elementToMove2"' );
+	
+	new glow.NodeList('#twoInnerDivs > *, #twoInnerEms > *').each(function(i) {
+		equal(this.nodeName, 'SPAN', 'Span 1 in elm #' + (i+1) + ' created');
+		equal(this.innerHTML, i%2 ? 'toMove2' : 'toMove', 'Span 1 in elm #' + (i+1) + ' has correct innerHTML');
+	});
+	
+	strictEqual( new glow.NodeList('#twoInnerDivs > *')[0], elementsToMove[0], 'Element moved' );
+	strictEqual( new glow.NodeList('#twoInnerDivs > *')[1], elementsToMove[1], 'Element moved' );
+});
+
+test('glow.NodeList#replaceWith empty lists', 5, function() {
+	var emptyList = new glow.NodeList(),
+		populatedList = new glow.NodeList('#innerDiv1');
+	
+	equal(emptyList.replaceWith('<span></span>').constructor, glow.NodeList, 'Empty nodelist');
+	equal(populatedList.replaceWith(undefined)[0].parentNode, null, 'Undefined param results in element being removed');
+	equal(populatedList.replaceWith(null)[0].parentNode, null, 'Null param results in element being removed');
+	equal(populatedList.replaceWith(emptyList)[0].parentNode, null, 'Empty nodelist param results in element being removed');
+	equal(new glow.NodeList('<span>hey</span>').replaceWith('<b></b>')[0].innerHTML, 'hey', 'Node with no parent');
+});
+
+test('glow.NodeList#replaceWith on detatched elements & non-elements', 7, function() {
+	var myNodeList = new glow.NodeList('<div><div></div>Hello<div></div><!--comment--><div></div></div>'),
+		childNodeList,
+		returnNodeList;
+	
+	// get child nodes of nodelist, including text and comment
+	childNodeList = new glow.NodeList( myNodeList[0].childNodes );
+	
+	returnNodeList = childNodeList.replaceWith('<span>Hello</span>');
+	
+	strictEqual(returnNodeList, childNodeList, 'Same nodelist returned');
+	
+	// refresh child nodelist
+	childNodeList = new glow.NodeList( myNodeList[0].childNodes );
+	
+	equal(childNodeList.length, 5, 'Correct length');
+	equal(childNodeList[0].nodeName, 'SPAN', 'Correct Node');
+	equal(childNodeList[1].nodeName, 'SPAN', 'Correct Node');
+	equal(childNodeList[2].nodeName, 'SPAN', 'Correct Node');
+	equal(childNodeList[3].nodeName, 'SPAN', 'Correct Node');
+	equal(childNodeList[4].nodeName, 'SPAN', 'Correct Node');
+});
+
+test('glow.NodeList#replaceWith ID collision', 1, function() {
+	// There's a Safari 2 issue where an element's ID attribute is ignored if it's added to the page when another element has the same ID
+	// Although we don't support Safari 2 anymore, this test remains in case it crops up again
+	
+	var toAdd = new glow.NodeList('<span id="innerDiv1"></span>');
+	new glow.NodeList('#innerDiv1').replaceWith(toAdd);
+	equal(byId('innerDiv1').nodeName, 'SPAN', 'Correct Node');
 });

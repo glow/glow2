@@ -307,7 +307,7 @@ Glow.provide(function(glow) {
 			node,
 			i = this.length;
 		
-		while(i--) {
+		while (i--) {
 			node = this[i];
 			if (parent = node.parentNode) {
 				parent.removeChild(node);
@@ -320,15 +320,40 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#empty
 		@function
-		@description Removes the elements' contents
+		@description Removes the nodes' contents
 
-		@returns {glow.NodeList} Original elements
+		@returns {glow.NodeList} Original nodes
 
 		@example
 			// remove the contents of all textareas
 			glow("textarea").empty();
 	*/
-	NodeListProto.empty = function() {};
+	// TODO: is this shortcut worth doing?
+	NodeListProto.empty = glow.env.ie ?
+		// When you clean an element out using innerHTML it destroys its inner text nodes in IE8 and below
+		// Here's an alternative method for IE:
+		function() {
+			var i = this.length, node, child;
+			
+			while (i--) {
+				node = this[i];
+				while (child = node.firstChild) {
+					node.removeChild(child);
+				}
+			}
+			
+			return this;
+		} :
+		// method for most browsers
+		function() {
+			var i = this.length;
+			
+			while (i--) {
+				this[i].innerHTML = '';
+			}
+			
+			return this;
+		}
 
 	/**
 		@name glow.NodeList#replaceWith
@@ -341,9 +366,11 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.NodeList} The replaced elements
 			Call {@link glow.NodeList#destroy destroy} on these if you
-			no longer need them
+			no longer need them.
 	*/
-	NodeListProto.replaceWith = function(elements) {};
+	NodeListProto.replaceWith = function(elements) {
+		return this.after(elements).remove();
+	};
 	
 	/**
 		@name glow.NodeList#wrap
