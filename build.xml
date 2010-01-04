@@ -78,6 +78,8 @@
 	<target name="clean">
 		<echo message="Deleting previously built files &amp; directories" />
 		<delete file="${BUILD_DIR}/meta.js" />
+		<delete file="${DIST_ZIP}" />
+		<delete file="${DIST_TGZ}" />
 		<delete dir="${BUILDSRC_DIR}" />
 		<delete dir="${DOCS_DIR}" />
 		<delete dir="${DIST_DIR}" />
