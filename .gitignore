@@ -1,5 +1,11 @@
+dist
+docs
+glow-*.zip
+glow-*.tgz
 src/NodeList/_sizzle/sizzle
 test/unit/lib/qunit
 test/speed/lib/woosh
+build/?.?.?
+build/meta.js
 build/lib/jsdoc-toolkit
 build/lib/yuicompressor
