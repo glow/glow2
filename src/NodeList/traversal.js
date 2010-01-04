@@ -179,10 +179,8 @@ Glow.provide(function(glow) {
 			i = 0,
 			length = this.length;
 		
-		for (; i < length; i++) {
-			if(glow._sizzle(selector, this[i])){				
-				ret.push(glow._sizzle(selector, this[i]));
-			}
+		for (; i < length; i++) {						
+			ret.push(glow._sizzle(selector, this[i]));
 		}
 		return ret;
 	};

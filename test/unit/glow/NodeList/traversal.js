@@ -4,18 +4,27 @@ function byId(id) {
 
 module('glow.NodeList traversal');
 
-test('glow.dom.NodeList#get', 2, function() {
+test('glow.dom.NodeList#get', 7, function() {
 	
 	var myNodeList = new glow.NodeList('#testElmsContainer');
 	
 	equal(typeof glow.NodeList, 'function', 'glow.NodeList is function');
 	
 	var nodes = myNodeList.get('span');
+	equal(nodes.length, 3, "Returns nodeList with 3 items (match for span)");
 	
-	equal(nodes.length, 3, "Returns nodeList with 2 items");
+	equal(nodes[2], byId('secondspan'), "Correct third matched item");
+	equal(nodes[1], byId('firstspan'), "Correct second matched item");
+	equal(nodes[0], byId('lonespan'), "Correct first matched item");
 	
-	console.log("nodes: ");
-	console.log(nodes);
+	var nodes = myNodeList.get('span, em');
+	
+	equal(nodes.length, 5, "Returns nodeList with 5 items (match for span and em)");
+	
+	var nodes = myNodeList.get('p');
+	
+	equal(nodes.length, 0, "Returns an empty NodeList if nothing matches");
+	
 });
 
 test('glow.NodeList#parent', 3, function() {
