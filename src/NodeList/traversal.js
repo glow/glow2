@@ -1,6 +1,57 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype;
+	//public
+		var r = {}; //object to be returned
 
+		/**
+		@name glow.dom.get
+		@function
+		@description Returns a {@link glow.dom.NodeList NodeList} from CSS selectors and/or Elements.
+
+		@param {String | String[] | Element | Element[] | glow.dom.NodeList} nodespec+ One or more CSS selector strings, Elements or {@link glow.dom.NodeList NodeLists}.
+
+			Will also accept arrays of these types, or any combinations thereof.
+
+			Supported CSS selectors:
+
+			<ul>
+				<li>Universal selector "*".</li>
+				<li>Type selector "div"</li>
+				<li>Class selector ".myClass"</li>
+				<li>ID selector "#myDiv"</li>
+				<li>Child selector "ul > li"</li>
+				<li>Grouping "div, p"</li>
+			</ul>
+
+		@returns {glow.dom.NodeList}
+
+		@example
+			// Nodelist with all links in element with id "nav"
+			var myNodeList = glow.dom.get("#nav a");
+
+		@example
+			// NodeList containing the nodes passed in
+			var myNodeList = glow.dom.get(someNode, anotherNode);
+
+		@example
+			// NodeList containing elements in the first form
+			var myNodeList = glow.dom.get(document.forms[0].elements);
+		*/
+		r.get = function() {
+			var r = new glow.NodeList(),
+				i = 0,
+				args = arguments,
+				argsLen = args.length;
+
+			for (; i < argsLen; i++) {
+				if (typeof args[i] == "string") {
+					r.push(new glow.NodeList().push(doc).get(args[i]));
+				} else {
+					r.push(args[i]);
+				}
+			}
+			return r;
+		};
 	/**
 		@name glow.dom.NodeList#parent
 		@function
@@ -26,8 +77,33 @@ Glow.provide(function(glow) {
 				ret[ri++] = this[i].parentNode;
 			}
 				
-			return r.get(unique(ret));
+			return r.get(glow._sizzle.uniqueSort(ret));
 	};
+	
+	/*
+		PrivateMethod: getNextOrPrev
+			This gets the next / previous sibling element of each node in a nodeset
+			and returns the new nodeset.
+	*/
+	function getNextOrPrev(nodelist, dir /* "next" or "previous" */) {
+		var ret = [],
+			ri = 0,
+			nextTmp,
+			i = 0,
+			length = nodelist.length;
+
+		for (; i < length; i++) {
+			nextTmp = nodelist[i];
+			while (nextTmp = nextTmp[dir + "Sibling"]) {
+				if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
+					ret[ri++] = nextTmp;
+					break;
+				}
+			}
+		}
+		return r.get(ret);
+	}
+	
 	/**
 		@name glow.ElementList#prev
 		@function
@@ -51,7 +127,7 @@ Glow.provide(function(glow) {
 			glow.get('#skipLink').prev('a')
 	*/
 	NodeListProto.prev = function(filter) {
-		return this;
+		return getNextOrPrev(this, "previous");
 	};
 	
 	/**
@@ -77,7 +153,7 @@ Glow.provide(function(glow) {
 			glow.get('#skipLink').next('a')
 	*/
 	NodeListProto.next = function(filter) {
-			
+		return getNextOrPrev(this, "next");	
 	};
 	
 	
@@ -126,8 +202,25 @@ Glow.provide(function(glow) {
 		if(filter){
 			ret.filter(filter);
 		}
-		return r.get(unique(ret));
+		return r.get(glow._sizzle.uniqueSort(ret));
 	};
+	
+	/*
+			Get the child elements for an html node
+		*/
+		function getChildElms(node) {
+			var r = [],
+				childNodes = node.childNodes,
+				i = 0,
+				ri = 0;
+			
+			for (; childNodes[i]; i++) {
+				if (childNodes[i].nodeType == 1 && childNodes[i].nodeName != "!") {
+					r[ri++] = childNodes[i];
+				}
+			}
+			return r;
+		}
 	
 	/**
 		@name glow.dom.NodeList#children
