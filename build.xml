@@ -65,17 +65,21 @@
 		</untar>
 	</target>
 		
+	<target name="clean">
+		<echo message="Deleting previously built files &amp; directories" />
+		<delete file="${BUILD_DIR}/meta.js" />
+		<delete dir="${BUILDSRC_DIR}" />
+		<delete dir="${DIST_DIR}" />
+	</target>
 	
 	<target name="setup">
-		<delete dir="${BUILDSRC_DIR}" />
+		<echo message="Setting up necessary directories" />
 		<mkdir dir="${BUILDSRC_DIR}" />
-		
-		<delete dir="${DIST_DIR}" />
 		<mkdir dir="${DIST_DIR}" />
 	</target>
 	
 	<target name="meta">
-		<echo message="creating meta file" />
+		<echo message="Creating meta file" />
 		
 		<tstamp>
 			<format property="BUILT_DATE" pattern="d MMMM yyyy hh:mm aa" offset="0" unit="hour" locale="en,UK" />
@@ -183,7 +187,7 @@
 		</copy>
 	</target>
 	
-	<target name="all" depends="setup, meta, knit, filter, apidocs, debug, minify, dist">
+	<target name="all" depends="clean, setup, meta, knit, filter, apidocs, debug, minify, dist">
 		<echo message="" />
 		<echo message="**************************************" />
 		<echo message="Glow version ${VERSION} build complete" />
