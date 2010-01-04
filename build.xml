@@ -2,27 +2,35 @@
 
 <project name="glow" default="all" basedir=".">
 
+	<!-- PROPERTIES -->
+
 	<property file="build.properties" />
-	<property name="INCLUDE_DIR"  value="src/include/" />
+	<property name="NAME" value="glow" />
 	
-	<property name="BUILD_DIR"    value="build/" />
+	<property name="ROOT_DIR" value="." />
+	<property name="INCLUDE_DIR"  value="${ROOT_DIR}/src/include/" />
+	
+	<property name="BUILD_DIR"    value="${ROOT_DIR}/build/" />
 	<property name="BUILDSRC_DIR" value="${BUILD_DIR}${VERSION}/" />
 	<property name="BUILDLIB_DIR" value="${BUILD_DIR}lib/" />
 	
-	<property name="DIST_DIR"     value="dist/" />
-	<property name="DISTSRC_DIR"  value="${DIST_DIR}${VERSION}" />
+	<property name="DIST_DIR"     value="${ROOT_DIR}/dist/" />
+	<property name="DISTSRC_DIR"  value="${DIST_DIR}/${NAME}/${VERSION}" />
+	<property name="DIST_ZIP" value="${ROOT_DIR}/${NAME}-${VERSION}.zip" />
+	<property name="DIST_TGZ" value="${ROOT_DIR}/${NAME}-${VERSION}.tgz" />
 	
-	<property name="SIZZLE_DIR"   value="src/NodeList/_sizzle/sizzle/" />
-	<property name="QUNIT_DIR"    value="test/unit/lib/qunit/" />
-	<property name="WOOSH_DIR"    value="test/speed/lib/woosh/" />
+	<property name="SIZZLE_DIR"   value="${ROOT_DIR}/src/NodeList/_sizzle/sizzle/" />
+	<property name="QUNIT_DIR"    value="${ROOT_DIR}/test/unit/lib/qunit/" />
+	<property name="WOOSH_DIR"    value="${ROOT_DIR}/test/speed/lib/woosh/" />
 	
 	<property name="JSDOC_DIR"    value="${BUILDLIB_DIR}/jsdoc-toolkit/" />
 	<property name="YUI_DIR"      value="${BUILDLIB_DIR}/yuicompressor/" />
 	<property name="YUI_JAR"      value="${YUI_DIR}build/yuicompressor-2.4.2.jar" />
 	
-	<loadfile property="SIZZLE-EXPORTS" srcfile="src/NodeList/_sizzle/sizzle-glow.js" />
-	 
+	<loadfile property="SIZZLE-EXPORTS" srcfile="${ROOT_DIR}/src/NodeList/_sizzle/sizzle-glow.js" />
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
+	
+	<!-- TARGETS -->
 	
 	<target name="deps">
 		<echo message="Setting up external dependencies" />
@@ -177,7 +185,13 @@
 	</target>
 	
 	<target name="dist" depends="minify">
-		<echo message="Moving minified files to dist folder" />
+		<echo message="Copying project information files to dist folder" />
+		
+		<copy todir="${DIST_DIR}" >
+			<fileset dir="${ROOT_DIR}" includes="CONTRIBUTORS,LICENCE,README,CHANGES" />
+		</copy>
+		
+		<echo message="Copying minified files to dist folder" />
 		
 		<copy todir="${DISTSRC_DIR}" >
 			<fileset dir="${BUILDSRC_DIR}">
@@ -185,6 +199,14 @@
 				<include name="**/*.css" />
 			</fileset>
 		</copy>
+		
+		<echo message="Creating distribution zip &amp; tar.gz files" />
+		
+		<zip destfile="${DIST_ZIP}"
+			basedir="${DIST_DIR}" />
+		<tar destfile="${DIST_TGZ}" 
+			basedir="${DIST_DIR}" 
+			compression="gzip" />
 	</target>
 	
 	<target name="all" depends="clean, setup, meta, knit, filter, apidocs, debug, minify, dist">
