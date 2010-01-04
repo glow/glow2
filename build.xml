@@ -20,9 +20,12 @@
 	<property name="YUI_DIR"      value="${BUILDLIB_DIR}/yuicompressor/" />
 	<property name="YUI_JAR"      value="${YUI_DIR}build/yuicompressor-2.4.2.jar" />
 	
+	<loadfile property="SIZZLE-EXPORTS" srcfile="src/NodeList/_sizzle/sizzle-glow.js" />
+	 
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
 	
 	<target name="deps">
+		<echo message="Setting up external dependencies" />
 		<tempfile property="temp.zip" suffix=".zip" deleteonexit="yes" />
 		
 		<delete dir="${JSDOC_DIR}" />
@@ -45,6 +48,7 @@
 		<untar dest="${SIZZLE_DIR}" src="${temp.zip}" compression="gzip">
 			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
 		</untar>
+		<replaceregexp match="// EXPOSE" replace="${SIZZLE-EXPORTS}" file="${SIZZLE_DIR}/sizzle.js" />
 
 		<delete dir="${QUNIT_DIR}" />
 		<mkdir dir="${QUNIT_DIR}" />
