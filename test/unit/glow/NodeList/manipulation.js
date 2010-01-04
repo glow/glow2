@@ -1328,3 +1328,73 @@ test('glow.dom.NodeList#wrap edge cases', 5, function() {
 	equal(populatedList.wrap(emptyList)[0].parentNode, byId('twoInnerDivs'), 'Empty nodelist param results in no change');
 	equal(populatedList.wrap( document.createTextNode('blarg') )[0].parentNode, byId('twoInnerDivs'), 'Text node param results in no change');
 });
+
+module('glow.NodeList#unwrap', {setup:setup, teardown:teardown});
+
+test('glow.dom.NodeList#unwrap multiple elements with same parent', 8, function() {
+	var myNodeList = new glow.NodeList( byId('elmWithMixedNodes').childNodes ),
+		returnNodeList;
+	
+	equal(typeof myNodeList.unwrap, 'function', 'glow.NodeList#unwrap is a function');
+	
+	returnNodeList = myNodeList.unwrap();
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	myNodeList.each(function() {
+		equal(this.parentNode.id, 'testElmsContainer', 'Node moved to parent');
+	});
+	
+	equal(myNodeList[0].previousSibling.previousSibling.id, 'elmWithTextNodes', 'Node inserted in correct position');
+});
+
+test('glow.dom.NodeList#unwrap multiple elements with different parents', 5, function() {
+	var myNodeList = new glow.NodeList('#innerDiv2, #innerEm1'),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.unwrap();
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	myNodeList.each(function() {
+		equal(this.parentNode.id, 'testElmsContainer', 'Node moved to parent');
+	});
+	
+	equal(myNodeList.item(0).prev()[0].id, 'innerDiv1', 'Node inserted in correct position');
+	equal(myNodeList.item(1).prev()[0].id, 'innerDiv2', 'Node inserted in correct position');
+});
+
+test('glow.dom.NodeList#unwrap element with single detatched parent', 2, function() {
+	var myNodeList = new glow.NodeList('<div><span></span></div>'),
+		returnNodeList;
+	
+	myNodeList = myNodeList.children();
+	
+	returnNodeList = myNodeList.unwrap();
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	ok(!myNodeList[0].parentNode, 'Element has no parent');
+});
+
+test('glow.dom.NodeList#unwrap element with 2 parents (detatched)', 2, function() {
+	var myNodeList = new glow.NodeList('<div class="outer"><div class="inner"><span></span></div></div>'),
+		returnNodeList;
+	
+	myNodeList = myNodeList.children().children();
+	
+	returnNodeList = myNodeList.unwrap();
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal(myNodeList[0].parentNode.className, 'outer', 'Element has no parent');
+});
+
+test('glow.dom.NodeList#wrap edge cases', 3, function() {
+	var emptyList = new glow.NodeList(),
+		populatedList = new glow.NodeList('<span></span>');
+	
+	equal(emptyList.unwrap(), emptyList, 'Empty nodelist');
+	equal(populatedList.unwrap(), populatedList, 'orphan element');
+	ok(!populatedList.unwrap()[0].parentNode, 'orphan element still no parent');
+});

@@ -463,7 +463,29 @@ Glow.provide(function(glow) {
 			glow("#mySpan").unwrap();
 			// After: <div><span id="mySpan">Hello</span></div>
 	*/
-	NodeListProto.unwrap = function() {};
+	NodeListProto.unwrap = function() {
+		var parentToRemove,
+			childNodes,
+			// get unique parents
+			parentsToRemove = this.parent();
+		
+		for (var i = 0, leni = parentsToRemove.length; i < leni; i++) {				
+			parentToRemove = parentsToRemove.slice(i, i+1);
+			// make sure we get all children, including text nodes
+			childNodes = new glow.NodeList( parentToRemove[0].childNodes );
+			
+			// if the item we're removing has no new parent (i.e. is not in document), then we just remove the child and destroy the old parent
+			if (!parentToRemove[0].parentNode){
+				childNodes.remove();
+				parentToRemove.destroy();
+			}
+			else {
+				childNodes.insertBefore(parentToRemove);
+				parentToRemove.destroy();							
+			}
+		}
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#clone
