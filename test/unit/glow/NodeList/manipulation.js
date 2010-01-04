@@ -14,9 +14,10 @@ function teardown() {
 
 module('glow.NodeList#clone', {setup:setup, teardown:teardown});
 
-test('glow.NodeList#clone', 10, function() {
-	var myNodeList = new glow.NodeList('<span>Hello</span><span>World</span>'),
-		clones;
+test('glow.NodeList#clone', 12, function() {
+	var myNodeList = new glow.NodeList('#innerDiv1, #innerDiv2'),
+		clones,
+		divParent = myNodeList[0].parentNode;
 	
 	equal(typeof myNodeList.clone, 'function', 'glow.NodeList#clone is a function');
 	
@@ -29,10 +30,12 @@ test('glow.NodeList#clone', 10, function() {
 	notEqual( clones[1], myNodeList[1], 'Second elements aren\'t equal' );
 	equal( clones.length, myNodeList.length, 'Lengths are equal' );
 	
-	equal(clones[0].nodeName, 'SPAN', 'copy is span');
-	equal(clones[0].firstChild.nodeValue, 'Hello', 'copied inner text node');
-	equal(clones[1].nodeName, 'SPAN', 'copy is span');
-	equal(clones[1].firstChild.nodeValue, 'World', 'copied inner text node');
+	equal(clones[0].nodeName, 'DIV', 'copy is div');
+	equal(clones[0].firstChild.nodeValue, 'D', 'copied inner text node');
+	equal(myNodeList[0].parentNode, divParent, 'original hasn\'t moved');
+	equal(clones[1].nodeName, 'DIV', 'copy is div');
+	equal(clones[1].firstChild.nodeValue, 'C', 'copied inner text node');
+	equal(myNodeList[1].parentNode, divParent, 'original hasn\'t moved');
 });
 
 test('glow.NodeList#clone data preserving', 0, function() {
@@ -1236,4 +1239,92 @@ test('glow.NodeList#replaceWith ID collision', 1, function() {
 	var toAdd = new glow.NodeList('<span id="innerDiv1"></span>');
 	new glow.NodeList('#innerDiv1').replaceWith(toAdd);
 	equal(byId('innerDiv1').nodeName, 'SPAN', 'Correct Node');
+});
+
+module('glow.NodeList#wrap', {setup:setup, teardown:teardown});
+
+test('glow.dom.NodeList#wrap html string', 4, function() {
+	var myNodeList = new glow.NodeList('#gift'),
+		returnNodeList;
+		
+	equal(typeof myNodeList.wrap, 'function', 'glow.NodeList#wrap is a function');
+	
+	returnNodeList = myNodeList.wrap('<div class="giftwrap"><span class="tissuepaper"></span></div>');
+	
+	strictEqual(returnNodeList, returnNodeList, 'Same nodelist returned');
+	
+	equal(myNodeList[0].parentNode.className, 'tissuepaper', 'Wrapped item has new correct parent');
+	equal(myNodeList[0].parentNode.parentNode.className, 'giftwrap', 'Wrapped item has new correct parent parent');
+});
+
+test('glow.dom.NodeList#wrap html string (single elm)', 4, function() {
+	var myNodeList = new glow.NodeList('#gift'),
+		returnNodeList;
+		
+	equal(typeof myNodeList.wrap, 'function', 'glow.NodeList#wrap is a function');
+	
+	returnNodeList = myNodeList.wrap('<div class="giftwrap"><span class="tissuepaper"></span></div>');
+	
+	strictEqual(myNodeList, returnNodeList, 'Same nodelist returned');
+	
+	equal(myNodeList[0].parentNode.className, 'tissuepaper', 'Wrapped item has new correct parent');
+	equal(myNodeList[0].parentNode.parentNode.className, 'giftwrap', 'Wrapped item has new correct parent parent');
+});
+
+test('glow.dom.NodeList#wrap complex html string (multiple elms)', 14, function() {
+	var myNodeList = new glow.NodeList('#wrapTest span.toy'),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.wrap('<div class="giftwrap"><span class="tissuepaper"></span></div>');
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal(new glow.NodeList('div.giftwrap').length, 3, 'Correct number of wraps');
+	
+	myNodeList.each(function() {
+		equal(this.parentNode.className, 'tissuepaper', 'Wrapped item has new correct parent');
+		equal(this.parentNode.childNodes.length, 1, 'Only one element in the wrap');
+		equal(this.parentNode.parentNode.className, 'giftwrap', 'Wrapped item has new correct parent parent');
+		equal(this.parentNode.parentNode.parentNode.nodeType, 1, 'Wrap has been added to document');
+	});
+});
+
+test('glow.dom.NodeList#wrap detatched element', 2, function() {
+	var myNodeList = new glow.NodeList('<div class="inner">inner</div>'),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.wrap('<div class="outer"></div>');
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal(myNodeList[0].parentNode.className, 'outer', 'Detatched element wrapped');
+});
+
+test('glow.dom.NodeList#wrap element wrapper (multiple elements)', 6, function() {
+	var myNodeList = new glow.NodeList('#wrapTest span.toy'),
+		wrapperNode = new glow.NodeList('#wrapTests div.wrapper')[0],
+		returnNodeList;
+	
+	returnNodeList = myNodeList.wrap(wrapperNode);
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal(new glow.NodeList('#wrapTest div.wrapper').length, 3, 'Correct number of wraps');
+	
+	equal(myNodeList[0].parentNode, wrapperNode, 'Element moved');
+	
+	myNodeList.each(function() {
+		equal(this.parentNode.className, 'wrapper', 'Element wrapped');
+	});
+});
+
+test('glow.dom.NodeList#wrap edge cases', 5, function() {
+	var emptyList = new glow.NodeList(),
+		populatedList = new glow.NodeList('#innerDiv1');
+	
+	equal(emptyList.wrap('<span></span>').constructor, glow.NodeList, 'Empty nodelist');
+	equal(populatedList.wrap(undefined)[0].parentNode, byId('twoInnerDivs'), 'Undefined param results in no change');
+	equal(populatedList.wrap(null)[0].parentNode, byId('twoInnerDivs'), 'Null param results in no change');
+	equal(populatedList.wrap(emptyList)[0].parentNode, byId('twoInnerDivs'), 'Empty nodelist param results in no change');
+	equal(populatedList.wrap( document.createTextNode('blarg') )[0].parentNode, byId('twoInnerDivs'), 'Text node param results in no change');
 });

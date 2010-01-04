@@ -3,7 +3,7 @@ Glow.provide(function(glow) {
 		document = window.document,
 		undefined;
 	
-	// create a fragment from a collection of nodes
+	// create a fragment and insert a set of nodes into it
 	function createFragment(nodes) {
 		var fragment = document.createDocumentFragment(),
 			i = 0,
@@ -398,7 +398,57 @@ Glow.provide(function(glow) {
 			// </div>
 			
 	*/
-	NodeListProto.wrap = function(wrapper) {};
+	// get first child element node of an element, otherwise undefined
+	function getFirstChildElm(parent) {					
+		for (var child = parent.firstChild; child; child = child.nextSibling) {
+			if (child.nodeType == 1) {
+				return child;
+			}			
+		}			
+		return undefined;			
+	}
+	
+	NodeListProto.wrap = function(wrapper) {
+		// normalise input
+		wrapper = new glow.NodeList(wrapper);
+		
+		// escape if the wraper is non-existant or not an element
+		if (!wrapper[0] || wrapper[0].nodeType != 1) {
+			return this;
+		}
+		
+		var toWrap,
+			toWrapTarget,
+			firstChildElm;
+		
+		for (var i = 0, leni = this.length; i<leni; i++) {
+			toWrap = this[i];
+			// get target element to insert toWrap in
+			toWrapTarget = wrapper[0];
+			
+			while (toWrapTarget) {
+				firstChildElm = getFirstChildElm(toWrapTarget);
+					
+				if (!firstChildElm) {
+					break;
+				}
+				toWrapTarget = firstChildElm;
+			}
+			
+			if (toWrap.parentNode) {						
+				wrapper.insertBefore(toWrap);													
+			}
+			
+			// If wrapping multiple nodes, we need to take a clean copy of the wrapping nodes
+			if (i != leni-1) {
+				wrapper = wrapper.clone();
+			}
+			
+			toWrapTarget.appendChild(toWrap);
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#unwrap
@@ -430,9 +480,14 @@ Glow.provide(function(glow) {
 	*/
 	
 	NodeListProto.clone = function() {
-		return new glow.NodeList(
-			createFragment(this).cloneNode(true).childNodes
-		)
+		var nodes = [],
+			i = this.length;
+		
+		while (i--) {
+			nodes[i] = this[i].cloneNode(true);
+		}
+		
+		return new glow.NodeList(nodes);
 	};
 	
 	/**
