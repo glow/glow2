@@ -4,12 +4,18 @@ function byId(id) {
 
 module('glow.NodeList traversal');
 
-test('glow.dom.NodeList#get', 1, function() {
+test('glow.dom.NodeList#get', 2, function() {
 	
-	var myNodeList = new glow.NodeList('#twoInnerDivs div, #twoInnerEms em');
+	var myNodeList = new glow.NodeList('#testElmsContainer');
 	
 	equal(typeof glow.NodeList, 'function', 'glow.NodeList is function');
 	
+	var nodes = myNodeList.get('span');
+	
+	equal(nodes.length, 3, "Returns nodeList with 2 items");
+	
+	console.log("nodes: ");
+	console.log(nodes);
 });
 
 test('glow.NodeList#parent', 3, function() {

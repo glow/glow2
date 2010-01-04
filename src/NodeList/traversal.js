@@ -4,7 +4,7 @@ Glow.provide(function(glow) {
 		var r = {}; //object to be returned
 
 		/**
-		@name glow.dom.get
+		@name glow.get
 		@function
 		@description Returns a {@link glow.dom.NodeList NodeList} from CSS selectors and/or Elements.
 
@@ -53,7 +53,7 @@ Glow.provide(function(glow) {
 			return r;
 		};
 	/**
-		@name glow.dom.NodeList#parent
+		@name glow.NodeList#parent
 		@function
 		@description Gets the unique parent nodes of each node as a new NodeList.
 		The given nodelist will always be placed in the first element with no child elements.
@@ -158,11 +158,34 @@ Glow.provide(function(glow) {
 	
 	
 	/**
-	@name glow.dom.NodeList#get
+	@name glow.NodeList#get
 	@function
-	
+	@description Gets decendents of nodes that match a CSS selector.
+
+	@param {String} selector CSS selector
+
+	@returns {glow.dom.NodeList}
+		Returns a new NodeList containing matched elements
+
+	@example
+		// create a new NodeList
+		var myNodeList = glow.dom.create("<div><a href='s.html'>Link</a></div>");
+
+		// get 'a' tags that are decendants of the NodeList nodes
+		myNewNodeList = myNodeList.get("a");
 	*/
-	NodeListProto.get = function() {};
+	NodeListProto.get = function(selector) {
+		var ret = new glow.NodeList(),
+			i = 0,
+			length = this.length;
+		
+		for (; i < length; i++) {
+			if(glow._sizzle(selector, this[i])){				
+				ret.push(glow._sizzle(selector, this[i]));
+			}
+		}
+		return ret;
+	};
 	
 	
 	
