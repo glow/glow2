@@ -232,19 +232,58 @@ Glow.provide(function(glow) {
 		@function
 		@description Find if a NodeList contains the given element
 		
-		@param {string | Object} Element to check for
-		
-		
-			If value is omitted, the value for the given property will be returned
-			
-		@returns {glow.dom.NodeList}
+		@param {string | Object} Single element to check for
 
-			Returns a new NodeList containing all the child nodes
+		@returns {boolean}
+			myElementList.contains(elm)
+			// Returns true if an element in myElementList contains elm, or IS elm.
 	*/
-	NodeListProto.contains = function(element) {
-		
-		return false;
-		
+	NodeListProto.contains = function(elm) {
+		var i = 0,
+			node = new glow.NodeList(elm)[0],
+			length = this.length,
+			newNodes,
+			toTest;
+
+			// missing some nodes? Return false
+			if ( !node || !this.length ) {
+				return false;
+			}
+	
+			if (this[0].compareDocumentPosition) { //w3 method
+				while (i < length) {
+					//break out if the two are teh same
+					if(this[i] == node){
+						break;
+					}
+					//check against bitwise to see if node is contained in this
+					else if (!(this[i].compareDocumentPosition(node) & 16)) {								
+						return false;
+					}
+				i++;
+				}
+			}
+			else if(node.contains){					
+				for (; i < length; i++) {
+					if ( !( this[i].contains( node  ) ) ) {
+						return false;
+					}
+				}
+			}				
+			else { //manual method for last chance corale
+				while (i < length) {
+					toTest = that[i];
+					while (toTest = toTest.parentNode) {
+						if (toTest == node) { break; }
+					}
+					if (!toTest) {
+						return false;
+					}
+				i++;
+				}
+			}
+			
+			return true;
 	};
 		
 

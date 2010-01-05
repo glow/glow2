@@ -4,7 +4,7 @@ function byId(id) {
 
 module('glow.NodeList traversal');
 
-test('glow.dom.NodeList#get', 7, function() {
+test('glow.NodeList#get', 7, function() {
 	
 	var myNodeList = new glow.NodeList('#testElmsContainer');
 	
@@ -55,7 +55,7 @@ test('glow.NodeList#parent', 5, function() {
 	
 });
 
-test('glow.dom.NodeList#prev', 5, function() {
+test('glow.NodeList#prev', 5, function() {
 	var myNodeList = new glow.NodeList('#innerEm2');
 	
 	equals(typeof myNodeList.prev, 'function', 'glow.NodeList#prev is function');
@@ -79,7 +79,7 @@ test('glow.dom.NodeList#prev', 5, function() {
 	equal(nodes[0], byId('firstspan'), "Skips comment nodes");
 });
 
-test('glow.dom.NodeList#next', 5, function() {
+test('glow.NodeList#next', 5, function() {
 	var myNodeList = new glow.NodeList('#innerEm1');
 
 	var nodes = myNodeList.next();
@@ -104,7 +104,7 @@ test('glow.dom.NodeList#next', 5, function() {
 });
 
 
-test('glow.dom.NodeList#ancestors', 13, function() {
+test('glow.NodeList#ancestors', 13, function() {
 	var myNodeList = new glow.NodeList('#innerDiv2');
 	
 	equal(typeof myNodeList.ancestors, 'function', 'glow.NodeList#ancestors is function');
@@ -138,7 +138,7 @@ test('glow.dom.NodeList#ancestors', 13, function() {
 	ok(nodes instanceof glow.NodeList, "Returns NodeList");
 });
 
-test('glow.dom.NodeList#children', 5, function() {
+test('glow.NodeList#children', 5, function() {
 	
 	var myNodeList = new glow.NodeList('#twoInnerDivs');
 	
@@ -158,7 +158,7 @@ test('glow.dom.NodeList#children', 5, function() {
 	
 });
 
-test('glow.dom.NodeList#contains', 2, function() {
+test('glow.NodeList#contains', 5, function() {
 	
 	var myNodeList = new glow.NodeList('#testElmsContainer');
 	
@@ -168,8 +168,27 @@ test('glow.dom.NodeList#contains', 2, function() {
 	
 	equal(typeof glow.NodeList, 'function', 'glow.NodeList is function');
 	
+	ok(foundResults, 'The toFindNodeList was found in myNodeList');
+	
+	var myNodeList = new glow.NodeList('#testElmsContainer');
+	
+	var toFindNodeList = new glow.NodeList('#testElmsContainer');
+	
+	var foundResults = myNodeList.contains(toFindNodeList);
 
 	
-	ok(foundResults, 'The toFindNodeList was found in myNodeList');
+	ok(foundResults, 'The toFindNodeList was found in myNodeList when two lists are the same');
+	
+	var foundResults = myNodeList.contains();
+		
+	ok(!foundResults, 'Returns false when no paramaters specified');
+	
+	var myNodeList = new glow.NodeList('#mixedcontents');
+	
+	var toFindNodeList = new glow.NodeList('#twoInnerEms');
+	
+	var foundResults = myNodeList.contains();
+		
+	ok(!foundResults, 'Returns false when items not in target list');
 	
 });
