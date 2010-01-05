@@ -41,14 +41,15 @@ Glow.provide(function(glow) {
 			var r = new glow.NodeList(),
 				i = 0,
 				args = arguments,
-				argsLen = args.length;
+				length = args.length;
 
-			for (; i < argsLen; i++) {
+			while (i < length) {
 				if (typeof args[i] == "string") {
 					r.push(new glow.NodeList().push(doc).get(args[i]));
 				} else {
 					r.push(args[i]);
 				}
+			i++;
 			}
 			return r;
 		};
@@ -73,11 +74,17 @@ Glow.provide(function(glow) {
 			i = 0,
 			length = this.length;
 
-			for (; i < length; i++) {
-				ret[ri++] = this[i].parentNode;
+			while (i < length) {
+				if(this[i].parentNode.nodeType == 1){
+					ret[ri++] = this[i].parentNode;
+				}
+			i++;
 			}
 				
 			return r.get(glow._sizzle.uniqueSort(ret));
+			
+			
+			
 	};
 	
 	/*
@@ -92,7 +99,7 @@ Glow.provide(function(glow) {
 			i = 0,
 			length = nodelist.length;
 
-		for (; i < length; i++) {
+		while (i < length) {
 			nextTmp = nodelist[i];
 			while (nextTmp = nextTmp[dir + "Sibling"]) {
 				if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
@@ -100,6 +107,7 @@ Glow.provide(function(glow) {
 					break;
 				}
 			}
+		i++;
 		}
 		return r.get(ret);
 	}
@@ -179,8 +187,9 @@ Glow.provide(function(glow) {
 			i = 0,
 			length = this.length;
 		
-		for (; i < length; i++) {						
+		while (i < length) {					
 			ret.push(glow._sizzle(selector, this[i]));
+			i++;
 		}
 		return ret;
 	};
@@ -214,10 +223,10 @@ Glow.provide(function(glow) {
 		while (i < length) {
 			elm = this[i].parentNode;
 					
-		while (elm && elm.nodeType == 1) {							
-				ret[ri++] = elm;
-						elm = elm.parentNode;
-				}								
+			while (elm && elm.nodeType == 1) {							
+					ret[ri++] = elm;
+					elm = elm.parentNode;
+			}								
 			i++;
 		}
 		if(filter){
@@ -284,8 +293,12 @@ Glow.provide(function(glow) {
 
 			Returns a new NodeList containing all the child nodes
 	*/
-	NodeListProto.contains = function(element) {};
-	
+	NodeListProto.contains = function(element) {
+		
+		return false;
+		
+	};
+		
 
 	
 });

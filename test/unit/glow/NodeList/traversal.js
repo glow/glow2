@@ -27,7 +27,7 @@ test('glow.dom.NodeList#get', 7, function() {
 	
 });
 
-test('glow.NodeList#parent', 3, function() {
+test('glow.NodeList#parent', 4, function() {
 	
 	var myNodeList = new glow.NodeList('#innerDiv1');
 	
@@ -44,7 +44,12 @@ test('glow.NodeList#parent', 3, function() {
 	nodes = myNodeList.parent();
 
 	equals(nodes[0], byId('twoInnerDivs'), "Gets only unique parents");
+	
+	myNodeList = new glow.NodeList("document");
 
+	nodes = myNodeList.parent();
+	
+	equals(nodes.length, 0, "Returns 0 when item has no parents");
 });
 
 test('glow.dom.NodeList#prev', 5, function() {
@@ -150,9 +155,18 @@ test('glow.dom.NodeList#children', 5, function() {
 	
 });
 
-test('glow.dom.NodeList#contains', 1, function() {
+test('glow.dom.NodeList#contains', 2, function() {
+	
+	var myNodeList = new glow.NodeList('#testElmsContainer');
+	
+	var toFindNodeList = new glow.NodeList('#mixedcontents');
+	
+	var foundResults = myNodeList.contains(toFindNodeList);
 	
 	equal(typeof glow.NodeList, 'function', 'glow.NodeList is function');
 	
+
+	
+	ok(foundResults, 'The toFindNodeList was found in myNodeList');
 	
 });
