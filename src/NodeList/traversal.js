@@ -1,8 +1,8 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype;
-
+	
 	/**
-		@name glow.dom.NodeList#parent
+		@name glow.NodeList#parent
 		@function
 		@description Gets the unique parent nodes of each node as a new NodeList.
 		The given nodelist will always be placed in the first element with no child elements.
@@ -22,12 +22,44 @@ Glow.provide(function(glow) {
 			i = 0,
 			length = this.length;
 
-			for (; i < length; i++) {
-				ret[ri++] = this[i].parentNode;
+			while (i < length) {
+				if(this[i].parentNode && this[i].parentNode.nodeType == 1){
+					ret[ri++] = this[i].parentNode;
+				}
+			i++;
 			}
 				
-			return r.get(unique(ret));
+			return new glow.NodeList(glow._sizzle.uniqueSort(ret));
+			
+			
+			
 	};
+	
+	/*
+		PrivateMethod: getNextOrPrev
+			This gets the next / previous sibling element of each node in a nodeset
+			and returns the new nodeset.
+	*/
+	function getNextOrPrev(nodelist, dir /* "next" or "previous" */) {
+		var ret = [],
+			ri = 0,
+			nextTmp,
+			i = 0,
+			length = nodelist.length;
+
+		while (i < length) {
+			nextTmp = nodelist[i];
+			while (nextTmp = nextTmp[dir + "Sibling"]) {
+				if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
+					ret[ri++] = nextTmp;
+					break;
+				}
+			}
+		i++;
+		}
+		return new glow.NodeList(ret);
+	}
+	
 	/**
 		@name glow.ElementList#prev
 		@function
@@ -51,7 +83,7 @@ Glow.provide(function(glow) {
 			glow.get('#skipLink').prev('a')
 	*/
 	NodeListProto.prev = function(filter) {
-		return this;
+		return getNextOrPrev(this, "previous");
 	};
 	
 	/**
@@ -77,16 +109,38 @@ Glow.provide(function(glow) {
 			glow.get('#skipLink').next('a')
 	*/
 	NodeListProto.next = function(filter) {
-			
+		return getNextOrPrev(this, "next");	
 	};
 	
 	
 	/**
-	@name glow.dom.NodeList#get
+	@name glow.NodeList#get
 	@function
-	
+	@description Gets decendents of nodes that match a CSS selector.
+
+	@param {String} selector CSS selector
+
+	@returns {glow.NodeList}
+		Returns a new NodeList containing matched elements
+
+	@example
+		// create a new NodeList
+		var myNodeList = glow.dom.create("<div><a href='s.html'>Link</a></div>");
+
+		// get 'a' tags that are decendants of the NodeList nodes
+		myNewNodeList = myNodeList.get("a");
 	*/
-	NodeListProto.get = function() {};
+	NodeListProto.get = function(selector) {
+		var ret = new glow.NodeList(),
+			i = 0,
+			length = this.length;
+		
+		while (i < length) {					
+			ret.push(glow._sizzle(selector, this[i]));
+			i++;
+		}
+		return new glow.NodeList(ret);
+	};
 	
 	
 	
@@ -117,17 +171,34 @@ Glow.provide(function(glow) {
 		while (i < length) {
 			elm = this[i].parentNode;
 					
-		while (elm && elm.nodeType == 1) {							
-				ret[ri++] = elm;
-						elm = elm.parentNode;
-				}								
+			while (elm && elm.nodeType == 1) {							
+					ret[ri++] = elm;
+					elm = elm.parentNode;
+			}								
 			i++;
 		}
 		if(filter){
 			ret.filter(filter);
 		}
-		return r.get(unique(ret));
+		return new glow.NodeList(glow._sizzle.uniqueSort(ret));
 	};
+	
+	/*
+			Get the child elements for an html node
+		*/
+		function getChildElms(node) {
+			var r = [],
+				childNodes = node.childNodes,
+				i = 0,
+				ri = 0;
+			
+			for (; childNodes[i]; i++) {
+				if (childNodes[i].nodeType == 1 && childNodes[i].nodeName != "!") {
+					r[ri++] = childNodes[i];
+				}
+			}
+			return r;
+		}
 	
 	/**
 		@name glow.dom.NodeList#children
@@ -153,7 +224,7 @@ Glow.provide(function(glow) {
 			for (; i < length; i++) {
 				ret = ret.concat( getChildElms(this[i]) );
 			}
-		return r.get(ret);	
+		return new glow.NodeList(ret);	
 	};
 	
 	/**
@@ -161,17 +232,60 @@ Glow.provide(function(glow) {
 		@function
 		@description Find if a NodeList contains the given element
 		
-		@param {string | Object} Element to check for
-		
-		
-			If value is omitted, the value for the given property will be returned
-			
-		@returns {glow.dom.NodeList}
+		@param {string | Object} Single element to check for
 
-			Returns a new NodeList containing all the child nodes
+		@returns {boolean}
+			myElementList.contains(elm)
+			// Returns true if an element in myElementList contains elm, or IS elm.
 	*/
-	NodeListProto.contains = function(element) {};
+	NodeListProto.contains = function(elm) {
+		var i = 0,
+			node = new glow.NodeList(elm)[0],
+			length = this.length,
+			newNodes,
+			toTest;
+
+			// missing some nodes? Return false
+			if ( !node || !this.length ) {
+				return false;
+			}
 	
+			if (this[0].compareDocumentPosition) { //w3 method
+				while (i < length) {
+					//break out if the two are teh same
+					if(this[i] == node){
+						break;
+					}
+					//check against bitwise to see if node is contained in this
+					else if (!(this[i].compareDocumentPosition(node) & 16)) {								
+						return false;
+					}
+				i++;
+				}
+			}
+			else if(node.contains){					
+				for (; i < length; i++) {
+					if ( !( this[i].contains( node  ) ) ) {
+						return false;
+					}
+				}
+			}				
+			else { //manual method for last chance corale
+				while (i < length) {
+					toTest = that[i];
+					while (toTest = toTest.parentNode) {
+						if (toTest == node) { break; }
+					}
+					if (!toTest) {
+						return false;
+					}
+				i++;
+				}
+			}
+			
+			return true;
+	};
+		
 
 	
 });

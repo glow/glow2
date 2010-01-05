@@ -44,7 +44,7 @@ Glow.provide(function(glow) {
 	NodeListProto.length = 0;
 	
 	/**
-		@name glow.NodeList#_strToNodes
+		@name glow.NodeList._strToNodes
 		@private
 		@function
 		@description Converts a string to an array of nodes
@@ -53,7 +53,7 @@ Glow.provide(function(glow) {
 		
 		@returns {Node[]} Array of nodes (including text / comment nodes)
 	*/
-	NodeListProto._strToNodes = (function() {
+	NodeList._strToNodes = (function() {
 		var	tmpDiv = document.createElement("div"),
 			// these wraps are in the format [depth to children, opening html, closing html]
 			tableWrap = [1, '<table>', '</table>'],
@@ -163,7 +163,7 @@ Glow.provide(function(glow) {
 		if (typeof nodes == 'string') {
 			// if the string begins <, treat it as html, otherwise it's a selector
 			if (nodes.charAt(0) == '<') {
-				nodes = this._strToNodes(nodes);
+				nodes = NodeList._strToNodes(nodes);
 			} else {
 				nodes = glow._sizzle(nodes)
 			}

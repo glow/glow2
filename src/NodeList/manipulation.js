@@ -1,8 +1,9 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype,
+		document = window.document,
 		undefined;
 	
-	// create a fragment from a collection of nodes
+	// create a fragment and insert a set of nodes into it
 	function createFragment(nodes) {
 		var fragment = document.createDocumentFragment(),
 			i = 0,
@@ -21,8 +22,15 @@ Glow.provide(function(glow) {
 	function afterAndBefore(after, insert) {
 		return function(elements) {
 			if (!this.length) { return this; }
-			elements = new glow.NodeList(elements);
-	
+			
+			// normalise 'elements'
+			// if we're dealing with append/prepend then strings are always treated as HTML strings
+			if (!insert && typeof elements == 'string') {
+				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
+			} else {
+				elements = new glow.NodeList(elements);
+			}
+			
 			var toAddList,
 				toAddToList,
 				fragmentToAdd,
@@ -37,7 +45,7 @@ Glow.provide(function(glow) {
 			}
 			else {
 				toAddToList = this;
-				toAddList = new glow.NodeList(elements);
+				toAddList = elements;
 			}
 			
 			nextFragmentToAdd = createFragment(toAddList);
@@ -66,8 +74,15 @@ Glow.provide(function(glow) {
 	function appendAndPrepend(append, to) {
 		return function(elements) {
 			if (!this.length) { return this; }
-			elements = new glow.NodeList(elements);
-	
+			
+			// normalise 'elements'
+			// if we're dealing with append/prepend then strings are always treated as HTML strings
+			if (!to && typeof elements == 'string') {
+				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
+			} else {
+				elements = new glow.NodeList(elements);
+			}
+			
 			var toAddList,
 				toAddToList,
 				fragmentToAdd,
@@ -81,7 +96,7 @@ Glow.provide(function(glow) {
 			}
 			else {
 				toAddToList = this;
-				toAddList = new glow.NodeList(elements);
+				toAddList = elements;
 			}
 			
 			nextFragmentToAdd = createFragment(toAddList);
@@ -111,8 +126,7 @@ Glow.provide(function(glow) {
 		@description Inserts nodes after each nodes.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Node(s) to insert
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 			
 			If there is more than one node in the NodeList, 'nodes'
 			will be inserted after the first element and clones will be
@@ -135,8 +149,7 @@ Glow.provide(function(glow) {
 			inserted before each subsequent element.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to insert
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 		
 		@returns {glow.NodeList} Original element list
 		
@@ -155,8 +168,7 @@ Glow.provide(function(glow) {
 			elements.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to append
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 		
 		@returns {glow.NodeList} Original element list
 		
@@ -175,8 +187,7 @@ Glow.provide(function(glow) {
 			elements.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to prepend
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 		
 		@returns {glow.NodeList} Original element list
 		
@@ -271,13 +282,22 @@ Glow.provide(function(glow) {
 			The element, attached listeners & attached data will be
 			destroyed to free up memory.
 			
+			Detroyed elements may not be reused in some browsers.
+			
 		@returns {glow.NodeList} An empty NodeList
 		
 		@example
 			// destroy all links in the document
 			glow("a").destroy();
 	*/
-	NodeListProto.destroy = function() {};
+	var tmpDiv = document.createElement('div');
+	
+	NodeListProto.destroy = function() {
+		// TODO: destory data & events
+		this.appendTo(tmpDiv);
+		tmpDiv.innerHTML = '';
+		return new glow.NodeList();
+	};
 	
 	/**
 		@name glow.NodeList#remove
@@ -292,20 +312,58 @@ Glow.provide(function(glow) {
 			// take all the links out of a document
 			glow("a").remove();
 	*/
-	NodeListProto.remove = function() {};
+	NodeListProto.remove = function() {
+		var parent,
+			node,
+			i = this.length;
+		
+		while (i--) {
+			node = this[i];
+			if (parent = node.parentNode) {
+				parent.removeChild(node);
+			}
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#empty
 		@function
-		@description Removes the elements' contents
+		@description Removes the nodes' contents
 
-		@returns {glow.NodeList} Original elements
+		@returns {glow.NodeList} Original nodes
 
 		@example
 			// remove the contents of all textareas
 			glow("textarea").empty();
 	*/
-	NodeListProto.empty = function() {};
+	// TODO: is this shortcut worth doing?
+	NodeListProto.empty = glow.env.ie ?
+		// When you clean an element out using innerHTML it destroys its inner text nodes in IE8 and below
+		// Here's an alternative method for IE:
+		function() {
+			var i = this.length, node, child;
+			
+			while (i--) {
+				node = this[i];
+				while (child = node.firstChild) {
+					node.removeChild(child);
+				}
+			}
+			
+			return this;
+		} :
+		// method for most browsers
+		function() {
+			var i = this.length;
+			
+			while (i--) {
+				this[i].innerHTML = '';
+			}
+			
+			return this;
+		}
 
 	/**
 		@name glow.NodeList#replaceWith
@@ -318,9 +376,11 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.NodeList} The replaced elements
 			Call {@link glow.NodeList#destroy destroy} on these if you
-			no longer need them
+			no longer need them.
 	*/
-	NodeListProto.replaceWith = function(elements) {};
+	NodeListProto.replaceWith = function(elements) {
+		return this.after(elements).remove();
+	};
 	
 	/**
 		@name glow.NodeList#wrap
@@ -348,7 +408,57 @@ Glow.provide(function(glow) {
 			// </div>
 			
 	*/
-	NodeListProto.wrap = function(wrapper) {};
+	// get first child element node of an element, otherwise undefined
+	function getFirstChildElm(parent) {					
+		for (var child = parent.firstChild; child; child = child.nextSibling) {
+			if (child.nodeType == 1) {
+				return child;
+			}			
+		}			
+		return undefined;			
+	}
+	
+	NodeListProto.wrap = function(wrapper) {
+		// normalise input
+		wrapper = new glow.NodeList(wrapper);
+		
+		// escape if the wraper is non-existant or not an element
+		if (!wrapper[0] || wrapper[0].nodeType != 1) {
+			return this;
+		}
+		
+		var toWrap,
+			toWrapTarget,
+			firstChildElm;
+		
+		for (var i = 0, leni = this.length; i<leni; i++) {
+			toWrap = this[i];
+			// get target element to insert toWrap in
+			toWrapTarget = wrapper[0];
+			
+			while (toWrapTarget) {
+				firstChildElm = getFirstChildElm(toWrapTarget);
+					
+				if (!firstChildElm) {
+					break;
+				}
+				toWrapTarget = firstChildElm;
+			}
+			
+			if (toWrap.parentNode) {						
+				wrapper.insertBefore(toWrap);													
+			}
+			
+			// If wrapping multiple nodes, we need to take a clean copy of the wrapping nodes
+			if (i != leni-1) {
+				wrapper = wrapper.clone();
+			}
+			
+			toWrapTarget.appendChild(toWrap);
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#unwrap
@@ -363,7 +473,29 @@ Glow.provide(function(glow) {
 			glow("#mySpan").unwrap();
 			// After: <div><span id="mySpan">Hello</span></div>
 	*/
-	NodeListProto.unwrap = function() {};
+	NodeListProto.unwrap = function() {
+		var parentToRemove,
+			childNodes,
+			// get unique parents
+			parentsToRemove = this.parent();
+		
+		for (var i = 0, leni = parentsToRemove.length; i < leni; i++) {				
+			parentToRemove = parentsToRemove.slice(i, i+1);
+			// make sure we get all children, including text nodes
+			childNodes = new glow.NodeList( parentToRemove[0].childNodes );
+			
+			// if the item we're removing has no new parent (i.e. is not in document), then we just remove the child and destroy the old parent
+			if (!parentToRemove[0].parentNode){
+				childNodes.remove();
+				parentToRemove.destroy();
+			}
+			else {
+				childNodes.insertBefore(parentToRemove);
+				parentToRemove.destroy();							
+			}
+		}
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#clone
@@ -378,11 +510,16 @@ Glow.provide(function(glow) {
 			// get a copy of all heading elements
 			var myClones = glow.get("h1, h2, h3, h4, h5, h6").clone();
 	*/
-	
 	NodeListProto.clone = function() {
-		return new glow.NodeList(
-			createFragment(this).cloneNode(true).childNodes
-		)
+		// TODO: make this work with events and data
+		var nodes = [],
+			i = this.length;
+		
+		while (i--) {
+			nodes[i] = this[i].cloneNode(true);
+		}
+		
+		return new glow.NodeList(nodes);
 	};
 	
 	/**
@@ -398,7 +535,16 @@ Glow.provide(function(glow) {
 			// get a copy of all heading elements
 			var myCopies = glow.get("h1, h2, h3, h4, h5, h6").copy();
 	*/
-	NodeListProto.copy = function() {};
+	NodeListProto.copy = function() {
+		var nodes = [],
+			i = this.length;
+		
+		while (i--) {
+			nodes[i] = this[i].cloneNode(true);
+		}
+		
+		return new glow.NodeList(nodes);
+	};
 	
 	/**
 		@name glow.NodeList#html
@@ -407,7 +553,7 @@ Glow.provide(function(glow) {
 			Either gets content of the first element, or sets the content
 			for all elements in the list
 			
-		@param {String} [html] String to set as the HTML of elements
+		@param {String} [htmlString] String to set as the HTML of elements
 			If omitted, the html for the first element in the list is
 			returned.
 		
@@ -423,7 +569,33 @@ Glow.provide(function(glow) {
 			// set a new footer
 			glow("#footer").html("<strong>Hello World!</strong>");
 	*/
-	NodeListProto.html = function(html) {};
+	NodeListProto.html = function(htmlString) {
+		// getting
+		if (!arguments.length) {
+			return this[0] ? this[0].innerHTML : '';
+		}
+		
+		// setting
+		var i = this.length,
+			node;
+		
+		// normalise the string
+		htmlString = htmlString ? String(htmlString): '';
+		
+		while (i--) {
+			node = this[i];
+			if (node.nodeType == 1) {
+				try {
+					// this has a habit of failing in IE for some elements
+					node.innerHTML = htmlString;
+				} catch (e) {
+					new glow.NodeList(node).empty().append(htmlString);
+				}
+			}
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#text
