@@ -22,8 +22,15 @@ Glow.provide(function(glow) {
 	function afterAndBefore(after, insert) {
 		return function(elements) {
 			if (!this.length) { return this; }
-			elements = new glow.NodeList(elements);
-	
+			
+			// normalise 'elements'
+			// if we're dealing with append/prepend then strings are always treated as HTML strings
+			if (!insert && typeof elements == 'string') {
+				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
+			} else {
+				elements = new glow.NodeList(elements);
+			}
+			
 			var toAddList,
 				toAddToList,
 				fragmentToAdd,
@@ -38,7 +45,7 @@ Glow.provide(function(glow) {
 			}
 			else {
 				toAddToList = this;
-				toAddList = new glow.NodeList(elements);
+				toAddList = elements;
 			}
 			
 			nextFragmentToAdd = createFragment(toAddList);
@@ -67,8 +74,15 @@ Glow.provide(function(glow) {
 	function appendAndPrepend(append, to) {
 		return function(elements) {
 			if (!this.length) { return this; }
-			elements = new glow.NodeList(elements);
-	
+			
+			// normalise 'elements'
+			// if we're dealing with append/prepend then strings are always treated as HTML strings
+			if (!to && typeof elements == 'string') {
+				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
+			} else {
+				elements = new glow.NodeList(elements);
+			}
+			
 			var toAddList,
 				toAddToList,
 				fragmentToAdd,
@@ -82,7 +96,7 @@ Glow.provide(function(glow) {
 			}
 			else {
 				toAddToList = this;
-				toAddList = new glow.NodeList(elements);
+				toAddList = elements;
 			}
 			
 			nextFragmentToAdd = createFragment(toAddList);
@@ -112,8 +126,7 @@ Glow.provide(function(glow) {
 		@description Inserts nodes after each nodes.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Node(s) to insert
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 			
 			If there is more than one node in the NodeList, 'nodes'
 			will be inserted after the first element and clones will be
@@ -136,8 +149,7 @@ Glow.provide(function(glow) {
 			inserted before each subsequent element.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to insert
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 		
 		@returns {glow.NodeList} Original element list
 		
@@ -156,8 +168,7 @@ Glow.provide(function(glow) {
 			elements.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to append
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 		
 		@returns {glow.NodeList} Original element list
 		
@@ -176,8 +187,7 @@ Glow.provide(function(glow) {
 			elements.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to prepend
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+			Strings will be treated as HTML strings.
 		
 		@returns {glow.NodeList} Original element list
 		
@@ -543,7 +553,7 @@ Glow.provide(function(glow) {
 			Either gets content of the first element, or sets the content
 			for all elements in the list
 			
-		@param {String} [html] String to set as the HTML of elements
+		@param {String} [htmlString] String to set as the HTML of elements
 			If omitted, the html for the first element in the list is
 			returned.
 		
@@ -559,7 +569,33 @@ Glow.provide(function(glow) {
 			// set a new footer
 			glow("#footer").html("<strong>Hello World!</strong>");
 	*/
-	NodeListProto.html = function(html) {};
+	NodeListProto.html = function(htmlString) {
+		// getting
+		if (!arguments.length) {
+			return this[0] ? this[0].innerHTML : '';
+		}
+		
+		// setting
+		var i = this.length,
+			node;
+		
+		// normalise the string
+		htmlString = htmlString ? String(htmlString): '';
+		
+		while (i--) {
+			node = this[i];
+			if (node.nodeType == 1) {
+				try {
+					// this has a habit of failing in IE for some elements
+					node.innerHTML = htmlString;
+				} catch (e) {
+					new glow.NodeList(node).empty().append(htmlString);
+				}
+			}
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#text
