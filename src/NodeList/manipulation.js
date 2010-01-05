@@ -500,8 +500,8 @@ Glow.provide(function(glow) {
 			// get a copy of all heading elements
 			var myClones = glow.get("h1, h2, h3, h4, h5, h6").clone();
 	*/
-	
 	NodeListProto.clone = function() {
+		// TODO: make this work with events and data
 		var nodes = [],
 			i = this.length;
 		
@@ -525,7 +525,16 @@ Glow.provide(function(glow) {
 			// get a copy of all heading elements
 			var myCopies = glow.get("h1, h2, h3, h4, h5, h6").copy();
 	*/
-	NodeListProto.copy = function() {};
+	NodeListProto.copy = function() {
+		var nodes = [],
+			i = this.length;
+		
+		while (i--) {
+			nodes[i] = this[i].cloneNode(true);
+		}
+		
+		return new glow.NodeList(nodes);
+	};
 	
 	/**
 		@name glow.NodeList#html

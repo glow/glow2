@@ -46,6 +46,32 @@ test('glow.NodeList#clone events preserving', 0, function() {
 	ok(false, 'todo, waiting for events & data');
 });
 
+module('glow.NodeList#clone', {setup:setup, teardown:teardown});
+
+test('glow.NodeList#copy', 12, function() {
+	var myNodeList = new glow.NodeList('#innerDiv1, #innerDiv2'),
+		copies,
+		divParent = myNodeList[0].parentNode;
+	
+	equal(typeof myNodeList.copy, 'function', 'glow.NodeList#copy is a function');
+	
+	copies = myNodeList.copy();
+	
+	equal(copies.constructor, glow.NodeList, 'returns nodelist');
+	notEqual(copies, myNodeList, 'returns new nodelist');
+	
+	notEqual( copies[0], myNodeList[0], 'First elements aren\'t equal' );
+	notEqual( copies[1], myNodeList[1], 'Second elements aren\'t equal' );
+	equal( copies.length, myNodeList.length, 'Lengths are equal' );
+	
+	equal(copies[0].nodeName, 'DIV', 'copy is div');
+	equal(copies[0].firstChild.nodeValue, 'D', 'copied inner text node');
+	equal(myNodeList[0].parentNode, divParent, 'original hasn\'t moved');
+	equal(copies[1].nodeName, 'DIV', 'copy is div');
+	equal(copies[1].firstChild.nodeValue, 'C', 'copied inner text node');
+	equal(myNodeList[1].parentNode, divParent, 'original hasn\'t moved');
+});
+
 module('glow.NodeList#after', {setup:setup, teardown:teardown});
 
 test('glow.NodeList#after html string (single elm)', 6, function() {
