@@ -3,26 +3,15 @@ Glow.provide(function(glow) {
 	
 	/**
 		@private
-		@name glow.NodeList-dom0BooleanAttribute
-		@description The HTML attributes names that should be converted from true/false
-		to ATTRIBUTENAME/undefined (i.e. boolean attributes like checked="checked").
-	*/
-	var dom0BooleanAttribute = {
-		checked  : true,
-		disabled : true
-	};
-	
-	/**
-		@private
 		@name glow.NodeList-dom0PropertyMapping
 		@description Mapping of HTML attribute names to DOM0 property names.
 	*/
 	var dom0PropertyMapping = {
-		checked     : 'checked',
+		//'checked'   : 'checked',
 		'class'     : 'className',
-		disabled    : 'disabled',
+		//'disabled'  : 'disabled',
 		'for'       : 'htmlFor',
-		maxlength   : 'maxLength'
+		'maxlength' : 'maxLength'
 	};
 			
 	/**
@@ -78,7 +67,7 @@ Glow.provide(function(glow) {
 		returns the attribute value. The attribute name is always treated as
 		case-insensitive. When getting, the returned value will be of type string unless
 		that particular attribute was never set and there is no default value, in which
-		case the returned value will be undefined.
+		case the returned value will be an empty string.
 
 	@example
 		var myNodeList = glow(".myImgClass");
@@ -95,62 +84,69 @@ Glow.provide(function(glow) {
 		  alt: "Cat jumping through a field"
 		});
 	 */
+	 // see: http://tobielangel.com/2007/1/11/attribute-nightmare-in-ie/
 	NodeListProto.attr = function(/*arguments*/) {
+//log.info("~ myNodeList.attr('"+arguments[0]+"', '"+arguments[1]+"') ...");
+
 		var that = this,           // assist compressor
 			args = arguments,      // assist compressor
 			argsLen = args.length, // assist compressor
-			
-			keyvals = args[0],     // using this API: attr({key: val})
-			
-			name = args[0],        // or using this API: attr(name, value)
-			value = args[1];
+			name = keyvals = args[0],     // using this API: attr(name) or attr({key: val}) ?
+			dom0Property = '';
 
-		if (that.length === 0) { return argsLen > 1 ? that : undefined; }
-		
-		// setting multiple attributes
-		if (typeof keyvals === 'object') {
-			for (var key in keyvals) {
-				if (keyvals.hasOwnProperty(key)) { that.attr(key, keyvals[key]); } // recursive
-			}
-			return that;
+		if (that.length === 0) { // is this an empty nodelist?
+			if (argsLen > 1) { return that; }
+			else { return; }
 		}
 		
-		// passed a name and value, setting an attribute on every node
-		if (argsLen > 1) {
-			// in IE6 and IE7 the attribute name needs to be translated into dom property name
-			if (glow.env.ie < 8 && dom0PropertyMapping[name]) { name = dom0PropertyMapping[name]; }
+		if (typeof name === 'string') {
+			if (argsLen === 1) { // GETting value from name
+				if (that[0].nodeType !== 1) { return; } // todo: should this try the first node or the first node that is an element?
 			
-			for (var i = 0, leni = that.length; i < leni; i++) {
-				if (that[i].nodeType === 1) { that[i].setAttribute(name, value, 0); }
+				if (typeof that[0].attributes[name] != 'undefined') {  // is an object in  IE
+					if (that[0].attributes[name].specified) {
+						return that[0].attributes[name].value;
+					}
+					else return '';
+				}
+				
+				if (that[0].getAttributeNode) { //glow.env.ie < 8) { // IE6 and IE7 wrongly return null for undefined attribues via getAttribute()
+					if (that[0].getAttributeNode(name, 0) === null) { return ''; }
+				}
+
+				if (that[0].nodeName === 'FORM' && that[0].getAttributeNode(name)) {
+					return that[0].getAttributeNode(name).nodeValue;
+				}
+
+				value = that[0].getAttribute(name, 0, 2); // IE flags, 0: case-insensitive, 2: as string
+				return (value === null)? '' : value;
 			}
-			
-			return that;
+			else { // SETting value like attr(name, value)
+				keyvals = {};
+				keyvals[args[0]] = args[1];
+			}
 		}
 		
-		// getting the first node's attribute value
-		if (dom0PropertyMapping[name]) { // attribute name needs to be translated into dom property name
-			// in ie, 0: case-insensitive, 2: as string
-			value = that[0].getAttribute(dom0PropertyMapping[name], 0, 2);
-			
-			if (dom0BooleanAttribute[name]) {
-				return value ? name : undefined;
+		for (name in keyvals) { // SETting value from {name: value} object
+			if (keyvals.hasOwnProperty(name)) {
+				// in IE6 and IE7 the attribute name needs to be translated into dom property name
+				dom0Property = (glow.env.ie < 8 && dom0PropertyMapping[name])?
+					dom0PropertyMapping[name] : '';
+				
+				for (var i = 0, leni = that.length; i < leni; i++) {
+					if (that[i].nodeType === 1) {
+						if (dom0Property) {
+							that[i][dom0Property] = keyvals[name];
+						}
+						else {
+							that[i].setAttribute(name, keyvals[name], 0);
+						}
+					}
+				}
 			}
-			else if (dom0AttributeMappings[name]) {
-				return dom0AttributeMappings[name](value);
-			}
-			
-			return value;
 		}
-		else {
-			if (glow.env.ie < 8) { // IE6 and IE7 return wrong things for undefined attribues via getAttribute()
-				if (that[0].getAttributeNode(name, 0) === null) { return undefined; }
-			}
-			
-			// in IE, 0: case-insensitive, 2: as string
-			var attr = that[0].getAttribute(name, 0, 2);
-			
-			return (attr === null)? undefined : attr;
-		}
+		
+		return that;
 	};
 		
 	/**
@@ -189,7 +185,9 @@ Glow.provide(function(glow) {
 		
 	@param {string} name The name of the attribute to test for.
 
-	@returns {boolean}
+	@returns {boolean|undefined} Returns undefined if the first node is not an element,
+	or if the NodeList is empty, otherwise returns true/false to indicate if that attribute exists
+	on the first element.
 
 	@example
 		if ( glow("#myImg").hasAttr("alt") ){
@@ -197,7 +195,16 @@ Glow.provide(function(glow) {
 		}
 	*/
 	NodeListProto.hasAttr = function (name) {
-		if (this.length) { return this.attr(name) !== undefined; }
+//log.info("~ myNodeList.hasAttr('"+name+"') ...");
+
+		var that = this;	
+		if (that.length && that[0].nodeType === 1) {
+			if (typeof that[0].attributes[name] != 'undefined') { // is an object in  IE
+				return !!that[0].attributes[name].specified;
+			}
+			if (that[0].hasAttribute) { return that[0].hasAttribute(name); } // like FF, Safari, etc
+			else { return typeof that[0].attributes[name] != 'undefined'; } // like IE7
+		}
 	};
 	
 	/**
@@ -260,7 +267,33 @@ Glow.provide(function(glow) {
 			_secretValue: 10
 		});
 	*/
-	NodeListProto.prop = function(name, value) {
+	NodeListProto.prop = function(name, val) {
+		var hash = name,
+			argsLen = arguments.length,
+			that = this;
+		
+		if (that.length === 0) return;
+		
+		if (argsLen === 2 && typeof name === 'string') {
+			for (var i = 0, ilen = that.length; i < ilen; i++) {
+				if (that[i].nodeType === 1) { that[i][name] = val; }
+			}
+			return that;
+		}
+		else if (argsLen === 1 && hash.constructor === Object) {
+			for (var key in hash) {
+				for (var i = 0, ilen = that.length; i < ilen; i++) {
+					if (that[i].nodeType === 1) { that[i][key] = hash[key]; }
+				}
+			}
+			return that;
+		}
+		else if (argsLen === 1 && typeof name === 'string') {
+			if (that[0].nodeType === 1) { return that[0][name]; }
+		}
+		else {
+			throw new Error('Invalid parameters.');
+		}
 	};
 	
 	/**
@@ -276,13 +309,15 @@ Glow.provide(function(glow) {
 		glow("a").removeAttr("target");
 	*/
 	NodeListProto.removeAttr = function (name) {
-		var mapping = glow.env.ie && dom0PropertyMapping[name],
-			that = this;
+		var that = this;
 
 		for (var i = 0, leni = that.length; i < leni; i++) {
 			if (that[i].nodeType === 1) {
-				if (mapping) { that[i][mapping] = ''; }
-				else { that[i].removeAttribute(name); }
+				if (glow.env.ie && dom0PropertyMapping[name]) {
+					that[i][dom0PropertyMapping[name]] = '';
+				}
+				
+				that[i].removeAttribute(name);
 			}
 		}
 		return that;

@@ -28,7 +28,7 @@ test('glow.NodeList#addClass', 4, function() {
 	equal((myNodeList[3].className||''), '', 'Comment does not get new class.');
 });
 
-test('glow.NodeList#attr', 14, function() {
+test('glow.NodeList#attr', 24, function() {
 	var myNodeList = new glow.NodeList('<p title="theTitle" lang="en-uk"></p>text<span lang="en-us"></span><!-- comment -->');
 	
 	// test this: getting an attribute
@@ -38,7 +38,7 @@ test('glow.NodeList#attr', 14, function() {
 	
 	equal(lang, 'en-uk', 'Can get the existing lang attribute of a paragraph.');
 	equal(title, 'theTitle', 'Can get the existing title attribute of a paragraph.');
-	equal(nonexist, undefined, 'Can get a non-existant attribute, as undefined.');
+	equal(nonexist, '', 'Can get a non-existant attribute, as an empty string.');
 	
 	// test this: setting the value of an attribute with a default value with a single name and a single value
 	myNodeList.attr('title', 'newTitle');
@@ -70,7 +70,7 @@ test('glow.NodeList#attr', 14, function() {
 	equal(title, 'caseyTitle', 'Can set and get the title using different case names.');
 	
 	// test this: getting attribute with same name as dom property does not return the dom property
-	equal(myNodeList.attr('childNodes'), undefined, 'Getting attribute with same name as dom property does not return the dom property.');
+	equal(myNodeList.attr('childNodes'), '', 'Getting attribute with same name as dom property does not return the dom property.');
 	
 	myNodeList = new glow.NodeList();
 	
@@ -83,28 +83,87 @@ test('glow.NodeList#attr', 14, function() {
 	title = myNodeList.attr('title');
 	
 	equal(title, undefined, 'Getting an attribute from an empty list returns undefined.');
+	
+	// test this: getting and setting attributes on a form element
+	myNodeList = new glow.NodeList('<form action="foo" purpose="register" method="get"><input name="method" id="method" type="text"><input name="purpose" id="purpose" type="text"><input name="unicorns" id="unicorns" type="text"></form>');
+	var method = myNodeList.attr('method');
+	if (typeof method !== 'string') method = 'error - not a string!';
+	equal(method, 'get', 'Getting standard attribute on a form with a same-named input.');
+	equal(myNodeList.attr('purpose'), 'register', 'Getting custom attribute on a form with a same-named input.');
+	equal(myNodeList.attr('unicorns'), '', 'Getting undefined attribute on a form with a same-named input.');
+
+	myNodeList.attr('method', 'post');
+	method = myNodeList[0].childNodes[0] || {nodeName: ''};
+	equal(method.nodeName.toLowerCase(), 'input', 'Setting attribute on a form with a same-named input.');
+	
+	// test this: attributes that refer to event handlers
+	myNodeList = new glow.NodeList("<a href=\"/index.html\" onclick=\"alert('Back home!')\">Home</a>");
+	var onclick = myNodeList.attr('onclick'), // defined
+		onmouseover = myNodeList.attr('onmouseover'); // not defined
+	equal(!!onclick, true, 'Getting event handler defined as an attribute returns a value.');
+	equal(!!onmouseover, false, 'Getting event handler not defined as an attribute returns no value.');
+	
+	// test this: case insensitivity
+	myNodeList = new glow.NodeList("<a TiTlE='go home' href='/index.html'>Home</a>");
+	var title = myNodeList.attr('title');
+	myNodeList.attr('title', 'index page');
+	var title2 = myNodeList.attr('title');
+	
+    equal(title, 'go home', 'Getting an attribute with a different case.');
+	equal(title2, 'index page', 'Setting an attribute with a different case.');
+    
+	// test this: some attribute names are special or case-sensitive in the borken browsers
+	myNodeList = new glow.NodeList('<label for="email" class="my-class">Email</label><input name="email" id="email" type="text" maxlength="42" />');
+	equal(myNodeList.attr('for'), 'email', 'Getting an attribute with a special name, like "for", returns the correct value.');
+	myNodeList = new glow.NodeList(myNodeList[1]);
+	equal(myNodeList.attr('maxlength'), '42', 'Getting an attribute with a special name, like "maxlength", returns the correct value.');
+	
 });
 
-test('glow.NodeList#hasAttr', 6, function() {
+test('glow.NodeList#hasAttr', 11, function() {
 	var myNodeList = new glow.NodeList('<p title="" lang="en-uk"></p>text<span title="someTitle"></span><!-- comment -->');
 	
-	// test this: getting an attribute
+	// test this: checking if a node has an attribute
 	var hasLang = myNodeList.hasAttr('lang'),
 		hasTitle = myNodeList.hasAttr('title'),
 		hasNonexist = myNodeList.hasAttr('flyingspaghettimonster'),
 		hasDomprop = myNodeList.hasAttr('childNodes');
 	
-	equal(hasLang, true, 'Test if a defined node has a defined attribute.');
+	equal(hasLang, true, 'An attribute with a value set to a non-empty string returns true.');
 	// NOTE: An undefined attribute with a default value MAY be set automatically the browser
-	equal(hasTitle, true, 'Test if a node has an empty but defined attribute.');
-	equal(hasNonexist, false, 'Test if a node has a non-existent attribute.');
-	equal(hasDomprop, false, 'Test if a node has an undefined attribute with same name as dom property.');
+	equal(hasTitle, true, 'An attribute with a value set to the empty string returns true.');
+	equal(hasNonexist, false, 'An non-existent attribute returns false.');
+	equal(hasDomprop, false, 'An undefined attribute with same name as dom property returns false.');
 	
+	// test this: trying to call hasAttr on an empty nodelist
 	myNodeList = new glow.NodeList();
-	equal(myNodeList.hasAttr('unicorns'), undefined, 'Test if an attribute of an empty node list is undefined.');
+	equal(myNodeList.hasAttr('unicorns'), undefined, 'Calling hasAttr() on an empty NodeList returns undefined.');
 	
 	myNodeList = new glow.NodeList(myNodeList[1]);
-	equal(myNodeList.hasAttr('rainbows'), undefined, 'Attribute of an text node is undefined.');
+	equal(myNodeList.hasAttr('rainbows'), undefined, 'Calling hasAttr() on a text node returns undefined.');
+	
+	// test this: case insensitivity
+	myNodeList = new glow.NodeList("<a REL='index' href='/index.html')\">Home</a>");
+	
+	equal(myNodeList.hasAttr('rel'), true, 'Case differences of attribute do not prevent hasAttr() from detecting it.');
+	
+	// test this: forms
+	myNodeList = new glow.NodeList('<form action="foo" method="get"><input name="email" id="email" type="checkbox" checked /><input name="purpose" id="purpose" type="text"><input name="unicorns" id="unicorns" type="text"></form>');
+	
+	var hasAction = myNodeList.hasAttr('action'), // yes
+		hasEmail = myNodeList.hasAttr('email'); // no
+		
+	equal(hasAction, true, 'Calling hasAttr() on a defined form attribute returns true.');
+	equal(hasEmail, false, 'Calling hasAttr() on an undefined form attribute with same name as an input element returns false.');
+	
+	myNodeList = new glow.NodeList('<input name="email" id="email" type="checkbox" checked />');
+	
+	var hasChecked = myNodeList.hasAttr('checked'), // yes
+		hasMaxlength = myNodeList.hasAttr('maxlength'); // no
+		
+	equal(hasChecked, true, 'Calling hasAttr() on an existing input attribute with no value returns true.');
+	equal(hasMaxlength, false, 'Calling hasAttr() on an undefined input attribute with a default value, like maxlength, returns false.');
+
 });
 
 test('glow.NodeList#hasClass', 6, function() {
@@ -129,25 +188,43 @@ test('glow.NodeList#hasClass', 6, function() {
 	
 });
 
-test('glow.NodeList#removeAttr', 4, function() {
+test('glow.NodeList#removeAttr', 9, function() {
 	var myNodeList = new glow.NodeList('<p title="aTitle" lang="en-uk"></p><span title="someTitle"></span><!-- comment -->');
 	
 	myNodeList.removeAttr('lang');
 	myNodeList.removeAttr('title');
 	myNodeList.removeAttr('unicorns');
 	
-	var hasLang = myNodeList.attr('lang'),
-		hasTitle1 = myNodeList.attr('title'),
-		hasNonexist = myNodeList.attr('unicorns');
+	var hasLang = myNodeList.hasAttr('lang'),
+		hasTitle1 = myNodeList.hasAttr('title'),
+		hasNonexist = myNodeList.hasAttr('unicorns');
 	
-	equal(hasLang||undefined, undefined, 'Removed an attribute from first element.');
-	equal(hasTitle1||undefined, undefined, 'Removed another attribute from first element.');
-	equal(hasNonexist, undefined, 'Removed non-existent attribute from first element.');
+	equal(hasLang, false, 'Removed an attribute from first element.');
+	equal(hasTitle1, false, 'Removed another attribute from first element.');
+	equal(hasNonexist, false, 'Removed non-existent attribute from first element.');
 	
 	myNodeList = new glow.NodeList(myNodeList[1]);
 	
 	var hasTitle2 = myNodeList.attr('title');
-	equal(hasTitle2||undefined, undefined, 'Removed an attribute from second element.');
+	equal(hasTitle2, '', 'Removed an attribute from second element.');
+	
+	// test this: case sensitivity
+	myNodeList = new glow.NodeList("<a TaRgEt='_blank' href='/index.html')\">Home</a>");
+	
+	myNodeList.removeAttr('target');
+	equal(myNodeList[0].target, '', 'Removing an attribute with different case.');
+	
+	// test this: removing special attributes
+	myNodeList = new glow.NodeList("<a class='linky' href='/index.html' onclick=\"alert('Back home!')\">Home</a>");
+	
+	ok(/\bindex\.html$/.test(myNodeList[0].href), 'A href attribute was defined.');
+	equal(myNodeList[0].className, 'linky', 'A class attribute was defined.');
+
+	myNodeList.removeAttr('href');
+	myNodeList.removeAttr('class');
+	
+	equal(myNodeList[0].href, '', 'Removing an href attribute of an anchor tag empties the href property.');
+	equal(myNodeList[0].className, '', 'Removing a class attribute by removing "class" empties the className property.');
 });
 
 test('glow.NodeList#removeClass', 6, function() {
@@ -165,4 +242,42 @@ test('glow.NodeList#removeClass', 6, function() {
 	
 	myNodeList.removeClass('three');
 	equal(myNodeList[0].className, '', 'Removed the last class.');
+});
+
+test('glow.NodeList#prop', 9, function() {
+	myNodeList = new glow.NodeList('<form action="process.php" target="popup" method="get"></form>Read<a href="terms.php">our Terms of service</a><!--comment-->');
+	var form = myNodeList[0];
+	
+	var target = myNodeList.prop('target');
+	equal(form.target, 'popup', 'Read a standard property from a form.');
+	
+	myNodeList.prop('target', '_blank');
+	equal(form.target, '_blank', 'Set a standard property on a form.');
+	
+	myNodeList.prop({'title': 'hello', 'className': 'myclass'});
+	equal(form.title, 'hello', 'Set a standard property on a form via an object.');
+	equal(form.className, 'myclass', 'Set multiple properties on a form via an object.');
+	equal(myNodeList[2].className, 'myclass', 'Set multiple properties on multiple nodes.');
+	
+	try {
+		myNodeList.prop();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments to prop throws an error.');
+	}
+	
+	try {
+		myNodeList.prop('a', 'b', 'c');
+	}
+	catch(e) {
+		ok(true, 'Passing more than 2 arguments to prop throws an error.');
+	}
+	
+	myNodeList = new glow.NodeList();
+	var emptyProp = myNodeList.prop('stuff');
+	equal(emptyProp, undefined, 'Reading prop from an empty list returns undefined.');
+	
+	myNodeList = new glow.NodeList(myNodeList[1]);
+	var textProp = myNodeList.prop('stuff');
+	equal(textProp, undefined, 'Reading prop from a text node returns undefined.');
 });
