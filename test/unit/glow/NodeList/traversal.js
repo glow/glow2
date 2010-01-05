@@ -27,7 +27,7 @@ test('glow.dom.NodeList#get', 7, function() {
 	
 });
 
-test('glow.NodeList#parent', 4, function() {
+test('glow.NodeList#parent', 5, function() {
 	
 	var myNodeList = new glow.NodeList('#innerDiv1');
 	
@@ -45,11 +45,14 @@ test('glow.NodeList#parent', 4, function() {
 
 	equals(nodes[0], byId('twoInnerDivs'), "Gets only unique parents");
 	
+	ok(nodes instanceof glow.NodeList, "Returns NodeList");
+	
 	myNodeList = new glow.NodeList("document");
 
 	nodes = myNodeList.parent();
 	
 	equals(nodes.length, 0, "Returns 0 when item has no parents");
+	
 });
 
 test('glow.dom.NodeList#prev', 5, function() {
