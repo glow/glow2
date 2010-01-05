@@ -16,15 +16,22 @@ Glow.provide(function(glow) {
 			// elements which contain links
 			var parents = glow.dom.get("a").parent();
 	*/
-	NodeListProto.parent = function() {
+	NodeListProto.parent = function(search) {
 		var ret = [],
 			ri = 0,
 			i = 0,
+			currentParent,
 			length = this.length;
 
 			while (i < length) {
 				if(this[i].parentNode && this[i].parentNode.nodeType == 1){
-					ret[ri++] = this[i].parentNode;
+					currentParent = new glow.NodeList(this[i].parentNode);
+					if(search && (currentParent[0] != search[0])){
+						currentParent.parent(search);
+					}
+					else{
+						ret[ri++] = this[i].parentNode;
+					}
 				}
 			i++;
 			}
