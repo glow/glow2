@@ -1504,8 +1504,7 @@ test('glow.dom.NodeList#unwrap edge cases', 3, function() {
 module('glow.NodeList#html', {setup:setup, teardown:teardown});
 
 test('glow.dom.NodeList#html getting', 2, function() {
-	var myNodeList = new glow.NodeList('#elmWithMixedNodes, #table'),
-		returnNodeList;
+	var myNodeList = new glow.NodeList('#elmWithMixedNodes, #table');
 	
 	equal(typeof myNodeList.html, 'function', 'glow.NodeList#html is a function');
 	
@@ -1570,4 +1569,53 @@ test('glow.dom.NodeList#html edge cases', 5, function() {
 	
 	strictEqual(populatedList.html(null).html(), '', 'Null param treated like empty string');
 	equal(populatedList.html(42).html(), '42', 'Number param treated like string');
+});
+
+module('glow.NodeList#text', {setup:setup, teardown:teardown});
+
+test('glow.dom.NodeList#text getting', 4, function() {
+	var myNodeList = new glow.NodeList('#elmWithMixedNodes, #table');
+	
+	equal(typeof myNodeList.text, 'function', 'glow.NodeList#text is a function');
+	
+	ok(/^This\s+has\s+text\s+elements$/.test( myNodeList.text() ), 'gets text of first item');
+	equal(new glow.NodeList('<!--Hello-->').text(), 'Hello', 'Reading text from comments');
+	equal(new glow.NodeList( document.createTextNode('Hello') ).text(), 'Hello', 'Reading text from text nodes');
+});
+
+test('glow.dom.NodeList#text setting multiple elements', 3, function() {
+	var myNodeList = new glow.NodeList('#innerDiv1, #innerDiv2'),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.text('<span>abc</span>');
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal(myNodeList.item(0).html().toLowerCase(), '&lt;span&gt;abc&lt;/span&gt;', 'sets text');
+	equal(myNodeList.item(1).html().toLowerCase(), '&lt;span&gt;abc&lt;/span&gt;', 'sets text');
+});
+
+test('glow.dom.NodeList#text setting multiple mixed elements', 2, function() {
+	var myNodeList = new glow.NodeList( byId('elmWithMixedNodes').childNodes ),
+		returnNodeList;
+	
+	returnNodeList = myNodeList.text('newtext');
+	
+	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
+	
+	equal(new glow.NodeList('#elmWithMixedNodes').html().toLowerCase(), 'newtext<span>newtext</span>newtext<!--newtext-->newtext', 'sets text');
+});
+
+test('glow.dom.NodeList#text edge cases', 5, function() {
+	var emptyList = new glow.NodeList(),
+		populatedList = new glow.NodeList('<div>hello</div>');
+	
+	strictEqual(emptyList.text(), '', 'Empty nodelist getting');
+	strictEqual(emptyList.text('uh oh').text(), '', 'Empty nodelist setting');
+	equal(populatedList.text(undefined).text(), '', 'Undefined param treated like empty string');
+	
+	populatedList = new glow.NodeList('<div>hello</div>');
+	
+	strictEqual(populatedList.text(null).text(), '', 'Null param treated like empty string');
+	equal(populatedList.text(42).text(), '42', 'Number param treated like string');
 });

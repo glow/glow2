@@ -76,12 +76,13 @@ Glow.provide(function(glow) {
 				legend: [1, '<fieldset>', '</fieldset>'],
 				link: paddingWrap,
 				script: paddingWrap,
-				style: paddingWrap
+				style: paddingWrap,
+				'!': paddingWrap
 			};
 		
 		function strToNodes(str) {
 			var r = [],
-				tagName = ( /^\s*<([^\s>]+)/.exec(str) || [] )[1],
+				tagName = ( /^\s*<([^\s\->]+)/.exec(str) || [] )[1],
 				// This matches str content with potential elements that cannot
 				// be a child of <div>.  elmFilter declared at top of page.
 				wrap = wraps[tagName] || emptyWrap, 

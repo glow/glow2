@@ -27,7 +27,7 @@ test('glow.NodeList#get', 7, function() {
 	
 });
 
-test('glow.NodeList#parent', 5, function() {
+test('glow.NodeList#parent', 6, function() {
 	
 	var myNodeList = new glow.NodeList('#innerDiv1');
 	
@@ -53,6 +53,13 @@ test('glow.NodeList#parent', 5, function() {
 	
 	equals(nodes.length, 0, "Returns 0 when item has no parents");
 	
+	var mySearchNodes = new glow.NodeList('#testElmsContainer');
+	
+	var myNodeList = new glow.NodeList('#innerDiv1');
+	
+	var nodes = myNodeList.parent(mySearchNodes);
+	
+	equals(nodes[0], byId('testElmsContainer'), "Gets the first parent that matches the given search value (#testElmsContanier)");
 });
 
 test('glow.NodeList#prev', 5, function() {
@@ -104,7 +111,7 @@ test('glow.NodeList#next', 5, function() {
 });
 
 
-test('glow.NodeList#ancestors', 13, function() {
+test('glow.NodeList#ancestors', 14, function() {
 	var myNodeList = new glow.NodeList('#innerDiv2');
 	
 	equal(typeof myNodeList.ancestors, 'function', 'glow.NodeList#ancestors is function');
@@ -136,6 +143,11 @@ test('glow.NodeList#ancestors', 13, function() {
 
 	
 	ok(nodes instanceof glow.NodeList, "Returns NodeList");
+	
+	var myNodeList = new glow.NodeList('#innerDiv2');
+	var nodes = myNodeList.ancestors('div');
+ 
+	equal(nodes.length, 2, "Ancestors with a filter for divs returns just 2 div elements");
 });
 
 test('glow.NodeList#children', 5, function() {

@@ -588,7 +588,8 @@ Glow.provide(function(glow) {
 				try {
 					// this has a habit of failing in IE for some elements
 					node.innerHTML = htmlString;
-				} catch (e) {
+				}
+				catch (e) {
 					new glow.NodeList(node).empty().append(htmlString);
 				}
 			}
@@ -621,5 +622,35 @@ Glow.provide(function(glow) {
 			// get text
 			var mainHeading = glow('#mainHeading').text();
 	*/
-	NodeListProto.text = function(text) {};
+	NodeListProto.text = function(textString) {
+		var firstNode = this[0],
+			i = this.length,
+			node;
+		
+		// getting
+		if (!arguments.length) {
+			// get the text by checking a load of properties in priority order
+			return firstNode ?
+				firstNode.textContent ||
+				firstNode.innerText ||
+				firstNode.nodeValue || '' // nodeValue for comment & text nodes
+				: '';
+		}
+		
+		// setting
+		// normalise the string
+		textString = textString ? String(textString): '';
+		this.empty();
+		while (i--) {
+			node = this[i];
+			if (node.nodeType == 1) {
+				node.appendChild( document.createTextNode(textString) );
+			}
+			else {
+				node.nodeValue = textString;
+			}
+		}
+		
+		return this;
+	};
 });
