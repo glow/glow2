@@ -27,15 +27,25 @@ Glow.provide(function(glow) {
 		glow("#login a").addClass("highlight");
 	*/
 	NodeListProto.addClass = function(name) {
-		for (var i = 0, leni = this.length; i < leni; i++) {
-			if (this[i].nodeType !== 1) { continue; } // ignore non-elements
-			
-			if ((' ' + this[i].className + ' ').indexOf(' ' + name + ' ') === -1) {
-				this[i].className += ((this[i].className)? ' ' : '') + name;
-			}
+		var that = this;
+		
+		/*!debug*/
+			if (arguments.length !== 1) { throw new Error('Method NodeList#addClass() expects 1 argument.'); }
+			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#addClass() expects argument 1 to be of type string.'); }
+		/*gubed!*/
+		
+		for (var i = 0, leni = that.length; i < leni; i++) {
+			if (that[i].nodeType === 1) { _addClass(that[i], name); }
 		}
-		return this;
+		
+		return that;
 	};
+	
+	function _addClass(htmlElement, name) {
+		if ((' ' + htmlElement.className + ' ').indexOf(' ' + name + ' ') === -1) {
+			htmlElement.className += ((htmlElement.className)? ' ' : '') + name;
+		}
+	}
 	
 	/**
 	@name glow.NodeList#attr
@@ -86,14 +96,18 @@ Glow.provide(function(glow) {
 	 */
 	 // see: http://tobielangel.com/2007/1/11/attribute-nightmare-in-ie/
 	NodeListProto.attr = function(/*arguments*/) {
-//log.info("~ myNodeList.attr('"+arguments[0]+"', '"+arguments[1]+"') ...");
-
 		var that = this,           // assist compressor
 			args = arguments,      // assist compressor
 			argsLen = args.length, // assist compressor
-			name = keyvals = args[0],     // using this API: attr(name) or attr({key: val}) ?
+			name = keyvals = args[0], // using this API: attr(name) or attr({key: val}) ?
 			dom0Property = '';
-
+		
+		/*!debug*/
+			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#attr(name, value) expects name to be of type string.'); }
+			if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) { throw new Error('Method NodeList#attr() expects argument1 to be of type string or an instance of Object.'); }
+			if (arguments.length === 0 ||  arguments.length > 2) { throw new Error('Method NodeList#attr() expects 1 or 2 arguments.'); }
+		/*gubed!*/
+		
 		if (that.length === 0) { // is this an empty nodelist?
 			if (argsLen > 1) { return that; }
 			else { return; }
@@ -194,10 +208,14 @@ Glow.provide(function(glow) {
 			// ...
 		}
 	*/
-	NodeListProto.hasAttr = function (name) {
-//log.info("~ myNodeList.hasAttr('"+name+"') ...");
-
-		var that = this;	
+	NodeListProto.hasAttr = function(name) {
+		var that = this;
+		
+		/*!debug*/
+			if (arguments.length !== 1) { throw new Error('Method NodeList#hasAttr() expects 1 argument.'); }
+			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#hasAttr() expects argument 1 to be of type string.'); }
+		/*gubed!*/
+		
 		if (that.length && that[0].nodeType === 1) {
 			if (typeof that[0].attributes[name] != 'undefined') { // is an object in  IE
 				return !!that[0].attributes[name].specified;
@@ -224,6 +242,11 @@ Glow.provide(function(glow) {
 		}
 	*/
 	NodeListProto.hasClass = function (name) {
+		/*!debug*/
+			if (arguments.length !== 1) { throw new Error('Method NodeList#hasClass() expects 1 argument.'); }
+			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#hasClass() expects argument 1 to be of type string.'); }
+		/*gubed!*/
+		
 		if (this.length && this[0].nodeType === 1) {
 			return ( (' ' + this[0].className + ' ').indexOf(' ' + name + ' ') > -1 );
 		}
@@ -272,6 +295,12 @@ Glow.provide(function(glow) {
 			argsLen = arguments.length,
 			that = this;
 		
+		/*!debug*/
+			if (arguments.length === 1 && (typeof name !== 'string' && name.constructor !== Object)) { throw new Error('Method NodeList#prop(arg1) expects argument 1 to be of type string or an instance of Object.'); }
+			if (arguments.length === 2 && typeof name !== 'string') { throw new Error('Method NodeList#prop(name) expects name to be of type string.'); }
+			if (arguments.length === 0 || arguments.length > 2) { throw new Error('Method NodeList#prop() expects 1 or 2 arguments.'); }
+		/*gubed!*/
+		
 		if (that.length === 0) return;
 		
 		if (argsLen === 2 && typeof name === 'string') {
@@ -310,7 +339,12 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.removeAttr = function (name) {
 		var that = this;
-
+		
+		/*!debug*/
+			if (arguments.length !== 1) { throw new Error('Method NodeList#removeAttr() expects 1 argument.'); }
+			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeAttr() expects argument 1 to be of type string.'); }
+		/*gubed!*/
+		
 		for (var i = 0, leni = that.length; i < leni; i++) {
 			if (that[i].nodeType === 1) {
 				if (glow.env.ie && dom0PropertyMapping[name]) {
@@ -335,24 +369,33 @@ Glow.provide(function(glow) {
 	@example
 		glow("#footer #login a").removeClass("highlight");
 	*/
-	NodeListProto.removeClass = function (name) {
+	NodeListProto.removeClass = function(name) {
 		var that = this
 			oldClasses = [],
 			newClasses = [];
-
+		
+		/*!debug*/
+			if (arguments.length !== 1) { throw new Error('Method NodeList#removeClass() expects 1 argument.'); }
+			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeClass() expects argument 1 to be of type string.'); }
+		/*gubed!*/
+		
 		for (var i = 0, leni = that.length; i < leni; i++) {
-			oldClasses = (that[i].className||'').split(' ');
-			newClasses = [];
-
-			for (var j = 0, lenj = oldClasses.length; j < lenj; j++) {
-				if (oldClasses[j] && oldClasses[j] !== name) {
-					newClasses.push(oldClasses[j]);
-				}
-			}
-			that[i].className = (newClasses.length)? newClasses.join(' ') : '';
+			_removeClass(that[i], name)
 		}
 		return that;
 	};
+	
+	function _removeClass(HtmlElement, name) {
+		var oldClasses = (HtmlElement.className||'').split(' '),
+			newClasses = [];
+			
+		for (var i = 0, leni = oldClasses.length; i < leni; i++) {
+			if (oldClasses[i] && oldClasses[i] !== name) {
+				newClasses.push(oldClasses[i]);
+			}
+		}
+		HtmlElement.className = (newClasses.length)? newClasses.join(' ') : '';
+	}
 	
 	/**
 	@name glow.NodeList#removeData
@@ -381,5 +424,22 @@ Glow.provide(function(glow) {
 		glow(".onOffSwitch").toggleClass("on");
 	 */
 	NodeListProto.toggleClass = function(name) {
+		var that = this;
+		
+		/*!debug*/
+			if (arguments.length !== 1) { throw new Error('Method NodeList#toggleClass() expects 1 argument.'); }
+			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#toggleClass() expects argument 1 to be of type string.'); }
+		/*gubed!*/
+		
+		for (var i = 0, leni = that.length; i < leni; i++) {
+			if ( (' ' + that[i].className + ' ').indexOf(' ' + name + ' ') > -1 ) {
+				_removeClass(that[i], name);
+			}
+			else {
+				_addClass(that[i], name);
+			}
+		}
+		
+		return that;
 	};
 });

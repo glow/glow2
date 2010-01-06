@@ -67,6 +67,9 @@ if (!document.readyState) {
 		glowInstance = new glow(version, opts.base)
 		Glow._build.instances[version] = glowInstance;
 		
+		glowInstance.debug = false;
+		/*!debug*/ glowInstance.debug = true; /*gubed!*/
+		
  		glowInstance.load('core'); // core is always loaded;
  		
 		return glowInstance;

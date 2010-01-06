@@ -16,7 +16,7 @@ test('glow.NodeList.attr API', 11, function() {
 	equal(typeof glow.NodeList.prototype.toggleClass, 'function', 'glow.NodeList.prototye.toggleClass is a function.');
 });
 
-test('glow.NodeList#addClass', 4, function() {
+test('glow.NodeList#addClass', 6, function() {
 	var myNodeList = new glow.NodeList('<p id="p1"></p>text<span class="existingClass"></span><!-- comment -->');
 	
 	// test this: adding a class to a nodelist with multiple elements, text and comments
@@ -26,6 +26,39 @@ test('glow.NodeList#addClass', 4, function() {
 	equal((myNodeList[1].className||''), '', 'Text does not get new class.'); // className may be undefined or empty
 	equal(myNodeList[2].className, 'existingClass newClass', 'Second element, with an existing class, gets new class added.');
 	equal((myNodeList[3].className||''), '', 'Comment does not get new class.');
+
+	// test this: non-element nodes
+	myNodeList = new glow.NodeList('<!-- comment -->');
+	myNodeList.addClass('rainbows');
+	ok(true, 'Adding a class from a non-element node does not crash.');
+
+	// test this: empty nodelist
+	myNodeList = new glow.NodeList();
+	myNodeList.addClass('rainbows');
+	ok(true, 'Adding a class from an empty node list does not crash.');
+});
+
+if (glow.debug) test('glow.NodeList#addClass debug', 3, function() {
+	try {
+		myNodeList.addClass();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.addClass('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument throws an error.');
+	}
+	
+	try {
+		myNodeList.addClass([]); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
 });
 
 test('glow.NodeList#attr', 24, function() {
@@ -120,6 +153,29 @@ test('glow.NodeList#attr', 24, function() {
 	
 });
 
+if (glow.debug) test('glow.NodeList#attr debug', 3, function() {
+	try {
+		myNodeList.attr();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.attr('a', 'b', 'c'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 2 arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.attr(3, 'shazam'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
+});
+
 test('glow.NodeList#hasAttr', 11, function() {
 	var myNodeList = new glow.NodeList('<p title="" lang="en-uk"></p>text<span title="someTitle"></span><!-- comment -->');
 	
@@ -166,6 +222,29 @@ test('glow.NodeList#hasAttr', 11, function() {
 
 });
 
+if (glow.debug) test('glow.NodeList#hasAttr debug', 3, function() {
+	try {
+		myNodeList.hasAttr();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.hasAttr('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument throws an error.');
+	}
+	
+	try {
+		myNodeList.hasAttr([]); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
+});
+
 test('glow.NodeList#hasClass', 6, function() {
 	var myNodeList = new glow.NodeList('<p class="one two three"></p>text');
 	
@@ -180,15 +259,40 @@ test('glow.NodeList#hasClass', 6, function() {
 	equal(hasClass2, true, 'Test if middle class exists.');
 	equal(hasClass3, true, 'Test if last class exists.');
 	
+	// test this: empty nodelist
 	myNodeList = new glow.NodeList();
 	equal(myNodeList.hasClass('unicorns'), undefined, 'Class of an empty node list is undefined.');
 	
+	// test this: non-element nodes
 	myNodeList = new glow.NodeList(myNodeList[1]);
 	equal(myNodeList.hasClass('rainbows'), undefined, 'Class of an text node is undefined.');
 	
 });
 
-test('glow.NodeList#removeAttr', 9, function() {
+if (glow.debug) test('glow.NodeList#hasClass debug', 3, function() {
+	try {
+		myNodeList.hasClass();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.hasClass('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument throws an error.');
+	}
+	
+	try {
+		myNodeList.hasClass([]); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
+});
+
+test('glow.NodeList#removeAttr', 11, function() {
 	var myNodeList = new glow.NodeList('<p title="aTitle" lang="en-uk"></p><span title="someTitle"></span><!-- comment -->');
 	
 	myNodeList.removeAttr('lang');
@@ -225,10 +329,44 @@ test('glow.NodeList#removeAttr', 9, function() {
 	
 	equal(myNodeList[0].href, '', 'Removing an href attribute of an anchor tag empties the href property.');
 	equal(myNodeList[0].className, '', 'Removing a class attribute by removing "class" empties the className property.');
+	
+	// test this: non-element nodes
+	var myNodeList = new glow.NodeList(myNodeList[2]);
+	myNodeList.removeAttr('href');
+	ok(true, 'Removing an attribute from a non-element node does not crash.');
+	
+	// test this: empty nodelist
+	var myNodeList = new glow.NodeList();
+	myNodeList.removeAttr('href');
+	ok(true, 'Removing an attribute from an empty node list does not crash.');
+
 });
 
-test('glow.NodeList#removeClass', 6, function() {
-	var myNodeList = new glow.NodeList('<p class=" one   two three"></p><span class="two two"></span><span class="two"></span><span></span>');
+if (glow.debug) test('glow.NodeList#removeAttr debug', 3, function() {
+	try {
+		myNodeList.removeAttr();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.removeAttr('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument throws an error.');
+	}
+	
+	try {
+		myNodeList.removeAttr([]); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
+});
+
+test('glow.NodeList#removeClass', 9, function() {
+	var myNodeList = new glow.NodeList('<p class=" one   two three"></p><span class="two two"></span><span class="two"></span><span></span><span class="FOUR"></span>');
 	
 	myNodeList.removeClass('two');
 	
@@ -242,9 +380,47 @@ test('glow.NodeList#removeClass', 6, function() {
 	
 	myNodeList.removeClass('three');
 	equal(myNodeList[0].className, '', 'Removed the last class.');
+	
+	// classname is [CS] case sensitive, see http://www.w3.org/TR/html401/struct/global.html#h-7.5.2
+	myNodeList.removeClass('four');
+	equal(myNodeList[4].className, 'FOUR', 'Class name is treated as case sensitive.');
+
+	// test this: non-element nodes
+	myNodeList = new glow.NodeList('<!-- comment -->');
+	myNodeList.removeClass('rainbows');
+	ok(true, 'Removing a class from a non-element node does not crash.');
+
+	// test this: empty nodelist
+	myNodeList = new glow.NodeList();
+	myNodeList.removeClass('href');
+	ok(true, 'Removing a class from an empty node list does not crash.');
+
 });
 
-test('glow.NodeList#prop', 9, function() {
+if (glow.debug) test('glow.NodeList#removeClass debug', 3, function() {
+	try {
+		myNodeList.removeClass();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.removeClass('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument throws an error.');
+	}
+	
+	try {
+		myNodeList.removeClass(/abc/); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
+});
+
+test('glow.NodeList#prop', 7, function() {
 	myNodeList = new glow.NodeList('<form action="process.php" target="popup" method="get"></form>Read<a href="terms.php">our Terms of service</a><!--comment-->');
 	var form = myNodeList[0];
 	
@@ -259,25 +435,97 @@ test('glow.NodeList#prop', 9, function() {
 	equal(form.className, 'myclass', 'Set multiple properties on a form via an object.');
 	equal(myNodeList[2].className, 'myclass', 'Set multiple properties on multiple nodes.');
 	
-	try {
-		myNodeList.prop();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments to prop throws an error.');
-	}
+	// test this: non-element nodes
+	myNodeList = new glow.NodeList(myNodeList[1]);
+	var textProp = myNodeList.prop('stuff');
+	equal(textProp, undefined, 'Reading prop from a text node returns undefined.');
 	
-	try {
-		myNodeList.prop('a', 'b', 'c');
-	}
-	catch(e) {
-		ok(true, 'Passing more than 2 arguments to prop throws an error.');
-	}
-	
+	// test this: empty nodelist
 	myNodeList = new glow.NodeList();
 	var emptyProp = myNodeList.prop('stuff');
 	equal(emptyProp, undefined, 'Reading prop from an empty list returns undefined.');
 	
-	myNodeList = new glow.NodeList(myNodeList[1]);
-	var textProp = myNodeList.prop('stuff');
-	equal(textProp, undefined, 'Reading prop from a text node returns undefined.');
+});
+
+if (glow.debug) test('glow.NodeList#prop debug', 3, function() {
+	try {
+		myNodeList.prop();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.prop('a', 'b', 'c'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 2 arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.prop([]); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of arguments throws an error.');
+	}
+});
+
+test('glow.NodeList#toggleClass', 6, function() {
+	var myNodeList = new glow.NodeList('<p class="some-class other-class" id="p1"></p>text<!-- comment -->');
+	
+	// test this: toggle class
+	myNodeList.toggleClass('some-class');
+	
+	equal(myNodeList[0].className, 'other-class', 'Can toggle an existing class to remove it.');
+	
+	myNodeList.toggleClass('some-class');
+	equal(myNodeList[0].className, 'other-class some-class', 'Can toggle an non-existing class to add it.');
+	
+	// test this: non-element nodes
+	myNodeList = new glow.NodeList('<!-- comment -->');
+	myNodeList.toggleClass('rainbows');
+	ok(true, 'Toggling a class on a non-element node does not crash.');
+
+	// test this: empty nodelist
+	myNodeList = new glow.NodeList();
+	myNodeList.toggleClass('rainbows');
+	ok(true, 'Toggling a class on an empty node list does not crash.');
+	
+	// test this: invalid arguments
+	try {
+		myNodeList.toggleClass('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument to toggleClass throws an error.');
+	}
+	
+	try {
+		myNodeList.toggleClass(); // error
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments to toggleClass throws an error.');
+	}
+});
+
+if (glow.debug) test('glow.NodeList#toggleClass debug', 3, function() {
+	try {
+		myNodeList.toggleClass();
+	}
+	catch(e) {
+		ok(true, 'Passing no arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.toggleClass('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument throws an error.');
+	}
+	
+	try {
+		myNodeList.toggleClass(7); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
 });
