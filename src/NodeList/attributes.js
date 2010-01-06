@@ -432,11 +432,13 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		for (var i = 0, leni = that.length; i < leni; i++) {
-			if ( (' ' + that[i].className + ' ').indexOf(' ' + name + ' ') > -1 ) {
-				_removeClass(that[i], name);
-			}
-			else {
-				_addClass(that[i], name);
+			if (that[i].nodeType === 1) {
+				if ( (' ' + that[i].className + ' ').indexOf(' ' + name + ' ') > -1 ) {
+					_removeClass(that[i], name);
+				}
+				else {
+					_addClass(that[i], name);
+				}
 			}
 		}
 		
