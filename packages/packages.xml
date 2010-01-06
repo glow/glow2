@@ -25,6 +25,7 @@
 			<file>src/NodeList/manipulation.js</file>
 			<file>src/NodeList/attributes.js</file>
 			<file>src/NodeList/appearance.js</file>
+			<file>src/NodeList/events.js</file>
 			<file>src/footer/core.js</file>
 		</js>
 		<css></css>

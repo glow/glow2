@@ -640,6 +640,7 @@ Glow.provide(function(glow) {
 		// setting
 		// normalise the string
 		textString = textString ? String(textString): '';
+		
 		this.empty();
 		while (i--) {
 			node = this[i];
