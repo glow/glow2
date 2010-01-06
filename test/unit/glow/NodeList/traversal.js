@@ -111,7 +111,7 @@ test('glow.NodeList#next', 5, function() {
 });
 
 
-test('glow.NodeList#ancestors', 13, function() {
+test('glow.NodeList#ancestors', 14, function() {
 	var myNodeList = new glow.NodeList('#innerDiv2');
 	
 	equal(typeof myNodeList.ancestors, 'function', 'glow.NodeList#ancestors is function');
@@ -143,6 +143,11 @@ test('glow.NodeList#ancestors', 13, function() {
 
 	
 	ok(nodes instanceof glow.NodeList, "Returns NodeList");
+	
+	var myNodeList = new glow.NodeList('#innerDiv2');
+	var nodes = myNodeList.ancestors('div');
+ 
+	equal(nodes.length, 2, "Ancestors with a filter for divs returns just 2 div elements");
 });
 
 test('glow.NodeList#children', 5, function() {

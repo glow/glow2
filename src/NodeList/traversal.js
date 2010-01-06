@@ -185,7 +185,8 @@ Glow.provide(function(glow) {
 			i++;
 		}
 		if(filter){
-			ret.filter(filter);
+            ret = new glow.NodeList(ret);
+			ret = ret.filter(filter);
 		}
 		return new glow.NodeList(glow._sizzle.uniqueSort(ret));
 	};
