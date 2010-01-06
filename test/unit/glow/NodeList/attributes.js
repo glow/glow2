@@ -529,3 +529,90 @@ if (glow.debug) test('glow.NodeList#toggleClass debug', 3, function() {
 		ok(true, 'Passing wrong type of argument throws an error.');
 	}
 });
+
+test('glow.NodeList#data', 7, function() {
+	var myNodeList = new glow.NodeList('' +
+		'<div id="dataTest"></div>' +
+		'<p id="para1">' +
+			'<span id="span1">one</span>' +
+		'</p>' +
+		'<p id="para2">two</p>' +
+		'<p id="para3">three</p>' +
+		'text<!-- comment -->'
+	);
+	
+	var self = myNodeList.data('color', 'red');
+	equal(myNodeList.data('color'), 'red', 'Can set and get a key, val from NodeList.');
+	ok((myNodeList === self), 'The call to set a key, val is chainable.');
+	
+	var data = myNodeList.data();
+	equal(data.color, 'red', 'Can get the entire data object from NodeList when given no arguments.');
+	
+	var para1 = new glow.NodeList(myNodeList[1]);
+	equal(para1.data('color'), 'red', 'Can get the same data from different NodeLists that refer to the same DomElements.');
+
+	self = myNodeList.data({
+		size: 'grande',
+		count: 8
+	});
+	equal(myNodeList.data('size'), 'grande', 'Can set multiple key:vals at once.');
+	equal(myNodeList.data('count'), 8, 'All the multiple key:vals are set.');
+	ok((myNodeList === self), 'The call to multiple key:val is chainable.');
+});
+
+if (glow.debug) test('glow.NodeList#data debug', 2, function() {
+	try {
+		myNodeList.data('a', 'b', 'c'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 2 arguments throws an error.');
+	}
+	
+	try {
+		myNodeList.data(7); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
+});
+
+test('glow.NodeList#removeData', 5, function() {
+	var myNodeList = new glow.NodeList('' +
+		'<div id="dataTest">' +
+		'<p id="para1">' +
+			'<span id="span1">one</span>' +
+		'</p>' +
+		'<p id="para2">two</p>' +
+		'<p id="para3">three</p>' +
+		'</div>text<!-- comment -->'
+	);
+	
+	myNodeList.data({color: 'red', size: 'grande'});
+	equal(myNodeList.data('color'), 'red', 'Data is set on the NodeList.');
+	
+	myNodeList.removeData('color');
+	equal(myNodeList.data('color'), undefined, 'Can remove data by key name.');
+	
+	equal(myNodeList.data('size'), 'grande', 'More data is already set on the NodeList.');
+	
+	var self = myNodeList.removeData();
+	var data = myNodeList.data();
+	equal(data.size, undefined, 'Can remove all data at once.');
+	ok( (myNodeList === self), 'The call to removeData is chainable.');
+});
+
+if (glow.debug) test('glow.NodeList#removeData debug', 2, function() {
+	try {
+		myNodeList.removeData('a', 'b'); // error
+	}
+	catch(e) {
+		ok(true, 'Passing more than 1 argument throws an error.');
+	}
+	
+	try {
+		myNodeList.removeData([]); // error
+	}
+	catch(e) {
+		ok(true, 'Passing wrong type of argument throws an error.');
+	}
+});

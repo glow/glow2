@@ -67,11 +67,11 @@ if (!document.readyState) {
 		glowInstance = new glow(version, opts.base)
 		Glow._build.instances[version] = glowInstance;
 		
-		glowInstance.debug = false;
-		/*!debug*/ glowInstance.debug = true; /*gubed!*/
-		
+		glowInstance.debug = false; /*!debug*/ glowInstance.debug = true; /*gubed!*/
+		glowInstance.UID = 'glow' + Math.floor(Math.random() * (1<<30)),
+
  		glowInstance.load('core'); // core is always loaded;
- 		
+ 		 		
 		return glowInstance;
 	}
 	

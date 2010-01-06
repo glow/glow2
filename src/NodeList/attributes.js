@@ -1,18 +1,50 @@
 Glow.provide(function(glow) {
-	var NodeListProto = glow.NodeList.prototype;
+	var undef = void(0),
+		NodeListProto = glow.NodeList.prototype,
 	
 	/**
 		@private
 		@name glow.NodeList-dom0PropertyMapping
 		@description Mapping of HTML attribute names to DOM0 property names.
 	*/
-	var dom0PropertyMapping = {
+	dom0PropertyMapping = {
 		//'checked'   : 'checked',
 		'class'     : 'className',
 		//'disabled'  : 'disabled',
 		'for'       : 'htmlFor',
 		'maxlength' : 'maxLength'
-	};
+	},
+	
+	/**
+		@name glow.NodeList-dataPropName
+		@private
+		@type String
+		@description The property name added to the DomElement by the NodeList#data method.
+	*/
+	dataPropName = "_uniqueData" + glow.UID,
+	
+	/**
+		@name glow.NodeList-dataIndex
+		@private
+		@type String
+		@description The value of the dataPropName added by the NodeList#data method.
+	*/
+	dataIndex = 1, // must be a truthy value
+		
+	/**
+		@name glow.NodeList-dataCache
+		@private
+		@type Object
+		@description Holds the data used by the NodeList#data method.
+		
+		The structure is like:
+		[
+			{
+				myKey: "my data"
+			}
+		]
+	*/
+	dataCache = [];
 			
 	/**
 	@name glow.NodeList#addClass
@@ -117,7 +149,7 @@ Glow.provide(function(glow) {
 			if (argsLen === 1) { // GETting value from name
 				if (that[0].nodeType !== 1) { return; } // todo: should this try the first node or the first node that is an element?
 			
-				if (typeof that[0].attributes[name] != 'undefined') {  // is an object in  IE
+				if (that[0].attributes[name] !== undef) {  // is an object in  IE
 					if (that[0].attributes[name].specified) {
 						return that[0].attributes[name].value;
 					}
@@ -178,7 +210,7 @@ Glow.provide(function(glow) {
 	
 	Optionally you can pass in a single object composed of multiple name, value pairs.
 	
-	@param {string|Object} [name] The name of the value in glow's data store.
+	@param {string|Object} [key] The name of the value in glow's data store.
 	@param {Object} [value] The the value you wish to associate with the given name.
 	@see glow.NodeList#removeData
 	@example
@@ -186,8 +218,53 @@ Glow.provide(function(glow) {
 	glow("p").data("tea", "milky");
 	var colour = glow("p").data("tea"); // milky
 	@returns {Object} When setting a value this method can be chained, as in that case it will return itself.
+	@see glow.NodeList#removeData
 	*/
-	NodeListProto.data = function(name, value) {
+	NodeListProto.data = function (key, val) { /*debug*///console.log("data("+key+", "+val+")");
+		var args = arguments
+			that = this;
+		
+		/*!debug*/
+			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#data(name, value) expects name to be of type string.'); }
+			if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) { throw new Error('Method NodeList#data() expects argument1 to be of type string or an instance of Object.'); }
+			if (arguments.length > 2) { throw new Error('Method NodeList#data() expects 0, 1 or 2 arguments.'); }
+		/*gubed!*/
+		
+		if (typeof key === 'object') { // setting many values
+			for (var prop in key) { that.data(prop, key[prop]); }
+			return that; // chainable with ({key: val}) signature
+		}
+		
+		var index,
+			elm;
+			// uses private scoped variables: dataCache, dataPropName, dataIndex
+		
+		switch (args.length) {
+			case 0: // getting entire cache from first node
+				if (that[0] === undef) { return undef; }
+				index = that[0][dataPropName] || dataIndex++;
+				return dataCache[index] || (dataCache[index] = {}); // create a new cache when reading entire cache
+			case 1:  // getting val from first node
+				if (that[0] === undef) { return undef; }
+				index = that[0][dataPropName]; // don't create a new cache when reading just a specific val
+				return index? dataCache[index][key] : undef;
+			case 2: // setting key:val on every node
+				// TODO - need to defend against reserved words being used as keys?
+				for (var i = that.length; i--;) {
+					elm = that[i];
+					if (elm.nodeType !== 1) { continue; }
+					
+					if ( !(index = elm[dataPropName]) ) { // assumes index is always > 0
+						index = dataIndex++;
+						
+						elm[dataPropName] = index;
+						dataCache[index] = {};
+					}
+					dataCache[index][key] = val;
+				}
+				
+				return that; // chainable with (key, val) signature
+		}
 	};
 	
 	/**
@@ -217,11 +294,11 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		if (that.length && that[0].nodeType === 1) {
-			if (typeof that[0].attributes[name] != 'undefined') { // is an object in  IE
+			if (that[0].attributes[name] !== undef) { // is an object in  IE
 				return !!that[0].attributes[name].specified;
 			}
 			if (that[0].hasAttribute) { return that[0].hasAttribute(name); } // like FF, Safari, etc
-			else { return typeof that[0].attributes[name] != 'undefined'; } // like IE7
+			else { return that[0].attributes[name] !== undef; } // like IE7
 		}
 	};
 	
@@ -406,9 +483,46 @@ Glow.provide(function(glow) {
 	
 	Otherwise, when given a name, will delete the associated value from each node in this NodeList.
 	
-	@param {string} [name] The name of the value in glow's data store.
+	@param {string} [key] The name of the value in glow's data store.
+	@see glow.NodeList#data
 	*/
-	NodeListProto.removeData = function(name) {
+	NodeListProto.removeData = function(key) {
+		var that = this,
+			elm,
+			i = that.length,
+			index;
+			// uses private scoped variables: dataCache, dataPropName
+		
+		/*!debug*/
+			if (arguments.length > 1) { throw new Error('Method NodeList#removeData() expects 0 or 1 arguments.'); }
+			if (arguments.length === 1 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeData() expects argument 1 to be of type string.'); }
+		/*gubed!*/
+		
+		while (i--) {
+			elm = that[i];
+			index = elm[dataPropName];
+			
+			if (index !== undef) {
+				switch (arguments.length) {
+					case 0:
+						dataCache[index] = undef;
+						elm[dataPropName] = undef;
+						try {
+							delete elm[dataPropName]; // IE 6 goes wobbly here
+						}
+						catch(e) { // remove expando from IE 6
+							elm.removeAttribute && elm.removeAttribute(dataPropName);
+						}
+						break;
+					case 1:
+						dataCache[index][key] = undef;
+						delete dataCache[index][key];
+						break;
+				}
+			}
+		}
+		
+		return that; // chainable
 	};
 	
 	/**
