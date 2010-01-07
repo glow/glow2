@@ -126,8 +126,9 @@ Glow.provide(function(glow) {
 	 */
 	 // see: http://tobielangel.com/2007/1/11/attribute-nightmare-in-ie/
 	NodeListProto.attr = function(/*arguments*/) {
-		var args = arguments,         
-			argsLen = args.length,    
+		var args = arguments,
+			argsLen = arguments.length,
+			thisLen = this.length,
 			name = keyvals = args[0], // using this API: attr(name) or attr({key: val}) ?
 			dom0Property = '',
 			el,
@@ -140,16 +141,43 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		if (this.length === 0) { // is this an empty nodelist?
-			if (argsLen > 1) { return this; }
-			else { return; }
+			return (argsLen > 1)? this : undef;
 		}
 		
-		if (typeof name === 'string') {
-			if (argsLen === 1) { // GETting value from name
-				el = this[0];
+		if (typeof keyvals === 'object') {
+			for (name in keyvals) { // SETting value from {name: value} object
+				if (!keyvals.hasOwnProperty(name)) { continue; }
 				
-				if (el.nodeType !== 1) { return; } // todo: should this try the first node or the first node that is an element?
+				// in IE6 and IE7 the attribute name needs to be translated into dom property name
+				if (glow.env.ie < 8) {
+					dom0Property = dom0PropertyMapping[name.toLowerCase()];
+				}
+				
+				var i = thisLen;
+				while (i--) {
+					el = this[i];
+					
+					if (el.nodeType === 1) {
+						if (dom0Property) {
+							el[dom0Property] = keyvals[name];
+						}
+						else {
+							el.setAttribute(name, keyvals[name], 0); // IE flags, 0: case-insensitive
+						}
+					}
+				}
+			}
+			
+			return this;
+		}
+		else {
+			el = this[0];
+				
+			if (el.nodeType !== 1) { 
+				return (argsLen > 1)? this : undef;
+			}
 
+			if (argsLen === 1) { // GETting value from name
 				if (el.attributes[name]) { // in IE el.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
 					return (!el.attributes[name].specified)? '' : el.attributes[name].value;
 				}
@@ -159,38 +187,23 @@ Glow.provide(function(glow) {
 				}
 				else {
 					value = el.getAttribute(name, 0, 2); // IE flags, 0: case-insensitive, 2: as string
-					return (value === null || value === undef)? '' : value;
+					return (value === null)? '' : value;
 				}	
 			}
 			else { // SETting a single value like attr(name, value), normalize to an keyval object
-				keyvals = {};
-				keyvals[args[0]] = args[1];
-			}
-		}
-		
-		for (name in keyvals) { // SETting value from {name: value} object
-			if (!keyvals.hasOwnProperty(name)) { continue; }
-			
-			// in IE6 and IE7 the attribute name needs to be translated into dom property name
-			if (glow.env.ie < 8) {
-				dom0Property = dom0PropertyMapping[name.toLowerCase()] || '';
-			}
-			
-			for (var i = 0, leni = this.length; i < leni; i++) {
-				el = this[i];
-				
-				if (el.nodeType !== 1) { continue; }
+				if (glow.env.ie < 8) {
+					dom0Property = dom0PropertyMapping[name.toLowerCase()] || '';
+				}
 				
 				if (dom0Property !== '') {
-					el[dom0Property] = keyvals[name];
+					el[dom0Property] = args[1];
 				}
 				else {
-					el.setAttribute(name, keyvals[name], 0); // IE flags, 0: case-insensitive
+					el.setAttribute(name, args[1], 0); // IE flags, 0: case-insensitive
 				}
+				return this;
 			}
 		}
-		
-		return this;
 	};
 		
 	/**

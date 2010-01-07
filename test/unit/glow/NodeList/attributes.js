@@ -61,7 +61,7 @@ if (glow.debug) test('glow.NodeList#addClass debug', 3, function() {
 	}
 });
 
-test('glow.NodeList#attr', 32, function() {
+test('glow.NodeList#attr', 31, function() {
 		
 	// test this: getting an attribute value
 	var myNodeList = new glow.NodeList(
@@ -75,7 +75,6 @@ test('glow.NodeList#attr', 32, function() {
 	myNodeList.attr('title', 'newTitle');
 	equal(myNodeList[0].title, 'newTitle', 'Can set the title attribute, overwriting an existing title.');
 	equal((myNodeList[1].title||''), '', 'Does not set the title attribute on a text node.');
-	equal(myNodeList[2].title, 'newTitle', 'Can set the title attribute on every element at once.');
 	
 	// test this: setting and getting the value of an attribute with no default value
 	myNodeList = new glow.NodeList(
