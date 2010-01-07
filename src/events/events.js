@@ -280,7 +280,7 @@ Glow.provide(function(glow) {
 		 }
 		       
 		// make Ball inherit from Target
-		glow.lang.extend(Ball, glow.events.Target, {
+		glow.util.extend(Ball, glow.events.Target, {
 			// additional methods for Ball here, eg:
 			bowl: function() {
 				// ...
@@ -326,7 +326,7 @@ Glow.provide(function(glow) {
 	*/
 	
 	glow.events.Target.extend = function (obj) {
-		glow.lang.apply( obj, glow.events.Target.prototype );
+		glow.util.apply( obj, glow.events.Target.prototype );
 	};
 		
 	/**
@@ -468,10 +468,10 @@ Glow.provide(function(glow) {
 		}
 		       
 		// inherit from glow.events.Event
-		glow.lang.extend(RocketEvent, glow.events.Event, {
+		glow.util.extend(RocketEvent, glow.events.Event, {
 			getVector: function() {
-			return // ...
-		}
+				return // ...
+			}
 		});
 		       
 		// firing the event
@@ -485,7 +485,7 @@ Glow.provide(function(glow) {
 		
 	glow.events.Event = function ( obj ) {			
 		if(obj) {
-			glow.lang.apply(this, obj);
+			glow.util.apply(this, obj);
 		}
 	};
 		

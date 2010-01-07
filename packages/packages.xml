@@ -12,7 +12,7 @@
 			<file>src/header/core.js</file>
 			<file>src/env/env.js</file>
 			<file>src/core/ready.js</file>
-			<file>src/lang/lang.js</file>
+			<file>src/util/util.js</file>
 			<file>src/events/events.js</file>
 			<file>src/events/DomEvent.js</file>
 			<file>src/events/KeyboardEvent.js</file>
@@ -25,6 +25,7 @@
 			<file>src/NodeList/manipulation.js</file>
 			<file>src/NodeList/attributes.js</file>
 			<file>src/NodeList/appearance.js</file>
+			<file>src/NodeList/events.js</file>
 			<file>src/footer/core.js</file>
 		</js>
 		<css></css>
