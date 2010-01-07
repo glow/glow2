@@ -7,10 +7,10 @@ woosh.addTests('glow-170', {
 
 		}
 	},
-	'NodeList#ancestors': new woosh.Test(1000, function() {
+	'NodeList#ancestors': new woosh.Test(10000, function() {
 		return glow.dom.get('#univnmsp').ancestors().length;
 	}),
-	'NodeList#parent': new woosh.Test(1000, function() {
+	'NodeList#parent': new woosh.Test(10000, function() {
 		return glow.dom.get('#univnmsp').parent().length;
 	}),
 	'NodeList#get': new woosh.Test(10000, function() {
