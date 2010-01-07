@@ -18,5 +18,8 @@ woosh.addTests('jq-132', {
 	}),
 	'NodeList#next': new woosh.Test(10000, function() {
 		return $('.tocline3').next().length;
+	}),
+	'NodeList#children': new woosh.Test(10000, function() {
+		return $('.toc').children().length;
 	})
 });

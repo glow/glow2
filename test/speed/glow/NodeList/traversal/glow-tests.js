@@ -25,5 +25,8 @@ woosh.addTests('glow-170', {
 	'NodeList#contains': new woosh.Test(10000, function() {
 		var set = glow.dom.get('.subtoc');
 		return glow.dom.get('.toc').isWithin(set);
+	}),
+	'NodeList#children': new woosh.Test(10000, function() {
+		return glow.dom.get('.toc').children().length;
 	})
 });

@@ -22,4 +22,8 @@ woosh.addTests('glow2-src', {
 	'NodeList#contains': new woosh.Test(10000, function() {
 		return new glow.NodeList('.subtoc').contains('.toc');
 	})
+	,
+	'NodeList#children': new woosh.Test(10000, function() {
+		return new glow.NodeList('.toc').children().length;
+	})
 });
