@@ -167,15 +167,14 @@
 			function checkTags(frame) {
 				with (frame) {
 					ok( (typeof glow !== 'undefined'), 'glow is defined.' );
-					ok( (typeof glow.lang !== 'undefined'), 'glow.lang is defined.' );
+					ok( (typeof glow.util !== 'undefined'), 'glow.util is defined.' );
 					ok( (typeof glow.widgets !== 'undefined'), 'glow.widgets is defined.' );
 				}
 				start();
 			}
 		});
 			
-		test('provide', function() {
-			expect(4);
+		test('provide', 2, function() {
 			
 			stop(3000);
 			testHelper.addFrame('../data/t_provide.html', function(frame) {
@@ -183,9 +182,7 @@
 				var glow = frame.Glow(v);
 				
 				ok( (glow !== undefined), 'reference to src glow instance is defined.' );
-				ok( (glow.lang !== undefined), 'namespace lang is defined there.' );
-				ok( (glow.lang.trim !== undefined), 'method lang.trim is defined there.' );
-				ok( (glow.lang.toArray !== undefined), 'method lang.toArray is defined there.' );
+				ok( (glow.util !== undefined), 'namespace util is defined there.' );
 				
 				start();
 			});			
@@ -206,14 +203,14 @@
 					glow.loaded(function(g) {
 						ok( true, 'second loaded callback is invoked.' );
 						ok( g, 'loaded callback receives a glow argument.' );
-						ok( g.lang, 'loaded callback receives a glow argument which has been populated by provide.' );
+						ok( g.util, 'loaded callback receives a glow argument which has been populated by provide.' );
 						ok( g.widgets, 'loaded callback receives a glow with widgets package provided.' );
 					
 						g
 						.load('core')
 						.loaded(function(g) {
 							ok( true, 'loaded callback after load() is invoked.' );
-							ok( g.lang, 'receives a glow argument which has been populated.' );
+							ok( g.util, 'receives a glow argument which has been populated.' );
 						});
 						start();
 					});

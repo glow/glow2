@@ -19,27 +19,36 @@ Glow.provide(function(glow) {
 	NodeListProto.parent = function(search) {
 		var ret = [],
 			ri = 0,
-			i = 0,
-			currentParent,
-			length = this.length;
+			i = this.length,
+			currentParent;
 
-			while (i < length) {
-				if(this[i].parentNode && this[i].parentNode.nodeType == 1){
-					currentParent = new glow.NodeList(this[i].parentNode);
-					if(search && (currentParent[0] != search[0])){
-						currentParent.parent(search);
+			while (i--) {
+				
+				currentParent = this[i];
+				
+				if(currentParent.nodeType == 1){
+					
+					if(search){				
+					
+						while(currentParent = currentParent.parentNode){
+											
+							if (glow._sizzle.filter(search, [currentParent]).length) {
+								ret[ri++] = currentParent;							
+								break;
+							}
+							
+						}
 					}
-					else{
-						ret[ri++] = this[i].parentNode;
+			
+					else if(currentParent = currentParent.parentNode){
+						ret[ri++] = currentParent;						
 					}
+
 				}
-			i++;
+
 			}
 				
-			return new glow.NodeList(glow._sizzle.uniqueSort(ret));
-			
-			
-			
+			return new glow.NodeList(glow._sizzle.uniqueSort(ret));			
 	};
 	
 	/*
