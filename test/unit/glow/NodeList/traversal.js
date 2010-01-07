@@ -57,14 +57,13 @@ test('glow.NodeList#parent', 6, function() {
 	nodes = myNodeList.parent();
 	
 	equals(nodes.length, 0, "Returns 0 when item has no parents");
+
 	
-	var mySearchNodes = new glow.NodeList('#testElmsContainer');
+	var myNodeList = new glow.NodeList('#twoInnerDivs');
+
+	var nodes = myNodeList.parent('#body');
 	
-	var myNodeList = new glow.NodeList('#innerDiv1');
-	
-	var nodes = myNodeList.parent(mySearchNodes);
-	
-	equals(nodes[0], byId('testElmsContainer'), "Gets the first parent that matches the given search value (#testElmsContanier)");
+	equals(nodes[0], byId('body'), "Gets the first parent that matches the given search value (#testElmsContanier)");
 });
 
 test('glow.NodeList#prev', 5, function() {
