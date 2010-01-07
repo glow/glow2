@@ -61,73 +61,85 @@ if (glow.debug) test('glow.NodeList#addClass debug', 3, function() {
 	}
 });
 
-test('glow.NodeList#attr', 24, function() {
-	var myNodeList = new glow.NodeList('<p title="theTitle" lang="en-uk"></p>text<span lang="en-us"></span><!-- comment -->');
-	
-	// test this: getting an attribute
-	var lang = myNodeList.attr('lang'),
-		title = myNodeList.attr('title'),
-		nonexist = myNodeList.attr('flyingspaghettimonster');
-	
-	equal(lang, 'en-uk', 'Can get the existing lang attribute of a paragraph.');
-	equal(title, 'theTitle', 'Can get the existing title attribute of a paragraph.');
-	equal(nonexist, '', 'Can get a non-existant attribute, as an empty string.');
+test('glow.NodeList#attr', 32, function() {
+		
+	// test this: getting an attribute value
+	var myNodeList = new glow.NodeList(
+		'<p title="theTitle" lang="en-uk"></p>text<span lang="en-us"></span><!-- comment -->'
+	);
+	equal(myNodeList.attr('lang'), 'en-uk', 'Can get the existing lang attribute of a paragraph.');
+	equal(myNodeList.attr('title'), 'theTitle', 'Can get the existing title attribute of a paragraph.');
+	equal(myNodeList.attr('flyingspaghettimonster'), '', 'Can get a non-existant attribute, as an empty string.');
 	
 	// test this: setting the value of an attribute with a default value with a single name and a single value
 	myNodeList.attr('title', 'newTitle');
-	
 	equal(myNodeList[0].title, 'newTitle', 'Can set the title attribute, overwriting an existing title.');
 	equal((myNodeList[1].title||''), '', 'Does not set the title attribute on a text node.');
-	equal(myNodeList[2].title, 'newTitle', 'Can set a new title attribute to multiple elements.');
-	
-	myNodeList = new glow.NodeList('<p></p>text<span TITLE="upperTitle"></span><!-- comment -->');
+	equal(myNodeList[2].title, 'newTitle', 'Can set the title attribute on every element at once.');
 	
 	// test this: setting and getting the value of an attribute with no default value
+	myNodeList = new glow.NodeList(
+		'<p class="testClass"><b>hello</b></p>text<span TITLE="upperTitle"></span><!-- comment -->'
+	);
 	myNodeList.attr('unicorns', 'rainbow');
+	equal(myNodeList.attr('unicorns'), 'rainbow', 'Can set and get the value of a custom attribute with no default value.');
 	
-	equal(myNodeList.attr('unicorns'), 'rainbow', 'Can set and get the value of an attribute with no default value.');
-	
-	// test this: setting attributes where dom property doesn't match HTML attribute
-	myNodeList.attr('class', 'theClass');
-	equal(myNodeList[0].className, 'theClass', 'Can set "class" to set dom node property "className".');
-	
-	// test this: setting attributes with many names and values
+	// test this: setting several attributes at once
 	myNodeList.attr({'lang': 'en-us', 'title': 'otherTitle'});
-	
 	equal(myNodeList[0].lang, 'en-us', 'Can set an attribute using an object to define names and values.');
-	equal(myNodeList[2].title, 'otherTitle', 'Can set a attribute using an object on every element, overwriting an existing attribute in different case.');
+	equal(myNodeList[0].title, 'otherTitle', 'Can set multiple attributes using an object to define names and values.');
+	equal(myNodeList[2].title, 'otherTitle', 'Can set an attribute using an object on every element, overwriting an existing attribute in different case.');
 	
-	// test this: setting an attribute with uppercased name, getting same attribute with lowercased name
+	// test this: setting and getting an attribute with different case
 	myNodeList.attr('TITLE', 'caseyTitle');
-	title = myNodeList.attr('title');
-	equal(title, 'caseyTitle', 'Can set and get the title using different case names.');
+	equal(myNodeList.attr('title'), 'caseyTitle', 'Can get uppercased title using lowercased name.');
+	equal(myNodeList.attr('TiTlE'), 'caseyTitle', 'Can get the title using random case name.');
 	
-	// test this: getting attribute with same name as dom property does not return the dom property
-	equal(myNodeList.attr('childNodes'), '', 'Getting attribute with same name as dom property does not return the dom property.');
+	// test this: setting and getting an attribute with different case which has a different dom property name
+	myNodeList.attr('CLaSS', 'newClass');
+	equal(myNodeList[0].className, 'newClass', 'Can set an attribute using an object on every element, overwriting an existing attribute in different case.');
+	equal(myNodeList.attr('clAss'), 'newClass', 'Can get uppercased title using lowercased name.');
 	
-	myNodeList = new glow.NodeList();
+	// attributes and properties:
+	// changing an attribute value will change the related dom property
+	// changing a dom property value (or the browser inserts a default value) will change the related attribute value
+	
+	// test this: changing attribute where dom property name doesn't match the corresponding HTML attribute name
+	myNodeList.attr('class', 'theClass');
+	equal(myNodeList[0].className, 'theClass', 'Can set "class" attribute to change the dom node property "className".');
+	
+	// test this: getting attribute with same name as dom property does not return that dom property
+	ok(myNodeList[0].childNodes, 'A dom property is defined but...')
+	equal(myNodeList.attr('childNodes'), '', 'Getting attribute with same name as a defined dom property does not return the dom property.');
 	
 	// test this: setting an attribute on an empty nodelist
+	myNodeList = new glow.NodeList();
 	myNodeList.attr('title', 'newTitle');
-	
-	ok(true, 'Can call attr() on an empty NodeList.');
+	ok(true, 'Can call attr(name, value) on an empty NodeList.');
 	
 	// test this: getting an attribute from an empty nodelist
 	title = myNodeList.attr('title');
+	equal(title, undefined, 'Can call attr(name) on an empty list, returns undefined.');
 	
-	equal(title, undefined, 'Getting an attribute from an empty list returns undefined.');
+	// test this: getting and setting attributes on an image element
+	myNodeList = new glow.NodeList(
+		'<img src="whatever" alt="theAlt" width=77>'
+	);
+	equal(myNodeList.attr('width'), '77', 'Get an attribute from an image with the same name as a dom property.');
+	equal(myNodeList.attr('height'), '', 'Get an undefined attribute from an image with the same name as a dom property.');
+	myNodeList[0].width = 42;
+	equal(myNodeList.attr('width'), '42', 'Set an attribute from an image with the same name as a dom property.');
 	
 	// test this: getting and setting attributes on a form element
 	myNodeList = new glow.NodeList('<form action="foo" purpose="register" method="get"><input name="method" id="method" type="text"><input name="purpose" id="purpose" type="text"><input name="unicorns" id="unicorns" type="text"></form>');
-	var method = myNodeList.attr('method');
-	if (typeof method !== 'string') method = 'error - not a string!';
-	equal(method, 'get', 'Getting standard attribute on a form with a same-named input.');
+	myNodeList[0].action = 'bar';
+	equal(myNodeList.attr('action'), 'bar', 'When dom property with same name as attribute changes, so does the attribute.');
 	equal(myNodeList.attr('purpose'), 'register', 'Getting custom attribute on a form with a same-named input.');
 	equal(myNodeList.attr('unicorns'), '', 'Getting undefined attribute on a form with a same-named input.');
 
 	myNodeList.attr('method', 'post');
-	method = myNodeList[0].childNodes[0] || {nodeName: ''};
-	equal(method.nodeName.toLowerCase(), 'input', 'Setting attribute on a form with a same-named input.');
+	method = myNodeList[0].childNodes[0] || {nodeName: 'error'};
+	equal(method.nodeName.toLowerCase(), 'input', 'Setting attribute on a form with a same-named input doe not affect input element.');
 	
 	// test this: attributes that refer to event handlers
 	myNodeList = new glow.NodeList("<a href=\"/index.html\" onclick=\"alert('Back home!')\">Home</a>");
@@ -293,7 +305,7 @@ if (glow.debug) test('glow.NodeList#hasClass debug', 3, function() {
 });
 
 test('glow.NodeList#removeAttr', 11, function() {
-	var myNodeList = new glow.NodeList('<p title="aTitle" lang="en-uk"></p><span title="someTitle"></span><!-- comment -->');
+	var myNodeList = new glow.NodeList('<p title="aTitle" LANG="en-uk"></p><span title="someTitle"></span><!-- comment -->');
 	
 	myNodeList.removeAttr('lang');
 	myNodeList.removeAttr('title');

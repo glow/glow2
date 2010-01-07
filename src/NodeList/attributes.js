@@ -1,39 +1,37 @@
 Glow.provide(function(glow) {
-	var undef = void(0),
-		NodeListProto = glow.NodeList.prototype,
+	var undef,
+		NodeListProto = glow.NodeList.prototype
 	
 	/**
 		@private
 		@name glow.NodeList-dom0PropertyMapping
 		@description Mapping of HTML attribute names to DOM0 property names.
 	*/
-	dom0PropertyMapping = {
-		//'checked'   : 'checked',
+	, dom0PropertyMapping = { // keys must be lowercase
 		'class'     : 'className',
-		//'disabled'  : 'disabled',
 		'for'       : 'htmlFor',
 		'maxlength' : 'maxLength'
-	},
+	}
 	
 	/**
-		@name glow.NodeList-dataPropName
 		@private
+		@name glow.NodeList-dataPropName
 		@type String
 		@description The property name added to the DomElement by the NodeList#data method.
 	*/
-	dataPropName = "_uniqueData" + glow.UID,
+	, dataPropName = '_uniqueData' + glow.UID
 	
 	/**
-		@name glow.NodeList-dataIndex
 		@private
+		@name glow.NodeList-dataIndex
 		@type String
 		@description The value of the dataPropName added by the NodeList#data method.
 	*/
-	dataIndex = 1, // must be a truthy value
+	, dataIndex = 1 // must be a truthy value
 		
 	/**
-		@name glow.NodeList-dataCache
 		@private
+		@name glow.NodeList-dataCache
 		@type Object
 		@description Holds the data used by the NodeList#data method.
 		
@@ -44,7 +42,7 @@ Glow.provide(function(glow) {
 			}
 		]
 	*/
-	dataCache = [];
+	, dataCache = [];
 			
 	/**
 	@name glow.NodeList#addClass
@@ -59,23 +57,23 @@ Glow.provide(function(glow) {
 		glow("#login a").addClass("highlight");
 	*/
 	NodeListProto.addClass = function(name) {
-		var that = this;
-		
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#addClass() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#addClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
-		for (var i = 0, leni = that.length; i < leni; i++) {
-			if (that[i].nodeType === 1) { _addClass(that[i], name); }
+		for (var i = 0, leni = this.length; i < leni; i++) {
+			if (this[i].nodeType === 1) {
+				_addClass(this[i], name);
+			}
 		}
 		
-		return that;
+		return this;
 	};
 	
-	function _addClass(htmlElement, name) {
-		if ((' ' + htmlElement.className + ' ').indexOf(' ' + name + ' ') === -1) {
-			htmlElement.className += ((htmlElement.className)? ' ' : '') + name;
+	function _addClass(el, name) { // TODO: handle classnames separated by non-space characters?
+		if ((' ' + el.className + ' ').indexOf(' ' + name + ' ') === -1) {
+			el.className += ((el.className)? ' ' : '') + name;
 		}
 	}
 	
@@ -128,11 +126,12 @@ Glow.provide(function(glow) {
 	 */
 	 // see: http://tobielangel.com/2007/1/11/attribute-nightmare-in-ie/
 	NodeListProto.attr = function(/*arguments*/) {
-		var that = this,           // assist compressor
-			args = arguments,      // assist compressor
-			argsLen = args.length, // assist compressor
+		var args = arguments,         
+			argsLen = args.length,    
 			name = keyvals = args[0], // using this API: attr(name) or attr({key: val}) ?
-			dom0Property = '';
+			dom0Property = '',
+			el,
+			node;
 		
 		/*!debug*/
 			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#attr(name, value) expects name to be of type string.'); }
@@ -140,59 +139,58 @@ Glow.provide(function(glow) {
 			if (arguments.length === 0 ||  arguments.length > 2) { throw new Error('Method NodeList#attr() expects 1 or 2 arguments.'); }
 		/*gubed!*/
 		
-		if (that.length === 0) { // is this an empty nodelist?
-			if (argsLen > 1) { return that; }
+		if (this.length === 0) { // is this an empty nodelist?
+			if (argsLen > 1) { return this; }
 			else { return; }
 		}
 		
 		if (typeof name === 'string') {
 			if (argsLen === 1) { // GETting value from name
-				if (that[0].nodeType !== 1) { return; } // todo: should this try the first node or the first node that is an element?
-			
-				if (that[0].attributes[name] !== undef) {  // is an object in  IE
-					if (that[0].attributes[name].specified) {
-						return that[0].attributes[name].value;
-					}
-					else return '';
-				}
+				el = this[0];
 				
-				if (that[0].getAttributeNode) { //glow.env.ie < 8) { // IE6 and IE7 wrongly return null for undefined attribues via getAttribute()
-					if (that[0].getAttributeNode(name, 0) === null) { return ''; }
-				}
+				if (el.nodeType !== 1) { return; } // todo: should this try the first node or the first node that is an element?
 
-				if (that[0].nodeName === 'FORM' && that[0].getAttributeNode(name)) {
-					return that[0].getAttributeNode(name).nodeValue;
+				if (el.attributes[name]) { // in IE el.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
+					return (!el.attributes[name].specified)? '' : el.attributes[name].value;
 				}
-
-				value = that[0].getAttribute(name, 0, 2); // IE flags, 0: case-insensitive, 2: as string
-				return (value === null)? '' : value;
+				else if (el.getAttributeNode) { // in IE getAttribute() does not always work so we use getAttributeNode if we can
+					node = el.getAttributeNode(name, 0);
+					return (node === null)? '' : node.value;
+				}
+				else {
+					value = el.getAttribute(name, 0, 2); // IE flags, 0: case-insensitive, 2: as string
+					return (value === null || value === undef)? '' : value;
+				}	
 			}
-			else { // SETting value like attr(name, value)
+			else { // SETting a single value like attr(name, value), normalize to an keyval object
 				keyvals = {};
 				keyvals[args[0]] = args[1];
 			}
 		}
 		
 		for (name in keyvals) { // SETting value from {name: value} object
-			if (keyvals.hasOwnProperty(name)) {
-				// in IE6 and IE7 the attribute name needs to be translated into dom property name
-				dom0Property = (glow.env.ie < 8 && dom0PropertyMapping[name])?
-					dom0PropertyMapping[name] : '';
+			if (!keyvals.hasOwnProperty(name)) { continue; }
+			
+			// in IE6 and IE7 the attribute name needs to be translated into dom property name
+			if (glow.env.ie < 8) {
+				dom0Property = dom0PropertyMapping[name.toLowerCase()] || '';
+			}
+			
+			for (var i = 0, leni = this.length; i < leni; i++) {
+				el = this[i];
 				
-				for (var i = 0, leni = that.length; i < leni; i++) {
-					if (that[i].nodeType === 1) {
-						if (dom0Property) {
-							that[i][dom0Property] = keyvals[name];
-						}
-						else {
-							that[i].setAttribute(name, keyvals[name], 0);
-						}
-					}
+				if (el.nodeType !== 1) { continue; }
+				
+				if (dom0Property !== '') {
+					el[dom0Property] = keyvals[name];
+				}
+				else {
+					el.setAttribute(name, keyvals[name], 0); // IE flags, 0: case-insensitive
 				}
 			}
 		}
 		
-		return that;
+		return this;
 	};
 		
 	/**
@@ -221,8 +219,7 @@ Glow.provide(function(glow) {
 	@see glow.NodeList#removeData
 	*/
 	NodeListProto.data = function (key, val) { /*debug*///console.log("data("+key+", "+val+")");
-		var args = arguments
-			that = this;
+		var args = arguments;
 		
 		/*!debug*/
 			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#data(name, value) expects name to be of type string.'); }
@@ -231,8 +228,8 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		if (typeof key === 'object') { // setting many values
-			for (var prop in key) { that.data(prop, key[prop]); }
-			return that; // chainable with ({key: val}) signature
+			for (var prop in key) { this.data(prop, key[prop]); }
+			return this; // chainable with ({key: val}) signature
 		}
 		
 		var index,
@@ -241,17 +238,17 @@ Glow.provide(function(glow) {
 		
 		switch (args.length) {
 			case 0: // getting entire cache from first node
-				if (that[0] === undef) { return undef; }
-				index = that[0][dataPropName] || dataIndex++;
+				if (this[0] === undef) { return undef; }
+				index = this[0][dataPropName] || dataIndex++;
 				return dataCache[index] || (dataCache[index] = {}); // create a new cache when reading entire cache
 			case 1:  // getting val from first node
-				if (that[0] === undef) { return undef; }
-				index = that[0][dataPropName]; // don't create a new cache when reading just a specific val
+				if (this[0] === undef) { return undef; }
+				index = this[0][dataPropName]; // don't create a new cache when reading just a specific val
 				return index? dataCache[index][key] : undef;
 			case 2: // setting key:val on every node
 				// TODO - need to defend against reserved words being used as keys?
-				for (var i = that.length; i--;) {
-					elm = that[i];
+				for (var i = this.length; i--;) {
+					elm = this[i];
 					if (elm.nodeType !== 1) { continue; }
 					
 					if ( !(index = elm[dataPropName]) ) { // assumes index is always > 0
@@ -263,7 +260,7 @@ Glow.provide(function(glow) {
 					dataCache[index][key] = val;
 				}
 				
-				return that; // chainable with (key, val) signature
+				return this; // chainable with (key, val) signature
 		}
 	};
 	
@@ -286,19 +283,22 @@ Glow.provide(function(glow) {
 		}
 	*/
 	NodeListProto.hasAttr = function(name) {
-		var that = this;
+		var el;
 		
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#hasAttr() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#hasAttr() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
-		if (that.length && that[0].nodeType === 1) {
-			if (that[0].attributes[name] !== undef) { // is an object in  IE
-				return !!that[0].attributes[name].specified;
+		el = this[0];
+		
+		if (this.length && el.nodeType === 1) {
+			if (el.attributes[name]) { // is an object in  IE, or else: undefined in IE < 8, null in IE 8
+				return !!el.attributes[name].specified;
 			}
-			if (that[0].hasAttribute) { return that[0].hasAttribute(name); } // like FF, Safari, etc
-			else { return that[0].attributes[name] !== undef; } // like IE7
+			
+			if (el.hasAttribute) { return el.hasAttribute(name); } // like FF, Safari, etc
+			else { return el.attributes[name] !== undef; } // like IE7
 		}
 	};
 	
@@ -369,8 +369,7 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.prop = function(name, val) {
 		var hash = name,
-			argsLen = arguments.length,
-			that = this;
+			argsLen = arguments.length;
 		
 		/*!debug*/
 			if (arguments.length === 1 && (typeof name !== 'string' && name.constructor !== Object)) { throw new Error('Method NodeList#prop(arg1) expects argument 1 to be of type string or an instance of Object.'); }
@@ -378,24 +377,24 @@ Glow.provide(function(glow) {
 			if (arguments.length === 0 || arguments.length > 2) { throw new Error('Method NodeList#prop() expects 1 or 2 arguments.'); }
 		/*gubed!*/
 		
-		if (that.length === 0) return;
+		if (this.length === 0) return;
 		
 		if (argsLen === 2 && typeof name === 'string') {
-			for (var i = 0, ilen = that.length; i < ilen; i++) {
-				if (that[i].nodeType === 1) { that[i][name] = val; }
+			for (var i = 0, ilen = this.length; i < ilen; i++) {
+				if (this[i].nodeType === 1) { this[i][name] = val; }
 			}
-			return that;
+			return this;
 		}
 		else if (argsLen === 1 && hash.constructor === Object) {
 			for (var key in hash) {
-				for (var i = 0, ilen = that.length; i < ilen; i++) {
-					if (that[i].nodeType === 1) { that[i][key] = hash[key]; }
+				for (var i = 0, ilen = this.length; i < ilen; i++) {
+					if (this[i].nodeType === 1) { this[i][key] = hash[key]; }
 				}
 			}
-			return that;
+			return this;
 		}
 		else if (argsLen === 1 && typeof name === 'string') {
-			if (that[0].nodeType === 1) { return that[0][name]; }
+			if (this[0].nodeType === 1) { return this[0][name]; }
 		}
 		else {
 			throw new Error('Invalid parameters.');
@@ -415,23 +414,25 @@ Glow.provide(function(glow) {
 		glow("a").removeAttr("target");
 	*/
 	NodeListProto.removeAttr = function (name) {
-		var that = this;
+		var dom0Property;
 		
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#removeAttr() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeAttr() expects argument 1 to be of type string.'); }
 		/*gubed!*/
-		
-		for (var i = 0, leni = that.length; i < leni; i++) {
-			if (that[i].nodeType === 1) {
-				if (glow.env.ie && dom0PropertyMapping[name]) {
-					that[i][dom0PropertyMapping[name]] = '';
+	
+		for (var i = 0, leni = this.length; i < leni; i++) {
+			if (this[i].nodeType === 1) {
+				if (glow.env.ie < 8) {
+					if ( (dom0Property = dom0PropertyMapping[name.toLowerCase()]) ) {
+						this[i][dom0Property] = '';
+					}
 				}
 				
-				that[i].removeAttribute(name);
+				if (this[i].removeAttribute) this[i].removeAttribute(name);
 			}
 		}
-		return that;
+		return this;
 	};
 	
 	/**
@@ -447,8 +448,7 @@ Glow.provide(function(glow) {
 		glow("#footer #login a").removeClass("highlight");
 	*/
 	NodeListProto.removeClass = function(name) {
-		var that = this
-			oldClasses = [],
+		var oldClasses = [],
 			newClasses = [];
 		
 		/*!debug*/
@@ -456,10 +456,10 @@ Glow.provide(function(glow) {
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
-		for (var i = 0, leni = that.length; i < leni; i++) {
-			_removeClass(that[i], name)
+		for (var i = 0, leni = this.length; i < leni; i++) {
+			_removeClass(this[i], name)
 		}
-		return that;
+		return this;
 	};
 	
 	function _removeClass(HtmlElement, name) {
@@ -487,9 +487,8 @@ Glow.provide(function(glow) {
 	@see glow.NodeList#data
 	*/
 	NodeListProto.removeData = function(key) {
-		var that = this,
-			elm,
-			i = that.length,
+		var elm,
+			i = this.length,
 			index;
 			// uses private scoped variables: dataCache, dataPropName
 		
@@ -499,7 +498,7 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		while (i--) {
-			elm = that[i];
+			elm = this[i];
 			index = elm[dataPropName];
 			
 			if (index !== undef) {
@@ -522,7 +521,7 @@ Glow.provide(function(glow) {
 			}
 		}
 		
-		return that; // chainable
+		return this; // chainable
 	};
 	
 	/**
@@ -538,24 +537,22 @@ Glow.provide(function(glow) {
 		glow(".onOffSwitch").toggleClass("on");
 	 */
 	NodeListProto.toggleClass = function(name) {
-		var that = this;
-		
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#toggleClass() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#toggleClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
-		for (var i = 0, leni = that.length; i < leni; i++) {
-			if (that[i].nodeType === 1) {
-				if ( (' ' + that[i].className + ' ').indexOf(' ' + name + ' ') > -1 ) {
-					_removeClass(that[i], name);
+		for (var i = 0, leni = this.length; i < leni; i++) {
+			if (this[i].nodeType === 1) {
+				if ( (' ' + this[i].className + ' ').indexOf(' ' + name + ' ') > -1 ) {
+					_removeClass(this[i], name);
 				}
 				else {
-					_addClass(that[i], name);
+					_addClass(this[i], name);
 				}
 			}
 		}
 		
-		return that;
+		return this;
 	};
 });
