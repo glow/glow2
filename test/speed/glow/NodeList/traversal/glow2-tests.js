@@ -11,7 +11,7 @@ woosh.addTests('glow2-src', {
 		return new glow.NodeList('.tocline3').parent().length;
 	}),
 	'NodeList#get': new woosh.Test(10000, function() {
-		return new glow.NodeList('toc').get('li').length;
+		return new glow.NodeList('.toc').get('li').length;
 	}),
 	'NodeList#prev': new woosh.Test(10000, function() {
 		return new glow.NodeList('.tocline3').prev().length;
@@ -21,8 +21,7 @@ woosh.addTests('glow2-src', {
 	}),
 	'NodeList#contains': new woosh.Test(10000, function() {
 		return new glow.NodeList('.subtoc').contains('.toc');
-	})
-	,
+	}),
 	'NodeList#children': new woosh.Test(10000, function() {
 		return new glow.NodeList('.toc').children().length;
 	})
