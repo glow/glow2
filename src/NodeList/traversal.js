@@ -138,15 +138,16 @@ Glow.provide(function(glow) {
 		myNewNodeList = myNodeList.get("a");
 	*/
 	NodeListProto.get = function(selector) {
-		var ret = new glow.NodeList(),
+		var ret = [],
 			i = 0,
 			length = this.length;
-		
-		while (i < length) {					
-			ret.push(glow._sizzle(selector, this[i]));
+
+		while (i < length) {			
+			ret = ret.concat( glow._sizzle(selector, this[i]) );
 			i++;
 		}
-		return new glow.NodeList(ret);
+
+		return new glow.NodeList( glow._sizzle.uniqueSort(ret) );
 	};
 	
 	

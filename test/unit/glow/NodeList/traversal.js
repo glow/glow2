@@ -4,7 +4,7 @@ function byId(id) {
 
 module('glow.NodeList traversal');
 
-test('glow.NodeList#get', 7, function() {
+test('glow.NodeList#get', 8, function() {
 	
 	var myNodeList = new glow.NodeList('#testElmsContainer');
 	
@@ -24,6 +24,11 @@ test('glow.NodeList#get', 7, function() {
 	var nodes = myNodeList.get('p');
 	
 	equal(nodes.length, 0, "Returns an empty NodeList if nothing matches");
+	
+	var myNodeList = new glow.NodeList('.toc');
+	
+	var nodes = myNodeList.get('li');
+	equal(nodes.length, 60, "Returns nodeList with 60 items (match for li)");
 	
 });
 
