@@ -67,29 +67,21 @@ Glow.provide(function(glow) {
 			nextTmp = nodelist[i];
 			
 			if(search){
-				while (nextTmp = nextTmp[dir + "Sibling"]) {
-					
-					if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
-						
+				while (nextTmp = nextTmp[dir + "Sibling"]) {					
+					if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {						
 						if (glow._sizzle.filter(search, [nextTmp]).length) {
 							ret[ri++] = nextTmp;							
 							break;
-						}
-					
-					}
-					
+						}					
+					}					
 				}
 			}
 			else{
-				while (nextTmp = nextTmp[dir + "Sibling"]) {
-					
+				while (nextTmp = nextTmp[dir + "Sibling"]) {					
 					if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
-
 							ret[ri++] = nextTmp;							
-							 break;
-					
-					}
-					
+							 break;					
+					}					
 				}	
 			}
 		i++;
@@ -161,14 +153,14 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.get = function(selector) {
 		var ret = [],
-			i = 0,
+			i = this.length,
 			length = this.length;
 
-		while (i < length) {			
-			ret = ret.concat( glow._sizzle(selector, this[i]) );
-			i++;
+		while (i--) {			
+			glow._sizzle(selector, this[i], ret);
+			
 		}
-
+		// need to remove uniqueSorts because they're slow. Replace with own method for unique.
 		return new glow.NodeList( glow._sizzle.uniqueSort(ret) );
 	};
 	
