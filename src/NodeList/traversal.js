@@ -35,8 +35,7 @@ Glow.provide(function(glow) {
 							if (glow._sizzle.filter(search, [currentParent]).length) {
 								ret[ri++] = currentParent;							
 								break;
-							}
-							
+							}							
 						}
 					}
 			
@@ -56,7 +55,7 @@ Glow.provide(function(glow) {
 			This gets the next / previous sibling element of each node in a nodeset
 			and returns the new nodeset.
 	*/
-	function getNextOrPrev(nodelist, dir /* "next" or "previous" */) {
+	function getNextOrPrev(nodelist, dir, search) {
 		var ret = [],
 			ri = 0,
 			nextTmp,
@@ -64,12 +63,34 @@ Glow.provide(function(glow) {
 			length = nodelist.length;
 
 		while (i < length) {
+			
 			nextTmp = nodelist[i];
-			while (nextTmp = nextTmp[dir + "Sibling"]) {
-				if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
-					ret[ri++] = nextTmp;
-					break;
+			
+			if(search){
+				while (nextTmp = nextTmp[dir + "Sibling"]) {
+					
+					if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
+						
+						if (glow._sizzle.filter(search, [nextTmp]).length) {
+							ret[ri++] = nextTmp;							
+							break;
+						}
+					
+					}
+					
 				}
+			}
+			else{
+				while (nextTmp = nextTmp[dir + "Sibling"]) {
+					
+					if (nextTmp.nodeType == 1 && nextTmp.nodeName != "!") {
+
+							ret[ri++] = nextTmp;							
+							 break;
+					
+					}
+					
+				}	
 			}
 		i++;
 		}
@@ -82,12 +103,8 @@ Glow.provide(function(glow) {
 		@description Gets the previous sibling element for each node in the ElementList.
 			If a filter is provided, the previous item that matches the filter is returned, or
 			none if no match is found.
-		@param {Function|string} [filter] Filter test
-			If a string is provided, it is used in a call to {@link glow.ElementList#is ElementList#is}.
-			If a function is provided it will be passed 2 arguments, the index of the current item,
-			and the ElementList being itterated over.
-			Inside the function 'this' refers to the HTMLElement.
-			Return true to keep the node, or false to remove it.
+		@param {Function|string} [search] Search value
+			If provided, will seek the previous sibling element until a match is found
 		@returns {glow.ElementList}
 			A new ElementList containing the previous sibling elements that match the (optional)
 			filter.
@@ -98,8 +115,8 @@ Glow.provide(function(glow) {
 			// get the previous sibling link element before #skipLink
 			glow.get('#skipLink').prev('a')
 	*/
-	NodeListProto.prev = function(filter) {
-		return getNextOrPrev(this, "previous");
+	NodeListProto.prev = function(search) {
+		return getNextOrPrev(this, "previous", search);
 	};
 	
 	/**
@@ -108,12 +125,8 @@ Glow.provide(function(glow) {
 		@description Gets the next sibling element for each node in the ElementList.
 			If a filter is provided, the next item that matches the filter is returned, or
 			none if no match is found.
-		@param {Function|string} [filter] Filter test
-			If a string is provided, it is used in a call to {@link glow.ElementList#is ElementList#is}.
-			If a function is provided it will be passed 2 arguments, the index of the current item,
-			and the ElementList being itterated over.
-			Inside the function 'this' refers to the HTMLElement.
-			Return true to keep the node, or false to remove it.
+		@param {Function|string} [search] Search value
+			If provided, will seek the next sibling element until a match is found
 		@returns {glow.ElementList}
 			A new ElementList containing the next sibling elements that match the (optional)
 			filter.
@@ -124,8 +137,8 @@ Glow.provide(function(glow) {
 			// get the next sibling link element after #skipLink
 			glow.get('#skipLink').next('a')
 	*/
-	NodeListProto.next = function(filter) {
-		return getNextOrPrev(this, "next");	
+	NodeListProto.next = function(search) {
+		return getNextOrPrev(this, "next", search);	
 	};
 	
 	
@@ -219,7 +232,7 @@ Glow.provide(function(glow) {
 		}
 	
 	/**
-		@name glow.dom.NodeList#children
+		@name glow.NodeList#children
 		@function
 		@description Gets the child elements of each node as a new NodeList.
 

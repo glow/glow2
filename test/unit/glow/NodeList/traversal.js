@@ -66,18 +66,18 @@ test('glow.NodeList#parent', 6, function() {
 	equals(nodes[0], byId('body'), "Gets the first parent that matches the given search value (#testElmsContanier)");
 });
 
-test('glow.NodeList#prev', 5, function() {
+test('glow.NodeList#prev', 6, function() {
 	var myNodeList = new glow.NodeList('#innerEm2');
 	
 	equals(typeof myNodeList.prev, 'function', 'glow.NodeList#prev is function');
 	
-	var nodes = myNodeList.prev("#innerEm2");
+	var nodes = myNodeList.prev();
 	
 	equals(nodes[0], byId('innerEm1'), "Gets previous elements");	
 	
 	myNodeList = new glow.NodeList('#constructor');
 	
-	var nodes = myNodeList.prev('#constructor');
+	var nodes = myNodeList.prev();
 
 	equal(nodes.length, 0, "Returns nothing if no previous element");
 	
@@ -85,12 +85,18 @@ test('glow.NodeList#prev', 5, function() {
 	
 	var myNodeList = new glow.NodeList('#secondspan');
 	
-	nodes = myNodeList.prev('#secondspan');
+	nodes = myNodeList.prev();
 	
 	equal(nodes[0], byId('firstspan'), "Skips comment nodes");
+	
+	var myNodeList = new glow.NodeList('.12sib');
+	
+	nodes = myNodeList.prev('.6sib');
+
+	equal(nodes[0], byId('prevsibmatch'), "Finds the searched for sibling called 6sib");
 });
 
-test('glow.NodeList#next', 5, function() {
+test('glow.NodeList#next', 6, function() {
 	var myNodeList = new glow.NodeList('#innerEm1');
 
 	var nodes = myNodeList.next();
@@ -101,7 +107,7 @@ test('glow.NodeList#next', 5, function() {
 	
 	myNodeList = new glow.NodeList('#constructor');
 	
-	nodes = myNodeList.next('#constructor');
+	nodes = myNodeList.next();
 
 	equal(nodes.length, 0, "Returns nothing if no next element");
 	
@@ -109,9 +115,15 @@ test('glow.NodeList#next', 5, function() {
 	
 	var myNodeList = new glow.NodeList('#firstspan');
 	
-	nodes = myNodeList.next('#firstspan');
+	nodes = myNodeList.next();
 	
 	equal(nodes[0], byId('secondspan'), "Skips comment nodes");
+	
+	var myNodeList = new glow.NodeList('.6sib');
+	
+	nodes = myNodeList.next('.12sib');
+
+	equal(nodes[0], byId('nextsibmatch'), "Finds the searched for sibling called 12sib");
 });
 
 
