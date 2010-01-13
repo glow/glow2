@@ -11,7 +11,7 @@ if (!document.readyState) {
 			}
 		);
 	}
-	else if (document.addEventListener) { // like Mozilla, Opera and recent webkit
+	else if (document.addEventListener) { // like Mozilla
 		document.addEventListener('DOMContentLoaded',
 			function () {
 				document.removeEventListener('DOMContentLoaded', arguments.callee, false);
