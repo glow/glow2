@@ -627,3 +627,99 @@ if (glow.debug) test('glow.NodeList#removeData debug', 2, function() {
 		ok(true, 'Passing wrong type of argument throws an error.');
 	}
 });
+/* NodeList#Val WIP WIP*/
+test('glow.NodeList#val', 15, function() {
+	equal(
+		new glow.NodeList("<input type=\"text\" name=\"blah\"/>").val(),
+		"",
+		"unspecified value returns empty string"
+	);
+
+	equal(
+		new glow.NodeList("<input type=\"text\" name=\"blah\" value=\"val\"/>").val(),
+		"val",
+		"get value from text input"
+	);
+
+	equal(
+		new glow.NodeList("<input type=\"checkbox\" name=\"blah\" value=\"val\" checked=\"checked\"/>").val(),
+		"val",
+		"get value from checked checkbox"
+	);
+	
+	equal(
+		new glow.NodeList("<input type=\"checkbox\" name=\"blah\" value=\"val\"/>").val(),
+		"",
+		"Empty value from unchecked checkbox"
+	);
+
+	equal(
+		new glow.NodeList("<input type=\"radio\" name=\"blah\" value=\"val\"/>").val(),
+		"",
+		"Empty value from unchecked radio"
+	);
+
+	equal(
+		new glow.NodeList("<input type=\"radio\" name=\"blah\" value=\"val\" checked=\"checked\"/>").val(),
+		"val",
+		"get value from checked radio"
+	);
+
+	equal(
+		new glow.NodeList(
+			"<select name=\"blah\"><option>foo</option>" +
+			"<option value=\"bah\" selected=\"selected\">bar</option></select>"
+		).val(),
+		"bah",
+		"value for selectd is selected option"
+	);
+
+	equal(
+		new glow.NodeList(
+			"<select multiple=\"multiple\" name=\"blah\">" +
+			"  <option value=\"blah1\" selected=\"selected\">b1</option>" +
+			"  <option selected=\"selected\" value=\"value2\">blah2</option>" +
+			"  <option>other</option>" +
+			"</select>"
+		).val(),
+		["blah1", "value2"],
+		"get array of selected items from multiple select"
+	);
+
+	var formVal = new glow.NodeList(
+		"<form>" +
+		  "<fieldset>" +
+			"<input type=\"hidden\" name=\"hidden1\" value=\"hidden1val\"/>" +
+			"<input type=\"text\" name=\"nm1\" value=\"val1\"/>" +
+			"<input type=\"text\" name=\"nm2\" value=\"val2.1\"/>" +
+			"<input type=\"text\" name=\"nm2\" value=\"val2.2\"/>" +
+		  "</fieldset>" +
+		  "<fieldset>" +
+			"<input type=\"checkbox\" name=\"ck1\" value=\"val1\"/>" +
+			"<input type=\"checkbox\" name=\"ck2\" value=\"val2\" checked=\"checked\"/>" +
+			"<input type=\"checkbox\" name=\"ck3\" value=\"val3.1\"/>" +
+			"<input type=\"checkbox\" name=\"ck3\" value=\"val3.2\" checked=\"checked\"/>" +
+			"<input type=\"checkbox\" name=\"ck3\" value=\"val3.3\"/>" +
+			"<input type=\"checkbox\" name=\"ck3\" value=\"val3.4\" checked=\"checked\"/>" +
+			"<input type=\"radio\" name=\"myRadios\" value=\"rval1\"/>" +
+			"<input type=\"radio\" name=\"myRadios\" value=\"rval2\" checked=\"checked\"/>" +
+			"<input type=\"radio\" name=\"myRadios2\" value=\"rval1\"/>" +
+			"<input type=\"radio\" name=\"myRadios2\" value=\"rval2\"/>" +
+			'<input type="text" value="Test" />' +
+			'<object id="uploadBridge"><param name="quality" value="high" /></object>' +
+			'<input type="file" name="fileUpload" />' +
+			'<input type="submit" id="whatever" value="Test" />' +
+		  "</fieldset>" +
+		"</form>"
+	).val();
+
+	equal(formVal.nm1, "val1", "form element in form value");
+	equal(formVal.nm2, ["val2.1", "val2.2"], "multi-form values result in array");
+	ok(! ('ck1' in formVal), "unchecked checkbox value not in form");
+	equal(formVal.ck2, "val2", "checked checkbox value in form");
+	equal(formVal.ck3, ["val3.2", "val3.4"], "only checked checkboxes have values");
+
+	equal(formVal.myRadios, "rval2", "radio has value of checked radio");
+	equal(formVal.myRadios2, undefined, "unchecked radios have undefined value");
+});
+
