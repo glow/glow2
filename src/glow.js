@@ -2,7 +2,7 @@
 if (!document.readyState) {
 	document.readyState = 'loading';
 	
-	if (document.attachEvent) { // like IE
+	/*--if (document.attachEvent) { // like IE
 		document.attachEvent('onreadystatechange',
 			function() {
 				if (document.readyState == 'complete') {
@@ -11,7 +11,7 @@ if (!document.readyState) {
 			}
 		);
 	}
-	else if (document.addEventListener) { // like Mozilla
+	else */if (document.addEventListener) { // like Mozilla
 		document.addEventListener('DOMContentLoaded',
 			function () {
 				document.removeEventListener('DOMContentLoaded', arguments.callee, false);
@@ -29,12 +29,12 @@ if (!document.readyState) {
 		@public
 		@name Glow
 		@constructor
-		@description Factory for creating instances of the Glow JavaScript Library.
+		@description Creates an instance of the Glow JavaScript Library.
 		@param {string} [version]
 		@param {object} [opts]
 		@param {string} [opts.base] The path to the base folder, in which the Glow versions are kept.
 		@param {boolean} [opts.debug] Have all filenames modified to point to debug versions.
-		@param {object} [opts.map] Use your own file map.
+
 	 */
 	window.Glow = function(version, opts) { /*debug*///log.info('new Glow("'+Array.prototype.join.call(arguments, '", "')+'")');
 		var glowInstance;
@@ -51,7 +51,7 @@ if (!document.readyState) {
 			}
 		};
 		
-		if (opts.map) { glowMap = opts.map; }
+		if (opts._map) { glowMap = opts._map; } // for testing purposes map can be overridden
 		
 		version = getVersion(version); /*debug*///log.info('Version is "'+version+'"');
 		
@@ -64,11 +64,11 @@ if (!document.readyState) {
 			opts.base += '/';
 		}
 		
-		glowInstance = new glow(version, opts.base)
+		glowInstance = new glow(version, opts.base);
 		Glow._build.instances[version] = glowInstance;
 		
 		glowInstance.debug = false; /*!debug*/ glowInstance.debug = true; /*gubed!*/
-		glowInstance.UID = 'glow' + Math.floor(Math.random() * (1<<30)),
+		glowInstance.UID = 'glow' + Math.floor(Math.random() * (1<<30));
 
  		glowInstance.load('core'); // core is always loaded;
  		 		
@@ -89,7 +89,7 @@ if (!document.readyState) {
 		// TODO: an empty version means: the very latest version
 		
 		var i = versions.length;
-		while (--i > -1) {
+		while (i--) {
 			if ( ( versions[i] + '.').indexOf(matchThis) === 0 ) {
 				return versions[i];
 			}
@@ -136,7 +136,7 @@ if (!document.readyState) {
 		script.src = src;
 		script.type = 'text/javascript';
 		
-		head.appendChild(script);
+		head.insertBefore(script, head.firstChild); // rather than appendChild() to avoid IE bug when injecting SCRIPTs after BASE tag opens. see: http://shauninman.com/archive/2007/04/13/operation_aborted
 	}
 	
 	/**
@@ -322,8 +322,7 @@ if (!document.readyState) {
 		/*debug*///log.info('running '+this._build.callbacks.length+' loaded callbacks for version "'+this.version+'"');
 		
 		// run and remove each available _onloaded callback
-		while (this._build.callbacks.length) {
-			callback = this._build.callbacks.shift();
+		while (callback = this._build.callbacks.shift()) {
 			callback(this);
 			if (this._removeReadyBlock) { this._removeReadyBlock('glow_loading_loadedcallback'); }
 		}

@@ -20,7 +20,7 @@
 			}
 		};
 
-		Glow('1.0.0', {base: './mock/', map: mockMap})
+		Glow('1.0.0', {base: './mock/', _map: mockMap})
 		.load('foo', 'bar')
 		.loaded(function(g) {
 			if (parent.callbacks && parent.callbacks[window.name]) {
