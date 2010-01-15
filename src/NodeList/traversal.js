@@ -203,8 +203,7 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.get = function(selector) {
 		var ret = [],
-			i = this.length,
-			length = this.length;
+			i = this.length;
 
 		while (i--) {			
 			glow._sizzle(selector, this[i], ret);
@@ -288,10 +287,9 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.children = function() {
 		var ret = [],
-			i = 0,
-			length = this.length;
+			i = this.length;
 				
-		for (; i < length; i++) {
+		while(i--) {
 			ret = ret.concat( getChildElms(this[i]) );
 		}
 		return new glow.NodeList(ret);	
