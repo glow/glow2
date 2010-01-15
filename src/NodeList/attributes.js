@@ -602,4 +602,326 @@ Glow.provide(function(glow) {
 		
 		return this;
 	};
+	
+	/**
+	@name glow.dom.NodeList#val
+	@function
+	@description Gets or sets form values for the first node.
+
+		<p><em>This method is not applicable to XML NodeLists.</em></p>
+
+		<p><em>Getting values from form elements</em></p>
+
+		The returned value depends on the type of element, see below:
+
+		<dl>
+		<dt>Radio button or checkbox</dt>
+		<dd>If checked, then the contents of the value attribute, otherwise an empty string.</dd>
+		<dt>Select</dt>
+		<dd>The contents of value attribute of the selected option</dd>
+		<dt>Select (multiple)</dt>
+		<dd>An array of selected option values.</dd>
+		<dt>Other form element</dt>
+		<dd>The value of the input.</dd>
+		</dl>
+
+		<p><em>Getting values from a form</em></p>
+
+		If the first element in the NodeList is a form, then an
+		object is returned containing the form data. Each item
+		property of the object is a value as above, apart from when
+		multiple elements of the same name exist, in which case the
+		it will contain an array of values.
+
+		<p><em>Setting values for form elements</em></p>
+
+		If a value is passed and the first element of the NodeList
+		is a form element, then the form element is given that value.
+		For select elements, this means that the first option that
+		matches the value will be selected. For selects that allow
+		multiple selection, the options which have a value that
+		exists in the array of values/match the value will be
+		selected and others will be deselected.
+
+		Currently checkboxes and radio buttons are not checked or
+		unchecked, just their value is changed. This does mean that
+		this does not do exactly the reverse of getting the value
+		from the element (see above) and as such may be subject to
+		change
+
+		<p><em>Setting values for forms</em></p>
+
+		If the first element in the NodeList is a form and the
+		value is an object, then each element of the form has its
+		value set to the corresponding property of the object, using
+		the method described above.
+
+	@param {String | Object} [value] The value to set the form element/elements to.
+
+	@returns {glow.dom.NodeList | String | Object}
+
+		When used to set a value it returns the NodeList, otherwise
+		returns the value as described above.
+
+	@example
+		// get a value
+		var username = glow.dom.get("input#username").val();
+
+	@example			
+		/ get values from a form
+		var userDetails = glow.dom.get("form").val();
+
+	@example
+		// set a value
+		glow.dom.get("input#username").val("example username");
+
+	@example
+		// set values in a form
+		glow.dom.get("form").val({
+			username : "another",
+			name     : "A N Other"
+		});
+	*/
+	NodeListProto.val = function(){
+		/*
+			PrivateFunction: elementValue
+			Get a value for a form element.
+		*/
+
+		function elementValue (el) {
+			var elType = el.type,
+				elChecked = el.checked,
+				elValue = el.value,
+				vals = [],
+				i = 0;
+
+			if (elType == "radio") {
+				return elChecked ? elValue : "";
+			} else if (elType == "checkbox") {
+				return elChecked ? elValue : "";
+			} else if (elType == "select-one") {
+				return el.selectedIndex > -1 ?
+					el.options[el.selectedIndex].value : "";
+				} else if (elType == "select-multiple") {
+				for (var length = el.options.length; i < length; i++) {
+					if (el.options[i].selected) {
+						vals[vals.length] = el.options[i].value;
+					}
+				}
+				return vals;
+			} else {
+				return elValue;
+			}
+		}
+
+		/*
+		PrivateMethod: formValues
+			Get an object containing form data.
+		*/
+		function formValues (form) {
+			var vals = {},
+				radios = {},
+				formElements = form.elements,
+				i = 0,
+				length = formElements.length,
+				name,
+				formElement,
+				j,
+				radio,
+				nodeName;
+
+			for (; i < length; i++) {
+				formElement = formElements[i];
+				nodeName = formElement.nodeName.toLowerCase();
+				name = formElement.name;
+				
+				// fieldsets & objects come back as form elements, but we don't care about these
+				// we don't bother with fields that don't have a name
+				// switch to whitelist?
+				if (
+					nodeName == "fieldset" ||
+					nodeName == "object" ||
+					!name
+				) { continue; }
+				if (formElement.type == "checkbox" && ! formElement.checked) {
+					if (! name in vals) {
+						vals[name] = undefined;
+					}
+				} else if (formElement.type == "radio") {
+					if (radios[name]) {
+						radios[name][radios[name].length] = formElement;
+					} else {
+						radios[name] = [formElement];
+					}
+				} else {
+					var value = elementValue(formElement);
+					if (name in vals) {
+						if (vals[name].push) {
+							vals[name][vals[name].length] = value;
+						} else {
+							vals[name] = [vals[name], value];
+						}
+					} else {
+						vals[name] = value;
+					}
+				}
+			}
+			for (i in radios) {
+				j = 0;
+				for (length = radios[i].length; j < length; j++) {
+					radio = radios[i][j];
+					name = radio.name;
+					if (radio.checked) {
+						vals[radio.name] = radio.value;
+						break;
+					}
+				}
+				if (! name in vals) { vals[name] = undefined; }
+			}
+			return vals;
+		}
+
+		/*
+		PrivateFunction: setFormValues
+			Set values of a form to those in passed in object.
+		*/
+		function setFormValues (form, vals) {
+			var prop, currentField,
+				fields = {},
+				storeType, i = 0, n, len, foundOne, currentFieldType;
+
+			for (prop in vals) {
+				currentField = form[prop];
+				if (currentField && currentField[0] && !currentField.options) { // is array of fields
+					//normalise values to array of vals
+					vals[prop] = vals[prop] && vals[prop].push ? vals[prop] : [vals[prop]];
+					//order the fields by types that matter
+					fields.radios = [];
+					fields.checkboxesSelects = [];
+					fields.multiSelects = [];
+					fields.other = [];
+
+					for (i = 0; currentField[i]; i++) {
+						currentFieldType = currentField[i].type;
+						if (currentFieldType == "radio") {
+							storeType = "radios";
+					} else if (currentFieldType == "select-one" || currentFieldType == "checkbox") {
+							storeType = "checkboxesSelects";
+						} else if (currentFieldType == "select-multiple") {
+							storeType = "multiSelects";
+						} else {
+							storeType = "other";
+						}
+						//add it to the correct array
+						fields[storeType][fields[storeType].length] = currentField[i];
+					}
+
+					for (i = 0; fields.multiSelects[i]; i++) {
+						vals[prop] = setValue(fields.multiSelects[i], vals[prop]);
+					}
+					for (i = 0; fields.checkboxesSelects[i]; i++) {
+						setValue(fields.checkboxesSelects[i], "");
+						for (n = 0, len = vals[prop].length; n < len; n++) {
+							if (setValue(fields.checkboxesSelects[i], vals[prop][n])) {
+								vals[prop].slice(n, 1);
+								break;
+							}
+						}
+					}
+					for (i = 0; fields.radios[i]; i++) {
+						fields.radios[i].checked = false;
+						foundOne = false;
+						for (n = 0, len = vals[prop].length; n < len; n++) {
+							if (setValue(fields.radios[i], vals[prop][n])) {
+								vals[prop].slice(n, 1);
+								foundOne = true;
+								break;
+							}
+							if (foundOne) { break; }
+						}
+					}
+					for (i = 0; fields.other[i] && vals[prop][i] !== undefined; i++) {
+						setValue(fields.other[i], vals[prop][i]);
+					}
+				} else if (currentField && currentField.nodeName) { // is single field, easy
+					setValue(currentField, vals[prop]);
+				}
+			}
+		}
+
+		/*
+		PrivateFunction: setValue
+			Set the value of a form element.
+			Returns:
+			values that weren't able to set if array of vals passed (for multi select). Otherwise true if val set, false if not
+		*/
+		function setValue (el, val) {
+			var i = 0,
+				length,
+				n = 0,
+				nlen,
+				elOption,
+				optionVal;
+
+				if (el.type == "select-one") {
+				for (length = el.options.length; i < length; i++) {
+					if (el.options[i].value == val) {
+						el.selectedIndex = i;
+						return true;
+					}
+				}
+				return false;
+			} else if (el.type == "select-multiple") {
+				var isArray = !!val.push;
+				for (i = 0, length = el.options.length; i < length; i++) {
+					elOption = el.options[i];
+					optionVal = elOption.value;
+					if (isArray) {
+						elOption.selected = false;
+						for (nlen = val.length; n < nlen; n++) {
+							if (optionVal == val[n]) {
+								elOption.selected = true;
+								val.splice(n, 1);
+								break;
+							}
+						}
+					} else {
+						return elOption.selected = val == optionVal;
+					}
+				}
+				return false;
+			} else if (el.type == "radio" || el.type == "checkbox") {
+				el.checked = val == el.value;
+				return val == el.value;
+			} else {
+				el.value = val;
+				return true;
+			}
+		}
+
+		// toplevel implementation
+	
+		var args = arguments,
+			val = args[0],
+			that = this,
+			i = 0,
+			length = that.length;
+
+		if (args.length === 0) {
+			return that[0].nodeName == 'FORM' ?
+				formValues(that[0]) :
+				elementValue(that[0]);
+		}
+		if (that[0].nodeName == 'FORM') {
+			if (! typeof val == 'object') {
+				throw 'value for FORM must be object';
+			}
+			setFormValues(that[0], val);
+		} else {
+			for (; i < length; i++) {
+				setValue(that[i], val);
+			}
+		}
+		return that;		
+	};
 });
