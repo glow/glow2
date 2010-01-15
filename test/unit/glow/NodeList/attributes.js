@@ -541,7 +541,7 @@ if (glow.debug) test('glow.NodeList#toggleClass debug', 3, function() {
 	}
 });
 
-test('glow.NodeList#data', 7, function() {
+test('glow.NodeList#data', 9, function() {
 	var myNodeList = new glow.NodeList('' +
 		'<div id="dataTest"></div>' +
 		'<p id="para1">' +
@@ -552,11 +552,21 @@ test('glow.NodeList#data', 7, function() {
 		'text<!-- comment -->'
 	);
 	
+	var unicorns = myNodeList.data('unicorns');
+	equal(unicorns, undefined, 'Getting a datum from NodeList with no data returns undefined.');
+	
+	var data = myNodeList.data();
+	equal(data, undefined, 'Getting all data from NodeList with no data returns undefined.');
+	
+// 	data['hello'] = true;
+// 	var hello = myNodeList.data('hello');
+// 	equal(hello, true, 'Can set and get a key, val from NodeList.');
+	
 	var self = myNodeList.data('color', 'red');
 	equal(myNodeList.data('color'), 'red', 'Can set and get a key, val from NodeList.');
 	ok((myNodeList === self), 'The call to set a key, val is chainable.');
 	
-	var data = myNodeList.data();
+	data = myNodeList.data();
 	equal(data.color, 'red', 'Can get the entire data object from NodeList when given no arguments.');
 	
 	var para1 = new glow.NodeList(myNodeList[1]);
@@ -608,7 +618,7 @@ test('glow.NodeList#removeData', 5, function() {
 	
 	var self = myNodeList.removeData();
 	var data = myNodeList.data();
-	equal(data.size, undefined, 'Can remove all data at once.');
+	equal(data, undefined, 'Can remove all data at once.');
 	ok( (myNodeList === self), 'The call to removeData is chainable.');
 });
 

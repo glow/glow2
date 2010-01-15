@@ -1,48 +1,48 @@
 Glow.provide(function(glow) {
-	var undef,
-		NodeListProto = glow.NodeList.prototype
+	var undef
+		, NodeListProto = glow.NodeList.prototype
 	
-	/**
-		@private
-		@name glow.NodeList-dom0PropertyMapping
-		@description Mapping of HTML attribute names to DOM0 property names.
-	*/
-	, dom0PropertyMapping = { // keys must be lowercase
-		'class'     : 'className',
-		'for'       : 'htmlFor',
-		'maxlength' : 'maxLength'
-	}
-	
-	/**
-		@private
-		@name glow.NodeList-dataPropName
-		@type String
-		@description The property name added to the DomElement by the NodeList#data method.
-	*/
-	, dataPropName = '_uniqueData' + glow.UID
-	
-	/**
-		@private
-		@name glow.NodeList-dataIndex
-		@type String
-		@description The value of the dataPropName added by the NodeList#data method.
-	*/
-	, dataIndex = 1 // must be a truthy value
+		/**
+			@private
+			@name glow.NodeList-dom0PropertyMapping
+			@description Mapping of HTML attribute names to DOM0 property names.
+		*/
+		, dom0PropertyMapping = { // keys must be lowercase
+			'class'     : 'className',
+			'for'       : 'htmlFor',
+			'maxlength' : 'maxLength'
+		}
 		
-	/**
-		@private
-		@name glow.NodeList-dataCache
-		@type Object
-		@description Holds the data used by the NodeList#data method.
+		/**
+			@private
+			@name glow.NodeList-dataPropName
+			@type String
+			@description The property name added to the DomElement by the NodeList#data method.
+		*/
+		, dataPropName = '_uniqueData' + glow.UID
 		
-		The structure is like:
-		[
-			{
-				myKey: "my data"
-			}
-		]
-	*/
-	, dataCache = [];
+		/**
+			@private
+			@name glow.NodeList-dataIndex
+			@type String
+			@description The value of the dataPropName added by the NodeList#data method.
+		*/
+		, dataIndex = 1 // must be a truthy value
+			
+		/**
+			@private
+			@name glow.NodeList-dataCache
+			@type Object
+			@description Holds the data used by the NodeList#data method.
+			
+			The structure is like:
+			[
+				{
+					myKey: "my data"
+				}
+			]
+		*/
+		, dataCache = [];
 			
 	/**
 	@name glow.NodeList#addClass
@@ -57,12 +57,14 @@ Glow.provide(function(glow) {
 		glow("#login a").addClass("highlight");
 	*/
 	NodeListProto.addClass = function(name) {
+		var i = this.length;
+		
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#addClass() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#addClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
-		for (var i = 0, leni = this.length; i < leni; i++) {
+		while (i--) {
 			if (this[i].nodeType === 1) {
 				_addClass(this[i], name);
 			}
@@ -71,9 +73,9 @@ Glow.provide(function(glow) {
 		return this;
 	};
 	
-	function _addClass(el, name) { // TODO: handle classnames separated by non-space characters?
-		if ((' ' + el.className + ' ').indexOf(' ' + name + ' ') === -1) {
-			el.className += ((el.className)? ' ' : '') + name;
+	function _addClass(node, name) { // TODO: handle classnames separated by non-space characters?
+		if ( (' ' + node.className + ' ').indexOf(' ' + name + ' ') === -1 ) {
+			node.className += (node.className? ' ' : '') + name;
 		}
 	}
 	
@@ -127,12 +129,12 @@ Glow.provide(function(glow) {
 	 // see: http://tobielangel.com/2007/1/11/attribute-nightmare-in-ie/
 	NodeListProto.attr = function(/*arguments*/) {
 		var args = arguments,
-			argsLen = arguments.length,
+			argsLen = args.length,
 			thisLen = this.length,
 			name = keyvals = args[0], // using this API: attr(name) or attr({key: val}) ?
 			dom0Property = '',
-			el,
-			node;
+			node,
+			attrNode;
 		
 		/*!debug*/
 			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#attr(name, value) expects name to be of type string.'); }
@@ -144,8 +146,8 @@ Glow.provide(function(glow) {
 			return (argsLen > 1)? this : undef;
 		}
 		
-		if (typeof keyvals === 'object') {
-			for (name in keyvals) { // SETting value from {name: value} object
+		if (typeof keyvals === 'object') { // SETting value from {name: value} object
+			for (name in keyvals) {
 				if (!keyvals.hasOwnProperty(name)) { continue; }
 				
 				// in IE6 and IE7 the attribute name needs to be translated into dom property name
@@ -155,15 +157,15 @@ Glow.provide(function(glow) {
 				
 				var i = thisLen;
 				while (i--) {
-					el = this[i];
+					node = this[i];
 					
-					if (el.nodeType === 1) {
-						if (dom0Property) {
-							el[dom0Property] = keyvals[name];
-						}
-						else {
-							el.setAttribute(name, keyvals[name], 0); // IE flags, 0: case-insensitive
-						}
+					if (node.nodeType !== 1) { continue; }
+					
+					if (dom0Property) {
+						node[dom0Property] = keyvals[name];
+					}
+					else {
+						node.setAttribute(name, keyvals[name], 0); // IE flags, 0: case-insensitive
 					}
 				}
 			}
@@ -171,35 +173,35 @@ Glow.provide(function(glow) {
 			return this;
 		}
 		else {
-			el = this[0];
+			node = this[0];
 				
-			if (el.nodeType !== 1) { 
+			if (node.nodeType !== 1) {
 				return (argsLen > 1)? this : undef;
 			}
 
 			if (argsLen === 1) { // GETting value from name
-				if (el.attributes[name]) { // in IE el.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
-					return (!el.attributes[name].specified)? '' : el.attributes[name].value;
+				if (node.attributes[name]) { // in IE node.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
+					return (!node.attributes[name].specified)? '' : node.attributes[name].value;
 				}
-				else if (el.getAttributeNode) { // in IE getAttribute() does not always work so we use getAttributeNode if we can
-					node = el.getAttributeNode(name, 0);
-					return (node === null)? '' : node.value;
+				else if (node.getAttributeNode) { // in IE getAttribute() does not always work so we use getAttributeNode if we can
+					attrNode = node.getAttributeNode(name, 0);
+					return (attrNode === null)? '' : attrNode.value;
 				}
 				else {
-					value = el.getAttribute(name, 0, 2); // IE flags, 0: case-insensitive, 2: as string
+					value = node.getAttribute(name, 0, 2); // IE flags, 0: case-insensitive, 2: as string
 					return (value === null)? '' : value;
 				}	
 			}
 			else { // SETting a single value like attr(name, value), normalize to an keyval object
 				if (glow.env.ie < 8) {
-					dom0Property = dom0PropertyMapping[name.toLowerCase()] || '';
+					dom0Property = dom0PropertyMapping[name.toLowerCase()];
 				}
 				
-				if (dom0Property !== '') {
-					el[dom0Property] = args[1];
+				if (dom0Property) {
+					node[dom0Property] = args[1];
 				}
 				else {
-					el.setAttribute(name, args[1], 0); // IE flags, 0: case-insensitive
+					node.setAttribute(name, args[1], 0); // IE flags, 0: case-insensitive
 				}
 				return this;
 			}
@@ -222,7 +224,7 @@ Glow.provide(function(glow) {
 	Optionally you can pass in a single object composed of multiple name, value pairs.
 	
 	@param {string|Object} [key] The name of the value in glow's data store.
-	@param {Object} [value] The the value you wish to associate with the given name.
+	@param {Object} [val] The value you wish to associate with the given name.
 	@see glow.NodeList#removeData
 	@example
 	
@@ -232,7 +234,11 @@ Glow.provide(function(glow) {
 	@see glow.NodeList#removeData
 	*/
 	NodeListProto.data = function (key, val) { /*debug*///console.log("data("+key+", "+val+")");
-		var args = arguments;
+		var args = arguments,
+			argsLen = args.length,
+			keyvals = key, // like: data({key: val}) or data(key, val)
+			index,
+			node;
 		
 		/*!debug*/
 			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#data(name, value) expects name to be of type string.'); }
@@ -240,40 +246,58 @@ Glow.provide(function(glow) {
 			if (arguments.length > 2) { throw new Error('Method NodeList#data() expects 0, 1 or 2 arguments.'); }
 		/*gubed!*/
 		
-		if (typeof key === 'object') { // setting many values
-			for (var prop in key) { this.data(prop, key[prop]); }
-			return this; // chainable with ({key: val}) signature
-		}
-		
-		var index,
-			elm;
-			// uses private scoped variables: dataCache, dataPropName, dataIndex
-		
-		switch (args.length) {
-			case 0: // getting entire cache from first node
-				if (this[0] === undef) { return undef; }
-				index = this[0][dataPropName] || dataIndex++;
-				return dataCache[index] || (dataCache[index] = {}); // create a new cache when reading entire cache
-			case 1:  // getting val from first node
-				if (this[0] === undef) { return undef; }
-				index = this[0][dataPropName]; // don't create a new cache when reading just a specific val
-				return index? dataCache[index][key] : undef;
-			case 2: // setting key:val on every node
-				// TODO - need to defend against reserved words being used as keys?
-				for (var i = this.length; i--;) {
-					elm = this[i];
-					if (elm.nodeType !== 1) { continue; }
-					
-					if ( !(index = elm[dataPropName]) ) { // assumes index is always > 0
-						index = dataIndex++;
-						
-						elm[dataPropName] = index;
-						dataCache[index] = {};
-					}
-					dataCache[index][key] = val;
-				}
+		if (argsLen > 1) { // SET key, val on every node
+			var i = this.length;
+			while (i--) {
+				node = this[i];
+				if (node.nodeType !== 1) { continue; }
 				
-				return this; // chainable with (key, val) signature
+				index = node[dataPropName];
+				if (!index) { // assumes index is always > 0
+					index = dataIndex++;
+					
+					node[dataPropName] = index;
+					dataCache[index] = {};
+				}
+				dataCache[index][key] = val;
+			}
+			
+			return this; // chainable with (key, val) signature
+		}
+		else if (typeof keyvals === 'object') { // SET keyvals on every node
+			var i = this.length;
+			while (i--) {
+				node = this[i];
+				if (node.nodeType !== 1) { continue; }
+				
+				index = node[dataPropName];
+				if (!index) { // assumes index is always > 0
+					index = dataIndex++;
+					
+					node[dataPropName] = index;
+					dataCache[index] = {};
+				}
+				for (key in keyvals) {
+					dataCache[index][key] = keyvals[key];
+				}
+			}
+			
+			return this; // chainable with ({key, val}) signature
+		}
+		else { // GET from first node
+			node = this[0];
+			if (node === undef || node.nodeType !== 1) { return undef; }
+				
+			if ( !(index = node[dataPropName]) ) {
+				return undef;
+			}
+			
+			if (key) {
+				return dataCache[index][key];
+			}
+			
+			// get the entire data cache object for this node
+			return dataCache[index];
 		}
 	};
 	
@@ -296,22 +320,22 @@ Glow.provide(function(glow) {
 		}
 	*/
 	NodeListProto.hasAttr = function(name) {
-		var el;
+		var node;
 		
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#hasAttr() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#hasAttr() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
-		el = this[0];
+		node = this[0];
 		
-		if (this.length && el.nodeType === 1) {
-			if (el.attributes[name]) { // is an object in  IE, or else: undefined in IE < 8, null in IE 8
-				return !!el.attributes[name].specified;
+		if (this.length && node.nodeType === 1) {
+			if (node.attributes[name]) { // is an object in  IE, or else: undefined in IE < 8, null in IE 8
+				return !!node.attributes[name].specified;
 			}
 			
-			if (el.hasAttribute) { return el.hasAttribute(name); } // like FF, Safari, etc
-			else { return el.attributes[name] !== undef; } // like IE7
+			if (node.hasAttribute) { return node.hasAttribute(name); } // like FF, Safari, etc
+			else { return node.attributes[name] !== undef; } // like IE7
 		}
 	};
 	
@@ -461,30 +485,37 @@ Glow.provide(function(glow) {
 		glow("#footer #login a").removeClass("highlight");
 	*/
 	NodeListProto.removeClass = function(name) {
-		var oldClasses = [],
-			newClasses = [];
-		
+		var node;
+					
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#removeClass() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
-		for (var i = 0, leni = this.length; i < leni; i++) {
-			_removeClass(this[i], name)
+		var i = this.length;
+		while (i--) {
+			node = this[i];
+			if (node.className) {
+				_removeClass(node, name);
+			}
 		}
 		return this;
 	};
 	
-	function _removeClass(HtmlElement, name) {
-		var oldClasses = (HtmlElement.className||'').split(' '),
+	function _removeClass(node, name) {
+		var oldClasses = node.className.split(' '),
 			newClasses = [];
 			
-		for (var i = 0, leni = oldClasses.length; i < leni; i++) {
-			if (oldClasses[i] && oldClasses[i] !== name) {
-				newClasses.push(oldClasses[i]);
+		oldClasses = node.className.split(' ');
+		newClasses = [];
+		
+		var i = oldClasses.length;
+		while (i--) {
+			if (oldClasses[i] !== name) {
+				oldClasses[i] && newClasses.unshift(oldClasses[i]); // unshift to maintain original order
 			}
 		}
-		HtmlElement.className = (newClasses.length)? newClasses.join(' ') : '';
+		node.className = (newClasses.length)? newClasses.join(' ') : '';
 	}
 	
 	/**
@@ -550,18 +581,21 @@ Glow.provide(function(glow) {
 		glow(".onOffSwitch").toggleClass("on");
 	 */
 	NodeListProto.toggleClass = function(name) {
+		var node;
+		
 		/*!debug*/
 			if (arguments.length !== 1) { throw new Error('Method NodeList#toggleClass() expects 1 argument.'); }
 			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#toggleClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
 		for (var i = 0, leni = this.length; i < leni; i++) {
-			if (this[i].nodeType === 1) {
-				if ( (' ' + this[i].className + ' ').indexOf(' ' + name + ' ') > -1 ) {
-					_removeClass(this[i], name);
+			node = this[i];
+			if (node.className) {
+				if ( (' ' + node.className + ' ').indexOf(' ' + name + ' ') > -1 ) {
+					_removeClass(node, name);
 				}
 				else {
-					_addClass(this[i], name);
+					_addClass(node, name);
 				}
 			}
 		}
