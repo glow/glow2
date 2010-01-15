@@ -7,7 +7,7 @@ Glow.provide(function(glow) {
 		@constructor
 		@extends glow.events.Event
 		
-		@param {Event} nativeEvent A native browser event read properties from
+		@param {Event|string} nativeEvent A native browser event read properties from, or the name of a native event.
 		
 		@param {Object} [properties] Properties to add to the Event instance.
 		   Each key-value pair in the object will be added to the Event as
@@ -18,8 +18,21 @@ Glow.provide(function(glow) {
 		   listening to events. One will be provided as the first argument
 		   in your callback.
 	*/
-	function DomEvent(nativeEvent, properties) {}
+	function DomEvent(nativeEvent, properties) {
+		if (typeof nativeEvent == 'string') {
+			this.name = nativeEvent;
+		}
+		else {
+			this.nativeEvent = nativeEvent;
+		}
+		
+		for (var key in properties) {
+			this[key] = properties[key];
+		}
+	}
 	var DomEventProto = DomEvent.prototype;
+	glow.util.apply(DomEventProto, glow.events.Event.prototype); // extends Event
+	
 	
 	/** 
 		@name glow.events.DomEvent#altKey

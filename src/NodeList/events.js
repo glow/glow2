@@ -34,7 +34,59 @@ Glow.provide(function(glow) {
 			   return false;
 		   });
 	*/
-	NodeListProto.on = function(eventName, callback, thisVal) {}
+	NodeListProto.on = function(name, callback, thisVal) {
+		var name = (name || '').toLowerCase(),
+			attachTo,
+			i = this.length,
+			capturingMode = true;
+		
+		var userCallback = callback;
+		callback = function() {
+			console.log('event: '+name+'!');
+			userCallback();
+		};
+		
+		while (i--) {
+			attachTo = this[i];
+			
+			if (attachTo.addEventListener && (!glow.env.webkit || glow.env.webkit > 418)) {
+	
+				// This is to fix an issue between Opera and everything else.
+				// Opera needs to have an empty eventListener attached to the parent
+				// in order to fire a captured event (in our case we are using capture if
+				// the event is focus/blur) on an element when the element is the eventTarget.
+				//
+				// It is only happening in Opera 9, Opera 10 doesn't show this behaviour.
+				// It looks like Opera has a bug, but according to the W3C Opera is correct...
+				//
+				// "A capturing EventListener will not be triggered by events dispatched 
+				// directly to the EventTarget upon which it is registered."
+				// http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-flow-capture
+				if ( (name == 'focus' || name == 'blur') && glow.env.opera ) {
+					attachTo.parentNode.addEventListener(name, function(){}, true);
+				}
+	
+				attachTo.addEventListener(name == 'mousewheel' && glow.env.gecko ? 'DOMMouseScroll' : name, callback, capturingMode);
+			}
+			else {
+	
+				var onName = 'on' + name;
+				var existing = attachTo[onName];
+				if (existing) {
+					attachTo[onName] = function () {
+						// we still need to return false if either the existing or new callback returns false
+						var existingReturn = existing.apply(this, arguments),
+							callbackReturn = callback.apply(this, arguments);
+						
+						return (existingReturn !== false) && (callbackReturn !== false);
+					};
+				} else {
+					attachTo[onName] = callback;
+				}
+			}
+			
+		}
+	}
 	
 	/**
 		@name glow.NodeList#detatch
