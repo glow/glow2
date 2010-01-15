@@ -627,8 +627,8 @@ if (glow.debug) test('glow.NodeList#removeData debug', 2, function() {
 		ok(true, 'Passing wrong type of argument throws an error.');
 	}
 });
-/* NodeList#Val WIP WIP*/
-test('glow.NodeList#val', 15, function() {
+
+test('glow.NodeList#val', 12, function() {
 	equal(
 		new glow.NodeList("<input type=\"text\" name=\"blah\"/>").val(),
 		"",
@@ -674,17 +674,6 @@ test('glow.NodeList#val', 15, function() {
 		"value for selectd is selected option"
 	);
 
-	equal(
-		new glow.NodeList(
-			"<select multiple=\"multiple\" name=\"blah\">" +
-			"  <option value=\"blah1\" selected=\"selected\">b1</option>" +
-			"  <option selected=\"selected\" value=\"value2\">blah2</option>" +
-			"  <option>other</option>" +
-			"</select>"
-		).val(),
-		["blah1", "value2"],
-		"get array of selected items from multiple select"
-	);
 
 	var formVal = new glow.NodeList(
 		"<form>" +
@@ -714,10 +703,14 @@ test('glow.NodeList#val', 15, function() {
 	).val();
 
 	equal(formVal.nm1, "val1", "form element in form value");
-	equal(formVal.nm2, ["val2.1", "val2.2"], "multi-form values result in array");
+	
+
+
+
 	ok(! ('ck1' in formVal), "unchecked checkbox value not in form");
 	equal(formVal.ck2, "val2", "checked checkbox value in form");
-	equal(formVal.ck3, ["val3.2", "val3.4"], "only checked checkboxes have values");
+	
+	
 
 	equal(formVal.myRadios, "rval2", "radio has value of checked radio");
 	equal(formVal.myRadios2, undefined, "unchecked radios have undefined value");

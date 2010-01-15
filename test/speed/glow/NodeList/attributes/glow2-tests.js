@@ -7,6 +7,7 @@ woosh.addTests('glow2-src', {
 		htmlForTest.innerHTML = htmlForTestHTML;
 		window.paragraphs = new glow.NodeList('p');
 		window.paragraph = paragraphs.item(0);
+		form = new glow.NodeList('form');
 		window.testBin = new glow.NodeList('#testBin');
 		window.testCount = 0;
 		switch (nextTest) {
@@ -84,6 +85,13 @@ woosh.addTests('glow2-src', {
 		paragraphs.removeData('color');
 		if (++testCount == 200) {
 			return paragraphs.data('color');
+		}
+	}),
+	'form val': woosh.Test(200, function() {
+		form.val();
+		if (++testCount == 200) {
+			console.log(form.val())
+			return form.nm1;
 		}
 	})
 });

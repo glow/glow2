@@ -653,6 +653,7 @@ Glow.provide(function(glow) {
 			PrivateFunction: elementValue
 			Get a value for a form element.
 		*/
+
 		function elementValue (el) {
 			var elType = el.type,
 				elChecked = el.checked,
@@ -865,30 +866,28 @@ Glow.provide(function(glow) {
 		}
 
 		// toplevel implementation
-		return function (/* [value] */) {
-			var args = arguments,
-				val = args[0],
-				that = this,
-				i = 0,
-				length = that.length;
+	
+		var args = arguments,
+			val = args[0],
+			that = this,
+			i = 0,
+			length = that.length;
 
-			if (args.length === 0) {
-				return that[0].nodeName == 'FORM' ?
-					formValues(that[0]) :
-					elementValue(that[0]);
+		if (args.length === 0) {
+			return that[0].nodeName == 'FORM' ?
+				formValues(that[0]) :
+				elementValue(that[0]);
+		}
+		if (that[0].nodeName == 'FORM') {
+			if (! typeof val == 'object') {
+				throw 'value for FORM must be object';
 			}
-			if (that[0].nodeName == 'FORM') {
-				if (! typeof val == 'object') {
-					throw 'value for FORM must be object';
-				}
-				setFormValues(that[0], val);
-			} else {
-				for (; i < length; i++) {
-					setValue(that[i], val);
-				}
+			setFormValues(that[0], val);
+		} else {
+			for (; i < length; i++) {
+				setValue(that[i], val);
 			}
-			return that;
-		};
-		
+		}
+		return that;		
 	};
 });

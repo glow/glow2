@@ -49,7 +49,7 @@ test('glow.NodeList#parent', 6, function() {
 	nodes = myNodeList.parent();
 
 	equals(nodes[0], byId('twoInnerDivs'), "Gets only unique parents");
-	
+	//add len check
 	ok(nodes instanceof glow.NodeList, "Returns NodeList");
 	
 	myNodeList = new glow.NodeList("document");
@@ -138,10 +138,10 @@ test('glow.NodeList#ancestors', 14, function() {
 	
 	equal(nodes.length, 4, "innerDiv2 has 4 ancestors");
 	
-	equal(nodes[3], byId('twoInnerDivs'), "Correct first ancestor");
-	equal(nodes[2], byId('testElmsContainer'), "Correct second ancestor");
-	equal(nodes[1], byId('body'), "Correct third ancestor");
-	equal(nodes[0], byId('html'), "Correct fourth ancestor");
+	equal(nodes[0], byId('twoInnerDivs'), "Correct first ancestor");
+	equal(nodes[1], byId('testElmsContainer'), "Correct second ancestor");
+	equal(nodes[2], byId('body'), "Correct third ancestor");
+	equal(nodes[3], byId('html'), "Correct fourth ancestor");
 	
 	/* [*]innerDiv2 > [3]twoInnerDivs > [2]testElmsContainer > [1]body > [0]html*/
 	/* [*]innerEm1 > [3]twoInnerEms > [2]testElmsContainer > [1]body > [0]html*/
@@ -151,11 +151,11 @@ test('glow.NodeList#ancestors', 14, function() {
 
 	equal(nodes.length, 5, "innerDiv2 and innerEm1 have 5 ancestors");      
 	
-	equal(nodes[4], byId('twoInnerEms'), "Correct first ancestor");
-	equal(nodes[3], byId('twoInnerDivs'), "Correct second ancestor");
-	equal(nodes[2], byId('testElmsContainer'), "Correct third ancestor");
-	equal(nodes[1], byId('body'), "Correct fourth ancestor");
-	equal(nodes[0], byId('html'), "Correct fifth ancestor");	
+	equal(nodes[0], byId('twoInnerDivs'), "Correct first ancestor");
+	equal(nodes[1], byId('testElmsContainer'), "Correct second ancestor");
+	equal(nodes[2], byId('body'), "Correct third ancestor");
+	equal(nodes[3], byId('html'), "Correct fourth ancestor");
+	equal(nodes[4], byId('twoInnerEms'), "Correct fifth ancestor");	
 
 	
 	ok(nodes instanceof glow.NodeList, "Returns NodeList");
