@@ -23,7 +23,7 @@ Glow.provide(function(glow) {
 		*/
 		//worth checking if it's an XML document?
 		if (glow.env.ie) {
-			unique = function(aNodes) {
+			var unique = function(aNodes) {
 				if (aNodes.length == 1) { return aNodes; }
 
 				//remove duplicates
@@ -44,7 +44,7 @@ Glow.provide(function(glow) {
 				return r;
 			}
 		} else {
-			unique = function(aNodes) {
+			var unique = function(aNodes) {
 				if (aNodes.length == 1) { return aNodes; }
 
 				//remove duplicates
