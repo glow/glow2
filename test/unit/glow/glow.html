@@ -254,8 +254,8 @@
 		test('ready', function() {
 			expect(5);
 			
-			stop(3000);
-			var frameId = testHelper.addFrame('../data/t_ready.html', checkReady);
+			stop(4000);
+			var frameId = testHelper.addFrame('../data/t_ready.php', checkReady);
 			
 			function checkReady(frame) {
 				ok(frame.elementFound, 'dom elements are available in ready callback.');
@@ -271,8 +271,8 @@
 		test('load ready', function() {
 			expect(6);
 			
-			stop(3000);
-			var frameId = testHelper.addFrame('../data/t_loadedready.html', checkReady);
+			stop(4000);
+			var frameId = testHelper.addFrame('../data/t_loadedready.php', checkReady);
 			
 			function checkReady(frame) {
 				ok(frame.elementFound, 'dom elements are available in ready callback.');
