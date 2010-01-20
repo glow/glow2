@@ -141,8 +141,9 @@ test('glow.NodeList#css', 64, function() {
 	equal(nodes.css("text-indent"), "120px", "text-indent");
 		//IE 5.5 returns "uppercase"
 		//equal(glow.dom.get("#cssTests div.fontTest").css("text-transform"), "capitalize", "text-transform");
-	equal(glow.dom.get("#cssTests div.fontTest").css("white-space"), "nowrap", "white-space");
-	equal(glow.dom.get("#cssTests div.fontTest").css("word-spacing"), "240px", "word-spacing");
+	nodes = new glow.NodeList("#cssTests div.fontTest")
+	equal(nodes.css("white-space"), "nowrap", "white-space");
+	equal(nodes.css("word-spacing"), "240px", "word-spacing");
 	
 	//bordering
 	nodes = new glow.NodeList("#cssTests div.borderTest");

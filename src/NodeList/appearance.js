@@ -1,5 +1,75 @@
 Glow.provide(function(glow) {
-	var NodeListProto = glow.NodeList.prototype;
+	var NodeListProto = glow.NodeList.prototype,
+		doc = document,
+		/*
+		PrivateVar: cssRegex
+			For matching CSS selectors
+		*/
+		cssRegex = {
+			tagName: /^(\w+|\*)/,
+			combinator: /^\s*([>]?)\s*/,
+				//safari 1.3 is a bit dim when it comes to unicode stuff, only dot matches them (not even \S), so some negative lookalheads are needed
+				classNameOrId: (glow.env.webkit < 417) ? new RegExp("^([\\.#])((?:(?![\\.#\\[:\\s\\\\]).|\\\\.)+)") : /^([\.#])((?:[^\.#\[:\\\s]+|\\.)+)/
+			},
+			//for escaping strings in regex
+		regexEscape = /([$^\\\/()|?+*\[\]{}.-])/g,
+
+		/*
+		PrivateVar: cssCache
+			Cache of arrays representing an execution path for css selectors
+		*/
+		cssCache = {},
+		/*
+		PrivateVar: usesYAxis
+			regex for detecting which css properties need to be calculated relative to the y axis
+		*/
+		usesYAxis = /height|top/,
+		colorRegex = /^rgb\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)/i,
+		cssPropRegex = /^(?:(width|height)|(border-(top|bottom|left|right)-width))$/,
+		hasUnits = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
+		//append gets set to a function below
+		placeholderElm,
+		//getByTagName gets get to a function below
+		getByTagName,
+		win = window,
+		doc = document,
+		docBody,
+		docElm,
+		// true if properties of a dom node are cloned when the node is cloned (eg, true in IE)
+		nodePropertiesCloned,
+		// used to convert divs to strings
+		tmpDiv = doc.createElement("div"),
+		/*
+		PrivateVars: tableArray, elmFilter
+			Used in private function stringToNodes to capture any 
+			elements that cannot be a childNode of <div>.
+			Each entry in JSON responds to an element.
+			First array value is how deep the element will be created in a node tree.
+			Second array value is the beginning of the node tree.
+			Third array value is the end of the node tree.
+		*/
+			tableArray = [1, '<table>', '</table>'],
+			emptyArray = [0, '', ''],
+			// webkit won't accept <link> elms to be the only child of an element,
+			// it steals them and hides them in the head for some reason. Using
+			// broken html fixes it for some reason
+			paddingElmArray = glow.env.webkit < 526 ? [0, '', '</div>', true] : [1, 'b<div>', '</div>'],
+			trArray = [3, '<table><tbody><tr>', '</tr></tbody></table>'],
+			elmWraps = {
+				caption: tableArray,
+				thead: tableArray,
+				th: trArray,
+				colgroup: tableArray,
+				tbody: tableArray,
+				tr: [2, '<table><tbody>', '</tbody></table>'],
+				td: trArray,
+				tfoot: tableArray,
+				option: [1, '<select>', '</select>'],
+				legend: [1, '<fieldset>', '</fieldset>'],
+				link: paddingElmArray,
+				script: paddingElmArray,
+				style: paddingElmArray
+			};;
 	
 	/**
 		@name glow.NodeList#css
@@ -40,8 +110,162 @@ Glow.provide(function(glow) {
 				'color'		 : '#00cc99'
 			});
 	*/
-	NodeListProto.css = function(property, value) {return this};
 	
+	
+	NodeListProto.css = function(prop, val) {
+		var that = this,
+				thisStyle,
+				i = 0,
+				len = that.length,
+				originalProp = prop;
+
+				if (prop.constructor === Object) { // set multiple values
+					for (style in prop) {
+						this.css(style, prop[style]);
+					}
+					return that;
+				}
+				else if (val != undefined) { //set one CSS value
+					prop = toStyleProp(prop);
+					for (; i < len; i++) {
+						thisStyle = that[i].style;
+						
+						if (typeof val == "number" && hasUnits.test(originalProp)) {
+							val = val.toString() + "px";
+						}
+						if (prop == "opacity" && glow.env.ie) {
+							//in IE the element needs hasLayout for opacity to work
+							thisStyle.zoom = "1";
+							if (val === "") {
+								thisStyle.filter = "";
+							} else {
+								thisStyle.filter = "alpha(opacity=" + Math.round(Number(val, 10) * 100) + ")";
+							}
+						} else {
+							thisStyle[prop] = val;
+						}
+					}
+					return that;
+				} else { //getting stuff
+					if (!len) { return; }
+					return getCssValue(that[0], prop);
+				}	
+	};
+	/*
+		PrivateMethod: toStyleProp
+			Converts a css property name into its javascript name, such as "background-color" to "backgroundColor".
+
+		Arguments:
+			prop - (String) CSS Property name
+
+		Returns:
+			String, javascript style property name
+		*/
+	function toStyleProp(prop) {
+			if (prop == "float") {
+				return glow.env.ie ? "styleFloat" : "cssFloat";
+			}
+			return glow.util.replace(prop, /-(\w)/g, function(match, p1) {
+				return p1.toUpperCase();
+			});
+	}
+	/*
+		PrivateMethod: getCssValue
+			Get a computed css property
+
+		Arguments:
+			elm - element
+			prop - css property or array of properties to add together
+
+		Returns:
+			String, value
+		*/
+		function getCssValue(elm, prop) {
+			var r, //return value
+				total = 0,
+				i = 0,
+				propLen = prop.length,
+				compStyle = doc.defaultView && (doc.defaultView.getComputedStyle(elm, null) || doc.defaultView.getComputedStyle),
+				elmCurrentStyle = elm.currentStyle,
+				oldDisplay,
+				match,
+				propTest = prop.push || cssPropRegex.exec(prop) || [];
+
+
+			if (prop.push) { //multiple properties, add them up
+				for (; i < propLen; i++) {
+					total += parseInt( getCssValue(elm, prop[i]), 10 ) || 0;
+				}
+				return total + "px";
+			}
+			
+			if (propTest[1]) { // is width / height
+				if (!isVisible(elm)) { //element may be display: none
+					return tempBlock(elm, function() {
+						return getElmDimension(elm, propTest[1]) + "px";
+					});
+				}
+				return getElmDimension(elm, propTest[1]) + "px";
+			}
+			else if (propTest[2] //is border-*-width
+				&& glow.env.ie
+				&& getCssValue(elm, "border-" + propTest[3] + "-style") == "none"
+			) {
+				return "0";
+			}
+			else if (compStyle) { //W3 Method
+				//this returns computed values
+				if (typeof compStyle == "function") {
+					//safari returns null for compStyle when element is display:none
+
+					oldDisplay = elm.style.display;
+					r = tempBlock(elm, function() {
+						if (prop == "display") { //get true value for display, since we've just fudged it
+							elm.style.display = oldDisplay;
+							if (!doc.defaultView.getComputedStyle(elm, null)) {
+								return "none";
+							}
+							elm.style.display = "block";
+						}
+						return getCssValue(elm, prop);
+					});
+				} else {
+					// assume equal horizontal margins in safari 3
+					// http://bugs.webkit.org/show_bug.cgi?id=13343
+					// The above bug doesn't appear to be closed, but it works fine in Safari 4
+					if (glow.env.webkit > 500 && glow.env.webkit < 526 && prop == 'margin-right' && compStyle.getPropertyValue('position') != 'absolute') {
+						prop = 'margin-left';
+					}
+					r = compStyle.getPropertyValue(prop);
+				}
+			} else if (elmCurrentStyle) { //IE method
+				if (prop == "opacity") {
+					match = /alpha\(opacity=([^\)]+)\)/.exec(elmCurrentStyle.filter);
+					return match ? String(parseInt(match[1], 10) / 100) : "1";
+				}
+				//this returns cascaded values so needs fixing
+				r = String(elmCurrentStyle[toStyleProp(prop)]);
+				if (/^-?[\d\.]+(?!px)[%a-z]+$/i.test(r) && prop != "font-size") {
+					r = getPixelValue(elm, r, usesYAxis.test(prop)) + "px";
+				}
+			}
+			//some results need post processing
+			if (prop.indexOf("color") != -1) { //deal with colour values
+				r = normaliseCssColor(r).toString();
+			} else if (r.indexOf("url") == 0) { //some browsers put quotes around the url, get rid
+				r = r.replace(/\"/g,"");
+			}
+			return r;
+		}
+	/*
+		PrivateMethod: isVisible
+			Is the element visible?
+		*/
+		function isVisible(elm) {
+			//this is a bit of a guess, if there's a better way to do this I'm interested!
+			return elm.offsetWidth ||
+				elm.offsetHeight;
+		}
 	/**
 		@name glow.NodeList#height
 		@function
@@ -74,7 +298,13 @@ Glow.provide(function(glow) {
 			// get the height of the window
 			glow(window).height();
 	*/
-	NodeListProto.height = function(height) {return 0};
+	NodeListProto.height = function(height) {
+		if (height == undefined) {
+					return getElmDimension(this[0], "height");
+				}
+				setElmsSize(this, height, "height");
+				return this;	
+	};
 	
 	/**
 		@name glow.NodeList#width
@@ -108,8 +338,120 @@ Glow.provide(function(glow) {
 			// get the width of the window
 			glow(window).width();
 	*/
-	NodeListProto.width = function(width) {return 0};
-	
+	NodeListProto.width = function(width) {
+		if (width == undefined) {
+					return getElmDimension(this[0], "width");
+				}
+				setElmsSize(this, width, "width");
+				return this;
+	};
+	/*
+		PrivateMethod: normaliseCssColor
+			Converts a CSS colour into "rgb(255, 255, 255)" or "transparent" format
+		*/
+
+		function normaliseCssColor(val) {
+			if (/^(transparent|rgba\(0, ?0, ?0, ?0\))$/.test(val)) { return 'transparent'; }
+			var match, //tmp regex match holder
+				r, g, b, //final colour vals
+				hex, //tmp hex holder
+				mathRound = Math.round,
+				parseIntFunc = parseInt,
+				parseFloatFunc = parseFloat;
+
+			if (match = colorRegex.exec(val)) { //rgb() format, cater for percentages
+				r = match[2] ? mathRound(((parseFloatFunc(match[1]) / 100) * 255)) : parseIntFunc(match[1]);
+				g = match[4] ? mathRound(((parseFloatFunc(match[3]) / 100) * 255)) : parseIntFunc(match[3]);
+				b = match[6] ? mathRound(((parseFloatFunc(match[5]) / 100) * 255)) : parseIntFunc(match[5]);
+			} else {
+				if (typeof val == "number") {
+					hex = val;
+				} else if (val.charAt(0) == "#") {
+					if (val.length == "4") { //deal with #fff shortcut
+						val = "#" + val.charAt(1) + val.charAt(1) + val.charAt(2) + val.charAt(2) + val.charAt(3) + val.charAt(3);
+					}
+					hex = parseIntFunc(val.slice(1), 16);
+				} else {
+					hex = htmlColorNames[val];
+				}
+
+				r = (hex) >> 16;
+				g = (hex & 0x00ff00) >> 8;
+				b = (hex & 0x0000ff);
+			}
+
+			val = new String("rgb(" + r + ", " + g + ", " + b + ")");
+			val.r = r;
+			val.g = g;
+			val.b = b;
+			return val;
+		}
+	/*
+		PrivateMethod: getElmDimension
+			Gets the size of an element as an integer, not including padding or border
+		*/
+	var horizontalBorderPadding = [
+				'border-left-width',
+				'border-right-width',
+				'padding-left',
+				'padding-right'
+			],
+			verticalBorderPadding = [
+				'border-top-width',
+				'border-bottom-width',
+				'padding-top',
+				'padding-bottom'
+			];
+		function getElmDimension(elm, cssProp /* (width|height) */) {
+			var r, // val to return
+				docElmOrBody = glow.env.standardsMode ? docElm : docBody,
+				isWidth = (cssProp == "width"),
+				cssPropCaps = isWidth ? "Width" : "Height",
+				cssBorderPadding;
+
+			if (elm.window) { // is window
+				r = glow.env.webkit < 522.11 ? (isWidth ? elm.innerWidth				: elm.innerHeight) :
+					glow.env.webkit			? (isWidth ? docBody.clientWidth		: elm.innerHeight) :
+					glow.env.opera < 9.5		? (isWidth ? docBody.clientWidth		: docBody.clientHeight) :
+					/* else */			  (isWidth ? docElmOrBody.clientWidth	: docElmOrBody.clientHeight);
+
+			}
+			else if (elm.getElementById) { // is document
+				// we previously checked offsetWidth & clientWidth here
+				// but they returned values too large in IE6 scrollWidth seems enough
+				r = Math.max(
+					docBody["scroll" + cssPropCaps],
+					docElm["scroll" + cssPropCaps]
+				)
+			}
+			else {
+				// get an array of css borders & padding
+				cssBorderPadding = isWidth ? horizontalBorderPadding : verticalBorderPadding;
+				r = elm['offset' + cssPropCaps] - parseInt( getCssValue(elm, cssBorderPadding) );
+			}
+			return r;
+		}
+		
+	/*
+		PrivateMethod: setElmsSize
+			Set element's size
+
+		Arguments:
+			elms - (<NodeList>) Elements
+			val - (Mixed) Set element height / width. In px unless stated
+			type - (String) "height" or "width"
+
+		Returns:
+			Nowt.
+		*/
+		function setElmsSize(elms, val, type) {
+			if (typeof val == "number" || /\d$/.test(val)) {
+				val += "px";
+			}
+			for (var i = 0, len = elms.length; i < len; i++) {
+				elms[i].style[type] = val;
+			}
+		}
 	/**
 		@name glow.NodeList#scrollLeft
 		@function
@@ -137,7 +479,9 @@ Glow.provide(function(glow) {
 			glow(window).scrollLeft();
 			// scrollPos is a number, eg: 45
 	*/
-	NodeListProto.scrollLeft = function(val) {return this};
+	NodeListProto.scrollLeft = function(val) {
+		return scrollOffset(this, true, val);	
+	};
 	
 	/**
 		@name glow.NodeList#scrollTop
@@ -166,8 +510,31 @@ Glow.provide(function(glow) {
 			glow(window).scrollTop();
 			// scrollPos is a number, eg: 45
 	*/
-	NodeListProto.scrollTop = function(val) {return this};
-	
+	NodeListProto.scrollTop = function(val) {
+		return scrollOffset(this, false, val);	
+	};
+	/**
+		 @name glow.dom-scrollOffset
+		 @private
+		 @description Set/get the scrollTop / scrollLeft of a NodeList
+		 @param {glow.dom.NodeList} nodeList Elements to get / set the position of
+		 @param {Boolean} isLeft True if we're dealing with left scrolling, otherwise top
+		 @param {Number} [val] Val to set (if not provided, we'll get the value)
+		 
+		 @returns NodeList for sets, Number for gets
+		*/
+		function scrollOffset(nodeList, isLeft, val) {
+			var i = nodeList.length;
+			
+			if (val !== undefined) {
+				while (i--) {
+					setScrollOffset(nodeList[i], isLeft, val);
+				}
+				return nodeList;
+			} else {
+				return getScrollOffset(nodeList[0], isLeft);
+			}
+		}
 	/**
 		@name glow.NodeList#hide
 		@function
