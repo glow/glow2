@@ -40,7 +40,7 @@ Glow.provide(function(glow) {
 				'color'		 : '#00cc99'
 			});
 	*/
-	NodeListProto.css = function(property, value) {};
+	NodeListProto.css = function(property, value) {return this};
 	
 	/**
 		@name glow.NodeList#height
@@ -74,7 +74,7 @@ Glow.provide(function(glow) {
 			// get the height of the window
 			glow(window).height();
 	*/
-	NodeListProto.height = function(height) {};
+	NodeListProto.height = function(height) {return 0};
 	
 	/**
 		@name glow.NodeList#width
@@ -108,7 +108,7 @@ Glow.provide(function(glow) {
 			// get the width of the window
 			glow(window).width();
 	*/
-	NodeListProto.width = function(width) {};
+	NodeListProto.width = function(width) {return 0};
 	
 	/**
 		@name glow.NodeList#scrollLeft
@@ -137,7 +137,7 @@ Glow.provide(function(glow) {
 			glow(window).scrollLeft();
 			// scrollPos is a number, eg: 45
 	*/
-	NodeListProto.scrollLeft = function(val) {};
+	NodeListProto.scrollLeft = function(val) {return this};
 	
 	/**
 		@name glow.NodeList#scrollTop
@@ -166,7 +166,7 @@ Glow.provide(function(glow) {
 			glow(window).scrollTop();
 			// scrollPos is a number, eg: 45
 	*/
-	NodeListProto.scrollTop = function(val) {};
+	NodeListProto.scrollTop = function(val) {return this};
 	
 	/**
 		@name glow.NodeList#hide
@@ -179,7 +179,7 @@ Glow.provide(function(glow) {
 			// Hides all list items within #myList
 			glow("#myList li").hide();
 	*/
-	NodeListProto.hide = function() {};
+	NodeListProto.hide = function() {return this};
 	
 	/**
 		@name glow.NodeList#show
@@ -196,7 +196,7 @@ Glow.provide(function(glow) {
 			// Show all list items within #myList
 			glow("#myList li").show();
 	*/
-	NodeListProto.show = function() {};
+	NodeListProto.show = function() {return this};
 
 	/**
 		@name glow.NodeList#offset
@@ -211,7 +211,7 @@ Glow.provide(function(glow) {
 		@example
 			glow("#myDiv").offset().top
 	*/
-	NodeListProto.offset = function() {};
+	NodeListProto.offset = function() {return this};
 	
 	/**
 		@name glow.NodeList#position
@@ -227,5 +227,5 @@ Glow.provide(function(glow) {
 			// get the top distance from the positioned parent
 			glow("#elm").position().top
 	*/
-	NodeListProto.position = function() {};
+	NodeListProto.position = function() {return this};
 });
