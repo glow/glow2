@@ -4,13 +4,11 @@ function byId(id) {
 
 module('glow.NodeList appearance');
 
-test('glow.NodeList#css', 64, function() {
-	var node = new glow.NodeList("" +
-		'<div id="cssTests">' +
-			'<div class="test">Test</div>' +
-		'</div>'
-	)[0];
-	document.body.appendChild(node);
+test('glow.NodeList#css general set methods', 6, function() {
+	
+	// TRY A SINGLE ENTRY
+	nodes = new glow.NodeList("#cssTests div.test");
+	equal(nodes.css("width", "100px").css("width"), "100px", "Set width to 100px");
 	// TRY A SINGLE ENTRY
 	nodes = new glow.NodeList("#cssTests div.test");
 	equal(nodes.css({width: "100px"}).css("width"), "100px", "Set width to 100px");
@@ -26,45 +24,12 @@ test('glow.NodeList#css', 64, function() {
 	equal(nodes.css("font-size"), "10px", "Set font-weight to 10px");
 	equal(nodes.css("padding-left"), "10px", "Set font-weight to 10px");
 	equal(nodes.css("margin-left"), "10px", "Set font-weight to 10px");
-	node.parentNode.removeChild(node);
-	
-	
-	var node = new glow.NodeList("" +
-		'<div id="cssTests">' +
-			'<div class="width100">Test</div>' +
-			'<div class="height100">Test</div>' +
-			'<div class="containsWidth100Div" style="float:left"><div class="width100">Test</div></div>' +
-			'<div class="padTest">padTest</div>' +
-			'<div class="borderTest">Test</div>' +
-			'<div class="marginTest">Test</div>' +
-			'<div class="marginTest2">Test</div>' +
-			'<ul class="listTest">' +
-				'<li>Test</li>' +
-				'<li>' +
-					'<ul>' +
-						'<li>Test</li>' +
-					'</ul>' +
-				'</li>' +
-			'</ul>' +
-			'<div class="colourTest">Test<div>Test</div></div>' +
-			'<div class="backgroundTest">Test</div>' +
-			'<div class="fontTest">Test</div>' +
-			'<table class="tableTest"><tr><td>Test</td><td>Test</td></tr><tr><td>Test</td><td>Test</td></tr></table>' +
-			'<div class="posTest1">Test</div>' +
-			'<div class="posTest2">postest2</div>' +
-			'<div class="posTest3">Test</div>' +
-			'<div class="posTest4Container"><div class="posTest4">Test</div><div class="posTest5">Test</div></div>' +
-			'<div class="posTest4Container"><div class="padTest2">Test</div></div>' +
-			'<div class="posTest6Container" style="position:relative;zoom:1"><div style="height:100px">Padding!</div><div class="posTest6">Test</div></div>' +
-			'<div class="posTest7Container" style="width:500px;margin-left:20px;"><div class="posTest7">Test</div></div>' +
-			'<div class="posTest8">posTest8</div>' +
-			'<div class="opacityTest">Test</div>' +
-			'<div class="displayTest1">Test</div>' +
-			'<div class="displayTest2">Test</div>' +
-			'<div class="displayNone" style="display:none"><div class="posTest8">Test</div></div>' +
-		'</div>'
-	)[0];
-	document.body.appendChild(node);
+	//node.parentNode.removeChild(node);
+});
+
+test('glow.NodeList#css general get methods', 11, function() {
+	//var node = new glow.NodeList('#cssTests');
+	//document.body.appendChild(node);
 	nodes = new glow.NodeList("#cssTests div.width100");
 	equal(nodes.css("width"), "100px", "Width");
 	nodes = new glow.NodeList("#cssTests div.height100");
@@ -91,7 +56,9 @@ test('glow.NodeList#css', 64, function() {
 		//equal(glow.dom.get("#cssTests div.padTest2").css("padding-left"), "250px", "Percent padding");
 		//cannot get value for auto in some browsers
 		//equal(glow.dom.get("#cssTests div.marginTest2").css("margin-left"), "dunno", "Auto margin");
-	
+});
+
+test('glow.NodeList#css lists', 6, function() {
 	//lists
 	nodes = new glow.NodeList("#cssTests ul.listTest");
 	equal(nodes.css("list-style-image"), "none", "list-style-image");
@@ -101,7 +68,10 @@ test('glow.NodeList#css', 64, function() {
 	equal(nodes.css("list-style-image"), "none", "list-style-image (on li)");
 	equal(nodes.css("list-style-position"), "outside", "list-style-position (on li)");
 	equal(nodes.css("list-style-type"), "square", "list-style-type (on li)");
-	
+
+});
+
+test('glow.NodeList#css colours', 4, function() {
 	//color tests
 	nodes = new glow.NodeList("#cssTests div.colourTest");
 	equal(nodes.css("color"), "rgb(0, 255, 0)", "color");
@@ -112,7 +82,10 @@ test('glow.NodeList#css', 64, function() {
 	ok(/rgb\(12[78], 12[78], 12[78]\)/.test(nodes.css("background-color")), "background-color (percentage color)");
 	nodes = new glow.NodeList("#cssTests div.colourTest");
 	equal(nodes.css("border-left-color"), "rgb(0, 128, 0)", "border-left-color (keyword)");
-	
+
+});
+
+test('glow.NodeList#css backgrounds', 3, function() {
 	//background test
 	nodes = new glow.NodeList("#cssTests div.backgroundTest");
 	equal(nodes.css("background-image"), "url(" + /^([\s\S]+)\//.exec(window.location.href)[1] + "/testdata/fail.png)", "background-image");
@@ -120,7 +93,10 @@ test('glow.NodeList#css', 64, function() {
 	equal(nodes.css("background-repeat"), "repeat-x", "background-repeat");
 		//Cannot get a reliable value for this
 		//equal(glow.dom.get("#cssTests div.backgroundTest").css("background-position"), "top right", "background-position");
-	
+
+});
+
+test('glow.NodeList#css text styles', 10, function() {
 	//font & direction
 	nodes = new glow.NodeList("#cssTests div.fontTest");
 	equal(nodes.css("direction"), "rtl", "direction");
@@ -144,14 +120,20 @@ test('glow.NodeList#css', 64, function() {
 	nodes = new glow.NodeList("#cssTests div.fontTest")
 	equal(nodes.css("white-space"), "nowrap", "white-space");
 	equal(nodes.css("word-spacing"), "240px", "word-spacing");
-	
+
+});
+
+test('glow.NodeList#css border styles', 4, function() {
 	//bordering
 	nodes = new glow.NodeList("#cssTests div.borderTest");
 	equal(nodes.css("border-top-style"), "dotted", "border-top-style");
 	equal(nodes.css("border-right-style"), "dashed", "border-right-style");
 	equal(nodes.css("border-bottom-style"), "double", "border-bottom-style");
 	equal(nodes.css("border-left-style"), "solid", "border-left-style");
-	
+});
+
+test('glow.NodeList#css floats, display and position', 21, function() {
+
 	//misc
 	nodes = new glow.NodeList("#cssTests div.containsWidth100Div");
 	equal(nodes.css("float"), "left", "float");
@@ -196,23 +178,12 @@ test('glow.NodeList#css', 64, function() {
 	equal(nodes.css("width"), "60px", "width (em val display none)");
 	equal(nodes.css("width"), "60px", "width (em val display none)");
 	equal(nodes.css("height"), "30px", "height (px val display none)");
-	//equal(glow.dom.get("#cssTests div.displayNone div").css("top"), "60px", "top (em val inside display none)");
-	
-	
-	node.parentNode.removeChild(node);
+
+
 });
 
 test('glow.NodeList#height', 13, function() {
-	var node = new glow.NodeList("" +
-		'<div id="cssTests">' +
-			'<div class="height100">Test</div>' +
-			'<div class="height100 padding10">Test</div>' +
-			'<div class="bordered" style="height:100px;border:10px solid #000">Test</div>' +
-			'<div class="height100 overflowScroll">Test</div>' +
-			'<div class="containsHeight100Div"><div class="height100">Test</div></div>' +
-		'</div>'
-	)[0];
-	document.body.appendChild(node);
+	
 	nodes = new glow.NodeList(window);
 	ok( nodes.height() == 'number', "window height is number" );
 	nodes = new glow.NodeList(window);
@@ -234,21 +205,11 @@ test('glow.NodeList#height', 13, function() {
 	equal(nodes.height(200).height(), 200, "Set height number");
 	equal(nodes.height("300").height(), 300, "Set height str, no unit");
 	equal(nodes.height("400px").height(), 400, "Set height str, inc unit");
-	node.parentNode.removeChild(node);
+
 });
 
 test('glow.NodeList#width', 13, function() {
-	var node = new glow.NodeList("" +
-		'<div id="cssTests">' +
-			'<div class="width100">Test</div>' +
-			'<div class="width100 padding10">Test</div>' +
-			'<div class="bordered" style="width:100px;border:10px solid #000">Test</div>' +
-			'<div class="width100 overflowScroll">Test</div>' +
-			'<div class="containsWidth100Div" style="float:left"><div class="width100">Test</div></div>' +
-			'<div style="width:500px; height: 100px"> <div id="autoWidthTest" style="border:5px solid red; padding:10px;"></div> </div>' +
-		'</div>'
-	)[0];
-	document.body.appendChild(node);
+
 	
 	nodes = new glow.NodeList(window);
 	ok( typeof nodes.width() == 'number', "window width is number" );
@@ -273,7 +234,6 @@ test('glow.NodeList#width', 13, function() {
 	equal(nodes.width("300").width(), 300, "Set width str, no unit");
 	equal(nodes.width("400px").width(), 400, "Set width str, inc unit");
 	
-	node.parentNode.removeChild(node);
 });
 
 test('glow.NodeList#scrollLeft / scrollTop', 8, function() {
@@ -308,34 +268,13 @@ test('glow.NodeList#scrollLeft / scrollTop', 8, function() {
 
 
 
-test('glow.NodeList#hide', 0, function() {
-		
-});
-
-test('glow.NodeList#show', 0, function() {
+test('glow.NodeList#hide / show', 0, function() {
 	
 });
 
+
 test('glow.NodeList#offset', 18, function() {
-	var node = new glow.NodeList('' +
-		'<div id="offsetTest" style="position:absolute; top:0; left:0; background:#000; zoom:1; overflow: hidden">' +
-			'<div id="elm1" style="position:relative; height:120px; width:300px; padding:20px; margin: 0 10px 10px 10px">' +
-				'<div id="elm1_1" style="height:5px; width:5px; padding:5px; border:5px solid #000"></div>' +
-			'</div>' +
-			'<div id="elm2" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">' +
-				'<div id="elm2_1" style="height:5px; width:5px; padding:20px; border:5px solid #000"></div>' +
-			'</div>' +
-			'<div id="elm3" style="height:200px; width:130px; padding:20px; margin:10px">' +
-				'<div id="elm3_1" style="height:5px; width:5px; padding:20px; border:5px solid #000; margin: 10px; background: #000"></div>' +
-			'</div>' +
-			'<div id="elm4" style="position:absolute; height:50px; width:50px; padding:5px; margin:10px; top:5px; left: 5px">' +
-				'<div id="elm4_1" style="height:5px; width:5px; padding:0px; margin:5px"></div>' +
-			'</div>' +
-			'<div id="elm5" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">' +
-				'<div id="elm5_1" style="height:5px; width:5px; padding:0px; margin-top:-10px; background: yellow"></div>' +
-			'</div>' +
-		'</div>' +
-	'').appendTo(document.body);
+	
 	nodes = new glow.NodeList("#elm1");
 	var elm1Offset = nodes.offset();
 	nodes = new glow.NodeList("#elm1_1");
@@ -382,47 +321,29 @@ test('glow.NodeList#offset', 18, function() {
 	equal(elm5_1Offset.top, 650, "elm5_1 top offset");
 	equal(elm5_1Offset.left, 40, "elm5_1 left offset");
 	
-	node.destroy();	
+
 });
 
 test('glow.NodeList#position', 18, function() {
-	var node = new glow.NodeList('' +
-		'<div id="positionTest" style="position:relative; background:#000; zoom:1; overflow: hidden">' +
-			'<div id="pos1" style="position:relative; height:120px; width:300px; padding:20px; margin: 0 10px 10px 10px">' +
-				'<div id="pos1_1" style="height:5px; width:5px; padding:5px; border:5px solid #000"></div>' +
-			'</div>' +
-			'<div id="pos2" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">' +
-				'<div id="pos2_1" style="height:5px; width:5px; padding:20px; border:5px solid #000"></div>' +
-			'</div>' +
-			'<div id="pos3" style="height:200px; width:130px; padding:20px; margin:10px">' +
-				'<div id="pos3_1" style="height:5px; width:5px; padding:20px; border:5px solid #000; margin: 10px"></div>' +
-			'</div>' +
-			'<div id="pos4" style="position:absolute; height:50px; width:50px; padding:5px; margin:10px; top:5px; left: 5px">' +
-				'<div id="pos4_1" style="height:5px; width:5px; padding:0px; margin:5px"></div>' +
-			'</div>' +
-			'<div id="pos5" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">' +
-				'<div id="pos5_1" style="height:5px; width:5px; padding:0px; margin-top:-10px; background: yellow"></div>' +
-			'</div>' +
-		'</div>' +
-	'').appendTo(document.body);
+
 	nodes = new glow.NodeList("#pos1");
-	var pos1Position = glow.dom.get("#pos1").position();
+	var pos1Position = nodes.position();
 	nodes = new glow.NodeList("#pos1_1");
-	var pos1_1Position = glow.dom.get("#pos1_1").position();
+	var pos1_1Position = nodes.position();
 	nodes = new glow.NodeList("#pos2");
-	var pos2Position = glow.dom.get("#pos2").position();
+	var pos2Position = nodes.position();
 	nodes = new glow.NodeList("#pos2_1");
-	var pos2_1Position = glow.dom.get("#pos2_1").position();
+	var pos2_1Position = nodes.position();
 	nodes = new glow.NodeList("#pos3");
-	var pos3Position = glow.dom.get("#pos3").position();
+	var pos3Position = nodes.position();
 	nodes = new glow.NodeList("#pos3_1");
-	var pos3_1Position = glow.dom.get("#pos3_1").position();
+	var pos3_1Position = nodes.position();
 	nodes = new glow.NodeList("#pos4");
-	var pos4Position = glow.dom.get("#pos4").position();
+	var pos4Position = nodes.position();
 	nodes = new glow.NodeList("#pos4_1");
-	var pos4_1Position = glow.dom.get("#pos4_1").position();
+	var pos4_1Position = nodes.position();
 	nodes = new glow.NodeList("#pos5_1");
-	var pos5_1Position = glow.dom.get("#pos5_1").position();
+	var pos5_1Position = nodes.position();
 	
 	equal(pos1Position.top, 0, "pos1 top position");
 	equal(pos1Position.left, 0, "pos1 left position");
@@ -451,5 +372,13 @@ test('glow.NodeList#position', 18, function() {
 	equal(pos5_1Position.top, 20, "pos5_1 top position");
 	equal(pos5_1Position.left, 20, "pos5_1 left position");
 	
-	node.destroy();	
+	
+	
+});
+
+test('cleanup', 0, function() {
+	//cleanup
+	var cleanup = new glow.NodeList("#nodelistcsstests");
+
+	cleanup.destroy();
 });

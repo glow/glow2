@@ -1,6 +1,8 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype,
 		doc = document,
+		docBody = doc.body,
+		docElm = doc.documentElement;
 		/*
 		PrivateVar: cssRegex
 			For matching CSS selectors
@@ -27,16 +29,15 @@ Glow.provide(function(glow) {
 		colorRegex = /^rgb\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)/i,
 		cssPropRegex = /^(?:(width|height)|(border-(top|bottom|left|right)-width))$/,
 		hasUnits = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
-		//append gets set to a function below
-		placeholderElm,
+		placeholderElm = new glow.NodeList('<u class="glow-placeholder"></u>'),
 		//getByTagName gets get to a function below
-		getByTagName,
+		//getByTagName,
 		win = window,
 		doc = document,
 		docBody,
 		docElm,
 		// true if properties of a dom node are cloned when the node is cloned (eg, true in IE)
-		nodePropertiesCloned,
+		//nodePropertiesCloned,
 		// used to convert divs to strings
 		tmpDiv = doc.createElement("div"),
 		/*
@@ -69,88 +70,46 @@ Glow.provide(function(glow) {
 				link: paddingElmArray,
 				script: paddingElmArray,
 				style: paddingElmArray
-			};;
-	
-	/**
-		@name glow.NodeList#css
-		@function
-		@description Get / set a CSS property value
-		
-		@param {string | Object} property The CSS property name, or object of property-value pairs to set
-		
-		@param {string | number} [value] The value to apply
-			Number values will be treated as 'px' unless the CSS property
-			accepts a unitless value.
-		
-			If value is omitted, the value for the given property will be returned
+			};
 			
-		@returns {glow.NodeList | string} Returns the NodeList when setting value, or the CSS value when getting values.
-			CSS values are strings. For instance, "height" will return
-			"25px" for an element 25 pixels high. You can use
-			parseInt to convert these values.
-		
-		@example
-			// get value from first node
-			glow("#subNav").css("display");
-		
-		@example
-			// set left padding to 10px on all nodes
-			glow("#subNav li").css("padding-left", "2em");
-		
-		@example
-			// where appropriate, px is assumed when no unit is passed
-			glow("#mainPromo").css("margin-top", 300);
-		
-		@example
-			// set multiple CSS values at once
-			// NOTE: Property names containing a hyphen such as font-weight must be quoted
-			glow("#myDiv").css({
-				'font-weight': 'bold',
-				'padding'	 : '10px',
-				'color'		 : '#00cc99'
-			});
-	*/
+	/********************************PRIVATE METHODS*****************************************/
 	
-	
-	NodeListProto.css = function(prop, val) {
-		var that = this,
-				thisStyle,
-				i = 0,
-				len = that.length,
-				originalProp = prop;
+	/*
+	PrivateMethod: getElementsByTag
+		Get elements by a specified tag name from a set of context objects. If multiple
+		context objects are passed, then the resulting array may contain duplicates. See
+		<unique> to remove duplicate nodes.
 
-				if (prop.constructor === Object) { // set multiple values
-					for (style in prop) {
-						this.css(style, prop[style]);
-					}
-					return that;
+	Arguments:
+		tag - (string) Tag name. "*" for all.
+		contexts - (array) DOM Documents and/or DOM Elements to search in.
+
+	Returns:
+		An array(like) collection of elements with the specified tag name.
+	*/
+	if (document.all) { //go the long way around for IE (and Opera)
+		getByTagName = function(tag, context) {
+			var r = [], i = 0;
+			for (; context[i]; i++) {
+				//need to check .all incase data is XML
+				//TODO: Drop IE5.5
+				if (tag == "*" && context[i].all && !isXml(context[i])) { // IE 5.5 doesn't support getElementsByTagName("*")
+					append(r, context[i].all);
+				} else {
+					append(r, context[i].getElementsByTagName(tag));
 				}
-				else if (val != undefined) { //set one CSS value
-					prop = toStyleProp(prop);
-					for (; i < len; i++) {
-						thisStyle = that[i].style;
-						
-						if (typeof val == "number" && hasUnits.test(originalProp)) {
-							val = val.toString() + "px";
-						}
-						if (prop == "opacity" && glow.env.ie) {
-							//in IE the element needs hasLayout for opacity to work
-							thisStyle.zoom = "1";
-							if (val === "") {
-								thisStyle.filter = "";
-							} else {
-								thisStyle.filter = "alpha(opacity=" + Math.round(Number(val, 10) * 100) + ")";
-							}
-						} else {
-							thisStyle[prop] = val;
-						}
-					}
-					return that;
-				} else { //getting stuff
-					if (!len) { return; }
-					return getCssValue(that[0], prop);
-				}	
-	};
+			}
+			return r;
+		};
+	} else {
+		getByTagName = function(tag, context) {
+			var r = [], i = 0, len = context.length;
+			for (; i < len; i++) {
+				append(r, context[i].getElementsByTagName(tag));
+			}
+			return r;
+		};
+	}
 	/*
 		PrivateMethod: toStyleProp
 			Converts a css property name into its javascript name, such as "background-color" to "backgroundColor".
@@ -266,85 +225,6 @@ Glow.provide(function(glow) {
 			return elm.offsetWidth ||
 				elm.offsetHeight;
 		}
-	/**
-		@name glow.NodeList#height
-		@function
-		@description Gets / set element height
-			Return value does not include the padding or border of the element in
-			browsers supporting the correct box model.
-			
-			You can use this to easily get the height of the document or
-			window, see example below.
-		
-		@param {Number} [height] New height in pixels for each element in the list
-			If ommited, the height of the first element is returned
-		
-		@returns {glow.NodeList | number}
-			Height of first element, or original NodeList when setting heights.
-		
-		@example
-			// get the height of #myDiv
-			glow("#myDiv").height();
-		
-		@example
-			// set the height of list items in #myList to 200 pixels
-			glow("#myList > li").height(200);
-		
-		@example
-			// get the height of the document
-			glow(document).height();
-		
-		@example
-			// get the height of the window
-			glow(window).height();
-	*/
-	NodeListProto.height = function(height) {
-		if (height == undefined) {
-					return getElmDimension(this[0], "height");
-				}
-				setElmsSize(this, height, "height");
-				return this;	
-	};
-	
-	/**
-		@name glow.NodeList#width
-		@function
-		@description Gets / set element width
-			Return value does not include the padding or border of the element in
-			browsers supporting the correct box model.
-			
-			You can use this to easily get the width of the document or
-			window, see example below.
-		
-		@param {Number} [width] New width in pixels for each element in the list
-			If ommited, the width of the first element is returned
-		
-		@returns {glow.NodeList | number}
-			width of first element, or original NodeList when setting widths.
-		
-		@example
-			// get the width of #myDiv
-			glow("#myDiv").width();
-		
-		@example
-			// set the width of list items in #myList to 200 pixels
-			glow("#myList > li").width(200);
-		
-		@example
-			// get the width of the document
-			glow(document).width();
-		
-		@example
-			// get the width of the window
-			glow(window).width();
-	*/
-	NodeListProto.width = function(width) {
-		if (width == undefined) {
-					return getElmDimension(this[0], "width");
-				}
-				setElmsSize(this, width, "width");
-				return this;
-	};
 	/*
 		PrivateMethod: normaliseCssColor
 			Converts a CSS colour into "rgb(255, 255, 255)" or "transparent" format
@@ -451,7 +331,169 @@ Glow.provide(function(glow) {
 			for (var i = 0, len = elms.length; i < len; i++) {
 				elms[i].style[type] = val;
 			}
-		}
+		}	
+	/*************************************** API METHODS ******************************************/
+	/**
+		@name glow.NodeList#css
+		@function
+		@description Get / set a CSS property value
+		
+		@param {string | Object} property The CSS property name, or object of property-value pairs to set
+		
+		@param {string | number} [value] The value to apply
+			Number values will be treated as 'px' unless the CSS property
+			accepts a unitless value.
+		
+			If value is omitted, the value for the given property will be returned
+			
+		@returns {glow.NodeList | string} Returns the NodeList when setting value, or the CSS value when getting values.
+			CSS values are strings. For instance, "height" will return
+			"25px" for an element 25 pixels high. You can use
+			parseInt to convert these values.
+		
+		@example
+			// get value from first node
+			glow("#subNav").css("display");
+		
+		@example
+			// set left padding to 10px on all nodes
+			glow("#subNav li").css("padding-left", "2em");
+		
+		@example
+			// where appropriate, px is assumed when no unit is passed
+			glow("#mainPromo").css("margin-top", 300);
+		
+		@example
+			// set multiple CSS values at once
+			// NOTE: Property names containing a hyphen such as font-weight must be quoted
+			glow("#myDiv").css({
+				'font-weight': 'bold',
+				'padding'	 : '10px',
+				'color'		 : '#00cc99'
+			});
+	*/
+	
+	
+	NodeListProto.css = function(prop, val) {
+		var thisStyle,
+				i = 0,
+				len = this.length,
+				originalProp = prop,
+				style;
+
+				if (prop.constructor === Object) { // set multiple values
+					for (style in prop) {
+						this.css(style, prop[style]);
+					}
+					return this;
+				}
+				else if (val != undefined) { //set one CSS value
+					prop = toStyleProp(prop);
+					for (; i < len; i++) {
+						thisStyle = this[i].style;
+						
+						if (typeof val == "number" && hasUnits.test(originalProp)) {
+							val = val.toString() + "px";
+						}
+						if (prop == "opacity" && glow.env.ie) {
+							//in IE the element needs hasLayout for opacity to work
+							thisStyle.zoom = "1";
+							if (val === "") {
+								thisStyle.filter = "";
+							} else {
+								thisStyle.filter = "alpha(opacity=" + Math.round(Number(val, 10) * 100) + ")";
+							}
+						} else {
+							thisStyle[prop] = val;
+						}
+					}
+					return this;
+				} else { //getting stuff
+					if (!len) { return; }
+					return getCssValue(this[0], prop);
+				}	
+	};
+	
+	/**
+		@name glow.NodeList#height
+		@function
+		@description Gets / set element height
+			Return value does not include the padding or border of the element in
+			browsers supporting the correct box model.
+			
+			You can use this to easily get the height of the document or
+			window, see example below.
+		
+		@param {Number} [height] New height in pixels for each element in the list
+			If ommited, the height of the first element is returned
+		
+		@returns {glow.NodeList | number}
+			Height of first element, or original NodeList when setting heights.
+		
+		@example
+			// get the height of #myDiv
+			glow("#myDiv").height();
+		
+		@example
+			// set the height of list items in #myList to 200 pixels
+			glow("#myList > li").height(200);
+		
+		@example
+			// get the height of the document
+			glow(document).height();
+		
+		@example
+			// get the height of the window
+			glow(window).height();
+	*/
+	NodeListProto.height = function(height) {
+		if (height == undefined) {
+					return getElmDimension(this[0], "height");
+				}
+				setElmsSize(this, height, "height");
+				return this;	
+	};
+	
+	/**
+		@name glow.NodeList#width
+		@function
+		@description Gets / set element width
+			Return value does not include the padding or border of the element in
+			browsers supporting the correct box model.
+			
+			You can use this to easily get the width of the document or
+			window, see example below.
+		
+		@param {Number} [width] New width in pixels for each element in the list
+			If ommited, the width of the first element is returned
+		
+		@returns {glow.NodeList | number}
+			width of first element, or original NodeList when setting widths.
+		
+		@example
+			// get the width of #myDiv
+			glow("#myDiv").width();
+		
+		@example
+			// set the width of list items in #myList to 200 pixels
+			glow("#myList > li").width(200);
+		
+		@example
+			// get the width of the document
+			glow(document).width();
+		
+		@example
+			// get the width of the window
+			glow(window).width();
+	*/
+	NodeListProto.width = function(width) {
+		if (width == undefined) {
+					return getElmDimension(this[0], "width");
+				}
+				setElmsSize(this, width, "width");
+				return this;
+	};
+	
 	/**
 		@name glow.NodeList#scrollLeft
 		@function
@@ -513,6 +555,53 @@ Glow.provide(function(glow) {
 	NodeListProto.scrollTop = function(val) {
 		return scrollOffset(this, false, val);	
 	};
+	/**
+		 @name glow.dom-getScrollOffset
+		 @private
+		 @description Get the scrollTop / scrollLeft of a particular element
+		 @param {Element} elm Element (or window object) to get the scroll position of
+		 @param {Boolean} isLeft True if we're dealing with left scrolling, otherwise top
+		*/
+		function getScrollOffset(elm, isLeft) {
+			var r,			
+				scrollProp = 'scroll' + (isLeft ? "Left" : "Top");
+			
+			// are we dealing with the window object or the document object?
+			if (elm.window) {
+				// get the scroll of the documentElement or the pageX/Yoffset
+				// - some browsers use one but not the other
+				r = elm.document.documentElement[scrollProp]
+					|| (isLeft ? elm.pageXOffset : elm.pageYOffset)
+					|| 0;
+			}
+			else {
+				r = elm[scrollProp];
+			}
+			return r;
+		}
+		
+		/**
+		 @name glow.dom-setScrollOffset
+		 @private
+		 @description Set the scrollTop / scrollLeft of a particular element
+		 @param {Element} elm Element (or window object) to get the scroll position of
+		 @param {Boolean} isLeft True if we're dealing with left scrolling, otherwise top
+		 @param {Number} newVal New scroll value
+		*/
+		function setScrollOffset(elm, isLeft, newVal) {
+			
+			// are we dealing with the window object or the document object?
+			if (elm.window) {
+				// we need to get whichever value we're not setting
+				elm.scrollTo(
+					isLeft  ? newVal : getScrollOffset(elm, true),
+					!isLeft ? newVal : getScrollOffset(elm, false)
+				);
+			}
+			else {
+				elm['scroll' + (isLeft ? "Left" : "Top")] = newVal;
+			}
+		}
 	/**
 		 @name glow.dom-scrollOffset
 		 @private
@@ -578,7 +667,104 @@ Glow.provide(function(glow) {
 		@example
 			glow("#myDiv").offset().top
 	*/
-	NodeListProto.offset = function() {return this};
+	NodeListProto.offset = function() {
+				// http://weblogs.asp.net/bleroy/archive/2008/01/29/getting-absolute-coordinates-from-a-dom-element.aspx - great bit of research, most bugfixes identified here (and also jquery trac)
+		var elm = this[0],
+			docScrollPos = {
+				x: getScrollOffset(window, true),
+				y: getScrollOffset(window, false)
+			}
+
+		//this is simple(r) if we can use 'getBoundingClientRect'
+		// Sorry but the sooper dooper simple(r) way is not accurate in Safari 4
+		if (!glow.env.webkit && elm.getBoundingClientRect) {
+			var rect = elm.getBoundingClientRect();
+			return {
+				top: rect.top
+				/*
+				 getBoundingClientRect is realive to top left of
+				 the viewport, so we need to sort out scrolling offset
+				*/
+				+ docScrollPos.y
+				/*
+				IE adds the html element's border to the value. We can
+				deduct this value using client(Top|Left). However, if
+				the user has done html{border:0} clientTop will still
+				report a 2px border in IE quirksmode so offset will be off by 2.
+				Hopefully this is an edge case but we may have to revisit this
+				in future
+				*/
+				- docElm.clientTop,
+
+				left: rect.left //see above for docs on all this stuff
+				+ docScrollPos.x
+				- docElm.clientLeft
+			};
+		} else { //damnit, let's go the long way around
+			var top = elm.offsetTop,
+			left = elm.offsetLeft,
+			originalElm = elm,
+			nodeNameLower,
+			//does the parent chain contain a position:fixed element
+			involvesFixedElement = false,
+			offsetParentBeforeBody = elm;
+
+			//add up all the offset positions
+			while (elm = elm.offsetParent) {
+				left += elm.offsetLeft;
+				top += elm.offsetTop;
+
+				//if css position is fixed, we need to add in the scroll offset too, catch it here
+				if (getCssValue(elm, "position") == "fixed") {
+					involvesFixedElement = true;
+				}
+
+				//gecko & webkit (safari 3) don't add on the border for positioned items
+				if (env.gecko || env.webkit > 500) {
+					left += parseInt(getCssValue(elm, "border-left-width")) || 0;
+					top  += parseInt(getCssValue(elm, "border-top-width"))  || 0;
+				}
+				
+				//we need the offset parent (before body) later
+				if (elm.nodeName.toLowerCase() != "body") {
+					offsetParentBeforeBody = elm;
+				}
+			}
+
+			//deduct all the scroll offsets
+			elm = originalElm;
+			while ((elm = elm.parentNode) && (elm != docBody) && (elm != docElm)) {
+				left -= elm.scrollLeft;
+				top -= elm.scrollTop;
+
+				//FIXES
+				//gecko doesn't add the border of contained elements to the offset (overflow!=visible)
+				if (env.gecko && getCssValue(elm, "overflow") != "visible") {
+					left += parseInt(getCssValue(elm, "border-left-width"));
+					top += parseInt(getCssValue(elm, "border-top-width"));
+				}
+			}
+
+			//if we found a fixed position element we need to add the scroll offsets
+			if (involvesFixedElement) {
+				left += docScrollPos.x;
+				top += docScrollPos.y;
+			}
+
+			//FIXES
+			// Webkit < 500 body's offset gets counted twice for absolutely-positioned elements (or if there's a fixed element)
+			// Gecko - non-absolutely positioned elements that are direct children of body get the body offset counted twice
+			if (
+				(env.webkit < 500 && (involvesFixedElement || getCssValue(offsetParentBeforeBody, "position") == "absolute")) ||
+				(env.gecko && getCssValue(offsetParentBeforeBody, "position") != "absolute")
+			) {
+				left -= docBody.offsetLeft;
+				top -= docBody.offsetTop;
+			}
+
+			return {left:left, top:top};
+		}
+	};
 	
 	/**
 		@name glow.NodeList#position
@@ -594,5 +780,45 @@ Glow.provide(function(glow) {
 			// get the top distance from the positioned parent
 			glow("#elm").position().top
 	*/
-	NodeListProto.position = function() {return this};
+	NodeListProto.position = function() {
+		var positionedParent = new NodeList( getPositionedParent(this[0]) ),
+			hasPositionedParent = !!positionedParent[0],
+					
+			// element margins to deduct
+			marginLeft = parseInt( this.css("margin-left") ) || 0,
+			marginTop  = parseInt( this.css("margin-top")  ) || 0,
+					
+			// offset parent borders to deduct, set to zero if there's no positioned parent
+			positionedParentBorderLeft = ( hasPositionedParent && parseInt( positionedParent.css("border-left-width") ) ) || 0,
+			positionedParentBorderTop  = ( hasPositionedParent && parseInt( positionedParent.css("border-top-width")  ) ) || 0,
+					
+			// element offsets
+		elOffset = this.offset(),
+		positionedParentOffset = hasPositionedParent ? positionedParent.offset() : {top: 0, left: 0};
+				
+		return {
+			left: elOffset.left - positionedParentOffset.left - marginLeft - positionedParentBorderLeft,
+			top:  elOffset.top  - positionedParentOffset.top  - marginTop  - positionedParentBorderTop
+		}	
+	};
+	/*
+		Get the 'real' positioned parent for an element, otherwise return null.
+	*/
+	function getPositionedParent(elm) {
+		var offsetParent = elm.offsetParent;
+			
+		// get the real positioned parent
+		// IE places elements with hasLayout in the offsetParent chain even if they're position:static
+		// Also, <body> and <html> can appear in the offsetParent chain, but we don't want to return them if they're position:static
+		while (offsetParent && new glow.NodeList(offsetParent).css("position") == "static") {	
+			offsetParent = offsetParent.offsetParent;
+		}
+			
+		// sometimes the <html> element doesn't appear in the offsetParent chain, even if it has position:relative
+		if (!offsetParent && new glow.NodeList(docElm).css("position") != "static") {
+			offsetParent = docElm;
+		}
+			
+		return offsetParent || null;
+	}
 });
