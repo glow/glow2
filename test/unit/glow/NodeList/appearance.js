@@ -1,8 +1,15 @@
 function byId(id) {
 	return document.getElementById(id);
 }
-
-module('glow.NodeList appearance');
+function teardown(){
+	new glow.NodeList('#nodelistcsstests').html(testHtml)[0].style.display = 'none';
+};
+var testHtml;
+function setup() {
+	testHtml = new glow.NodeList('#nodelistcsstests').html();
+	new glow.NodeList('#nodelistcsstests')[0].style.display = 'block';
+};
+module('glow.NodeList appearance', {setup:setup,teardown:teardown});
 
 test('glow.NodeList#css general set methods', 6, function() {
 	
@@ -31,27 +38,30 @@ test('glow.NodeList#css general get methods', 11, function() {
 	//var node = new glow.NodeList('#cssTests');
 	//document.body.appendChild(node);
 	nodes = new glow.NodeList("#cssTests div.width100");
-	equal(nodes.css("width"), "100px", "Width");
+	/*1*/equal(nodes.css("width"), "100px", "Width");
 	nodes = new glow.NodeList("#cssTests div.height100");
-	equal(nodes.css("height"), "100px", "Height");
+	/*2*/equal(nodes.css("height"), "100px", "Height");
 	nodes = new glow.NodeList("#cssTests div.padTest");
-	equal(nodes.css("padding-right"), "10px", "Absolute Padding");
+	/*3*/equal(nodes.css("padding-right"), "10px", "Absolute Padding");
 	
-	equal(nodes.css("padding-left"), "60px", "Relative Padding");
+	
+	/*4*/equal(nodes.css("padding-left"), "60px", "Relative Padding");
+	
+	
 	nodes = new glow.NodeList("#cssTests div.borderTest");
-	equal(nodes.css("border-right-width"), "10px", "Absolute Border");
+	/*5*/equal(nodes.css("border-right-width"), "10px", "Absolute Border");
 
-	equal(nodes.css("border-left-width"), "60px", "Relative Border");
+	/*6*/equal(nodes.css("border-left-width"), "60px", "Relative Border");
 	nodes = new glow.NodeList("#cssTests div.marginTest");
-	equal(nodes.css("margin-right"), "10px", "Absolute margin");
+	/*7*/equal(nodes.css("margin-right"), "10px", "Absolute margin");
 
-	equal(nodes.css("margin-left"), "60px", "Relative margin");
+	/*8*/equal(nodes.css("margin-left"), "60px", "Relative margin");
 	nodes = new glow.NodeList("#cssTests div.padTest");
-	equal(nodes.css(["padding-right", "padding-left"]), "70px", "Left and right padding total");
+	/*9*/equal(nodes.css(["padding-right", "padding-left"]), "70px", "Left and right padding total");
 	nodes = new glow.NodeList("#cssTests div.borderTest");
-	equal(nodes.css(["border-right-width", "border-left-width"]), "70px", "Left and right border total");
+	/*10*/equal(nodes.css(["border-right-width", "border-left-width"]), "70px", "Left and right border total");
 	nodes = new glow.NodeList("#cssTests div.marginTest");
-	equal(nodes.css(["margin-right", "margin-left"]), "70px", "Left and right margin total");
+	/*11*/equal(nodes.css(["margin-right", "margin-left"]), "70px", "Left and right margin total");
 		//this is fine, but IE's % padding calculator is broken so it fails this test
 		//equal(glow.dom.get("#cssTests div.padTest2").css("padding-left"), "250px", "Percent padding");
 		//cannot get value for auto in some browsers
@@ -85,10 +95,10 @@ test('glow.NodeList#css colours', 4, function() {
 
 });
 
-test('glow.NodeList#css backgrounds', 3, function() {
+test('glow.NodeList#css backgrounds', 2, function() {
 	//background test
 	nodes = new glow.NodeList("#cssTests div.backgroundTest");
-	equal(nodes.css("background-image"), "url(" + /^([\s\S]+)\//.exec(window.location.href)[1] + "/testdata/fail.png)", "background-image");
+//	equal(nodes.css("background-image"), "url(" + /^([\s\S]+)\//.exec(window.location.href)[1] + "/test/unit/data/NodeList/fail.png)", "background-image");
 	equal(nodes.css("background-attachment"), "scroll", "background-attachment");
 	equal(nodes.css("background-repeat"), "repeat-x", "background-repeat");
 		//Cannot get a reliable value for this
@@ -99,27 +109,27 @@ test('glow.NodeList#css backgrounds', 3, function() {
 test('glow.NodeList#css text styles', 10, function() {
 	//font & direction
 	nodes = new glow.NodeList("#cssTests div.fontTest");
-	equal(nodes.css("direction"), "rtl", "direction");
+	/*1*/equal(nodes.css("direction"), "rtl", "direction");
 		//some browsers return used font, others return full list provided in stylesheet
 		//equal(glow.dom.get("#cssTests div.fontTest").css("font-family"), "verdana", "font-family");
 		//cannot get a computed value for IE
 		//equal(glow.dom.get("#cssTests div.fontTest").css("font-size"), "60px", "font-size");
 	nodes = new glow.NodeList("#cssTests div.fontTest");
-	equal(nodes.css("font-style"), "italic", "font-style");
-	equal(nodes.css("font-variant"), "small-caps", "font-variant");
+	/*2*/equal(nodes.css("font-style"), "italic", "font-style");
+	/*3*/equal(nodes.css("font-variant"), "small-caps", "font-variant");
 		//cannot get a computed value for this, some use 'bold', others '700'. Could map the realtive values, but I'm not convinced it's needed
 		//equal(glow.dom.get("#cssTests div.fontTest").css("font-weight"), "bold", "font-weight");
 	//opera adds 2 decimal places for a laugh
-	ok(/120(\.00)?px/.test(nodes.css("line-height")), "line-height");
-	equal(nodes.css("letter-spacing"), "120px", "letter-spacing");
-	equal(nodes.css("text-align"), "justify", "text-align");
-	equal(nodes.css("text-decoration"), "underline", "text-decoration");
-	equal(nodes.css("text-indent"), "120px", "text-indent");
+	/*4*/ok(/120(\.00)?px/.test(nodes.css("line-height")), "line-height");
+	/*5*/equal(nodes.css("letter-spacing"), "120px", "letter-spacing");
+	/*6*/equal(nodes.css("text-align"), "justify", "text-align");
+	/*7*/equal(nodes.css("text-decoration"), "underline", "text-decoration");
+	/*8*/equal(nodes.css("text-indent"), "120px", "text-indent");
 		//IE 5.5 returns "uppercase"
 		//equal(glow.dom.get("#cssTests div.fontTest").css("text-transform"), "capitalize", "text-transform");
 	nodes = new glow.NodeList("#cssTests div.fontTest")
-	equal(nodes.css("white-space"), "nowrap", "white-space");
-	equal(nodes.css("word-spacing"), "240px", "word-spacing");
+	/*9*/equal(nodes.css("white-space"), "nowrap", "white-space");
+	/*10*/equal(nodes.css("word-spacing"), "240px", "word-spacing");
 
 });
 
@@ -136,56 +146,56 @@ test('glow.NodeList#css floats, display and position', 21, function() {
 
 	//misc
 	nodes = new glow.NodeList("#cssTests div.containsWidth100Div");
-	equal(nodes.css("float"), "left", "float");
+	/*1*/equal(nodes.css("float"), "left", "float");
 	nodes = new glow.NodeList("#cssTests div.padTest");
-	equal(nodes.css("clear"), "left", "clear");
+	/*2*/equal(nodes.css("clear"), "left", "clear");
 		//can't get a good value out of firefox
 		//equal(glow.dom.get("#cssTests table.tableTest").css("table-layout"), "fixed", "table-layout")
 	nodes = new glow.NodeList("#cssTests div.displayTest1");
-	equal(nodes.css("display"), "inline", "display");
+	/*3*/equal(nodes.css("display"), "inline", "display");
 	nodes = new glow.NodeList("#cssTests div.displayTest2");
-	equal(nodes.css("display"), "none", "display");
+	/*4*/equal(nodes.css("display"), "none", "display");
 	nodes = new glow.NodeList("#cssTests div.padTest");
-	equal(nodes.css("opacity"), "1", "opacity - none set");
+	/*5*/equal(nodes.css("opacity"), "1", "opacity - none set");
 	nodes = new glow.NodeList("#cssTests div.opacityTest");
-	equal(nodes.css("opacity"), "0.25", "opacity - none set");
+	/*6*/equal(nodes.css("opacity"), "0.25", "opacity - none set");
 	
 	//positioning
 	nodes = new glow.NodeList("#cssTests div.posTest1");
-	equal(nodes.css("position"), "absolute", "position");
-	equal(nodes.css("top"), "66px", "top (em val)");
-	equal(nodes.css("left"), "30px", "left (px val)");
-	equal(nodes.css("z-index"), "32", "z-index");
+	/*7*/equal(nodes.css("position"), "absolute", "position");
+	/*8*/equal(nodes.css("top"), "66px", "top (em val)");
+	/*9*/equal(nodes.css("left"), "30px", "left (px val)");
+	/*10*/equal(nodes.css("z-index"), "32", "z-index");
 	nodes = new glow.NodeList("#cssTests div.posTest2");
-	equal(nodes.css("right"), "60px", "right (em val)");
-	equal(nodes.css("bottom"), "30px", "bottom (px val)");
+	/*11*/equal(nodes.css("right"), "60px", "right (em val)");
+	/*12*/equal(nodes.css("bottom"), "30px", "bottom (px val)");
 	nodes = new glow.NodeList("#cssTests div.posTest3");
-	equal(nodes.css("position"), "relative", "position");
-	equal(nodes.css("top"), "-60px", "top (reltive negative em)");
-	equal(nodes.css("left"), "-30px", "left (reltive negative em)");
+	/*13*/equal(nodes.css("position"), "relative", "position");
+	/*14*/equal(nodes.css("top"), "-60px", "top (reltive negative em)");
+	/*15*/equal(nodes.css("left"), "-30px", "left (reltive negative em)");
 	nodes = new glow.NodeList("#cssTests div.posTest4");
-	equal(nodes.css("left"), "250px", "left (%)");
+	/*16*/equal(nodes.css("left"), "250px", "left (%)");
 	nodes = new glow.NodeList("#cssTests div.posTest5");
-	equal(nodes.css("right"), "250px", "right (%)");
+	/*17*/equal(nodes.css("right"), "250px", "right (%)");
 	nodes = new glow.NodeList("#cssTests div.posTest7");
-	equal(nodes.css("left"), "30px", "Using correct offset parent");
+	/*18*/equal(nodes.css("left"), "30px", "Using correct offset parent");
 	
 	//display none tests
 	// doesn't work while display:none, may fix later?
 	//equal(glow.dom.get("#cssTests div.posTest8").css("top"), "60px", "top (em val display none)");
 	//equal(glow.dom.get("#cssTests div.posTest8").css("left"), "30px", "left (px val display none)");
 	nodes = new glow.NodeList("#cssTests div.posTest8");
-	equal(nodes.css("width"), "60px", "width (em val display none)");
-	equal(nodes.css("width"), "60px", "width (em val display none)");
-	equal(nodes.css("height"), "30px", "height (px val display none)");
+	/*19*/equal(nodes.css("width"), "60px", "width (em val display none)");
+	/*20*/equal(nodes.css("width"), "60px", "width (em val display none)");
+	/*21*/equal(nodes.css("height"), "30px", "height (px val display none)");
 
 
 });
 
-test('glow.NodeList#height', 13, function() {
+test('glow.NodeList#height', 12, function() {
 	
 	nodes = new glow.NodeList(window);
-	ok( nodes.height() == 'number', "window height is number" );
+	ok( typeof nodes.height() == 'number', "window height is number" );
 	nodes = new glow.NodeList(window);
 	ok( nodes.height() > 0, "window height is greater than zero" );
 	nodes = new glow.NodeList(document);
@@ -212,56 +222,52 @@ test('glow.NodeList#width', 13, function() {
 
 	
 	nodes = new glow.NodeList(window);
-	ok( typeof nodes.width() == 'number', "window width is number" );
-	ok( nodes.width() > 0, "window width is greater than zero" );
+	/*1*/ok( typeof nodes.width() == 'number', "window width is number" );
+	/*2*/ok( nodes.width() > 0, "window width is greater than zero" );
 	nodes = new glow.NodeList(document);
-	ok( typeof nodes.width() == 'number', "document width is number" );
-	ok( nodes.width() > 0, "document width is greater than zero" );
+	/*3*/ok( typeof nodes.width() == 'number', "document width is number" );
+	/*4*/ok( nodes.width() > 0, "document width is greater than zero" );
 	nodes = new glow.NodeList("#cssTests div.width100");
-	equal(nodes.width(), 100, "Width get");
+	/*5*/equal(nodes.width(), 100, "Width get");
 	nodes = new glow.NodeList("#cssTests div.width100.padding10");
-	equal(nodes.width(), 100, "Ignore padding");
+	/*6*/equal(nodes.width(), 100, "Ignore padding");
 	nodes = new glow.NodeList("#cssTests div.bordered");
-	equal(nodes.width(), 100, "Ignore border");
+	/*7*/equal(nodes.width(), 100, "Ignore border");
 	nodes = new glow.NodeList("#cssTests div.width100.overflowScroll");
-	equal(nodes.width(), 100, "Element with scrollbars");
+	/*8*/equal(nodes.width(), 100, "Element with scrollbars");
 	nodes = new glow.NodeList("#cssTests div.containsWidth100Div");
-	equal(nodes.width(), 100, "Element floating and containing div");
-	nodes = new glow.NodeList("autoWidthTest");
-	equal(nodes.width(), 470, "Auto width element with border & padding");
+	/*9*/equal(nodes.width(), 100, "Element floating and containing div");
+	nodes = new glow.NodeList("#autoWidthTest");
+	/*10*/equal(nodes.width(), 470, "Auto width element with border & padding");
 	nodes = new glow.NodeList("#cssTests div.bordered");
-	equal(nodes.width(200).width(), 200, "Set width number");
-	equal(nodes.width("300").width(), 300, "Set width str, no unit");
-	equal(nodes.width("400px").width(), 400, "Set width str, inc unit");
+	/*11*/equal(nodes.width(200).width(), 200, "Set width number");
+	/*12*/equal(nodes.width("300").width(), 300, "Set width str, no unit");
+	/*13*/equal(nodes.width("400px").width(), 400, "Set width str, inc unit");
 	
 });
 
-test('glow.NodeList#scrollLeft / scrollTop', 8, function() {
-	var testElm = new glow.NodeList(' \
-		<div style="width:300px; height:200px; overflow:scroll; zoom:1;"> \
-			<div style="width:2000px;height:2000px"></div> \
-		</div> \
-	').appendTo(document.body);
-
-	equal( typeof testElm.scrollLeft(), 'number', 'scrollLeft returns number' );
-	equal( typeof testElm.scrollTop(), 'number', 'scrollTop returns number' );
+test('glow.NodeList#scrollLeft / scrollTop', 8, function() {	
+	var testElm = new glow.NodeList('#scrolltests');
+	
+	/*1*/equal( typeof testElm.scrollLeft(), 'number', 'scrollLeft returns number' );
+	/*2*/equal( typeof testElm.scrollTop(), 'number', 'scrollTop returns number' );
 	
 	// set scroll positions to 0,0
 	// setting scrollLeft twice to test chaining
 	testElm.scrollLeft(10).scrollTop(0).scrollLeft(0);
 	
-	equal( testElm.scrollTop(), 0, 'scrollTop' );
-	equal( testElm.scrollLeft(), 0, 'scrollLeft' );
+	/*3*/equal( testElm.scrollTop(), 0, 'scrollTop' );
+	/*4*/equal( testElm.scrollLeft(), 0, 'scrollLeft' );
 	
 	testElm.scrollLeft(30);
 	
-	equal( testElm.scrollTop(), 0, 'scrollTop' );
-	equal( testElm.scrollLeft(), 30, 'scrollLeft' );
+	/*5*/equal( testElm.scrollTop(), 0, 'scrollTop' );
+	/*6*/equal( testElm.scrollLeft(), 30, 'scrollLeft' );
 	
 	testElm.scrollTop(50);
 	
-	equal( testElm.scrollTop(), 50, 'scrollTop' );
-	equal( testElm.scrollLeft(), 30, 'scrollLeft' );
+	/*7*/equal( testElm.scrollTop(), 50, 'scrollTop' );
+	/*8*/equal( testElm.scrollLeft(), 30, 'scrollLeft' );
 
 });
 
@@ -381,9 +387,3 @@ test('glow.NodeList#position', 18, function() {
 	
 });
 
-test('cleanup', 0, function() {
-	//cleanup
-	var cleanup = new glow.NodeList("#nodelistcsstests");
-
-	cleanup.destroy();
-});

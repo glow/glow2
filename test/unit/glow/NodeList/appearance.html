@@ -12,7 +12,9 @@
 	
 	<script type="text/javascript" src="appearance.js"></script>
 	<style>
-		
+	#cssTests{
+	font-size: 75%;
+	}
 	/* FOR TESTING */
 	.width100 {
 		width: 100px;
@@ -55,7 +57,7 @@
 		border-left-color: green;
 	}
 	.backgroundTest {
-		background: #00f url(fail.png) top right repeat-x scroll;
+		background: #00f url(../../data/NodeList/fail.png) top right repeat-x scroll;
 	}
 	.fontTest {
 		direction: rtl;
@@ -181,7 +183,7 @@
 			<div class="displayNone" style="display:none"><div class="posTest8">Test</div></div>
 		<div class="height100">Test</div>
 			<div class="height100 padding10">Test</div>
-			<div class="bordered" style="height:100px;border:10px solid #000">Test</div>
+			<div class="bordered" style="width:100px;height:100px;border:10px solid #000">Test</div>
 			<div class="height100 overflowScroll">Test</div>
 			<div class="containsHeight100Div"><div class="height100">Test</div></div>
 		<div class="width100">Test</div>
@@ -228,7 +230,7 @@
 			<div id="pos5_1" style="height:5px; width:5px; padding:0px; margin-top:-10px; background: yellow"></div>
 		</div>
 		
-		
+		<div id="scrolltests" style="width:300px; height:200px; overflow:scroll; zoom:1;"><div style="width:2000px;height:2000px"></div></div>
 		<p id="visibility-toggle">test</p>
 		
 	</div>

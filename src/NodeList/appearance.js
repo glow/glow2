@@ -2,7 +2,7 @@ Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype,
 		doc = document,
 		docBody = doc.body,
-		docElm = doc.documentElement;
+		docElm = doc.documentElement,
 		/*
 		PrivateVar: cssRegex
 			For matching CSS selectors
@@ -34,8 +34,6 @@ Glow.provide(function(glow) {
 		//getByTagName,
 		win = window,
 		doc = document,
-		docBody,
-		docElm,
 		// true if properties of a dom node are cloned when the node is cloned (eg, true in IE)
 		//nodePropertiesCloned,
 		// used to convert divs to strings
@@ -70,6 +68,29 @@ Glow.provide(function(glow) {
 				link: paddingElmArray,
 				script: paddingElmArray,
 				style: paddingElmArray
+			},
+		/*
+		PrivateVar: htmlColorNames
+			Mapping of colour names to hex values
+		*/
+			htmlColorNames = {
+				black: 0,
+				silver: 0xc0c0c0,
+				gray: 0x808080,
+				white: 0xffffff,
+				maroon: 0x800000,
+				red: 0xff0000,
+				purple: 0x800080,
+				fuchsia: 0xff00ff,
+				green: 0x8000,
+				lime: 0xff00,
+				olive: 0x808000,
+				yellow: 0xffff00,
+				navy: 128,
+				blue: 255,
+				teal: 0x8080,
+				aqua: 0xffff,
+				orange: 0xffa500
 			};
 			
 	/********************************PRIVATE METHODS*****************************************/
@@ -124,7 +145,7 @@ Glow.provide(function(glow) {
 			if (prop == "float") {
 				return glow.env.ie ? "styleFloat" : "cssFloat";
 			}
-			return glow.util.replace(prop, /-(\w)/g, function(match, p1) {
+			return prop.replace(/-(\w)/g, function(match, p1) {
 				return p1.toUpperCase();
 			});
 	}
@@ -291,8 +312,8 @@ Glow.provide(function(glow) {
 
 			if (elm.window) { // is window
 				r = glow.env.webkit < 522.11 ? (isWidth ? elm.innerWidth				: elm.innerHeight) :
-					glow.env.webkit			? (isWidth ? docBody.clientWidth		: elm.innerHeight) :
-					glow.env.opera < 9.5		? (isWidth ? docBody.clientWidth		: docBody.clientHeight) :
+					glow.env.webkit			? (isWidth ? document.body.clientWidth		: elm.innerHeight) :
+					glow.env.opera < 9.5		? (isWidth ? document.body.clientWidth		: document.body.clientHeight) :
 					/* else */			  (isWidth ? docElmOrBody.clientWidth	: docElmOrBody.clientHeight);
 
 			}
@@ -300,8 +321,8 @@ Glow.provide(function(glow) {
 				// we previously checked offsetWidth & clientWidth here
 				// but they returned values too large in IE6 scrollWidth seems enough
 				r = Math.max(
-					docBody["scroll" + cssPropCaps],
-					docElm["scroll" + cssPropCaps]
+					document.body["scroll" + cssPropCaps],
+					document.documentElement["scroll" + cssPropCaps]
 				)
 			}
 			else {
@@ -331,7 +352,42 @@ Glow.provide(function(glow) {
 			for (var i = 0, len = elms.length; i < len; i++) {
 				elms[i].style[type] = val;
 			}
-		}	
+		}
+	/*
+		PrivateMethod: tempBlock
+			Gives an element display:block (but keeps it hidden) and runs a function, then sets the element back how it was
+
+		Arguments:
+			elm - element
+			func - function to run
+
+		Returns:
+			Return value of the function
+		*/
+		function tempBlock(elm, func) {
+			//TODO: rather than recording individual style properties, just cache cssText? This was faster for getting the element size
+			var r,
+				elmStyle = elm.style,
+				oldDisp = elmStyle.display,
+				oldVis = elmStyle.visibility,
+				oldPos = elmStyle.position;
+
+			elmStyle.visibility = "hidden";
+			elmStyle.position = "absolute";
+			elmStyle.display = "block";
+			if (!isVisible(elm)) {
+				elmStyle.position = oldPos;
+				r = tempBlock(elm.parentNode, func);
+				elmStyle.display = oldDisp;
+				elmStyle.visibility = oldVis;
+			} else {
+				r = func();
+				elmStyle.display = oldDisp;
+				elmStyle.position = oldPos;
+				elmStyle.visibility = oldVis;
+			}
+			return r;
+		}
 	/*************************************** API METHODS ******************************************/
 	/**
 		@name glow.NodeList#css
@@ -635,7 +691,9 @@ Glow.provide(function(glow) {
 			// Hides all list items within #myList
 			glow("#myList li").hide();
 	*/
-	NodeListProto.hide = function() {return this};
+	NodeListProto.hide = function() {
+		return this.css("display", "none").css("visibility", "hidden");	
+	};
 	
 	/**
 		@name glow.NodeList#show
@@ -652,7 +710,26 @@ Glow.provide(function(glow) {
 			// Show all list items within #myList
 			glow("#myList li").show();
 	*/
-	NodeListProto.show = function() {return this};
+	NodeListProto.show = function() {
+		var i = 0,
+			len = this.length,
+			currItem,
+			itemStyle;
+		for (; i < len; i++) {
+			/* Create a NodeList for the current item */
+			currItem = new glow.NodeList(this[i]);
+			itemStyle = currItem[0].style;
+			if (currItem.css("display") == "none") {
+				itemStyle.display = "";
+				itemStyle.visibility = "visible";
+			/* If display is still none, set to block */
+				if (currItem.css("display") == "none") {
+					itemStyle.display = "block";
+					}
+			}
+		}
+		return this;	
+	};
 
 	/**
 		@name glow.NodeList#offset
@@ -720,7 +797,7 @@ Glow.provide(function(glow) {
 				}
 
 				//gecko & webkit (safari 3) don't add on the border for positioned items
-				if (env.gecko || env.webkit > 500) {
+				if (glow.env.gecko || glow.env.webkit > 500) {
 					left += parseInt(getCssValue(elm, "border-left-width")) || 0;
 					top  += parseInt(getCssValue(elm, "border-top-width"))  || 0;
 				}
@@ -739,7 +816,7 @@ Glow.provide(function(glow) {
 
 				//FIXES
 				//gecko doesn't add the border of contained elements to the offset (overflow!=visible)
-				if (env.gecko && getCssValue(elm, "overflow") != "visible") {
+				if (glow.env.gecko && getCssValue(elm, "overflow") != "visible") {
 					left += parseInt(getCssValue(elm, "border-left-width"));
 					top += parseInt(getCssValue(elm, "border-top-width"));
 				}
@@ -755,8 +832,8 @@ Glow.provide(function(glow) {
 			// Webkit < 500 body's offset gets counted twice for absolutely-positioned elements (or if there's a fixed element)
 			// Gecko - non-absolutely positioned elements that are direct children of body get the body offset counted twice
 			if (
-				(env.webkit < 500 && (involvesFixedElement || getCssValue(offsetParentBeforeBody, "position") == "absolute")) ||
-				(env.gecko && getCssValue(offsetParentBeforeBody, "position") != "absolute")
+				(glow.env.webkit < 500 && (involvesFixedElement || getCssValue(offsetParentBeforeBody, "position") == "absolute")) ||
+				(glow.env.gecko && getCssValue(offsetParentBeforeBody, "position") != "absolute")
 			) {
 				left -= docBody.offsetLeft;
 				top -= docBody.offsetTop;
@@ -781,7 +858,7 @@ Glow.provide(function(glow) {
 			glow("#elm").position().top
 	*/
 	NodeListProto.position = function() {
-		var positionedParent = new NodeList( getPositionedParent(this[0]) ),
+		var positionedParent = new glow.NodeList( getPositionedParent(this[0]) ),
 			hasPositionedParent = !!positionedParent[0],
 					
 			// element margins to deduct
