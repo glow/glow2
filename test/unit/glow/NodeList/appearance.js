@@ -262,14 +262,19 @@ test('glow.NodeList#scrollLeft / scrollTop', 8, function() {
 	
 	equal( testElm.scrollTop(), 50, 'scrollTop' );
 	equal( testElm.scrollLeft(), 30, 'scrollLeft' );
-	
-	testElm.destroy();
+
 });
 
 
 
-test('glow.NodeList#hide / show', 0, function() {
-	
+test('glow.NodeList#hide / show', 4, function() {
+	nodes = new glow.NodeList("#visibility-toggle");
+	nodes.hide();
+	equal(nodes.css("display"), "none", "Element has display none");
+	equal(nodes.css("visibility"), "hidden", "Element has visibility hidden");
+	nodes.show();
+	equal(nodes.css("display"), "block", "Element has display block");
+	equal(nodes.css("visibility"), "visible", "Element has visibility visible");
 });
 
 
