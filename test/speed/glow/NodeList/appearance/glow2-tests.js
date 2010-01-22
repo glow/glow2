@@ -44,18 +44,30 @@ woosh.addTests('glow2-src', {
 		return gettingElm.width();
 	}),
 	'width setting - many elms': new woosh.TimeTest(1, function() {
-		return tenElms.width(200);
+		tenElms.width(200)
+		if (test.lastLoop) {
+			return tenElms.width();
+		}
 	}),
 	'width setting - one elm': new woosh.TimeTest(1, function() {
-		return oneElm.width(200);
+		oneElm.width(200);
+		if (test.lastLoop) {
+			return oneElm.width();
+		}
 	}),
 	'height getting': new woosh.TimeTest(1, function() {
 		return gettingElm.height();
 	}),
 	'height setting - many elms': new woosh.TimeTest(1, function() {
-		return tenElms.height(200);
+		tenElms.height(200);
+		if (test.lastLoop) {
+			return tenElms.height();
+		}
 	}),
 	'height setting - one elm': new woosh.TimeTest(1, function() {
-		return oneElm.height(200);
+		oneElm.height(200);
+		if (test.lastLoop) {
+			return oneElm.height();
+		}
 	})
 });
