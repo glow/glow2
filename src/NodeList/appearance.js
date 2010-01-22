@@ -1,178 +1,53 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype,
-		doc = document,
-		docBody = doc.body,
-		docElm = doc.documentElement,
-		/*
-		PrivateVar: cssRegex
-			For matching CSS selectors
-		*/
-		cssRegex = {
-			tagName: /^(\w+|\*)/,
-			combinator: /^\s*([>]?)\s*/,
-				//safari 1.3 is a bit dim when it comes to unicode stuff, only dot matches them (not even \S), so some negative lookalheads are needed
-				classNameOrId: (glow.env.webkit < 417) ? new RegExp("^([\\.#])((?:(?![\\.#\\[:\\s\\\\]).|\\\\.)+)") : /^([\.#])((?:[^\.#\[:\\\s]+|\\.)+)/
-			},
-			//for escaping strings in regex
-		regexEscape = /([$^\\\/()|?+*\[\]{}.-])/g,
-
-		/*
-		PrivateVar: cssCache
-			Cache of arrays representing an execution path for css selectors
-		*/
-		cssCache = {},
-		/*
-		PrivateVar: usesYAxis
-			regex for detecting which css properties need to be calculated relative to the y axis
-		*/
-		usesYAxis = /height|top/,
-		colorRegex = /^rgb\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)/i,
-		cssPropRegex = /^(?:(width|height)|(border-(top|bottom|left|right)-width))$/,
-		hasUnits = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
-		placeholderElm = new glow.NodeList('<u class="glow-placeholder"></u>'),
-		//getByTagName gets get to a function below
-		//getByTagName,
-		win = window,
-		doc = document,
-		// true if properties of a dom node are cloned when the node is cloned (eg, true in IE)
-		//nodePropertiesCloned,
-		// used to convert divs to strings
-		tmpDiv = doc.createElement("div"),
-		/*
-		PrivateVars: tableArray, elmFilter
-			Used in private function stringToNodes to capture any 
-			elements that cannot be a childNode of <div>.
-			Each entry in JSON responds to an element.
-			First array value is how deep the element will be created in a node tree.
-			Second array value is the beginning of the node tree.
-			Third array value is the end of the node tree.
-		*/
-			tableArray = [1, '<table>', '</table>'],
-			emptyArray = [0, '', ''],
-			// webkit won't accept <link> elms to be the only child of an element,
-			// it steals them and hides them in the head for some reason. Using
-			// broken html fixes it for some reason
-			paddingElmArray = glow.env.webkit < 526 ? [0, '', '</div>', true] : [1, 'b<div>', '</div>'],
-			trArray = [3, '<table><tbody><tr>', '</tr></tbody></table>'],
-			elmWraps = {
-				caption: tableArray,
-				thead: tableArray,
-				th: trArray,
-				colgroup: tableArray,
-				tbody: tableArray,
-				tr: [2, '<table><tbody>', '</tbody></table>'],
-				td: trArray,
-				tfoot: tableArray,
-				option: [1, '<select>', '</select>'],
-				legend: [1, '<fieldset>', '</fieldset>'],
-				link: paddingElmArray,
-				script: paddingElmArray,
-				style: paddingElmArray
-			},
-		/*
-		PrivateVar: htmlColorNames
-			Mapping of colour names to hex values
-		*/
-			htmlColorNames = {
-				black: 0,
-				silver: 0xc0c0c0,
-				gray: 0x808080,
-				white: 0xffffff,
-				maroon: 0x800000,
-				red: 0xff0000,
-				purple: 0x800080,
-				fuchsia: 0xff00ff,
-				green: 0x8000,
-				lime: 0xff00,
-				olive: 0x808000,
-				yellow: 0xffff00,
-				navy: 128,
-				blue: 255,
-				teal: 0x8080,
-				aqua: 0xffff,
-				orange: 0xffa500
-			};
+		doc = document,	
+		win = window;
 			
 	/********************************PRIVATE METHODS*****************************************/
-	
+		
 	/*
-	PrivateMethod: getElementsByTag
-		Get elements by a specified tag name from a set of context objects. If multiple
-		context objects are passed, then the resulting array may contain duplicates. See
-		<unique> to remove duplicate nodes.
+	PrivateMethod: toStyleProp
+		Converts a css property name into its javascript name, such as "background-color" to "backgroundColor".
 
-	Arguments:
-		tag - (string) Tag name. "*" for all.
-		contexts - (array) DOM Documents and/or DOM Elements to search in.
+	Arguments: prop - (String) CSS Property name
 
-	Returns:
-		An array(like) collection of elements with the specified tag name.
+	Returns: String, javascript style property name
 	*/
-	if (document.all) { //go the long way around for IE (and Opera)
-		getByTagName = function(tag, context) {
-			var r = [], i = 0;
-			for (; context[i]; i++) {
-				//need to check .all incase data is XML
-				//TODO: Drop IE5.5
-				if (tag == "*" && context[i].all && !isXml(context[i])) { // IE 5.5 doesn't support getElementsByTagName("*")
-					append(r, context[i].all);
-				} else {
-					append(r, context[i].getElementsByTagName(tag));
-				}
-			}
-			return r;
-		};
-	} else {
-		getByTagName = function(tag, context) {
-			var r = [], i = 0, len = context.length;
-			for (; i < len; i++) {
-				append(r, context[i].getElementsByTagName(tag));
-			}
-			return r;
-		};
-	}
-	/*
-		PrivateMethod: toStyleProp
-			Converts a css property name into its javascript name, such as "background-color" to "backgroundColor".
-
-		Arguments:
-			prop - (String) CSS Property name
-
-		Returns:
-			String, javascript style property name
-		*/
+	
 	function toStyleProp(prop) {
-			if (prop == "float") {
-				return glow.env.ie ? "styleFloat" : "cssFloat";
-			}
-			return prop.replace(/-(\w)/g, function(match, p1) {
-				return p1.toUpperCase();
-			});
+		if (prop == "float") {
+			return glow.env.ie ? "styleFloat" : "cssFloat";
+		}
+		return prop.replace(/-(\w)/g, function(match, p1) {
+			return p1.toUpperCase();
+		});
 	}
 	/*
-		PrivateMethod: getCssValue
-			Get a computed css property
+	PrivateMethod: getCssValue
+		Get a computed css property
+		
+	Arguments:
+		elm - element
+		prop - css property or array of properties to add together
 
-		Arguments:
-			elm - element
-			prop - css property or array of properties to add together
-
-		Returns:
-			String, value
-		*/
-		function getCssValue(elm, prop) {
-			var r, //return value
-				total = 0,
-				i = 0,
-				propLen = prop.length,
-				compStyle = doc.defaultView && (doc.defaultView.getComputedStyle(elm, null) || doc.defaultView.getComputedStyle),
-				elmCurrentStyle = elm.currentStyle,
-				oldDisplay,
-				match,
-				propTest = prop.push || cssPropRegex.exec(prop) || [];
+	Returns:	String, value
+	*/
+	function getCssValue(elm, prop) {
+		var r, //return value
+			total = 0,
+			i = 0,
+			/*regex for detecting which css properties need to be calculated relative to the y axis*/
+			usesYAxis = /height|top/,
+			propLen = prop.length,
+			cssPropRegex = /^(?:(width|height)|(border-(top|bottom|left|right)-width))$/,
+			compStyle = doc.defaultView && (doc.defaultView.getComputedStyle(elm, null) || doc.defaultView.getComputedStyle),
+			elmCurrentStyle = elm.currentStyle,
+			oldDisplay,
+			match,
+			propTest = prop.push || cssPropRegex.exec(prop) || [];
 
 
-			if (prop.push) { //multiple properties, add them up
+		if (prop.push) { //multiple properties, add them up
 				for (; i < propLen; i++) {
 					total += parseInt( getCssValue(elm, prop[i]), 10 ) || 0;
 				}
@@ -238,27 +113,48 @@ Glow.provide(function(glow) {
 			return r;
 		}
 	/*
-		PrivateMethod: isVisible
-			Is the element visible?
-		*/
-		function isVisible(elm) {
-			//this is a bit of a guess, if there's a better way to do this I'm interested!
-			return elm.offsetWidth ||
-				elm.offsetHeight;
-		}
+	PrivateMethod: isVisible
+		Is the element visible?
+	*/
+	function isVisible(elm) {
+		//this is a bit of a guess, if there's a better way to do this I'm interested!
+		return elm.offsetWidth ||
+			elm.offsetHeight;
+	}
 	/*
-		PrivateMethod: normaliseCssColor
-			Converts a CSS colour into "rgb(255, 255, 255)" or "transparent" format
-		*/
+	PrivateMethod: normaliseCssColor
+		Converts a CSS colour into "rgb(255, 255, 255)" or "transparent" format
+	*/
 
-		function normaliseCssColor(val) {
-			if (/^(transparent|rgba\(0, ?0, ?0, ?0\))$/.test(val)) { return 'transparent'; }
+	function normaliseCssColor(val) {
+		if (/^(transparent|rgba\(0, ?0, ?0, ?0\))$/.test(val)) { return 'transparent'; }
 			var match, //tmp regex match holder
 				r, g, b, //final colour vals
 				hex, //tmp hex holder
 				mathRound = Math.round,
 				parseIntFunc = parseInt,
-				parseFloatFunc = parseFloat;
+				parseFloatFunc = parseFloat,
+					htmlColorNames = {
+					black: 0,
+					silver: 0xc0c0c0,
+					gray: 0x808080,
+					white: 0xffffff,
+					maroon: 0x800000,
+					red: 0xff0000,
+					purple: 0x800080,
+					fuchsia: 0xff00ff,
+					green: 0x8000,
+					lime: 0xff00,
+					olive: 0x808000,
+					yellow: 0xffff00,
+					navy: 128,
+					blue: 255,
+					teal: 0x8080,
+					aqua: 0xffff,
+					orange: 0xffa500
+				},
+				colorRegex = /^rgb\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)/i,
+				docBody = document.body;
 
 			if (match = colorRegex.exec(val)) { //rgb() format, cater for percentages
 				r = match[2] ? mathRound(((parseFloatFunc(match[1]) / 100) * 255)) : parseIntFunc(match[1]);
@@ -304,7 +200,10 @@ Glow.provide(function(glow) {
 				'padding-bottom'
 			];
 		function getElmDimension(elm, cssProp /* (width|height) */) {
-			var r, // val to return
+			var r,
+			doc = document,
+			docElm = doc.documentElement,
+			// val to return
 				docElmOrBody = glow.env.standardsMode ? docElm : docBody,
 				isWidth = (cssProp == "width"),
 				cssPropCaps = isWidth ? "Width" : "Height",
@@ -470,6 +369,7 @@ Glow.provide(function(glow) {
 				i = 0,
 				len = this.length,
 				originalProp = prop,
+				hasUnits = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
 				style;
 
 				if (prop.constructor === Object) { // set multiple values
@@ -782,6 +682,8 @@ Glow.provide(function(glow) {
 	NodeListProto.offset = function() {
 				// http://weblogs.asp.net/bleroy/archive/2008/01/29/getting-absolute-coordinates-from-a-dom-element.aspx - great bit of research, most bugfixes identified here (and also jquery trac)
 		var elm = this[0],
+		doc = document,
+		docElm = doc.documentElement,
 			docScrollPos = {
 				x: getScrollOffset(window, true),
 				y: getScrollOffset(window, false)
@@ -817,6 +719,7 @@ Glow.provide(function(glow) {
 			left = elm.offsetLeft,
 			originalElm = elm,
 			nodeNameLower,
+			docBody = document.body,
 			//does the parent chain contain a position:fixed element
 			involvesFixedElement = false,
 			offsetParentBeforeBody = elm;
@@ -917,7 +820,9 @@ Glow.provide(function(glow) {
 		Get the 'real' positioned parent for an element, otherwise return null.
 	*/
 	function getPositionedParent(elm) {
-		var offsetParent = elm.offsetParent;
+		var offsetParent = elm.offsetParent,
+		doc = document,
+		docElm = doc.documentElement;
 			
 		// get the real positioned parent
 		// IE places elements with hasLayout in the offsetParent chain even if they're position:static
