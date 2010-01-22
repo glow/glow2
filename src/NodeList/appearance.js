@@ -388,6 +388,41 @@ Glow.provide(function(glow) {
 			}
 			return r;
 		}
+	/*
+		PrivateMethod: getPixelValue
+			Converts a relative value into an absolute pixel value. Only works in IE with Dimension value (not stuff like relative font-size).
+			Based on some Dean Edwards' code
+
+		Arguments:
+			element - element used to calculate relative values
+			value - (string) relative value
+			useYAxis - (string) calulate relative values to the y axis rather than x
+
+		Returns:
+			Number
+		*/
+		function getPixelValue(element, value, useYAxis) {
+			// Remember the original values
+			var axisPos = useYAxis ? "top" : "left",
+				axisPosUpper = useYAxis ? "Top" : "Left",
+				elmStyle = element.style,
+				positionVal = elmStyle[axisPos],
+				runtimePositionVal = element.runtimeStyle[axisPos],
+				r;
+			
+			// copy to the runtime type to prevent changes to the display
+			element.runtimeStyle[axisPos] = element.currentStyle[axisPos];
+			// set value to left / top
+			elmStyle[axisPos] = value;
+			// get the pixel value
+			r = elmStyle["pixel" + axisPosUpper];
+			
+			// revert values
+			elmStyle[axisPos] = positionVal;
+			element.runtimeStyle[axisPos] = runtimePositionVal;
+			
+			return r;
+		}
 	/*************************************** API METHODS ******************************************/
 	/**
 		@name glow.NodeList#css
