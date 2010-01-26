@@ -38,27 +38,26 @@ test('glow.NodeList#addClass', 6, function() {
 	ok(true, 'Adding a class from an empty node list does not crash.');
 });
 
-if (glow.debug) test('glow.NodeList#addClass debug', 3, function() {
-	try {
-		myNodeList.addClass();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
+if (glow.debug) test('glow.NodeList#addClass debug', 6, function() {
+	var myNodeList = new glow.NodeList('<p></p>'),
+		errorCount = glow.debug.errors.length,
+		error;
 	
-	try {
-		myNodeList.addClass('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument throws an error.');
-	}
+	myNodeList.addClass(); // error
+	equal(glow.debug.errors.length, errorCount+1, 'Passing no arguments logs an error.');
+	error = glow.debug.errors.pop();
+	equal(error.type, 'wrong count', 'Passing no arguments logs an error of type "count".');
 	
-	try {
-		myNodeList.addClass([]); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
+	myNodeList.addClass('a', 'b'); // error
+	equal(glow.debug.errors.length, errorCount+1,  'Passing more than 1 argument throws an error.');
+	error = glow.debug.errors.pop();
+	equal(error.type, 'wrong count', 'Passing more than 1 argument logs an error of type "count".');
+	
+	
+	myNodeList.addClass([]); // error
+	equal(glow.debug.errors.length, errorCount+1,  'Passing wrong type of argument throws an error.');
+	error = glow.debug.errors.pop();
+	equal(error.type, 'wrong type', 'Passing more than 1 argument logs an error of type "type".');
 });
 
 test('glow.NodeList#attr', 31, function() {
@@ -164,28 +163,28 @@ test('glow.NodeList#attr', 31, function() {
 	
 });
 
-if (glow.debug) test('glow.NodeList#attr debug', 3, function() {
-	try {
-		myNodeList.attr();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.attr('a', 'b', 'c'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 2 arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.attr(3, 'shazam'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#attr debug', 3, function() {
+// 	try {
+// 		myNodeList.attr();
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing no arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.attr('a', 'b', 'c'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 2 arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.attr(3, 'shazam'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });
 
 test('glow.NodeList#hasAttr', 11, function() {
 	var myNodeList = new glow.NodeList('<p title="" lang="en-uk"></p>text<span title="someTitle"></span><!-- comment -->');
@@ -233,28 +232,28 @@ test('glow.NodeList#hasAttr', 11, function() {
 
 });
 
-if (glow.debug) test('glow.NodeList#hasAttr debug', 3, function() {
-	try {
-		myNodeList.hasAttr();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.hasAttr('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument throws an error.');
-	}
-	
-	try {
-		myNodeList.hasAttr([]); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#hasAttr debug', 3, function() {
+// 	try {
+// 		myNodeList.hasAttr();
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing no arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.hasAttr('a', 'b'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 1 argument throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.hasAttr([]); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });
 
 test('glow.NodeList#hasClass', 6, function() {
 	var myNodeList = new glow.NodeList('<p class="one two three"></p>text');
@@ -280,28 +279,28 @@ test('glow.NodeList#hasClass', 6, function() {
 	
 });
 
-if (glow.debug) test('glow.NodeList#hasClass debug', 3, function() {
-	try {
-		myNodeList.hasClass();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.hasClass('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument throws an error.');
-	}
-	
-	try {
-		myNodeList.hasClass([]); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#hasClass debug', 3, function() {
+// 	try {
+// 		myNodeList.hasClass();
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing no arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.hasClass('a', 'b'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 1 argument throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.hasClass([]); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });
 
 test('glow.NodeList#removeAttr', 11, function() {
 	var myNodeList = new glow.NodeList('<p title="aTitle" LANG="en-uk"></p><span title="someTitle"></span><!-- comment -->');
@@ -353,28 +352,28 @@ test('glow.NodeList#removeAttr', 11, function() {
 
 });
 
-if (glow.debug) test('glow.NodeList#removeAttr debug', 3, function() {
-	try {
-		myNodeList.removeAttr();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.removeAttr('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument throws an error.');
-	}
-	
-	try {
-		myNodeList.removeAttr([]); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#removeAttr debug', 3, function() {
+// 	try {
+// 		myNodeList.removeAttr();
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing no arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.removeAttr('a', 'b'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 1 argument throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.removeAttr([]); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });
 
 test('glow.NodeList#removeClass', 9, function() {
 	var myNodeList = new glow.NodeList('<p class=" one   two three"></p><span class="two two"></span><span class="two"></span><span></span><span class="FOUR"></span>');
@@ -408,28 +407,28 @@ test('glow.NodeList#removeClass', 9, function() {
 
 });
 
-if (glow.debug) test('glow.NodeList#removeClass debug', 3, function() {
-	try {
-		myNodeList.removeClass();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.removeClass('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument throws an error.');
-	}
-	
-	try {
-		myNodeList.removeClass(/abc/); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#removeClass debug', 3, function() {
+// 	try {
+// 		myNodeList.removeClass();
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing no arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.removeClass('a', 'b'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 1 argument throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.removeClass(/abc/); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });
 
 test('glow.NodeList#prop', 7, function() {
 	myNodeList = new glow.NodeList('<form action="process.php" target="popup" method="get"></form>Read<a href="terms.php">our Terms of service</a><!--comment-->');
@@ -458,30 +457,30 @@ test('glow.NodeList#prop', 7, function() {
 	
 });
 
-if (glow.debug) test('glow.NodeList#prop debug', 3, function() {
-	try {
-		myNodeList.prop();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.prop('a', 'b', 'c'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 2 arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.prop([]); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of arguments throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#prop debug', 3, function() {
+// 	try {
+// 		myNodeList.prop();
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing no arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.prop('a', 'b', 'c'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 2 arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.prop([]); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of arguments throws an error.');
+// 	}
+// });
 
-test('glow.NodeList#toggleClass', 6, function() {
+test('glow.NodeList#toggleClass', 4, function() {
 	var myNodeList = new glow.NodeList('<p class="some-class other-class" id="p1"></p>text<!-- comment -->');
 	
 	// test this: toggle class
@@ -501,45 +500,30 @@ test('glow.NodeList#toggleClass', 6, function() {
 	myNodeList = new glow.NodeList();
 	myNodeList.toggleClass('rainbows');
 	ok(true, 'Toggling a class on an empty node list does not crash.');
-	
-	// test this: invalid arguments
-	try {
-		myNodeList.toggleClass('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument to toggleClass throws an error.');
-	}
-	
-	try {
-		myNodeList.toggleClass(); // error
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments to toggleClass throws an error.');
-	}
 });
 
-if (glow.debug) test('glow.NodeList#toggleClass debug', 3, function() {
-	try {
-		myNodeList.toggleClass();
-	}
-	catch(e) {
-		ok(true, 'Passing no arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.toggleClass('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument throws an error.');
-	}
-	
-	try {
-		myNodeList.toggleClass(7); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#toggleClass debug', 3, function() {
+// 	try {
+// 		myNodeList.toggleClass();
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing no arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.toggleClass('a', 'b'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 1 argument throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.toggleClass(7); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });
 
 test('glow.NodeList#data', 9, function() {
 	var myNodeList = new glow.NodeList('' +
@@ -557,10 +541,6 @@ test('glow.NodeList#data', 9, function() {
 	
 	var data = myNodeList.data();
 	equal(data, undefined, 'Getting all data from NodeList with no data returns undefined.');
-	
-// 	data['hello'] = true;
-// 	var hello = myNodeList.data('hello');
-// 	equal(hello, true, 'Can set and get a key, val from NodeList.');
 	
 	var self = myNodeList.data('color', 'red');
 	equal(myNodeList.data('color'), 'red', 'Can set and get a key, val from NodeList.');
@@ -581,21 +561,21 @@ test('glow.NodeList#data', 9, function() {
 	ok((myNodeList === self), 'The call to multiple key:val is chainable.');
 });
 
-if (glow.debug) test('glow.NodeList#data debug', 2, function() {
-	try {
-		myNodeList.data('a', 'b', 'c'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 2 arguments throws an error.');
-	}
-	
-	try {
-		myNodeList.data(7); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#data debug', 2, function() {
+// 	try {
+// 		myNodeList.data('a', 'b', 'c'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 2 arguments throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.data(7); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });
 
 test('glow.NodeList#removeData', 5, function() {
 	var myNodeList = new glow.NodeList('' +
@@ -622,21 +602,21 @@ test('glow.NodeList#removeData', 5, function() {
 	ok( (myNodeList === self), 'The call to removeData is chainable.');
 });
 
-if (glow.debug) test('glow.NodeList#removeData debug', 2, function() {
-	try {
-		myNodeList.removeData('a', 'b'); // error
-	}
-	catch(e) {
-		ok(true, 'Passing more than 1 argument throws an error.');
-	}
-	
-	try {
-		myNodeList.removeData([]); // error
-	}
-	catch(e) {
-		ok(true, 'Passing wrong type of argument throws an error.');
-	}
-});
+// if (glow.debug) test('glow.NodeList#removeData debug', 2, function() {
+// 	try {
+// 		myNodeList.removeData('a', 'b'); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing more than 1 argument throws an error.');
+// 	}
+// 	
+// 	try {
+// 		myNodeList.removeData([]); // error
+// 	}
+// 	catch(e) {
+// 		ok(true, 'Passing wrong type of argument throws an error.');
+// 	}
+// });1
 
 test('glow.NodeList#val', 12, function() {
 	equal(
