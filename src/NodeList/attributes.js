@@ -60,8 +60,12 @@ Glow.provide(function(glow) {
 		var i = this.length;
 		
 		/*!debug*/
-			if (arguments.length !== 1) { throw new Error('Method NodeList#addClass() expects 1 argument.'); }
-			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#addClass() expects argument 1 to be of type string.'); }
+			if (arguments.length !== 1) {
+				glow.debug.api('[wrong count] glow.NodeList#addClass expects 1 argument, not '+arguments.length+'.');
+			}
+			else if (typeof arguments[0] !== 'string') {
+				glow.debug.api('[wrong type] glow.NodeList#addClass expects argument 1 to be of type string, not '+typeof arguments[0]+'.');
+			}
 		/*gubed!*/
 		
 		while (i--) {
@@ -137,9 +141,9 @@ Glow.provide(function(glow) {
 			attrNode;
 		
 		/*!debug*/
-			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#attr(name, value) expects name to be of type string.'); }
-			if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) { throw new Error('Method NodeList#attr() expects argument1 to be of type string or an instance of Object.'); }
-			if (arguments.length === 0 ||  arguments.length > 2) { throw new Error('Method NodeList#attr() expects 1 or 2 arguments.'); }
+			if (arguments.length === 2 && typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#attr expects name to be of type string, not '+typeof arguments[0]+'.'); }
+			else if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) {glow.debug.api('[wrong type] glow.NodeList#attr expects argument 1 to be of type string or an instance of Object.'); }
+			else if (arguments.length === 0 ||  arguments.length > 2) { glow.debug.api('[wrong count] glow.NodeList#attr expects 1 or 2 arguments, not '+arguments.length+'.'); }
 		/*gubed!*/
 		
 		if (this.length === 0) { // is this an empty nodelist?
@@ -241,9 +245,9 @@ Glow.provide(function(glow) {
 			node;
 		
 		/*!debug*/
-			if (arguments.length === 2 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#data(name, value) expects name to be of type string.'); }
-			if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) { throw new Error('Method NodeList#data() expects argument1 to be of type string or an instance of Object.'); }
-			if (arguments.length > 2) { throw new Error('Method NodeList#data() expects 0, 1 or 2 arguments.'); }
+			if (arguments.length === 2 && typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#data expects name argument to be of type string.'); }
+			else if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) {glow.debug.api('[wrong type] glow.NodeList#data expects argument 1 to be of type string or an instance of Object.'); }
+			else if (arguments.length > 2) { glow.debug.api('[wrong count] glow.NodeList#data expects 0, 1 or 2 arguments.'); }
 		/*gubed!*/
 		
 		if (argsLen > 1) { // SET key, val on every node
@@ -323,8 +327,8 @@ Glow.provide(function(glow) {
 		var node;
 		
 		/*!debug*/
-			if (arguments.length !== 1) { throw new Error('Method NodeList#hasAttr() expects 1 argument.'); }
-			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#hasAttr() expects argument 1 to be of type string.'); }
+			if (arguments.length !== 1) { glow.debug.api('[wrong count] glow.NodeList#hasAttr expects 1 argument.'); }
+			else if (typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#hasAttr expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
 		node = this[0];
@@ -357,8 +361,8 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.hasClass = function (name) {
 		/*!debug*/
-			if (arguments.length !== 1) { throw new Error('Method NodeList#hasClass() expects 1 argument.'); }
-			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#hasClass() expects argument 1 to be of type string.'); }
+			if (arguments.length !== 1) { glow.debug.api('[wrong count] glow.NodeList#hasClass expects 1 argument.'); }
+			else if (typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#hasClass expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
 		if (this.length && this[0].nodeType === 1) {
@@ -409,9 +413,9 @@ Glow.provide(function(glow) {
 			argsLen = arguments.length;
 		
 		/*!debug*/
-			if (arguments.length === 1 && (typeof name !== 'string' && name.constructor !== Object)) { throw new Error('Method NodeList#prop(arg1) expects argument 1 to be of type string or an instance of Object.'); }
-			if (arguments.length === 2 && typeof name !== 'string') { throw new Error('Method NodeList#prop(name) expects name to be of type string.'); }
-			if (arguments.length === 0 || arguments.length > 2) { throw new Error('Method NodeList#prop() expects 1 or 2 arguments.'); }
+			if (arguments.length === 1 && (typeof name !== 'string' && name.constructor !== Object)) {glow.debug.api('[wrong type] glow.NodeList#prop expects argument 1 to be of type string or Object.'); }
+			else if (arguments.length === 2 && typeof name !== 'string') {glow.debug.api('[wrong type] glow.NodeList#prop expects name to be of type string.'); }
+			else if (arguments.length === 0 || arguments.length > 2) { glow.debug.api('[wrong count] glow.NodeList#prop expects 1 or 2 arguments.'); }
 		/*gubed!*/
 		
 		if (this.length === 0) return;
@@ -454,8 +458,8 @@ Glow.provide(function(glow) {
 		var dom0Property;
 		
 		/*!debug*/
-			if (arguments.length !== 1) { throw new Error('Method NodeList#removeAttr() expects 1 argument.'); }
-			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeAttr() expects argument 1 to be of type string.'); }
+			if (arguments.length !== 1) { glow.debug.api('[wrong count] glow.NodeList#removeAttr expects 1 argument.'); }
+			else if (typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#removeAttr expects argument 1 to be of type string.'); }
 		/*gubed!*/
 	
 		for (var i = 0, leni = this.length; i < leni; i++) {
@@ -488,8 +492,8 @@ Glow.provide(function(glow) {
 		var node;
 					
 		/*!debug*/
-			if (arguments.length !== 1) { throw new Error('Method NodeList#removeClass() expects 1 argument.'); }
-			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeClass() expects argument 1 to be of type string.'); }
+			if (arguments.length !== 1) { glow.debug.api('[wrong count] glow.NodeList#removeClass() expects 1 argument.'); }
+			else if (typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#removeClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
 		var i = this.length;
@@ -537,8 +541,8 @@ Glow.provide(function(glow) {
 			// uses private scoped variables: dataCache, dataPropName
 		
 		/*!debug*/
-			if (arguments.length > 1) { throw new Error('Method NodeList#removeData() expects 0 or 1 arguments.'); }
-			if (arguments.length === 1 && typeof arguments[0] !== 'string') { throw new Error('Method NodeList#removeData() expects argument 1 to be of type string.'); }
+			if (arguments.length > 1) { glow.debug.api('[wrong count] glow.NodeList#removeData expects 0 or 1 arguments.'); }
+			else if (arguments.length === 1 && typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#removeData expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
 		while (i--) {
@@ -584,8 +588,8 @@ Glow.provide(function(glow) {
 		var node;
 		
 		/*!debug*/
-			if (arguments.length !== 1) { throw new Error('Method NodeList#toggleClass() expects 1 argument.'); }
-			if (typeof arguments[0] !== 'string') { throw new Error('Method NodeList#toggleClass() expects argument 1 to be of type string.'); }
+			if (arguments.length !== 1) { glow.debug.api('[wrong count] glow.NodeList#toggleClass() expects 1 argument.'); }
+			else if (typeof arguments[0] !== 'string') {glow.debug.api('[wrong type] glow.NodeList#toggleClass() expects argument 1 to be of type string.'); }
 		/*gubed!*/
 		
 		for (var i = 0, leni = this.length; i < leni; i++) {
