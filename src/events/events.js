@@ -19,7 +19,6 @@ Glow.provide(function(glow) {
 	var psuedoPreventDefaultKey = psuedoPrivateEventKey + 'PreventDefault';
 	var psuedoStopPropagationKey = psuedoPrivateEventKey + 'StopPropagation';
 	
-		
 	/**
 	@name glow.events.addListeners
 	@function
@@ -67,77 +66,8 @@ Glow.provide(function(glow) {
 		}
 	};
 	
-	// see: http://www.quirksmode.org/dom/events/
-	
-	/**
-	Add listener for an event fired by the browser.
-	@private
-	@name glow.events._addDomEventListener
-	@function
-	*/
-	glow.events._addDomEventListener = function(nodeList, name, callback, thisVal) {
-		var i = nodeList.length,
-			attachTo,
-			fire,
-			domEvent;
-		
-		name = (name || '').toLowerCase();
-		
-		while (i--) {
-			attachTo = nodeList[i];
-			
-			if (attachTo.nodeType !== 1 ) { continue; }
-			
-			if (!thisVal) { thisVal = attachTo; } // in the callback, what is `this`?
-			
-			glow.events.addListeners([attachTo], name, callback, thisVal);
-			
-			fire = function(nativeEvent) { // in closure: name
-				domEvent = new glow.events.DomEvent(nativeEvent, {name: name});
-				glow.events.fire([attachTo], name, domEvent); // fire() returns result of callback
-				return !domEvent.defaultPrevented();
-			};
-			
-			if (attachTo.addEventListener) { // like DOM2 browsers
-				attachTo.addEventListener(name, fire, false);
-			}
-			else if (attachTo.attachEvent) { // like IE
-				attachTo.attachEvent('on' + name, fire);
-			}
-			else { // legacy browsers?
-				attachTo['on' + name] = fire; // TODO preserve existing handler
-			}
-		}
-	}
-	
-	function callDomEvent(nodeList, domEvent) {
-		var i = nodeList.length,
-			eventName = domEvent.name,
-			nativeEvent,
-			node,
-			fire;
-		
-		if (document.createEvent) {
-			var nativeEvent = document.createEvent('MouseEvent'); // see: 
-			nativeEvent.initEvent(eventName, true, true);
-			
-			fire = function(el) {
-				return !el.dispatchEvent(nativeEvent);
-			}
-		}
-		else {
-			fire = function(el) {
-				var nativeEvent = document.createEventObject(); 
-				return el.fireEvent('on'+eventName, nativeEvent);
-			}
-		}
-		
-		while (i--) {
-			node = nodeList[i];
-			if (node.nodeType !== 1) { continue; }
-			fire(node);
-			
-		}
+	glow.events._getPrivateEventKey = function(node) {
+		return node[psuedoPrivateEventKey];
 	}
 	
 	/**
@@ -161,18 +91,12 @@ Glow.provide(function(glow) {
 		else if ( event.constructor === Object ) {
 			event = new glow.events.Event( event )
 		}
-		
-		// call events on DomElements fired from programatically
-		if (event.constructor === glow.events.DomEvent && !event.nativeEvent) {
-			callDomEvent(items, event);
-		}
 
 		for(var i = 0, len = items.length; i < len; i++) {
 			callListeners(items[i], eventName, event);
 		}
 			
 		return event;
-			
 	};
 
 	/**
@@ -184,23 +108,22 @@ Glow.provide(function(glow) {
 		var objIdent = item[psuedoPrivateEventKey],
 			listenersForEvent,
 			returnVal;			
-		
-		if (!objIdent){
+
+		if (!objIdent) {
 			return event;
 		}
 			
-		if (!eventListeners[objIdent]){
+		if (!eventListeners[objIdent]) {
 			return false;
 		}
 			
 		listenersForEvent = eventListeners[objIdent][eventName];
 			
-		if (!listenersForEvent){
+		if (!listenersForEvent) {
 			return event;
 		}
 			
 		listenersForEvent = listenersForEvent.slice(0);
-			
 		for (var i = 0, len = listenersForEvent.length; i < len; i++){
 			returnVal = listenersForEvent[i][0].call(listenersForEvent[i][1], event);
 			if (returnVal === false){
@@ -209,8 +132,8 @@ Glow.provide(function(glow) {
 		}
 			
 		return event;
-
 	}
+	glow.events._callListeners = callListeners;
 		
 		
 	/**
@@ -429,6 +352,7 @@ Glow.provide(function(glow) {
 	
 	glow.events.Target.prototype.on = function(eventName, callback, thisVal) {
 		glow.events.addListeners([this], eventName, callback, thisVal);
+		return this;
 	}
 		
 	/**

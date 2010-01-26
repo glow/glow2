@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow DomEvent</title>
+	
+	<script type="text/javascript" src="../lib/showSrc.js"></script>
+	
+	<script type="text/javascript" src="../lib/log4javascript.js"></script>
+	<script type="text/javascript">
+		// set up logging...
+		(function () {
+			var log4jsLog,
+				logOutputElementId = "log-messages";
+			
+			if (logOutputElementId) { // in-page log
+				log4jsLog = log4javascript.getLogger("main");
+				log4jsLog.addAppender(new log4javascript.InPageAppender(logOutputElementId));
+			}
+			else { // use pop-up window
+				log4jsLog = log4javascript.getDefaultLogger();
+			}
+			
+			// exports
+			window.log = log4jsLog;
+		})();
+	</script>
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript">
+		// include glow.js in the page...
+		(function() {
+			var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
+			
+			document.write(
+				'<'+'script type="text/javascript" src="' + glowSrc + '"> \
+				<' + '/script>'
+			);
+		})();
+	</script>
+	
+	<style type="text/css" media="screen">
+		.testarea
+		{
+			border: 3px #666 dashed;
+			color: #333;
+			font: 18px Georgia,Times,serif;
+			padding: 8px;
+			-moz-border-radius: 12px;
+			-webkit-border-radius: 12px;
+		}
+		
+		.result
+		{
+			border-bottom: 1px #999 solid;
+			background-color: #ccc;
+		}
+		
+		.pass
+		{
+			border-bottom: 1px #517C4F solid;
+			background-color: #9BD997;
+		}
+		
+		.fail
+		{
+			border-bottom: 1px #A8473C solid;
+			background-color: #EC7E7A;
+		}
+	</style>
+	
+	<script type="text/javascript">
+		function testResult(testName, assertName, result, details) {
+			var elId = testName + '-' + assertName;
+			var el = document.getElementById(elId);
+			el.className = result;
+			el.innerHTML = el.innerHTML.replace(/\[.*\]/, '[' + details + ']');
+		}
+	</script>
+</head>
+
+<body>
+	<h1>Glow DomEvent</h1>
+	
+	<h2>Adding listeners for native events.</h2>
+	
+	<div class="testarea" id="mouse-test">
+		Move the mouse over me. Move mouse around a bit. Move the mouse off of me.
+	</div>
+	<ol>
+		<li class="result" id="mouse-test-over">Mouseover can be detected. []</li>
+		<li class="result" id="mouse-test-move">Mousemove can be detected. []</li>
+		<li class="result" id="mouse-test-out">Mouseout can be detected. []</li>
+	</ol>
+	
+	<hr>
+	
+	<p class="testarea">
+		<span id="click-test">Click on me.</span><br>
+		<a id="click-test2" href="#zap">Click on me too.</a>
+	</p>
+	<ol>
+		<li class="result" id="click-test-span">Click on a span can be detected. []</li>
+		<li class="result" id="click-test-elid">The id of the clicked element can be detected. []</li>
+		<li class="result" id="click-test-mousedown">Mousedown on a span can be detected. []</li>
+		<li class="result" id="click-test-mouseup">Mouseup on a span can be detected. []</li>
+		<li class="result" id="click-test2-link">Click on a link can be detected. []</li>
+		<li class="result" id="click-test2-url">Default action can be cancelled by returning false. []</li>
+	</ol>
+	
+	<hr>
+	
+	<p>
+	Glow supports events such as doubleclick and can detect modifier keys used with other events.
+	</p>
+	
+	<p class="testarea">
+		<span id="dblclick-test">Double-click me.</span><br>
+		<span id="shiftclick-test">Shift-click me.</span><br>
+		<span id="shiftaltclick-test">Shift-alt-click me.</span>
+	</p>
+	<ol>
+		<li class="result" id="dblclick-test-span">Double-click on a span can be detected. []</li>
+		<li class="result" id="shiftclick-test-span">Shift-click on a span can be detected. []</li>
+		<li class="result" id="shiftaltclick-test-span">Shift-alt-click on a span can be detected. []</li>
+	</ol>
+
+	<hr>
+	
+	<p>
+	This tests the ability of Glow to keep multiple nodes and multiple event callbacks sorted.
+	</p>
+	
+	<form action="#" method="get" class="testarea">
+		<p>
+			<input name="test-check1" id="test-check1" type="checkbox" value="check me"> <label for="test-check1">Click me.</label>
+		</p>
+		<p>
+			<input name="test-check2" id="test-check2" type="checkbox" value="check me"> <label for="test-check2">Click me too.</label>
+		</p>
+	</form>
+	<ol>
+		<li class="result" id="test-check1-multi">Multiple elements can have a callback attached (here's one). []</li>
+		<li class="result" id="test-check1-multi2">Multiple elements can have multiple callbacks attached (here's one again). []</li>
+		
+		<li class="result" id="test-check2-multi">Multiple elements can have a callback attached (here's another). []</li>
+		<li class="result" id="test-check2-multi2">Multiple elements can have a callback attached (here's another again). []</li>
+	</ol>
+	
+	<hr>
+	
+	<p>
+	Form specific events, and keystroke-based events.
+	</p>
+	
+	<form action="#" method="get" class="testarea" name="test-form" id="test-form">
+		<p>
+			<input name="test-text" id="test-text" type="text"> <label for="test-text">Type in me.</label>
+		</p>
+		<p>
+			<input id="myreset" type="reset"> <label for="myreset">Reset me.</label>
+		</p>
+		<p>
+			<input id="mysubmit" type="submit"> <label for="mysubmit">Then submit me.</label>
+		</p>
+	</form>
+	<ol>
+		<li class="result" id="test-text-focus">Focus can be detected. []</li>
+		<li class="result" id="test-text-change">Change can be detected. []</li>
+		<li class="result" id="test-text-blur">Blur can be detected. []</li>
+		<li class="result" id="test-form-reset">Reset of form can be detected. []</li>
+		<li class="result" id="test-form-submit">Submit of form can be detected (and prevented). []</li>
+	</ol>
+	
+	<script type="text/javascript" class="showSrc">
+		glow = new Glow(conf.version, {base: conf.base, debug: true})
+			.ready(
+				function(glow) {
+					
+ 					new glow.NodeList(document.getElementById('mouse-test'))
+ 					.on('mouseover', function(e) {
+ 						testResult('mouse-test', 'over', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
+   					})
+  					.on('mousemove', function(e) {
+ 						testResult('mouse-test', 'move', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
+  					})
+  					.on('mouseout', function(e) {
+ 						testResult('mouse-test', 'out', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
+  					});
+  					
+  					new glow.NodeList(document.getElementById('click-test'))
+					.on('click', function(e) {
+						testResult('click-test', 'span', 'pass', this);
+						
+						if (this.id === 'click-test') {
+							testResult('click-test', 'elid', 'pass', this.id);
+						}
+					})
+					.on('mousedown', function(e) {
+						testResult('click-test', 'mousedown', 'pass', this);
+					})
+					.on('mouseup', function(e) {
+						testResult('click-test', 'mouseup', 'pass', this);
+					});
+					
+					new glow.NodeList(document.getElementById('click-test2'))
+					.on('click', function(e) {
+						testResult('click-test2', 'link', 'pass', this);
+
+						setTimeout (
+							function() {
+								if (window.location.toString().indexOf('#zap') !== -1) {
+									testResult('click-test2', 'url', 'fail', window.location);
+								}
+								else {
+									testResult('click-test2', 'url', 'pass', window.location);
+								}
+							},
+							50
+						);
+						
+						return false;
+					});
+ 					
+					new glow.NodeList([document.getElementById('dblclick-test'), 'this is bare text', '<!--this is a comment-->'])
+					.on('dblclick', function(e) {
+						testResult('dblclick-test', 'span', 'pass', e.nativeEvent);
+ 						return false;
+ 					});
+ 					
+ 					new glow.NodeList([document.getElementById('shiftclick-test'), 'this is bare text', '<!--this is a comment-->'])
+					.on('click', function(e) {
+						if (e.shiftKey) testResult('shiftclick-test', 'span', 'pass', e.nativeEvent);
+ 						return false;
+ 					});
+ 					
+ 					new glow.NodeList([document.getElementById('shiftaltclick-test'), 'this is bare text', '<!--this is a comment-->'])
+					.on('click', function(e) {
+						if (e.shiftKey && e.altKey) testResult('shiftaltclick-test', 'span', 'pass', e.nativeEvent);
+ 						return false;
+ 					});
+ 					
+ 					// nodelist with multiple elements...
+ 					new glow.NodeList(
+ 						[document.getElementById('test-check1'), document.getElementById('test-check2')]
+ 					)
+					.on('click', function(e) {
+						if (this.id === 'test-check1') {
+							testResult('test-check1', 'multi', 'pass', this.id);
+						}
+						if (this.id === 'test-check2') {
+							testResult('test-check2', 'multi', 'pass', this.id);
+						}
+ 					}) // and multiple callbacks for the same event...
+ 					.on('click', function(e) {
+						if (this.id === 'test-check1') {
+							testResult('test-check1', 'multi2', 'pass', this.id);
+						}
+						if (this.id === 'test-check2') {
+							testResult('test-check2', 'multi2', 'pass', this.id);
+						}
+ 					});
+ 					
+ 					new glow.NodeList(document.getElementById('test-text'))
+					.on('focus', function(e) {
+						testResult('test-text', 'focus', 'pass', this);
+					})
+					.on('change', function(e) {
+						testResult('test-text', 'change', 'pass', this);
+					})
+					.on('blur', function(e) {
+						testResult('test-text', 'blur', 'pass', this);
+					});
+					
+					new glow.NodeList(document.getElementById('test-form'))
+					.on('reset', function(e) {
+						testResult('test-form', 'reset', 'pass', this);
+					})
+					.on('submit', function(e) {
+						testResult('test-form', 'submit', 'pass', this);
+						e.preventDefault();
+					});
+				}
+			);
+	</script>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+	
+	<p><a name="zap">oops, did you get sent here from a test?</a></p>
+</body>
+</html>
