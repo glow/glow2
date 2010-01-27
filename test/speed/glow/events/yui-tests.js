@@ -23,17 +23,16 @@ woosh.addTests('yui-300', {
 				break;
 		}
 	},
-	'Adding Custom Listeners': new woosh.Test(10000, function() {
+	'Adding Custom Listeners': new woosh.TimeTest(1, function() {
 		var obj = new MyObj();
 		obj.on('testEvent', function() {});
 		obj.on('testEvent', function() {});
 		obj.on('testEvent', function() {});
 	}),
-	'Firing Custom Listeners': new woosh.Test(20000, function() {
+	'Firing Custom Listeners': new woosh.TimeTest(1, function() {
 		testObj.fire('testEvent');
-		return eventsFired;
 	}),
-	'Removing Custom Listeners': new woosh.Test(10000, function() {
+	'Removing Custom Listeners': new woosh.TimeTest(1, function() {
 		var obj = new MyObj();
 		function testListener() {}
 		obj.on('test', testListener);

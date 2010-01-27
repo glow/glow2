@@ -4,22 +4,22 @@ woosh.addTests('jq-132', {
 			
 		}
 	},
-	'NodeList#ancestors': new woosh.Test(10000, function() {
+	'NodeList#ancestors': new woosh.TimeTest(1, function() {
 		return $('.tocline3').parents().length;
 	}),
-	'NodeList#parent': new woosh.Test(10000, function() {
+	'NodeList#parent': new woosh.TimeTest(1, function() {
 		return $('.tocline3').parent().length;
 	}),
-	'NodeList#get': new woosh.Test(10000, function() {
+	'NodeList#get': new woosh.TimeTest(1, function() {
 		return $('.toc').find('li').length;
 	}),
-	'NodeList#prev': new woosh.Test(10000, function() {
+	'NodeList#prev': new woosh.TimeTest(1, function() {
 		return $('.tocline3').prev().length;
 	}),
-	'NodeList#next': new woosh.Test(10000, function() {
+	'NodeList#next': new woosh.TimeTest(1, function() {
 		return $('.tocline3').next().length;
 	}),
-	'NodeList#children': new woosh.Test(10000, function() {
+	'NodeList#children': new woosh.TimeTest(1, function() {
 		return $('.toc').children().length;
 	})
 });

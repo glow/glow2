@@ -11,46 +11,46 @@ woosh.addTests('jq-132', {
 			window.nodeList3 = $(htmlForTest);
 		}
 	},
-	'Creating NodeLists via selector (324 elms)': new woosh.Test(1000, function() {
+	'Creating NodeLists via selector (324 elms)': new woosh.TimeTest(1, function() {
 		return $('#htmlForTest p').length;
 	}),
-	'Creating NodeLists via html collection (1778 elms)': new woosh.Test(1000, function() {
+	'Creating NodeLists via html collection (1778 elms)': new woosh.TimeTest(1, function() {
 		return $(largeHtmlCollection).length;
 	}),
-	'Creating NodeLists via ID selector': new woosh.Test(10000, function() {
+	'Creating NodeLists via ID selector': new woosh.TimeTest(1, function() {
 		return $('#htmlForTest').length;
 	}),
-	'Creating NodeLists via single element': new woosh.Test(10000, function() {
+	'Creating NodeLists via single element': new woosh.TimeTest(1, function() {
 		return $(htmlForTest).length;
 	}),
-	'Creating NodeLists via large html string': new woosh.Test(1000, function() {
+	'Creating NodeLists via large html string': new woosh.TimeTest(1, function() {
 		return $(largeHtmlStr).length;
 	}),
-	'Creating NodeLists via regular html string': new woosh.Test(10000, function() {
+	'Creating NodeLists via regular html string': new woosh.TimeTest(1, function() {
 		return $(htmlStr).length;
 	}),
-	'slice': new woosh.Test(50000, function() {
+	'slice': new woosh.TimeTest(1, function() {
 		var len = 0;
 		len += nodeList1.slice(-1).length;
 		len += nodeList1.slice(0).length;
 		len += nodeList1.slice(3, 6).length;
 		return len;
 	}),
-	'item': new woosh.Test(50000, function() {
+	'item': new woosh.TimeTest(1, function() {
 		var len = 0;
 		len += nodeList1.eq(-1).length;
 		len += nodeList1.eq(0).length;
 		len += nodeList1.eq(1).length;
 		return len;
 	}),
-	'each': new woosh.Test(50000, function() {
+	'each': new woosh.TimeTest(1, function() {
 		var len = 0;
 		nodeList1.each(function() {
 			len++;
 		})
 		return len;
 	}),
-	'filter': new woosh.Test(50000, function() {
+	'filter': new woosh.TimeTest(1, function() {
 		return nodeList1.filter(function() {
 			return true;
 		}).length;

@@ -23,17 +23,16 @@ woosh.addTests('glow2-src', {
 				break;
 		}
 	},
-	'Adding Custom Listeners': new woosh.Test(10000, function() {
+	'Adding Custom Listeners': new woosh.TimeTest(1, function() {
 		var obj = new MyObj();
 		obj.on('testEvent', function() {});
 		obj.on('testEvent', function() {});
 		obj.on('testEvent', function() {});
 	}),
-	'Firing Custom Listeners': new woosh.Test(20000, function() {
+	'Firing Custom Listeners': new woosh.TimeTest(1, function() {
 		testObj.fire('testEvent');
-		return eventsFired;
 	}),
-	'Removing Custom Listeners': new woosh.Test(10000, function() {
+	'Removing Custom Listeners': new woosh.TimeTest(1, function() {
 		var obj = new MyObj();
 		function testListener() {}
 		obj.on('test', testListener);
@@ -45,7 +44,7 @@ woosh.addTests('glow2-src', {
 		obj.on('test', testListener);
 		obj.detach('test', testListener);
 	}),
-	'Checking for a listener': new woosh.Test(10000, function() {
+	'Checking for a listener':new woosh.TimeTest(1, function() {
 		var obj = new MyObj();
 		function testListener() {}
 		obj.on('test', testListener);
