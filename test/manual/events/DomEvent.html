@@ -91,6 +91,8 @@
 	
 	<h2>Adding listeners for native events.</h2>
 	
+	<hr>
+	
 	<p>
 	Mouse events, thier coordinates and their related elements can be detected. Moving the mouse
 	very quickly may cause unexpected related elements to be returned, but that is unavoidable.
@@ -118,6 +120,7 @@
 	<ol>
 		<li class="result" id="click-test-span">Click on a span can be detected. []</li>
 		<li class="result" id="click-test-elid">The id of the clicked element can be detected. []</li>
+		<li class="result" id="click-test-source">The source of a click can be detected. []</li>
 		<li class="result" id="click-test-mousedown">Mousedown on a span can be detected. []</li>
 		<li class="result" id="click-test-mouseup">Mouseup on a span can be detected. []</li>
 		<li class="result" id="click-test2-link">Click on a link can be detected. []</li>
@@ -188,19 +191,47 @@
 		<li class="result" id="test-form-submit">Submit of form can be detected (and prevented). []</li>
 	</ol>
 	
+	<hr>
+	
+	<p>
+	Select event.
+	</p>
+	
+	<div class="testarea" id="select-test">
+		<input type="text" value="Select me.">
+	</div>
+
+	<ol>
+		<li class="result" id="select-test-event">Select can be detected. []</li>
+	</ol>
+	
+	<hr>
+	
+	<p>
+	Scroll event.
+	</p>
+	
+	<div class="testarea" id="scroll-test" style="height: 60px; overflow-y: scroll;">
+		<div style="height: 120px;">Scroll me.</div>
+	</div>
+
+	<ol>
+		<li class="result" id="scroll-test-event">Element scroll can be detected. []</li>
+	</ol>
+	
 	<script type="text/javascript" class="showSrc">
 		glow = new Glow(conf.version, {base: conf.base, debug: true})
 			.ready(
 				function(glow) {
-					
- 					new glow.NodeList(document.getElementById('mouse-test'))
+
+					new glow.NodeList(document.getElementById('mouse-test'))
  					.on('mouseover', function(e) {
  						testResult('mouse-test', 'over', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
- 						if (e.related.id === 'mouse-around') {
+ 						if (e.related && e.related.id === 'mouse-around') {
  							testResult('mouse-test', 'over-related', 'pass', e.related.id);
  						}
  						else {
- 							testResult('mouse-test', 'over-related', 'fail', e.related.id);
+ 							testResult('mouse-test', 'over-related', 'fail', e.related);
  						}
    					})
   					.on('mousemove', function(e) {
@@ -209,11 +240,11 @@
   					.on('mouseout', function(e) {
   						testResult('mouse-test', 'out', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
  						
- 						if (e.related.id === 'mouse-around') {
+ 						if (e.related && e.related.id === 'mouse-around') {
  							testResult('mouse-test', 'out-related', 'pass', e.related.id);
  						}
  						else {
- 							testResult('mouse-test', 'out-related', 'fail', e.related.id);
+ 							testResult('mouse-test', 'out-related', 'fail', e.related);
  						}
   					});
   					
@@ -223,6 +254,16 @@
 						
 						if (this.id === 'click-test') {
 							testResult('click-test', 'elid', 'pass', this.id);
+						}
+						else {
+							testResult('click-test', 'elid', 'fail', this.id);
+						}
+						
+						if (e.source && e.source.id === 'click-test') {
+							testResult('click-test', 'source', 'pass', e.source.id);
+						}
+						else {
+							testResult('click-test', 'source', 'fail', e.source);
 						}
 					})
 					.on('mousedown', function(e) {
@@ -268,6 +309,7 @@
 						if (e.shiftKey && e.altKey) testResult('shiftaltclick-test', 'span', 'pass', e.nativeEvent);
  						return false;
  					});
+ 			
  					
  					// nodelist with multiple elements...
  					new glow.NodeList(
@@ -308,6 +350,16 @@
 					.on('submit', function(e) {
 						testResult('test-form', 'submit', 'pass', this);
 						e.preventDefault();
+					});
+					
+					new glow.NodeList(document.getElementById('select-test'))
+					.on('select', function(e) {
+						testResult('select-test', 'event', 'pass', e.related);
+					});
+					
+					new glow.NodeList(document.getElementById('scroll-test'))
+					.on('scroll', function(e) {
+						testResult('scroll-test', 'event', 'pass', e.related);
 					});
 				}
 			);

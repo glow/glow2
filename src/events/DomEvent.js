@@ -139,6 +139,7 @@ Glow.provide(function(glow) {
 		@function
 	*/
 	glow.events._addDomEventListener = function(nodeList, name, callback, thisVal) {
+
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
 			id;
@@ -147,7 +148,7 @@ Glow.provide(function(glow) {
 			if (!nodeList[i] || nodeList[i].nodeType !== 1 ) { continue; }
 			
 			attachTo = nodeList[i];
-
+	
 			// will add a unique id to this node, if there is not one already
 			glow.events.addListeners([attachTo], name, callback, thisVal || attachTo);
 			
