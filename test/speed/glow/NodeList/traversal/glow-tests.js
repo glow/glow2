@@ -7,26 +7,26 @@ woosh.addTests('glow-170', {
 
 		}
 	},
-	'NodeList#ancestors': new woosh.Test(10000, function() {
+	'NodeList#ancestors': new woosh.TimeTest(1, function() {
 		return glow.dom.get('.tocline3').ancestors().length;
 	}),
-	'NodeList#parent': new woosh.Test(10000, function() {
+	'NodeList#parent': new woosh.TimeTest(1, function() {
 		return glow.dom.get('.tocline3').parent().length;
 	}),
-	'NodeList#get': new woosh.Test(10000, function() {
+	'NodeList#get': new woosh.TimeTest(1, function() {
 		return new glow.dom.get('.toc').get('li').length;
 	}),
-	'NodeList#prev': new woosh.Test(10000, function() {
+	'NodeList#prev': new woosh.TimeTest(1, function() {
 		return glow.dom.get('.tocline3').prev().length;
 	}),
-	'NodeList#next': new woosh.Test(10000, function() {
+	'NodeList#next': new woosh.TimeTest(1, function() {
 		return glow.dom.get('.tocline3').next().length;
 	}),
-	'NodeList#contains': new woosh.Test(10000, function() {
+	'NodeList#contains': new woosh.TimeTest(1, function() {
 		var set = glow.dom.get('.subtoc');
 		return glow.dom.get('.toc').isWithin(set);
 	}),
-	'NodeList#children': new woosh.Test(10000, function() {
+	'NodeList#children': new woosh.TimeTest(1, function() {
 		return glow.dom.get('.toc').children().length;
 	})
 });

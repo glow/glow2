@@ -15,17 +15,16 @@ woosh.addTests('jq-132', {
 				break;
 		}
 	},
-	'Adding Custom Listeners': new woosh.Test(10000, function() {
+	'Adding Custom Listeners': new woosh.TimeTest(1, function() {
 		var obj = {};
 		$(obj).bind('testEvent', function() {})
 			  .bind('testEvent', function() {})
 			  .bind('testEvent', function() {});
 	}),
-	'Firing Custom Listeners': new woosh.Test(20000, function() {
+	'Firing Custom Listeners': new woosh.TimeTest(1, function() {
 		$(testObj).trigger('testEvent');
-		return eventsFired;
 	}),
-	'Removing Custom Listeners': new woosh.Test(10000, function() {
+	'Removing Custom Listeners': new woosh.TimeTest(1, function() {
 		var obj = {};
 		$(obj).unbind('testEvent', function() {})
 			  .unbind('testEvent', function() {})
