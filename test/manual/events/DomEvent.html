@@ -91,13 +91,22 @@
 	
 	<h2>Adding listeners for native events.</h2>
 	
+	<p>
+	Mouse events, thier coordinates and their related elements can be detected. Moving the mouse
+	very quickly may cause unexpected related elements to be returned, but that is unavoidable.
+	</p>
+	
+	<div id="mouse-around" style="padding:20px">
 	<div class="testarea" id="mouse-test">
 		Move the mouse over me. Move mouse around a bit. Move the mouse off of me.
 	</div>
+	</div>
 	<ol>
 		<li class="result" id="mouse-test-over">Mouseover can be detected. []</li>
+		<li class="result" id="mouse-test-over-related">Mouseover related element can be detected. []</li>
 		<li class="result" id="mouse-test-move">Mousemove can be detected. []</li>
 		<li class="result" id="mouse-test-out">Mouseout can be detected. []</li>
+		<li class="result" id="mouse-test-out-related">Mouseout related element can be detected. []</li>
 	</ol>
 	
 	<hr>
@@ -187,12 +196,25 @@
  					new glow.NodeList(document.getElementById('mouse-test'))
  					.on('mouseover', function(e) {
  						testResult('mouse-test', 'over', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
+ 						if (e.related.id === 'mouse-around') {
+ 							testResult('mouse-test', 'over-related', 'pass', e.related.id);
+ 						}
+ 						else {
+ 							testResult('mouse-test', 'over-related', 'fail', e.related.id);
+ 						}
    					})
   					.on('mousemove', function(e) {
  						testResult('mouse-test', 'move', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
   					})
   					.on('mouseout', function(e) {
- 						testResult('mouse-test', 'out', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
+  						testResult('mouse-test', 'out', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);
+ 						
+ 						if (e.related.id === 'mouse-around') {
+ 							testResult('mouse-test', 'out-related', 'pass', e.related.id);
+ 						}
+ 						else {
+ 							testResult('mouse-test', 'out-related', 'fail', e.related.id);
+ 						}
   					});
   					
   					new glow.NodeList(document.getElementById('click-test'))
