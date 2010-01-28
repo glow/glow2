@@ -98,7 +98,7 @@
 	<div class="testarea" id="window-test">
 		Resize the window.<br>
 		Scroll the window.<br>
-		<iframe name="iframe-test" id="iframe-test" src="iframe.html" width="180" height="40" scrolling="auto" frameborder="1" ></iframe>
+		<iframe name="iframe-test" id="iframe-test" src="iframe.html" width="220" height="80" scrolling="auto" frameborder="1" ></iframe>
 	</div>
 	<ol>
 		<li class="result" id="window-test-resize">Window resize can be detected. []</li>
@@ -207,20 +207,6 @@
 		<li class="result" id="test-text-blur">Blur can be detected. []</li>
 		<li class="result" id="test-form-reset">Reset of form can be detected. []</li>
 		<li class="result" id="test-form-submit">Submit of form can be detected (and prevented). []</li>
-	</ol>
-	
-	<hr>
-	
-	<p>
-	Select event.
-	</p>
-	
-	<div class="testarea" id="select-test">
-		<input type="text" value="Select me.">
-	</div>
-
-	<ol>
-		<li class="result" id="select-test-event">Select can be detected. []</li>
 	</ol>
 	
 	<hr>
@@ -393,11 +379,6 @@
 					.on('submit', function(e) {
 						testResult('test-form', 'submit', 'pass', this);
 						e.preventDefault();
-					});
-					
-					new glow.NodeList(document.getElementById('select-test'))
-					.on('select', function(e) {
-						testResult('select-test', 'event', 'pass', e.related);
 					});
 					
 					new glow.NodeList(document.getElementById('scroll-test'))

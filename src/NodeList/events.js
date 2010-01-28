@@ -4,9 +4,9 @@ Glow.provide(function(glow) {
 		undefined;
 	
 	var domEventNames =
-		' mouseover mousemove mouseout mousedown click mouseup dblclick' +
-		' focus blur change select submit reset scroll ' +
-		' load beforeunload unload resize ';
+		' mouseover mousemove mouseout mousedown click mouseup dblclick' + // Mouse events
+		' focus blur change submit reset ' + // Form events
+		' load beforeunload unload resize scroll '; // Window events
 	
 	var keyEventNames = ' keypress keydown keyup ';
 	

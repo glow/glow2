@@ -143,10 +143,10 @@ Glow.provide(function(glow) {
 			attachTo,
 			id,
 			isWindow;
-		
+	
 		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
-			isWindow = (attachTo.window === attachTo);
+			isWindow = (attachTo.window && (attachTo.open !== undef));
 
 			if ( attachTo.nodeType !== 1 && !isWindow ) { continue; }
 			
