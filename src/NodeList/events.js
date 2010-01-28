@@ -5,8 +5,9 @@ Glow.provide(function(glow) {
 	
 	var domEventNames =
 		' mouseover mousemove mouseout mousedown click mouseup dblclick' +
-		' focus blur change select submit reset scroll ';
-	var windowEventNames = ' load unload resize ';
+		' focus blur change select submit reset scroll ' +
+		' load beforeunload unload resize ';
+	
 	var keyEventNames = ' keypress keydown keyup ';
 	
 	/**
@@ -45,8 +46,7 @@ Glow.provide(function(glow) {
 			attachTo,
 			capturingMode = true,
 			isDomEvent = (domEventNames.indexOf(' ' + name + ' ') > -1),
-			isKeyEvent = (keyEventNames.indexOf(' ' + name + ' ') > -1),
-			isWindowEvent = (windowEventNames.indexOf(' ' + name + ' ') > -1);
+			isKeyEvent = (keyEventNames.indexOf(' ' + name + ' ') > -1);
 			
 		if (isDomEvent) {
 			glow.events._addDomEventListener(this, name, callback, thisVal);

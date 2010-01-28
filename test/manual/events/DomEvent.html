@@ -89,7 +89,25 @@
 <body>
 	<h1>Glow DomEvent</h1>
 	
-	<h2>Adding listeners for native events.</h2>
+	<hr>
+	
+	<p>
+	The DomEvent module handles events attached to windows as well.
+	</p>
+	
+	<div class="testarea" id="window-test">
+		Resize the window.<br>
+		Scroll the window.<br>
+		<iframe name="iframe-test" id="iframe-test" src="iframe.html" width="180" height="40" scrolling="auto" frameborder="1" ></iframe>
+	</div>
+	<ol>
+		<li class="result" id="window-test-resize">Window resize can be detected. []</li>
+		<li class="result" id="window-test-resize2">Multiple callbacks can run on resize. []</li>
+		<li class="result" id="window-test-scroll">Window scroll can be detected. []</li>
+		<li class="result" id="iframe-test-load">Frame load can be detected. []</li>
+		<li class="result" id="iframe-test-beforeunload">Frame window before unload can be detected. []</li>
+		<li class="result" id="iframe-test-unload">Frame window unload can be detected. []</li>
+	</ol>
 	
 	<hr>
 	
@@ -223,7 +241,32 @@
 		glow = new Glow(conf.version, {base: conf.base, debug: true})
 			.ready(
 				function(glow) {
+					var resizeCounter = 0;
+					new glow.NodeList(window)
+					.on('resize', function(e) {
+						resizeCounter++;
+						testResult('window-test', 'resize', 'pass', 'ran ' + resizeCounter + ' times');
+					})
+					.on('resize', function(e) {
+						testResult('window-test', 'resize2', 'pass', 'ran ' + resizeCounter + ' times');
+					})
+					.on('scroll', function(e) {
+						testResult('window-test', 'scroll', 'pass', e);
+					});
 
+					new glow.NodeList(document.getElementById('iframe-test'))
+					.on('load', function(e) {
+						testResult('iframe-test', 'load', 'pass', e)
+					})
+
+					new glow.NodeList(window.frames['iframe-test'])
+					.on('beforeunload', function(e) {
+						testResult('iframe-test', 'beforeunload', 'pass', e);
+					})
+					.on('unload', function(e) {
+						testResult('iframe-test', 'unload', 'pass', e);
+					});
+					
 					new glow.NodeList(document.getElementById('mouse-test'))
  					.on('mouseover', function(e) {
  						testResult('mouse-test', 'over', 'pass', 'top: '+e.mouseTop+'; left: '+e.mouseLeft);

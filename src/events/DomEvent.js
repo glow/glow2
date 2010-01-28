@@ -139,19 +139,20 @@ Glow.provide(function(glow) {
 		@function
 	*/
 	glow.events._addDomEventListener = function(nodeList, name, callback, thisVal) {
-
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
-			id;
+			id,
+			isWindow;
 		
-		while (i--) {
-			if (!nodeList[i] || nodeList[i].nodeType !== 1 ) { continue; }
-			
+		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
-	
+			isWindow = (attachTo.window === attachTo);
+
+			if ( attachTo.nodeType !== 1 && !isWindow ) { continue; }
+			
 			// will add a unique id to this node, if there is not one already
 			glow.events.addListeners([attachTo], name, callback, thisVal || attachTo);
-			
+
 			// check if there is already a handler for this kind of event attached
 			// to this node (which will run all associated callbacks in Glow)
 			id = glow.events._getPrivateEventKey(attachTo);
