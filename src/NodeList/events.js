@@ -3,11 +3,6 @@ Glow.provide(function(glow) {
 		document = window.document,
 		undefined;
 	
-	var domEventNames =
-		' mouseover mousemove mouseout mousedown click mouseup dblclick' + // Mouse events
-		' focus blur change submit reset ' + // Form events
-		' load beforeunload unload resize scroll '; // Window events
-	
 	var keyEventNames = ' keypress keydown keyup ';
 	
 	/**
@@ -42,20 +37,15 @@ Glow.provide(function(glow) {
 		   });
 	*/
 	NodeListProto.on = function(name, callback, thisVal) {
-		var name = (name || '').toLowerCase(),
-			attachTo,
+		var attachTo,
 			capturingMode = true,
-			isDomEvent = (domEventNames.indexOf(' ' + name + ' ') > -1),
-			isKeyEvent = (keyEventNames.indexOf(' ' + name + ' ') > -1);
+			isKeyEvent = (keyEventNames.indexOf(' ' + name.toLowerCase() + ' ') > -1);
 			
-		if (isDomEvent) {
-			glow.events._addDomEventListener(this, name, callback, thisVal);
-		}
-		else if (isKeyEvent) {
+		if (isKeyEvent) {
 			// todo
 		}
-		else{
-			glow.events.addListeners(this, name, callback, thisVal);
+		else { // assume it's a DOM event
+			glow.events._addDomEventListener(this, name, callback, thisVal);
 		}
 		
 		return this;

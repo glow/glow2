@@ -105,7 +105,6 @@
 		<li class="result" id="window-test-resize2">Multiple callbacks can run on resize. []</li>
 		<li class="result" id="window-test-scroll">Window scroll can be detected. []</li>
 		<li class="result" id="iframe-test-load">Frame load can be detected. []</li>
-		<li class="result" id="iframe-test-beforeunload">Frame window before unload can be detected. []</li>
 		<li class="result" id="iframe-test-unload">Frame window unload can be detected. []</li>
 	</ol>
 	
@@ -195,16 +194,19 @@
 			<input name="test-text" id="test-text" type="text"> <label for="test-text">Type in me.</label>
 		</p>
 		<p>
-			<input id="myreset" type="reset"> <label for="myreset">Reset me.</label>
+			<input name ="myreset" id="myreset" type="reset"> <label for="myreset">Reset me.</label>
 		</p>
 		<p>
-			<input id="mysubmit" type="submit"> <label for="mysubmit">Then submit me.</label>
+			<input name="mysubmit" id="mysubmit" type="submit"> <label for="mysubmit">Then submit me.</label>
 		</p>
 	</form>
 	<ol>
-		<li class="result" id="test-text-focus">Focus can be detected. []</li>
+		<li class="result" id="test-text-focus">Focus on an element can be detected. []</li>
+		<li class="result" id="test-form-focus">Focus on an element bubbles up to the parent form. []</li>
 		<li class="result" id="test-text-change">Change can be detected. []</li>
+		<li class="result" id="test-form-click">Click on an element bubbles up to the parent form. []</li>
 		<li class="result" id="test-text-blur">Blur can be detected. []</li>
+		<li class="result" id="test-form-blur">Blur on an element bubbles up to the parent form. []</li>
 		<li class="result" id="test-form-reset">Reset of form can be detected. []</li>
 		<li class="result" id="test-form-submit">Submit of form can be detected (and prevented). []</li>
 	</ol>
@@ -226,7 +228,7 @@
 	<script type="text/javascript" class="showSrc">
 		glow = new Glow(conf.version, {base: conf.base, debug: true})
 			.ready(
-				function(glow) {
+ 				function(glow) {
 					var resizeCounter = 0;
 					new glow.NodeList(window)
 					.on('resize', function(e) {
@@ -243,12 +245,11 @@
 					new glow.NodeList(document.getElementById('iframe-test'))
 					.on('load', function(e) {
 						testResult('iframe-test', 'load', 'pass', e)
-					})
+					});
+					
+// re beforeunload see: https://bugs.webkit.org/show_bug.cgi?id=19418
 
 					new glow.NodeList(window.frames['iframe-test'])
-					.on('beforeunload', function(e) {
-						testResult('iframe-test', 'beforeunload', 'pass', e);
-					})
 					.on('unload', function(e) {
 						testResult('iframe-test', 'unload', 'pass', e);
 					});
@@ -379,6 +380,15 @@
 					.on('submit', function(e) {
 						testResult('test-form', 'submit', 'pass', this);
 						e.preventDefault();
+					})
+					.on('focus', function(e) {
+						testResult('test-form', 'focus', 'pass', this);
+					})
+					.on('click', function(e) {
+						testResult('test-form', 'click', 'pass', e.source + ' ' + (e.source || {}).id);
+					})
+					.on('blur', function(e) {
+						testResult('test-form', 'blur', 'pass', this);
 					});
 					
 					new glow.NodeList(document.getElementById('scroll-test'))

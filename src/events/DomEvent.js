@@ -146,9 +146,10 @@ Glow.provide(function(glow) {
 	
 		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
-			isWindow = (attachTo.window && (attachTo.open !== undef));
 
-			if ( attachTo.nodeType !== 1 && !isWindow ) { continue; }
+			//isWindow = (attachTo.window && (attachTo.open !== undef));
+
+			//if ( attachTo.nodeType !== 1 && !isWindow ) { continue; }
 			
 			// will add a unique id to this node, if there is not one already
 			glow.events.addListeners([attachTo], name, callback, thisVal || attachTo);
@@ -171,10 +172,12 @@ Glow.provide(function(glow) {
 					else { return !domEvent.defaultPrevented(); }
 				};
 				
-				if (attachTo.addEventListener) { // like DOM2 browsers			
-					attachTo.addEventListener(name, handler, false);
+				if (attachTo.addEventListener) { // like DOM2 browsers	
+					attachTo.addEventListener(name, handler, (name === 'focus' || name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
 				}
 				else if (attachTo.attachEvent) { // like IE
+					if (name === 'focus')  attachTo.attachEvent('onfocusin', handler); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					else if (name === 'blur') attachTo.attachEvent('onfocusout', handler); // cause that's how IE rolls...
 					attachTo.attachEvent('on' + name, handler);
 				}
 				else { // legacy browsers?
