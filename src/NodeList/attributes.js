@@ -608,7 +608,7 @@ Glow.provide(function(glow) {
 	};
 	
 	/**
-	@name glow.dom.NodeList#val
+	@name glow.NodeList#val
 	@function
 	@description Gets or sets form values for the first node.
 

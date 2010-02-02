@@ -162,7 +162,7 @@ Glow.provide(function(glow) {
 	};
 	
 	/**
-	@name glow.ElementList#next
+	@name glow.NodeList#next
 	@function
 	@description Gets the next sibling element for each node in the ElementList.
 		If a filter is provided, the next item that matches the filter is returned, or
@@ -216,7 +216,7 @@ Glow.provide(function(glow) {
 	
 	
 	/**
-	@name glow.dom.NodeList#ancestors
+	@name glow.NodeList#ancestors
 	@function
 	@description Gets the unique ancestor nodes of each node as a new NodeList.
 	@param {Function|string} [filter] Filter test
