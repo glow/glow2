@@ -129,7 +129,7 @@ Glow.provide(function(glow) {
 		}
 	}
 	
-	glow.util.apply(DomEvent.prototype, glow.events.Event.prototype); // DomEvent extends Event
+	glow.util.extend(DomEvent, glow.events.Event); // DomEvent extends Event
 	
 	/**
 		Add listener for an event fired by the browser.
