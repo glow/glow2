@@ -117,6 +117,8 @@
 			this.opts = opts || {};
 			
 			this.results = {};
+			this.output = {};
+			
 			this.running = 0;
 			this.timer = null;
 		}
@@ -126,6 +128,15 @@
 				
 			for (var name in this.testpages) {
 				src = this.testpages[name];
+				
+				var ol = document.getElementById('runall-tests');
+				if (ol) {
+					var li = document.createElement('LI');
+					li.innerHTML = name + ':';
+					ol.appendChild(li);
+				}
+				this.output[name] = li;
+				
 				this.running++;
 				Harness.addFrame(name, src, this.opts);
 			}
@@ -138,15 +149,21 @@
 			this.running--;
 			this.results[name] = { failures: failures, total: total };
 			
+			var status = '<a href="'+this.testpages[name]+'" target="_blank">'+this.testpages[name]+'<'+'/a>: <strong>(<b class="fail">'+failures+'<'+'/b>, <b class="pass">'+(total-failures)+'<'+'/b>, '+total+')<'+'/strong>';
+			var className = (failures === 0)? 'pass' : 'fail';
+			this.status(name, status, className);
+				
 			if (this.running === 0) {
 				clearTimeout(this.timer);
 				this.closeAll();
-				this.report();
 			}
 		}
 		
-		Harness.prototype.status = function(name, message) {
-			
+		Harness.prototype.status = function(name, message, className) {
+			if (className) {
+				this.output[name].className = className;
+			}
+			this.output[name].innerHTML = name + ': ' + message;
 		}
 		
 		Harness.prototype.closeAll = function() {
@@ -159,27 +176,12 @@
 			for (var name in this.testpages) {
 				if (!this.results[name]) {
 					this.results[name] = { failures: -1, total: -1 };
+					var status = '<a href="'+this.testpages[name]+'" target="_blank">'+this.testpages[name]+'<'+'/a>: <strong>(<b class="fail">timed out<'+'/b>)<'+'/strong>';
+					this.status(name, status, 'fail');
 				}
 			}
 			
 			this.closeAll();
-			this.report();
-		}
-		
-		Harness.prototype.report = function() {
-			var ol = document.getElementById('runall-tests'),
-				results,
-				li;
-				
-			for (var name in this.testpages) {
-				results = this.results[name];
-				
-				li = document.createElement('LI');
-				li.className = (results.failures === 0)?'pass':'fail';
-				li.innerHTML = '<a href="'+this.testpages[name]+'" target="_blank">'+name+'<'+'/a>: <strong>(<b class="fail">'+results.failures+'<'+'/b>, <b class="pass">'+(results.total-results.failures)+'<'+'/b>, '+results.total+')<'+'/strong>';
-				
-				ol.appendChild(li);
-			}
 		}
 		
 		/////////////
@@ -211,7 +213,9 @@
 			unitTester.moduleStart = function(moduleName) {
 				window.harness.status(name, 'module: '+moduleName);
 			}
-			
+			unitTester.testStart = function(testName) {
+				window.harness.status(name, 'running test: '+testName);
+			}
 		}
 	</script>
 
