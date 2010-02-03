@@ -114,6 +114,10 @@
 	</script>
 	
 	<script type="text/javascript">
+		if (window.parent && parent.Harness) {
+			parent.Harness.attach(window.name, QUnit);
+		}
+
 		module('Glow');
 		
 		test('resolveVersion', function() {

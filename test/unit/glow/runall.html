@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>test: run all</title>
+	
+	<style type="text/css" media="screen">
+		body { font: 11px verdana; color: #000; }
+		a, a:hover, a:visited { color: #000; }
+		.runall-fail { background-color: #FF8F81; }
+		.runall-pass { background-color: #96FFA2; }
+		.testResult { padding: 4px; margin: 2px;}
+	</style>
+	
+	<script type="text/javascript">
+		var testpages = {
+			glow: 'glow.html',
+			attributes: 'NodeList/attributes.html',
+			appearance: 'NodeList/appearance.html'
+		};
+		
+		var conf = {
+			//debug: 'debug=true&'
+		}
+		
+		function init() {
+			window.harness = new Harness(testpages, conf);
+			harness.openAll();
+		}
+		
+		window.onload = init;
+		
+		
+		function Harness(testpages, opts) {
+			this.testpages = testpages;
+			this.opts = opts || {};
+			
+			this.results = {};
+			this.running = 0;
+			this.timer = null;
+		}
+		
+		Harness.prototype.openAll = function() {
+			var location;
+				
+			for (var name in this.testpages) {
+				src = this.testpages[name];
+				this.running++;
+				Harness.addFrame(name, src, this.opts);
+			}
+			
+			var that = this;
+			this.timer = setTimeout(function() { that.timesUp(); }, 30000);
+		}
+		
+		Harness.prototype.result = function(name, failures, total) {
+			this.running--;
+			this.results[name] = { failures: failures, total: total };
+			
+			if (this.running === 0) {
+				clearTimeout(this.timer);
+				this.closeAll();
+				this.report();
+			}
+		}
+		
+		Harness.prototype.status = function(name, message) {
+			
+		}
+		
+		Harness.prototype.closeAll = function() {
+			for (var name in this.testpages) {
+				Harness.removeFrame(name);
+			}
+		}
+		
+		Harness.prototype.timesUp = function() {
+			for (var name in this.testpages) {
+				if (!this.results[name]) {
+					this.results[name] = { failures: -1, total: -1 };
+				}
+			}
+			
+			this.closeAll();
+			this.report();
+		}
+		
+		Harness.prototype.report = function() {
+			var ol = document.getElementById('runall-tests'),
+				results,
+				li;
+				
+			for (var name in this.testpages) {
+				results = this.results[name];
+				
+				li = document.createElement('LI');
+				li.innerHTML = '<div class="testResult '+(results.failures===0?'runall-pass':'runall-fail')+'"><a href="'+this.testpages[name]+'" target="_blank">'+name+'<'+'/a>: failures '+results.failures+', total '+results.total+'<'+'/div>';
+				
+				ol.appendChild(li);
+			}
+		}
+		
+		/////////////
+		
+		Harness.addFrame = function(name, src, opts) {
+			var iframe = document.createElement('IFRAME'),
+				debug = opts? (opts.debug || '') : '';
+			
+			iframe.width = '1px';
+			iframe.height = '1px';
+			iframe.style.border = 'none';
+			iframe.id = name;
+			iframe.src = src + '?'+debug+'nocache='+new Date().getTime();
+			
+			document.body.appendChild(iframe);
+			
+			frames[frames.length-1].name = name;
+		}
+		
+		Harness.removeFrame = function(name) {
+			var frameElm = document.getElementById(name);
+			frameElm.parentNode.removeChild(frameElm);
+		}
+		
+		Harness.attach = function(name, unitTester) {
+			unitTester.done = function (failures, total) { /*debug*/console.log('window.done('+name+')');
+				window.harness.result(name, failures, total);
+			}
+			unitTester.moduleStart = function(moduleName) { /*debug*/console.log('window.status('+moduleName+')');
+				window.harness.status(name, 'module: '+moduleName);
+			}
+			
+		}
+	</script>
+
+
+</head>
+<body>
+	<h1 id="runall-header">Run All Tests: Glow 2</h1>
+	<ol id="runall-tests"></ol>
+	<ol id="runall-status"></ol>
+</body>
+</html>
