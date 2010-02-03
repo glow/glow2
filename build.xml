@@ -150,6 +150,7 @@
 			<arg value="${JSDOC_DIR}app/run.js" />
 			<arg value="-n" />
 			<arg value="-v" />
+			<arg value="-u" />
 			<arg value="-t=${JSDOC_DIR}templates/jsdoc/" />
 			<arg value="-d=${DOCS_DIR}/${VERSION}/" />
 			<arg value="-r=1" />			

@@ -3,84 +3,36 @@
 <html lang="en">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<title>All speed tests</title>
-	<script type="text/javascript" src="http://node1.bbcimg.co.uk/glow/glow/1.7.2/core/core.js"></script>
-	<style>
-	iframe{
-		width:100%;
-		height:600px;
-	}
+	<title>Glow Speed Tests</title>
+	<style type="text/css">@import "../lib/woosh/assets/style.css";
+	</style>
+	
+	
+	<!-- Add any CSS you need for the test, but restrict styles to #htmlForTest -->
 
+
+	
+	<style type="text/css">
+		#content {
+			padding:1em 3em;
+		}
 	</style>
 </head>
 <body>
-	<div id="workingarea">
-	</div>
-	<div id="resultsouput">
+	<div id="wooshBanner"><h1>Glow Speed Tests</h1></div>
+	<div id="content">
+		<p>Welcome to Glow's speed tests.  Below you fill find a list of available tests to run.  Each will show a comparison between the current unbuilt version of Glow 2.0 alpha against Glow 1.7.2, and in most cases against jQuery 1.4 or YUI 3.0, as best match methods apply.</p>
+		<p>To prevent extraordinary test times and browser freezes, each test is run over the period of 1 second, and the number of executions made by the given method in that time is recorded.  We're using this number to benchmark best speed.</p>
+		<p>These pages should be tested on all available browsers and platforms, as results will vary.</p>
+		<ol>
+			<li><a href="events/events.html">Events</a></li>
+			<li><a href="nodelist/nodelist/nodelist.html">NodeList creation</a></li>
+			<li><a href="nodelist/appearance.html">Appearance methods</a></li>
+			<li><a href="nodelist/traversal.html">Traversal methods</a></li>
+			<li><a href="nodelist/manipulation.html">Manipulation methods</a></li>
+			<li><a href="nodelist/attributes.html">Attribute methods</a></li>
+		</ol>
+		
 	</div>
 </body>
-<script>
-
-// run tests
-
-
-var files = ["events/events.html",
-			 "NodeList/appearance/appearance.html",
-			 "NodeList/attributes/attributes.html",
-			 "NodeList/manipulation/manipulation.html",
-			 "NodeList/NodeList/NodeList.html",
-			 "NodeList/traversal/traversal.html"
-			 ],
-	createTests,
-	totalTests = files.length,
-	i = 0;
-	
-glow.ready(function() {
-	init();	
-});
-
-function init() {
-
-	createTest(i);		
-	
-	
-}
-
-function createTest(){
-	console.log(i, totalTests);
-	if(i <= totalTests){
-		
-		createTests = glow.dom.create("<iframe onload='iframeloaded();'>").val("src",files[i]).appendTo("#workingarea");
-		
-		console.log("testing");
-	}
-	else{
-		return;
-	}
-
-
-	
-}
-function iframeloaded(){
-	i++;
-	runTest();
-}
-
-function runTest(){
-
-	var iframe = window.frames[0];
-	
-	iframe.woosh.ready(function(conductor){
-		conductor.addListener({
-			allTestsComplete:function(libraryResults, resultComparisons){
-				createTest();
-			}})
-		conductor.start();
-	});
-
-
-}
-
-
-</script>
 </html>
