@@ -21,22 +21,23 @@ Glow.provide(function(glow) {
 	// insert: 1 for #insert(After|Before), 0 for #(after|before)
 	function afterAndBefore(after, insert) {
 		return function(elements) {
-			if (!this.length) { return this; }
-			
-			// normalise 'elements'
-			// if we're dealing with append/prepend then strings are always treated as HTML strings
-			if (!insert && typeof elements == 'string') {
-				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
-			} else {
-				elements = new glow.NodeList(elements);
-			}
-			
 			var toAddList,
 				toAddToList,
 				fragmentToAdd,
 				nextFragmentToAdd,
 				item,
 				itemParent;
+			
+			if (!this.length) { return this; }
+			
+			// normalise 'elements'
+			// if we're dealing with append/prepend then strings are always treated as HTML strings
+			if (!insert && typeof elements === 'string') {
+				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
+			}
+			else {
+				elements = new glow.NodeList(elements);
+			}
 			
 			// set the element we're going to add to, and the elements we're going to add
 			if (insert) {
@@ -50,13 +51,13 @@ Glow.provide(function(glow) {
 			
 			nextFragmentToAdd = createFragment(toAddList);
 			
-			for (var i = 0, leni = toAddToList.length, lasti = leni - 1; i<leni; i++) {
+			for (var i = 0, leni = toAddToList.length, lasti = leni - 1; i < leni; i++) {
 				item = toAddToList[i];
 				fragmentToAdd = nextFragmentToAdd;
 				
 				// we can only append after if the element has a parent right?
 				if (itemParent = item.parentNode) {
-					if (i != lasti) { // if not the last item
+					if (i !== lasti) { // if not the last item
 						nextFragmentToAdd = fragmentToAdd.cloneNode(true);
 						insert && toAddList.push(nextFragmentToAdd.childNodes);
 					}
@@ -73,21 +74,22 @@ Glow.provide(function(glow) {
 	// to: 1 for #(append|prepend)To, 0 for #(append|prepend)
 	function appendAndPrepend(append, to) {
 		return function(elements) {
-			if (!this.length) { return this; }
-			
-			// normalise 'elements'
-			// if we're dealing with append/prepend then strings are always treated as HTML strings
-			if (!to && typeof elements == 'string') {
-				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
-			} else {
-				elements = new glow.NodeList(elements);
-			}
-			
 			var toAddList,
 				toAddToList,
 				fragmentToAdd,
 				nextFragmentToAdd,
 				item;
+			
+			if (!this.length) { return this; }
+			
+			// normalise 'elements'
+			// if we're dealing with append/prepend then strings are always treated as HTML strings
+			if (!to && typeof elements === 'string') {
+				elements = new glow.NodeList( glow.NodeList._strToNodes(elements) );
+			}
+			else {
+				elements = new glow.NodeList(elements);
+			}
 				
 			// set the element we're going to add to, and the elements we're going to add
 			if (to) {
@@ -101,13 +103,13 @@ Glow.provide(function(glow) {
 			
 			nextFragmentToAdd = createFragment(toAddList);
 			
-			for (var i = 0, leni = toAddToList.length, lasti = leni - 1; i<leni; i++) {
+			for (var i = 0, leni = toAddToList.length, lasti = leni - 1; i < leni; i++) {
 				item = toAddToList[i];
 				fragmentToAdd = nextFragmentToAdd;
 				
 				// avoid trying to append to non-elements
-				if (item.nodeType == 1) {
-					if (i != lasti) { // if not the last item
+				if (item.nodeType === 1) {
+					if (i !== lasti) { // if not the last item
 						nextFragmentToAdd = fragmentToAdd.cloneNode(true);
 						// add the clones to the return element for appendTo / prependTo
 						to && toAddList.push(nextFragmentToAdd.childNodes);
@@ -123,35 +125,34 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#after
 		@function
-		@description Inserts nodes after each nodes.
+		@description Insert node(s) after each node in this NodeList.
+			If there is more than one node in this NodeList, 'nodes'
+			will be inserted after the first element and clones will be
+			inserted after each subsequent element.
 			
 		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Node(s) to insert
 			Strings will be treated as HTML strings.
-			
-			If there is more than one node in the NodeList, 'nodes'
-			will be inserted after the first element and clones will be
-			inserted after each subsequent element.
 		
-		@returns {glow.NodeList} Original element list
+		@returns {glow.NodeList} Original NodeList
 		
 		@example
 			// adds a paragraph after each heading
-			glow('h1, h2, h3').after('<p>...</p>');
+			glow('h1, h2, h3').after('<p>That was a nice heading.</p>');
 	*/
 	NodeListProto.after = afterAndBefore(1);
 	
 	/**
 		@name glow.NodeList#before
 		@function
-		@description Inserts elements before each element.
-			If there is more than one element in the NodeList, the elements
+		@description Insert node(s) before each node in this NodeList.
+			If there is more than one node in this NodeList, 'nodes'
 			will be inserted before the first element and clones will be
 			inserted before each subsequent element.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to insert
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Node(s) to insert
 			Strings will be treated as HTML strings.
 		
-		@returns {glow.NodeList} Original element list
+		@returns {glow.NodeList} Original NodeList
 		
 		@example
 			// adds a div before each paragraph
@@ -162,15 +163,15 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#append
 		@function
-		@description Appends elements to each element in the list
-			If there is more than one element in the NodeList, then the given elements
-			are appended to the first element and clones are appended to the other
-			elements.
+		@description Appends node to each node in this NodeList.
+			If there is more than one node in this NodeList, then the given nodes
+			are appended to the first node and clones are appended to the other
+			nodes.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to append
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Nodes(s) to append
 			Strings will be treated as HTML strings.
 		
-		@returns {glow.NodeList} Original element list
+		@returns {glow.NodeList} Original NodeList
 		
 		@example
 			// ends every paragraph with '...'
@@ -181,15 +182,15 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#prepend
 		@function
-		@description Prepends elements to each element in the list
-			If there is more than one element in the NodeList, then the given elements
-			are prepended to the first element and clones are prepended to the other
-			elements.
+		@description Prepends nodes to each node in this NodeList.
+			If there is more than one node in this NodeList, then the given nodes
+			are prepended to the first node and clones are prepended to the other
+			nodes.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to prepend
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Nodes(s) to prepend
 			Strings will be treated as HTML strings.
 		
-		@returns {glow.NodeList} Original element list
+		@returns {glow.NodeList} Original NodeList
 		
 		@example
 			// prepends every paragraph with 'Paragraph: '
@@ -200,16 +201,14 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#appendTo
 		@function
-		@description Append to another element(s)
-			If appending to more than one element, the NodeList is appended
-			to the first element and clones are appended to the others.
+		@description Appends nodes in this NodeList to given node(s)
+			If appending to more than one node, the NodeList is appended
+			to the first node and clones are appended to the others.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to append to
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} node Node(s) to append to.
+			Strings will be treated as CSS selectors or HTML strings.
 		
-		@returns {glow.NodeList} The appended elements
-			This includes clones if clones were made.
+		@returns {glow.NodeList} The appended nodes.
 		
 		@example
 			// appends '...' to every paragraph
@@ -220,16 +219,14 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#prependTo
 		@function
-		@description Prepend to another element(s)
-			If prepending to more than one element, the NodeList is prepended
-			to the first element and clones are prepended to the others.
+		@description Prepends nodes in this NodeList to given node(s)
+			If prepending to more than one node, the NodeList is prepended
+			to the first node and clones are prepended to the others.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to prepend to
-			Strings will be treated as HTML strings if they begin with <, else
-			they'll be treated as a CSS selector.
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} node Node(s) to prepend to
+			Strings will be treated as CSS selectors or HTML strings.
 		
-		@returns {glow.NodeList} The prepended elements
-			This includes clones if clones were made.
+		@returns {glow.NodeList} The prepended nodes.
 		
 		@example
 			// prepends 'Paragraph: ' to every paragraph
@@ -240,15 +237,14 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#insertAfter
 		@function
-		@description Insert the NodeList after other elements
-			If inserting after more than one element, the NodeList is inserted
-			after the first element and clones are inserted after the others.
+		@description Insert this NodeList after the given nodes
+			If inserting after more than one node, the NodeList is inserted
+			after the first node and clones are inserted after the others.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to insert after
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Node(s) to insert after
 			Strings will be treated as CSS selectors.
 			
-		@returns {glow.NodeList} Inserted elements
-			This includes clones if clones were made.
+		@returns {glow.NodeList} Inserted nodes.
 		
 		@example
 			// adds a paragraph after each heading
@@ -259,15 +255,14 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#insertBefore
 		@function
-		@description Insert the NodeList before other elements
-			If inserting before more than one element, the NodeList is inserted
-			before the first element and clones are inserted before the others.
+		@description Insert this NodeList before the given nodes
+			If inserting before more than one node, the NodeList is inserted
+			before the first node and clones are inserted before the others.
 			
-		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} elements Element(s) to insert before
+		@param {string | HTMLElement | HTMLElement[] | glow.NodeList} nodes Node(s) to insert before
 			Strings will be treated as CSS selectors.
 			
-		@returns {glow.NodeList} Inserted elements
-			This includes clones if clones were made.
+		@returns {glow.NodeList} Inserted nodes.
 		
 		@example
 			// adds a div before each paragraph

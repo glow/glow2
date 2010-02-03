@@ -9,15 +9,14 @@ Glow.provide(function(glow) {
 		@name glow.NodeList
 		@constructor
 		@description An array-like collection of DOM Nodes
-			It is recommended to create an NodeList using {@link glow},
-			but you can also use this constructor.
+			It is recommended to create a NodeList using the shortcut function {@link glow}.
 			
-		@param {string | glow.NodeList | Node | Node[]} contents Items to populate the NodeList with.
+		@param {string | glow.NodeList | Node | Node[] | Window} contents Items to populate the NodeList with.
 			This parameter will be passed to {@link glow.NodeList#push}
 			
 		@example
 			// empty NodeList
-			var myNodeList = new glow.NodeList();
+			var myNodeList = glow();
 
 		@example
 			// using glow to return a NodeList then chaining methods
@@ -25,7 +24,6 @@ Glow.provide(function(glow) {
 		
 		@see <a href="../furtherinfo/creatingnodelists/">Creating NodeLists</a>
 		@see <a href="../furtherinfo/workingwithnodelists/">Working with NodeLists</a>
-		@see {@link glow.XmlNodeList XmlNodeList} - An XML-specific NodeList
 	*/
 	function NodeList(contents) {
 		// call push if we've been given stuff to add
@@ -54,7 +52,7 @@ Glow.provide(function(glow) {
 		@returns {Node[]} Array of nodes (including text / comment nodes)
 	*/
 	NodeList._strToNodes = (function() {
-		var	tmpDiv = document.createElement("div"),
+		var	tmpDiv = document.createElement('div'),
 			// these wraps are in the format [depth to children, opening html, closing html]
 			tableWrap = [1, '<table>', '</table>'],
 			emptyWrap = [0, '', ''],
@@ -82,7 +80,7 @@ Glow.provide(function(glow) {
 		
 		function strToNodes(str) {
 			var r = [],
-				tagName = ( /^\s*<([^\s\->]+)/.exec(str) || [] )[1],
+				tagName = ( /^<([\w!]+)/.exec(str) || [] )[1],
 				// This matches str content with potential elements that cannot
 				// be a child of <div>.  elmFilter declared at top of page.
 				wrap = wraps[tagName] || emptyWrap, 
@@ -109,7 +107,8 @@ Glow.provide(function(glow) {
 					}
 					childElm.removeChild(firstChild);
 				}
-			} else {
+			}
+			else {
 				while (firstChild = childElm.firstChild) {
 					r[rLen++] = childElm.removeChild(firstChild);
 				}
@@ -153,7 +152,7 @@ Glow.provide(function(glow) {
 		@description Adds nodes to the NodeList
 		
 		@param {string | Node | Node[] | glow.NodeList} nodes Node(s) to add to the NodeList
-			Strings will be treated as CSS selectors / HTML strings.
+			Strings will be treated as CSS selectors or HTML strings.
 		
 		@returns {glow.NodeList}
 		
@@ -165,15 +164,17 @@ Glow.provide(function(glow) {
 			// if the string begins <, treat it as html, otherwise it's a selector
 			if (nodes.charAt(0) == '<') {
 				nodes = NodeList._strToNodes(nodes);
-			} else {
+			}
+			else {
 				nodes = glow._sizzle(nodes)
 			}
 			arrayPush.apply(this, nodes);
 		}
 		else if (nodes.nodeType || nodes.window) {
-			if (this.length) {
+			if (this.length > 1) {
 				arrayPush.call(this, nodes);
-			} else {
+			}
+			else {
 				this[0] = nodes;
 				this.length = 1;
 			}
@@ -197,12 +198,11 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#eq
 		@function
-		@description Compares the NodeList to another
+		@description Compares this NodeList to another
 			Returns true if both NodeLists contain the same items in the same order
 		
 		@param {string | Node | Node[] | glow.NodeList} nodeList The NodeList to compare to.
-			If the parameter isn't a NodeList, it'll be used to create
-			a new NodeList first.
+			Strings will be treated as CSS selectors.
 		
 		@returns {boolean}
 		
@@ -228,7 +228,7 @@ Glow.provide(function(glow) {
 		
 		// loop through and return false on inequality
 		while (i--) {
-			if (this[i] != nodeList[i]) {
+			if (this[i] !== nodeList[i]) {
 				return false;
 			}
 		}
@@ -240,7 +240,7 @@ Glow.provide(function(glow) {
 		@name glow.NodeList#slice
 		@function
 		@description Get a section of an NodeList
-			Operates in the same way as a string / array's slice method
+			Operates in the same way as an Array's slice method
 		
 		@param {number} start Start index
 			If negative, it specifies a position measured from the end of the list
@@ -321,11 +321,11 @@ Glow.provide(function(glow) {
 		
 		@param {Function} callback The function to call for each node.
 			The function will be passed 2 arguments, the index of the current item,
-			and the NodeList being itterated over.
+			and the NodeList being iterated over.
 			
 			Inside the function 'this' refers to the Node.
 			
-			Returning false from this function stops further itterations
+			Returning false from this function stops further iterations
 		
 		@returns {glow.NodeList}
 		
@@ -372,7 +372,7 @@ Glow.provide(function(glow) {
 			The function is passed 2 arguments, the index of the current item,
 			and the ElementList being itterated over.
 			
-			Inside the function 'this' refers to the HTMLElement.
+			Inside the function 'this' refers to the node.
 			Return true to add the element to the new NodeList.
 		 
 		@returns {glow.NodeList} A new NodeList containing the filtered nodes
