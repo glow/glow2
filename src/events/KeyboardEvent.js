@@ -1,6 +1,7 @@
 Glow.provide(function(glow) {
 	var document = window.document,
-		undefined;
+		undefined,
+        keyboardEventProto;
 	
 	/** 
 		@name glow.events.KeyboardEvent
@@ -19,38 +20,45 @@ Glow.provide(function(glow) {
 		   in your callback.
 	*/
 	function KeyboardEvent() {}
-	
-	/** 
-		@name glow.events.KeyboardEvent#key
-		@type {number}
-		@description A number representing the key pressed
-			Constants for these numbers can be found in
-			{@link glow.KeyboardEvent.keys}.
-			
-			This is only available for 'keyup' and 'keydown' events
-			
-		@example
-			var keys = glow.events.KeyboardEvent.keys;
-			switch (event.key) {
-				case keys.ESC:
-					// do stuff
-					break;
-				case keys.SHIFT:
-					// do stuff
-					break;
-			}
-	*/
-	
-	/** 
-		@name glow.events.KeyboardEvent#keyChar
-		@type {string}
-		@description The string of the key pressed
-			This is only available for 'char' events.
-			
-		@example
-			// prevent non-numbers being entered
-			return !isNaN( Number(event.keyChar) );
-	*/
+    
+    glow.util.extend(KeyboardEvent, glow.events.Event, {
+        /** 
+            @name glow.events.KeyboardEvent#key
+            @type {string}
+            @description The key pressed
+				This is a string representing the key pressed.
+				
+				Alphanumeric keys are represented by 0-9 and A-Z uppercase. Other values include:
+				
+				<dl>
+					<dt>esc</dt>
+					<dd>Escape key</dd>
+				</dl>
+                
+            @example
+                var keys = glow.events.KeyboardEvent.keys;
+                switch (event.key) {
+                    case 'esc':
+                        // do stuff
+                        break;
+                    case 'shift':
+                        // do stuff
+                        break;
+                }
+        */
+        key: undefined,
+        /** 
+            @name glow.events.KeyboardEvent#keyChar
+            @type {string}
+            @description The string of the key pressed
+                This is only available for 'keypress' events.
+                
+            @example
+                // prevent non-numbers being entered
+                return !isNaN( Number(event.keyChar) );
+        */
+        keyChar: undefined
+    });
 	
 	/**
 		@name glow.events.KeyboardEvent.keys
