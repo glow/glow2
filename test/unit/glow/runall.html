@@ -6,12 +6,14 @@
 	<title>test: run all</title>
 	
 	<style type="text/css" media="screen">
+		body { font: 11px verdana; color: #000; }
 		
 		ol#runall-tests{
 			font-family:"Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
 			margin:0;
 			padding:0;
-			list-style-position:inside;s		
+			list-style-position:inside;s    
+
 			font-size: smaller;
 		}
 		a, a:hover, a:visited { color: #000; }
@@ -35,12 +37,12 @@
 			border-radius:15px;
 			-moz-border-radius: 15px;
 			-webkit-border-radius: 15px;
-		}		
-		ol#runall-tests li.runall-pass{
+		}    
+		ol#runall-tests li.pass{
 			background-color:#D2E0E6;
 			color:#528CE0;
 		}
-		ol#runall-tests li.runall-fail{
+		ol#runall-tests li.fail{
 			background-color:#EE5757;
 			color:#000;
 		}
@@ -85,13 +87,10 @@
 		}
 		strong b.fail{
 			color:#710909;
-			}
+		}
 		strong b.pass{
 			color:#5E740B;
-			}
-		.runall-fail { background-color: #FF8F81; }
-		.runall-pass { background-color: #96FFA2; }
-	
+		}
 	</style>
 	
 	<script type="text/javascript">
@@ -176,7 +175,8 @@
 				results = this.results[name];
 				
 				li = document.createElement('LI');
-				li.innerHTML = '<div class="testResult '+(results.failures===0?'runall-pass':'runall-fail')+'"><a href="'+this.testpages[name]+'" target="_blank">'+name+'<'+'/a>: failures '+results.failures+', total '+results.total+'<'+'/div>';
+				li.className = (results.failures === 0)?'pass':'fail';
+				li.innerHTML = '<a href="'+this.testpages[name]+'" target="_blank">'+name+'<'+'/a>: <strong>(<b class="fail">'+results.failures+'<'+'/b>, <b class="pass">'+(results.total-results.failures)+'<'+'/b>, '+results.total+')<'+'/strong>';
 				
 				ol.appendChild(li);
 			}
@@ -205,10 +205,10 @@
 		}
 		
 		Harness.attach = function(name, unitTester) {
-			unitTester.done = function (failures, total) { /*debug*/console.log('window.done('+name+')');
+			unitTester.done = function (failures, total) {
 				window.harness.result(name, failures, total);
 			}
-			unitTester.moduleStart = function(moduleName) { /*debug*/console.log('window.status('+moduleName+')');
+			unitTester.moduleStart = function(moduleName) {
 				window.harness.status(name, 'module: '+moduleName);
 			}
 			
