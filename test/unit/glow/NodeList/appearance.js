@@ -95,14 +95,16 @@ test('glow.NodeList#css colours', 4, function() {
 
 });
 
-test('glow.NodeList#css backgrounds', 2, function() {
+test('glow.NodeList#css backgrounds', 3, function() {
 	//background test
 	nodes = new glow.NodeList("#cssTests div.backgroundTest");
-//	equal(nodes.css("background-image"), "url(" + /^([\s\S]+)\//.exec(window.location.href)[1] + "/test/unit/data/NodeList/fail.png)", "background-image");
+
 	equal(nodes.css("background-attachment"), "scroll", "background-attachment");
-	equal(nodes.css("background-repeat"), "repeat-x", "background-repeat");
-		//Cannot get a reliable value for this
-		//equal(glow.dom.get("#cssTests div.backgroundTest").css("background-position"), "top right", "background-position");
+	
+	ok(/^repeat\b/.test(nodes.css("background-repeat")), "background-repeat");
+	equal(nodes.css("background-color"), "rgb(0, 0, 255)", "background-color");
+
+		
 
 });
 
@@ -180,10 +182,7 @@ test('glow.NodeList#css floats, display and position', 21, function() {
 	nodes = new glow.NodeList("#cssTests div.posTest7");
 	/*18*/equal(nodes.css("left"), "30px", "Using correct offset parent");
 	
-	//display none tests
-	// doesn't work while display:none, may fix later?
-	//equal(glow.dom.get("#cssTests div.posTest8").css("top"), "60px", "top (em val display none)");
-	//equal(glow.dom.get("#cssTests div.posTest8").css("left"), "30px", "left (px val display none)");
+
 	nodes = new glow.NodeList("#cssTests div.posTest8");
 	/*19*/equal(nodes.css("width"), "60px", "width (em val display none)");
 	/*20*/equal(nodes.css("width"), "60px", "width (em val display none)");

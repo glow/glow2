@@ -692,7 +692,7 @@ Glow.provide(function(glow) {
 		if (!glow.env.webkit && elm.getBoundingClientRect) {
 			var rect = elm.getBoundingClientRect();
 			return {
-				top: rect.top
+				top: Math.floor(rect.top)
 				/*
 				 getBoundingClientRect is realive to top left of
 				 the viewport, so we need to sort out scrolling offset
@@ -708,7 +708,7 @@ Glow.provide(function(glow) {
 				*/
 				- docElm.clientTop,
 
-				left: rect.left //see above for docs on all this stuff
+				left: Math.floor(rect.left) //see above for docs on all this stuff
 				+ docScrollPos.x
 				- docElm.clientLeft
 			};
