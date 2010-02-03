@@ -4,7 +4,7 @@ function byId(id) {
 
 module('glow.NodeList creation');
 
-test('Empty NodeList creation', 4, function() {
+test('Empty NodeList creation', 5, function() {
 	equal(typeof glow.NodeList, 'function', 'glow.NodeList is function');
 	
 	var myNodeList = new glow.NodeList();
@@ -12,6 +12,7 @@ test('Empty NodeList creation', 4, function() {
 	equal(myNodeList.constructor, glow.NodeList, 'Correct constructor');
 	ok(myNodeList instanceof glow.NodeList, 'Correct instanceof');
 	strictEqual(myNodeList[0], undefined, 'No items in new list');
+	strictEqual(myNodeList.length, 0, 'Length correct');
 });
 
 test('NodeList creation via selector', 4, function() {
@@ -63,6 +64,7 @@ test('NodeList creation via array / collection / NodeList', 12, function() {
 	myNodeList = new glow.NodeList( byId('elmWithConstructor').getElementsByTagName('div') );
 	ok(myNodeList.length, 'Elements found (trying to trip IE up with constructor)');
 	
+	// test arguments object
 	(function(){
 		myNodeList = new glow.NodeList(arguments);
 	
