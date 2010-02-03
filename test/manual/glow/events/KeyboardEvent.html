@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow DomEvent</title>
+	
+	<script type="text/javascript" src="../../lib/showSrc.js"></script>
+	
+	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
+	
+	<script type="text/javascript">
+		// set up logging...
+		window.log = log4javascript.getDefaultLogger();
+	
+		// configure the manual test...
+		window.conf = {
+			base: '../../../../packages/',
+			version: '@SRC@'
+		};
+		
+		// include glow.js in the page...
+		(function() {
+			var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
+			
+			document.write(
+				'<'+'script type="text/javascript" src="' + glowSrc + '"> \
+				<' + '/script>'
+			);
+		})();
+	</script>
+	
+	<style type="text/css" media="screen">
+		
+	</style>
+	
+	<script type="text/javascript">
+		function testResult(testName, assertName, result, details) {
+			var elId = testName + '-' + assertName;
+			var el = document.getElementById(elId);
+			el.className = result;
+			el.innerHTML = el.innerHTML.replace(/\[.*\]/, '[' + details + ']');
+		}
+	</script>
+</head>
+
+<body>
+	<h1>Glow KeyboardEvent</h1>
+	
+	<textarea cols="30" rows="20" id="textarea"></textarea>
+	
+	<script type="text/javascript">
+		/*document.onkeydown = function(e) {
+			e = e || window.event;
+			log.info('keydown (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
+		};
+		document.onkeyup = function(e) {
+			e = e || window.event;
+			log.info('keyup (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
+		};
+		document.onkeypress = function(e) {
+			e = e || window.event;
+			log.info('keypress (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
+		};
+		document.ontextInput = function(e) {
+			e = e || window.event;
+			log.info('textInput (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
+		};*/
+	</script>
+	
+	
+</body>
+</html>
