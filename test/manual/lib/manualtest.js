@@ -199,6 +199,8 @@
 		li.innerHTML = name;
 		currentList.appendChild(li);
 		callback && callback(result);
+		
+		return result;
 	}
 	
 	// exports

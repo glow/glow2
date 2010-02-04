@@ -2,71 +2,323 @@
         "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title>Manual Test: Glow DomEvent</title>
-	
-	<script type="text/javascript" src="../../lib/showSrc.js"></script>
-	
-	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
+	<title>Manual Test: Glow KeyboardEvent</title>
 	
 	<script type="text/javascript">
-		// set up logging...
-		window.log = log4javascript.getDefaultLogger();
-	
 		// configure the manual test...
 		window.conf = {
 			base: '../../../../packages/',
 			version: '@SRC@'
 		};
-		
-		// include glow.js in the page...
-		(function() {
-			var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
-			
-			document.write(
-				'<'+'script type="text/javascript" src="' + glowSrc + '"> \
-				<' + '/script>'
-			);
-		})();
 	</script>
 	
-	<style type="text/css" media="screen">
-		
-	</style>
+	<script type="text/javascript" src="../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
 	
 	<script type="text/javascript">
-		function testResult(testName, assertName, result, details) {
-			var elId = testName + '-' + assertName;
-			var el = document.getElementById(elId);
-			el.className = result;
-			el.innerHTML = el.innerHTML.replace(/\[.*\]/, '[' + details + ']');
-		}
+		// set up logging...
+		window.log = log4javascript.getDefaultLogger();
+	</script>
+	
+	<script type="text/javascript">
+		// start glow loading
+		window.glow = Glow(conf.version, {base: conf.base, debug: true});
 	</script>
 </head>
 
 <body>
 	<h1>Glow KeyboardEvent</h1>
 	
-	<textarea cols="30" rows="20" id="textarea"></textarea>
+	<p>
+		Key events fire in the right order for a quick alphanumeric key press
+	</p>
 	
+	<div class="testarea">
+		<div id="startKeyTest">Click here then press 'A' briefly on the keyboard</div>
+		<div id="endKeyTest">Click here to end the test</div>
+	</div>
+	<script type="text/javascript">(function() {
+		module('Key event order');
+		
+		var testActive;
+		
+		test('Test begin', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#startKeyTest').on('click', function() {
+					testActive = true;
+					result.pass();
+				});
+			});
+		});
+		
+		var keydownResult = test('keydown fired first'),
+			keypressResult = test('keypress fired second'),
+			keyupResult = test('keyup fired third'),
+			keydownCount = 0,
+			keypressCount = 0,
+			keyupCount = 0;
+		
+		glow.ready(function() {
+			new glow.NodeList(document).on('keydown', function(e) {
+				if (testActive) {
+					keydownCount++;
+					keydownResult.ok(keypressCount === 0 && keyupCount === 0 && keydownCount === 1, {
+						keydownCount: keydownCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode
+					});
+				}
+			}).on('keypress', function(e) {
+				if (testActive) {
+					keypressCount++;
+					keypressResult.ok(keypressCount === 1 && keyupCount === 0 && keydownCount > 0, {
+						keypressCount: keypressCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode
+					})
+				}
+			}).on('keyup', function(e) {
+				if (testActive) {
+					keyupCount++;
+					keyupResult.ok(keypressCount > 0 && keyupCount === 1 && keydownCount > 0, {
+						keyupCount: keyupCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode
+					});
+				}
+			});
+		});
+		
+		test('Test end', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#endKeyTest').on('click', function() {
+					testActive = false;
+					result.pass();
+				});
+			});
+		});
+	})()</script>
+	
+	<p>
+		Key events fire in the right order for a quick non-alphanumeric key press
+	</p>
+	
+	<div class="testarea">
+		<div id="startKeyTest2">Click here then press the left arrow briefly on the keyboard</div>
+		<div id="endKeyTest2">Click here to end the test</div>
+	</div>
+	<script type="text/javascript">(function() {
+		module('Key event order');
+		
+		var testActive;
+		
+		test('Test begin', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#startKeyTest2').on('click', function() {
+					testActive = true;
+					result.pass();
+				});
+			});
+		});
+		
+		var keydownResult = test('keydown fired first'),
+			keypressResult = test('keypress fired second'),
+			keyupResult = test('keyup fired third'),
+			keydownCount = 0,
+			keypressCount = 0,
+			keyupCount = 0;
+		
+		glow.ready(function() {
+			new glow.NodeList(document).on('keydown', function(e) {
+				if (testActive) {
+					keydownCount++;
+					keydownResult.ok(keypressCount === 0 && keyupCount === 0 && keydownCount === 1, {
+						keydownCount: keydownCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode,
+						key: e.key
+					});
+				}
+			}).on('keypress', function(e) {
+				if (testActive) {
+					keypressCount++;
+					keypressResult.ok(keypressCount === 1 && keyupCount === 0 && keydownCount > 0, {
+						keypressCount: keypressCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode,
+						key: e.key
+					})
+				}
+			}).on('keyup', function(e) {
+				if (testActive) {
+					keyupCount++;
+					keyupResult.ok(keypressCount > 0 && keyupCount === 1 && keydownCount > 0, {
+						keyupCount: keyupCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode,
+						key: e.key
+					});
+				}
+			});
+		});
+		
+		test('Test end', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#endKeyTest2').on('click', function() {
+					testActive = false;
+					result.pass();
+				});
+			});
+		});
+	})()</script>
+	
+	<p>
+		Key events fire in the right order for a repeating alphanumeric key press
+	</p>
+	
+	<div class="testarea">
+		<div id="startKeyTest3">Click here then press and hold 'A' for roughly a second</div>
+		<div id="endKeyTest3">Click here to end the test</div>
+	</div>
+	<script type="text/javascript">(function() {
+		module('Key event order');
+		
+		var testActive;
+		
+		test('Test begin', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#startKeyTest3').on('click', function() {
+					testActive = true;
+					result.pass();
+				});
+			});
+		});
+		
+		var keydownResult = test('keydown fired first'),
+			keypressResult = test('keypress fired second'),
+			keyupResult = test('keyup fired third'),
+			keydownCount = 0,
+			keypressCount = 0,
+			keyupCount = 0;
+		
+		glow.ready(function() {
+			new glow.NodeList(document).on('keydown', function(e) {
+				if (testActive) {
+					keydownCount++;
+					keydownResult.ok(keypressCount === 0 && keyupCount === 0 && keydownCount === 1, {
+						keydownCount: keydownCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode
+					});
+				}
+			}).on('keypress', function(e) {
+				if (testActive) {
+					keypressCount++;
+					keypressResult.ok(keypressCount > 1 && keyupCount === 0 && keydownCount > 0, {
+						keypressCount: keypressCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode
+					})
+				}
+			}).on('keyup', function(e) {
+				if (testActive) {
+					keyupCount++;
+					keyupResult.ok(keypressCount > 0 && keyupCount === 1 && keydownCount > 0, {
+						keyupCount: keyupCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode
+					});
+				}
+			});
+		});
+		
+		test('Test end', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#endKeyTest3').on('click', function() {
+					testActive = false;
+					result.pass();
+				});
+			});
+		});
+	})()</script>
+	
+	<p>
+		Key events fire in the right order for a quick non-alphanumeric key press
+	</p>
+	
+	<div class="testarea">
+		<div id="startKeyTest4">Click here then press and hold the left arrow for roughly a second.</div>
+		<div id="endKeyTest4">Click here to end the test</div>
+	</div>
+	<script type="text/javascript">(function() {
+		module('Key event order');
+		
+		var testActive;
+		
+		test('Test begin', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#startKeyTest4').on('click', function() {
+					testActive = true;
+					result.pass();
+				});
+			});
+		});
+		
+		var keydownResult = test('keydown fired first'),
+			keypressResult = test('keypress fired second'),
+			keyupResult = test('keyup fired third'),
+			keydownCount = 0,
+			keypressCount = 0,
+			keyupCount = 0;
+		
+		glow.ready(function() {
+			new glow.NodeList(document).on('keydown', function(e) {
+				if (testActive) {
+					keydownCount++;
+					keydownResult.ok(keypressCount === 0 && keyupCount === 0 && keydownCount === 1, {
+						keydownCount: keydownCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode,
+						key: e.key
+					});
+				}
+			}).on('keypress', function(e) {
+				if (testActive) {
+					keypressCount++;
+					keypressResult.ok(keypressCount > 1 && keyupCount === 0 && keydownCount > 0, {
+						keypressCount: keypressCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode,
+						key: e.key
+					})
+				}
+			}).on('keyup', function(e) {
+				if (testActive) {
+					keyupCount++;
+					keyupResult.ok(keypressCount > 0 && keyupCount === 1 && keydownCount > 0, {
+						keyupCount: keyupCount,
+						keyCode: e.nativeEvent.keyCode,
+						charCode: e.nativeEvent.charCode,
+						key: e.key
+					});
+				}
+			});
+		});
+		
+		test('Test end', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#endKeyTest4').on('click', function() {
+					testActive = false;
+					result.pass();
+				});
+			});
+		});
+	})()</script>
+
 	<script type="text/javascript">
-		/*document.onkeydown = function(e) {
-			e = e || window.event;
-			log.info('keydown (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
-		};
-		document.onkeyup = function(e) {
-			e = e || window.event;
-			log.info('keyup (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
-		};
-		document.onkeypress = function(e) {
-			e = e || window.event;
-			log.info('keypress (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
-		};
-		document.ontextInput = function(e) {
-			e = e || window.event;
-			log.info('textInput (' + 'keyCode=' + e.keyCode + ' charCode=' + e.charCode + ')');
-		};*/
+		// make scripts visible in the page...
+		manualTests.showSrc();
 	</script>
-	
-	
 </body>
 </html>
