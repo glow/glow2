@@ -36,30 +36,28 @@ Glow.provide(function(glow) {
 			   return false;
 		   });
 	*/
-	NodeListProto.on = function(name, callback, thisVal) {
-		var attachTo,
-			capturingMode = true,
-			isKeyEvent = (keyEventNames.indexOf(' ' + name.toLowerCase() + ' ') > -1);
+	NodeListProto.on = function(eventName, callback, thisVal) {
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
 			
 		if (isKeyEvent) {
 			// todo
 		}
 		else { // assume it's a DOM event
-			glow.events._addDomEventListener(this, name, callback, thisVal);
+			glow.events._addDomEventListener(this, eventName, callback, thisVal);
 		}
 		
 		return this;
 	}
 	
 	/**
-		@name glow.NodeList#detatch
+		@name glow.NodeList#detach
 		@function
-		@description Detatch a listener from elements
-		   This will detatch the listener from each dom node in the NodeList.
+		@description detach a listener from elements
+		   This will detach the listener from each dom node in the NodeList.
 		
-		@param {String} eventName Name of the event to detatch the listener from
+		@param {String} eventName Name of the event to detach the listener from
 		   
-		@param {Function} callback Listener callback to detatch
+		@param {Function} callback Listener callback to detach
 		
 		@returns this
 		
@@ -72,9 +70,20 @@ Glow.provide(function(glow) {
 			glow.get('a').on('click', clickListener);
 			
 			// removing listeners
-			glow.get('a').detatch('click', clickListener);
+			glow.get('a').detach('click', clickListener);
 	*/
-	NodeListProto.detatch = function(eventName, callback) {}
+	NodeListProto.detach = function(eventName, callback, thisVal) {
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
+			
+		if (isKeyEvent) {
+			// todo
+		}
+		else { // assume it's a DOM event
+			glow.events._removeDomEventListener(this, eventName, callback, thisVal);
+		}
+		
+		return this;
+	}
 	
 	/**
 		@name glow.NodeList#delegate
@@ -132,16 +141,16 @@ Glow.provide(function(glow) {
 	NodeListProto.delegate = function(eventName, selector, callback, thisVal) {}
 	
 	/**
-		@name glow.NodeList#detatchDelegate
+		@name glow.NodeList#detachDelegate
 		@function
-		@description Detatch a delegated listener from elements
-		   This will detatch the listener from each dom node in the NodeList.
+		@description detach a delegated listener from elements
+		   This will detach the listener from each dom node in the NodeList.
 		
-		@param {String} eventName Name of the event to detatch the listener from
+		@param {String} eventName Name of the event to detach the listener from
 		
 		@param {String} selector CSS selector of child elements the listener is listening to
 		
-		@param {Function} callback Listener callback to detatch
+		@param {Function} callback Listener callback to detach
 		
 		@returns this
 		
@@ -154,9 +163,9 @@ Glow.provide(function(glow) {
 			glow.get('#nav').delegate('click', 'a', clickListener);
 			
 			// removing listeners
-			glow.get('#nav').detatchDelegate('click', 'a', clickListener);
+			glow.get('#nav').detachDelegate('click', 'a', clickListener);
 	*/
-	NodeListProto.detatchDelegate = function(eventName, selector, callback) {}
+	NodeListProto.detachDelegate = function(eventName, selector, callback) {}
 	
 	/**
 		@name glow.NodeList#fire
@@ -181,7 +190,9 @@ Glow.provide(function(glow) {
 		   // cause the browser to follow the link
 		   glow.get('#testLink').fire('click');
 	*/
-	NodeListProto.fire = function(eventName, event) {}
+	NodeListProto.fire = function(eventName, event) {
+		return glow.events.fire(this, eventName, event);
+	}
 	
 	/**
 		@name glow.NodeList#event:mouseenter

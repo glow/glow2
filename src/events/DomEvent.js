@@ -1,7 +1,7 @@
 Glow.provide(function(glow) {
 	var document = window.document,
 		undef = undefined,
-		domEventHandlers = [];
+		domEventHandlers = []; // like: domEventHandlers[uniqueId][eventName].count, domEventHandlers[uniqueId][eventName].callback
 	
 	/** 
 		@name glow.events.DomEvent
@@ -141,16 +141,11 @@ Glow.provide(function(glow) {
 	glow.events._addDomEventListener = function(nodeList, name, callback, thisVal) {
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
-			id,
-			isWindow;
+			id;
 	
 		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
 
-			//isWindow = (attachTo.window && (attachTo.open !== undef));
-
-			//if ( attachTo.nodeType !== 1 && !isWindow ) { continue; }
-			
 			// will add a unique id to this node, if there is not one already
 			glow.events.addListeners([attachTo], name, callback, thisVal || attachTo);
 
@@ -159,12 +154,15 @@ Glow.provide(function(glow) {
 			id = glow.events._getPrivateEventKey(attachTo);
 			if (!domEventHandlers[id]) { domEventHandlers[id] = {}; }
 			
-			if (domEventHandlers[id][name]) { continue; }
-			domEventHandlers[id][name] = true;
+			if (domEventHandlers[id][name]) {
+				domEventHandlers[id][name].count++;
+				continue;
+			}
+			var bridge = domEventHandlers[id][name] = {callback:null, count:1};
 			
 			// attach a handler to tell Glow to run all the associated callbacks
 			(function(attachTo) {
-				var handler = function(nativeEvent) {
+				bridge.callback = function(nativeEvent) {
 					var domEvent = new glow.events.DomEvent(nativeEvent);
 					var result = glow.events._callListeners(attachTo, name, domEvent); // fire() returns result of callback
 					
@@ -173,17 +171,67 @@ Glow.provide(function(glow) {
 				};
 				
 				if (attachTo.addEventListener) { // like DOM2 browsers	
-					attachTo.addEventListener(name, handler, (name === 'focus' || name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					attachTo.addEventListener(name, bridge.callback, (name === 'focus' || name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
 				}
 				else if (attachTo.attachEvent) { // like IE
-					if (name === 'focus')  attachTo.attachEvent('onfocusin', handler); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-					else if (name === 'blur') attachTo.attachEvent('onfocusout', handler); // cause that's how IE rolls...
-					attachTo.attachEvent('on' + name, handler);
+					if (name === 'focus')  attachTo.attachEvent('onfocusin', bridge.callback); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					else if (name === 'blur') attachTo.attachEvent('onfocusout', bridge.callback); // cause that's how IE rolls...
+					attachTo.attachEvent('on' + name, bridge.callback);
 				}
 				else { // legacy browsers?
-					attachTo['on' + name] = handler; // TODO preserve existing handler?
+					attachTo['on' + name] = bridge.callback; // TODO preserve existing handler?
 				}
 			})(attachTo); // get a reference to this particular attachTo value
+		}
+	}
+	
+	/**
+		Remove listener for an event fired by the browser.
+		@private
+		@name glow.events._removeDomEventListener
+		@see glow.NodeList#detach
+		@function
+	*/
+	glow.events._removeDomEventListener = function(nodeList, name, callback) {/*debug*///console.info('glow.events._removeDomEventListener = function('+nodeList+', '+name+', '+callback+')');
+		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
+			attachTo,
+			id;
+	
+		while (i-- && nodeList[i]) {
+			attachTo = nodeList[i];
+
+			// check if there is already a handler for this kind of event attached
+			// to this node (which will run all associated callbacks in Glow)
+			id = glow.events._getPrivateEventKey(attachTo);
+			if (id === undef || !domEventHandlers[id] || !domEventHandlers[id][name]) { continue; }
+			
+			glow.events.removeListeners([attachTo], name, callback);
+			domEventHandlers[id][name]--; // one less listener associated with this event
+			
+			if (domEventHandlers[id][name] === 0) {  // no more listeners associated with this event
+				// detach a handler to tell Glow to run all the associated callbacks
+				(function(attachTo) {
+					var handler = function(nativeEvent) {
+						var domEvent = new glow.events.DomEvent(nativeEvent);
+						var result = glow.events._callListeners(attachTo, name, domEvent);
+						
+						if (typeof result === 'boolean') { return result; }
+						else { return !domEvent.defaultPrevented(); }
+					};
+					
+					if (attachTo.removeEventListener) { // like DOM2 browsers	
+						attachTo.removeEventListener(name, handler, (name === 'focus' || name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					}
+					else if (attachTo.detachEvent) { // like IE
+						if (name === 'focus')  attachTo.detachEvent('onfocusin', handler); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+						else if (name === 'blur') attachTo.detachEvent('onfocusout', handler); // cause that's how IE rolls...
+						attachTo.detachEvent('on' + name, handler);
+					}
+					else { // legacy browsers?
+						attachTo['on' + name] = existingHandler; // TODO preserve existing handler?
+					}
+				})(attachTo); // get a reference to this particular attachTo value
+			}
 		}
 	}
 

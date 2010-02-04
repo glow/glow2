@@ -175,11 +175,10 @@ Glow.provide(function(glow) {
 		widgets.
 	*/
 	
-	glow.events.removeListeners = function (item, eventName, callback) {
+	glow.events.removeListeners = function (item, eventName, callback) {	
 		for(var i = 0, len = item.length; i < len; i++){	
 			var objIdent = item[i][psuedoPrivateEventKey],
 				listenersForEvent;
-				
 			if(!objIdent){
 				return false;
 			}
@@ -194,7 +193,7 @@ Glow.provide(function(glow) {
 			}			
 							
 			for(var i = 0, len = listenersForEvent.length; i < len; i++){						
-				if(listenersForEvent[i][0] == callback){
+				if (listenersForEvent[i][0] == callback){
 					listenersForEvent.splice(i, 1);
 					break;
 				}
@@ -217,13 +216,11 @@ Glow.provide(function(glow) {
 		for(var i = 0, len = item.length; i < len; i++){
 			var objIdent = item[i][psuedoPrivateEventKey];
 			if(!objIdent){
-					console.log("this far");
-					return false;
+				return false;
 			}
 			else{
-					// todo: need to return listeners in a sensible format
-					return eventListeners[objIdent];
-					
+				// todo: need to return listeners in a sensible format
+				return eventListeners[objIdent];
 			}
 		}
 
