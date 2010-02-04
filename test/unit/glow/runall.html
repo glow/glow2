@@ -91,6 +91,10 @@
 		strong b.pass{
 			color:#5E740B;
 		}
+		iframe{
+			position: absolute;
+    left: -9999em;
+		}
 	</style>
 	
 	<script type="text/javascript">
@@ -190,8 +194,8 @@
 			var iframe = document.createElement('IFRAME'),
 				debug = opts? (opts.debug || '') : '';
 			
-			iframe.width = '1px';
-			iframe.height = '1px';
+			iframe.width = '200px';
+			iframe.height = '200px';
 			iframe.style.border = 'none';
 			iframe.id = name;
 			iframe.src = src + '?'+debug+'nocache='+new Date().getTime();
