@@ -56,12 +56,17 @@ glowbug.console = {
 	messages: [],
 	log: function(level, message) {
 		if (!this._w) {
-			this._w = window.open('', 'report', 'width=350,height=250,menubar=0,toolbar=0,location=no,status=0,scrollbars=1,resizable=1');
-			this._w.document.write(
-				'<html><head><title>Console<\/title><style>body{background-color: #ddd;} .message{background-color:#FFF;padding:4px;margin:0px;border-bottom:1px solid #ccc;} .warn {background-color: #E5E6B6;} .error{background-color: #D39C9E;}<\/style><\/head>'
-				+ '<body style="font: 11px monaco"><code id="messages"><\/code><\/body><\/html>'
-			)
-			this._w.document.close();
+			try {
+				this._w = window.open('', 'report', 'width=350,height=250,menubar=0,toolbar=0,location=no,status=0,scrollbars=1,resizable=1');
+				this._w.document.write(
+					'<html><head><title>Console<\/title><style>body{background-color: #ddd;} .message{background-color:#FFF;padding:4px;margin:0px;border-bottom:1px solid #ccc;} .warn {background-color: #E5E6B6;} .error{background-color: #D39C9E;}<\/style><\/head>'
+					+ '<body style="font: 11px monaco"><code id="messages"><\/code><\/body><\/html>'
+				)
+				this._w.document.close();
+			}
+			catch(ignored) {
+				this._w = null;
+			}
 		}
 		
 		if (this._w) {
