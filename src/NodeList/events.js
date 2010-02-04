@@ -1,9 +1,8 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype,
 		document = window.document,
-		undefined;
-	
-	var keyEventNames = ' keypress keydown keyup ';
+		undefined,
+		keyEventNames = ' keypress keydown keyup ';
 	
 	/**
 		@name glow.NodeList#on
@@ -40,7 +39,7 @@ Glow.provide(function(glow) {
 		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
 			
 		if (isKeyEvent) {
-			// todo
+			glow.events._addKeyEventListener(this, name, callback, thisVal);
 		}
 		else { // assume it's a DOM event
 			glow.events._addDomEventListener(this, eventName, callback, thisVal);
@@ -260,22 +259,29 @@ Glow.provide(function(glow) {
 			Only fires if the element has focus, listen for this event on
 			the document to catch all keydowns.
 			
+			This event related to the user pressing a key on the keyboard,
+			if you're more concerned about the character entered, see the
+			{@link glow.NodeList#event:keypress keypress} event.
+			
 			keydown will only fire once, when the user presses the key.
 			
-			The order of events is keydown, char*, keyup. Char will only fire
-			if the element that has focus can receive character input, and may
+			The order of events is keydown, keypress*, keyup. keypress may
 			fire many times if the user holds the key down.
 		
 		@param {glow.events.KeyboardEvent} event Event Object
 	*/
 	
 	/**
-		@name glow.NodeList#event:keyChar
+		@name glow.NodeList#event:keypress
 		@event
-		@description Fires when the user enters a character into an element using the keyboard
+		@description Fires when a key's command executes.
+			For instance, if you hold down a key, it's action will occur many
+			times. This event will fire on each action.
 			
-			The order of events is keydown, char*, keyup. Char will only fire
-			if the element that has focus can receive character input, and may
+			This event is useful when you want to react to keyboard repeating, or
+			to detect when a character is entered into a field.
+			
+			The order of events is keydown, keypress*, keyup. keypress may
 			fire many times if the user holds the key down.
 		
 		@param {glow.events.KeyboardEvent} event Event Object
@@ -287,9 +293,12 @@ Glow.provide(function(glow) {
 		@description Fires when the user releases a key
 			Only fires if the element has focus, listen for this event on
 			the document to catch all keyups.
-		
-			The order of events is keydown, char*, keyup. Char will only fire
-			if the element that has focus can receive character input, and may
+			
+			This event related to the user pressing a key on the keyboard,
+			if you're more concerned about the character entered, see the
+			{@link glow.NodeList#event:keypress keypress} event.
+			
+			The order of events is keydown, keypress*, keyup. keypress may
 			fire many times if the user holds the key down.
 		
 		@param {glow.events.KeyboardEvent} event Event Object

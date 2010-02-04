@@ -10,7 +10,11 @@
 
 	<script src="../../../../packages/src/core.js" type="text/javascript"></script>
 	<script src="../../../../packages/src/widgets.js" type="text/javascript"></script>
-	
+	<script type="text/javascript">
+		if (window.parent && parent.Harness) {
+			parent.Harness.attach(window.name, QUnit);
+		}
+	</script>
     <script type="text/javascript" src="events.js"></script>
 
 
