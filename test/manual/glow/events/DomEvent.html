@@ -44,6 +44,8 @@
 <body>
 	<h1>Glow DomEvent</h1>
 	
+	<h2>Window Events</h2>
+	
 	<p>
 		The DomEvent module handles events attached to windows as well.
 	</p>
@@ -104,7 +106,9 @@
 			});
 		});
 	</script>
-
+	
+	<h2>Mouse Events</h2>
+	
 	<p>
 		Mouse events, thier coordinates and their related elements can be detected. Moving the mouse
 		very quickly may cause unexpected related elements to be returned, but that is unavoidable.
@@ -155,7 +159,7 @@
 		});
 	</script>
 	
-	
+	<h2>Click Events</h2>
 	
 	<p class="testarea">
 		<span id="click-test">Click on me.</span><br>
@@ -189,7 +193,7 @@
 		
 		test('Mouseup on a span can be detected', function(result) {
 			glow.ready(function() {
-				new glow.NodeList('#click-test').on('mousedown', function(e) {
+				new glow.NodeList('#click-test').on('mouseup', function(e) {
 					result.pass({
 						top: e.mouseTop,
 						left: e.mouseLeft
@@ -223,6 +227,7 @@
 		});
 	</script>
 	
+	<h2>Modifier Keys, etc</h2>
 	
 	<p>
 		Glow supports events such as doubleclick and can detect modifier keys used with other events.
@@ -270,6 +275,8 @@
 			});
 		});
 	</script>
+	
+	<h2>Multiple Callbacks</h2>
 	
 	<p>
 		This tests the ability of Glow to keep multiple nodes and multiple event callbacks sorted.
@@ -323,9 +330,9 @@
 	</script>
 	
 	
-	<p>
-		Form specific events, and keystroke-based events.
-	</p>
+	<h2>
+		Form specific events, and keystroke-based events
+	</h2>
 	
 	<form action="#" method="get" class="testarea" name="test-form" id="test-form">
 		<p>
@@ -402,14 +409,15 @@
 			glow.ready(function() {
 				new glow.NodeList('#test-form').on('submit', function(e) {
 					result.pass();
+					return false;
 				});
 			});
 		});
 	</script>
 
-	<p>
-		Scroll event.
-	</p>
+	<h2>
+		Scroll Event
+	</h2>
 	
 	<div class="testarea" id="scroll-test" style="height: 60px; width: 100px; overflow-y: scroll;">
 		<div style="height: 120px;">Scroll me.</div>
@@ -418,7 +426,7 @@
 	<script type="text/javascript">
 		module('Scrolling');
 		
-		test('Focus on an element can be detected.', function(result) {
+		test('Scrolling an element can be detected.', function(result) {
 			glow.ready(function() {
 				new glow.NodeList('#scroll-test').on('scroll', function(e) {
 					result.pass()
@@ -426,12 +434,95 @@
 			});
 		});
 	</script>
+	
+	<h2>
+		Detach Event
+	</h2>
+	
+	<div class="testarea" id="detach-test">
+		<div>Click me.</div>
+	</div>
+	
+	<script type="text/javascript">
+		module('Detach');
+		
+		test('A listener that was added and then detached does not fire.', function(result) {
+			glow.ready(function() {
+				var testElement = new glow.NodeList('#detach-test');
+				var passOnClick = function(e) { result.pass(); }
+				var failOnClick = function(e) { result.fail(); }
+				
+				testElement
+					.on('click', passOnClick)
+					.on('click', failOnClick)
+					.detach('click', failOnClick);
+			});
+		});
+	</script>
 
+	
+	
+	<h2>
+		Delegate Event
+	</h2>
+	
+	<div class="testarea" id="delegate-test">
+		<p id="p1" class="clicker" style="background-color:#ccc">Click me, I'm delegated.</p>
+		<p id="p2" style="background-color:#999">Then click me, I'm delegated too.</p>
+		<div id="p3" style="background-color:#666">Then click me, I'm not delegated.</div>
+	</div>
+	
+	<script type="text/javascript">
+		module('Delegate');
+		
+		test('Events can be handled for selected elements by a delegate.', function(result) {
+			var p1Clicked = false;
+			
+			glow.ready(function() {
+				new glow.NodeList('#delegate-test')
+				.delegate('click', 'p', function() {
+					if (this.id === 'p1') p1Clicked = true;
+					if (this.id === 'p2') result.ok(p1Clicked);
+					if (this.id === 'p3') result.fail();
+				});
+			});
+		});
+	</script>
+
+	
+	<h2>
+		Detach Delegate Event
+	</h2>
+	
+	<div class="testarea" id="delegatedetach-test">
+		<p id="p1" class="clicker" style="background-color:#ccc">Click me, I'm delegated.</p>
+	</div>
+	
+	<script type="text/javascript">
+		module('Delegate Detach');
+		
+		test('Events that are delegated dont fire after they are detached.', function(result) {
+			glow.ready(function() {
+				var testElement = new glow.NodeList('#delegatedetach-test');
+				var passOnClick = function(e) { result.pass(); }
+				var failOnClick = function(e) { result.fail(); }
+			
+				testElement
+				.delegate('click', 'p', passOnClick)
+				.delegate('click', 'p', failOnClick)
+				.detachDelegate('click', 'p', failOnClick);
+				
+			});
+		});
+	</script>
+
+	
+	
+	
+	<p><a name="zap">oops, did you get sent here from a test?</a></p>
 	<script type="text/javascript">
 		// make scripts visible in the page...
 		manualTests.showSrc();
 	</script>
-	
-	<p><a name="zap">oops, did you get sent here from a test?</a></p>
 </body>
 </html>

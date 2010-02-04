@@ -138,7 +138,32 @@ Glow.provide(function(glow) {
 				glow.get(this).removeClass('hover');
 			});
 	*/
-	NodeListProto.delegate = function(eventName, selector, callback, thisVal) {}
+	NodeListProto.delegate = function(eventName, selector, callback, thisVal) {
+		var i = this.length,
+			attachTo;
+		
+		while (i--) {
+			attachTo = this[i];
+			
+			(function(attachTo, thisVal) {
+				var handler = function(e) {
+					var context;
+					if (!!glow._sizzle.matches(selector, [e.source]).length) {
+						context = thisVal || e.source;
+						callback.call(context);
+					}
+				};
+				
+				delegatedCallbacks.push([callback, handler]);
+				
+				glow.events._addDomEventListener([attachTo], eventName, handler, thisVal);
+			})(attachTo, thisVal);
+		}
+		
+		return this;
+	}
+	
+	var delegatedCallbacks = []; // like: [[callback, handler], [callback, handler]]
 	
 	/**
 		@name glow.NodeList#detachDelegate
@@ -165,7 +190,25 @@ Glow.provide(function(glow) {
 			// removing listeners
 			glow.get('#nav').detachDelegate('click', 'a', clickListener);
 	*/
-	NodeListProto.detachDelegate = function(eventName, selector, callback) {}
+	NodeListProto.detachDelegate = function(eventName, selector, callback, thisVal) {
+		var i = this.length,
+			attachTo;
+		
+		while (i--) {
+			attachTo = this[i];
+			
+			for (var j = 0, lenj = delegatedCallbacks.length; j < lenj; j++) {
+				if (delegatedCallbacks[j][0] === callback) {
+					callback = delegatedCallbacks[j][1];
+					break;
+				}
+			}
+			
+			glow.events._removeDomEventListener([attachTo], eventName, callback, thisVal);
+		}
+		
+		return this;
+	}
 	
 	/**
 		@name glow.NodeList#fire

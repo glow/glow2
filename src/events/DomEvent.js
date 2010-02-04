@@ -192,7 +192,7 @@ Glow.provide(function(glow) {
 		@see glow.NodeList#detach
 		@function
 	*/
-	glow.events._removeDomEventListener = function(nodeList, name, callback) {/*debug*///console.info('glow.events._removeDomEventListener = function('+nodeList+', '+name+', '+callback+')');
+	glow.events._removeDomEventListener = function(nodeList, name, callback) {
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
 			id;
