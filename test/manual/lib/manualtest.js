@@ -150,10 +150,23 @@
 				glow.ready(function() {
 					new glow.NodeList(window).on('resize', function(e) {
 						resizeCounter++;
-						result.ok(true, 'ran ' + resizeCounter + ' times');
+						result.pass({
+							"resizeCounter": resizeCounter
+						});
 					})
 				});
 			});
+			
+			// a two-part test
+			
+			var mouseoverResult = test('Mouseover can be detected');
+			
+			test('Mouseover related element can be detected', function(result) {
+				new glow.NodeList('#mouse-test').on('mouseover', function(e) {
+					result.pass()
+					mouseoverResult.ok(e.related && e.related.id === 'mouse-around')
+				})
+			})
 	*/
 	function module(name) {
 		var ol = document.createElement('ol'),
@@ -173,9 +186,11 @@
 			See {@link module} for examples.
 		
 		@param {string} name Test name
-		@param {function} callback Function which creates the test.
+		@param {function} [callback] Function which creates the test.
 			This callback is passed an instance of ManualTestResult as the first param.
 			Use this to set the result of the test.
+			
+		@returns {ManualTestResult} result Use this to set the result of the test (an instance is also passed into the callback).
 	*/
 	function test(name, callback) {
 		var li = document.createElement('li'),
@@ -183,8 +198,7 @@
 		
 		li.innerHTML = name;
 		currentList.appendChild(li);
-		// TODO, try catch this!
-		callback(result);
+		callback && callback(result);
 	}
 	
 	// exports
