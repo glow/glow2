@@ -39,7 +39,7 @@ Glow.provide(function(glow) {
 		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
 			
 		if (isKeyEvent) {
-			glow.events._addKeyEventListener(this, name, callback, thisVal);
+			glow.events._addKeyEventListener(this, eventName, callback, thisVal);
 		}
 		else { // assume it's a DOM event
 			glow.events._addDomEventListener(this, eventName, callback, thisVal);

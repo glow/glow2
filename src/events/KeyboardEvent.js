@@ -2,18 +2,20 @@ Glow.provide(function(glow) {
 	var document = window.document,
 		undefined,
         keyboardEventProto,
+		$env = glow.env,
 		// the keyCode for the last keydown (returned to undefined on keyup)
 		activeKey,
 		// the charCode for the last keypress (returned to undefined on keyup & keydown)
 		activeChar,
-		DomEvent = glow.events.DomEvent;
+		DomEvent = glow.events.DomEvent,
+		eventKeysRegistered = {};  // stores which event keys we've added listeners for;
 	
 	function keyCodeToId(keyCode) {
 		// key codes for 0-9 A-Z are the same as their char codes
 		if ( (keyCode >= keyCodeA && keyCode <= keyCodeZ) || (keyCode >= keyCode0 && keyCode <= keyCode9) ) {
 			return String.fromCharCode(keyCode).toLowerCase();
 		}
-		return keyIds[keyCode]
+		return keyIds[keyCode] || 'unknown' + keyCode;
 	}
 	
 	/** 
@@ -77,9 +79,6 @@ Glow.provide(function(glow) {
         keyChar: undefined
     });
 	
-	
-	var eventKeysRegistered = {};  // stores which event keys we've added listeners for
-	
 	function addListener(elm, name, callback) {
 		if (elm.addEventListener) { // like DOM2 browsers	
 			elm.addEventListener(name, callback, false);
@@ -90,15 +89,19 @@ Glow.provide(function(glow) {
 	}
 	
 	// takes a keyCode from a keydown listener and returns true if the browser will also fire a keypress
-	function expectKeypress(keyCode) {
-		if (glow.env.gecko) {
-			return true;
+	function expectKeypress(keyCode, preventDefault) {
+		// for browsers that fire keypres for the majority of keys
+		if ($env.gecko || $env.opera) {
+			return !noKeyPress[keyCode];
 		}
 		
+		// for browsers that only fire keypress for printable chars
 		var keyName = keyCodeToId(keyCode);
 		
-		if (keyName.length === 1) {
-			return true;
+		// is this a printable char?
+		if (keyName.length === 1 && !noKeyPress[keyCode]) {
+			// webkit doesn't fire keypress if the keydown has been prevented
+			return !($env.webkit && preventDefault);
 		}
 		return false;
 	}
@@ -138,31 +141,39 @@ Glow.provide(function(glow) {
 				var keysDown = {};
 				
 				addListener(attachTo, 'keydown', function(nativeEvent) {
-					var keyCode = nativeEvent.keyCode;
+					var keyCode = nativeEvent.keyCode,
+						preventDefault,
+						preventDefaultKeyPress;
 					
 					// some browsers repeat this event while a key is held down, we don't want to do that
 					if ( !keysDown[keyCode] ) {
 						activeKey = keyCode;
 						activeChar = undefined;
-						glow.events._callListeners( attachTo, 'keydown', new KeyboardEvent(nativeEvent) );
+						preventDefault = glow.events._callListeners( attachTo, 'keydown', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 						keysDown[keyCode] = true;
 					}
-					// we want to fire a keyPress event here for non-printable chars
-					if ( !expectKeypress(keyCode) ) {
-						glow.events._callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) );
+					// we want to fire a keyPress event here if the browser isn't going to fire one itself
+					if ( !expectKeypress(keyCode, preventDefault) ) {
+						preventDefaultKeyPress = glow.events._callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 					}
+					return !(preventDefault || preventDefaultKeyPress);
 				});
 				
 				addListener(attachTo, 'keypress', function(nativeEvent) {
-					glow.events._callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) );
+					var preventDefault = glow.events._callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 					activeChar = nativeEvent.charCode || nativeEvent.keyCode;
+					return !preventDefault;
 				});
 				
 				addListener(attachTo, 'keyup', function(nativeEvent) {
-					glow.events._callListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) );
-					keysDown[nativeEvent.keyCode] = false;
+					var keyCode = nativeEvent.keyCode;
+					// some keys (like printscreen) only fire keyup so activeKey doesn't get set
+					activeKey = activeKey || keyCode;
+					var preventDefault = glow.events._callListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
+					keysDown[keyCode] = false;
 					activeKey = undefined;
 					activeChar = undefined;
+					return !preventDefault;
 				});
 			})(attachTo); // get a reference to this particular attachTo value
 		}
@@ -177,11 +188,10 @@ Glow.provide(function(glow) {
 			8: 'backspace',
 			9: 'tab',
 			13: 'return',
-			14: 'enter',
 			16: 'shift',
 			17: 'control',
 			18: 'alt',
-			20: 'capslock',
+			19: 'pause',
 			27: 'escape',
 			32: 'space',
 			33: 'pageup',
@@ -192,27 +202,32 @@ Glow.provide(function(glow) {
 			38: 'up',
 			39: 'right',
 			40: 'down',
-			44: 'printscreen',
+			44: 'printscreen', // Only fires keyup in firefox, IE. Doesn't fire in webkit, opera.
 			45: 'insert',
 			46: 'delete',
 			59: ';',
 			61: '=',
-			93: 'menu',
-			96: 'numpad0',
-			97: 'numpad1',
-			98: 'numpad2',
-			99: 'numpad3',
-			100: 'numpad4',
-			101: 'numpad5',
-			102: 'numpad6',
-			103: 'numpad7',
-			104: 'numpad8',
-			105: 'numpad9',
-			106: '*',
-			107: '+',
-			109: '-',
-			110: '.',
-			111: '/',
+			91: 'meta',
+			93: 'menu', // no keycode in opera, doesn't fire in Chrome
+			
+			// these are number pad numbers, but Opera doesn't distinguish them from normal number keys so we normalise on that
+				96: '0', 
+				97: '1',
+				98: '2',
+				99: '3',
+				100: '4',
+				101: '5',
+				102: '6',
+				103: '7',
+				104: '8',
+				105: '9',
+				106: '*', // opera fires 2 keypress events
+				107: '+', // opera fires 2 keypress events
+				109: '-', // opera sees - as insert
+				110: '.', // opera sees this as n
+				111: '/',
+			// end of numpad
+			
 			112: 'f1',
 			113: 'f2',
 			114: 'f3',
@@ -225,30 +240,49 @@ Glow.provide(function(glow) {
 			121: 'f10',
 			122: 'f11',
 			123: 'f12',
-			124: 'f13',
-			125: 'f14',
-			126: 'f15',
-			127: 'f16',
-			128: 'f17',
-			129: 'f18',
-			130: 'f19',
-			131: 'f20',
-			132: 'f21',
-			133: 'f22',
-			134: 'f23',
-			135: 'f24',
 			144: 'numlock',
 			145: 'scrolllock',
 			188: ',',
+			189: '-',
 			190: '.',
 			191: '/',
 			192: "'",
 			219: '[',
 			220: '\\',
 			221: ']',
-			222: '#',
-			224: 'meta'
+			222: '#', // opera sees # key as 3. Pah.
+			223: '`',
+			224: 'meta' // same as [ in opera
+		},
+		noKeyPress = {};
+	
+	// corrections for particular browsers :(
+	if ($env.gecko) {
+		keyIds[107] = '=';
+		
+		noKeyPress = {
+			16: 1,  // shift
+			17: 1,  // control
+			18: 1,  // alt
+			144: 1, // numlock
+			145: 1  // scrolllock
 		};
+	} else if ($env.opera) {
+		keyIds[42] = '*';
+		keyIds[43] = '+';
+		keyIds[47] = '/';
+		keyIds[222] = "'";
+		keyIds[192] = '`';
+		
+		noKeyPress = {
+			16: 1,  // shift
+			17: 1,  // control
+			18: 1  // alt
+		};
+	} else if ($env.webkit || $env.ie) {
+		keyIds[186] = ';';
+		keyIds[187] = '=';
+	}
 	
 	// export
 	glow.events.KeyboardEvent = KeyboardEvent;
