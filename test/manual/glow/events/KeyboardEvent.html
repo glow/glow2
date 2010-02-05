@@ -148,6 +148,134 @@
 			});
 		});
 	})()</script>
+	
+	<p>
+		Test overlapping keys
+	</p>
+	
+	<div class="testarea">
+		<div id="instruction2">Click here to begin the test</div>
+		<div id="endKeyTest2">Click here to end the test</div>
+	</div>
+	<script type="text/javascript">(function() {
+		module('Key event order on multiple keys');
+		
+		test('Test start', function(result) {
+			glow.ready(function() {
+				instructionElm = new glow.NodeList('#instruction2').on('click', function() {
+					instructionElm.text('Press and hold a, then press and hold s, then release a, then release s');
+					testActive = true;
+					result.pass();
+				});
+			});
+		});
+		
+		var testActive,
+			aDownResult = test('a keydown'),
+			aPressResult = test('a keypress'),
+			sDownResult = test('s keydown'),
+			sPressResult = test('s keypress'),
+			aUpResult = test('a keyup'),
+			sUpResult = test('s keyup'),
+			instructionElm,
+			aKeydownCount = 0, aKeypressCount = 0, aKeyupCount = 0,
+			sKeydownCount = 0, sKeypressCount = 0, sKeyupCount = 0;
+		
+		
+		glow.ready(function() {
+			new glow.NodeList(document).on('keydown', function(e) {
+				if (testActive) {
+					switch (e.key) {
+						case 'a':
+							aKeydownCount++;
+							aDownResult.ok(aKeydownCount === 1 && aKeypressCount + aKeyupCount + sKeydownCount + sKeypressCount + sKeyupCount === 0, {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount,
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+						case 's':
+							sKeydownCount++;
+							sDownResult.ok(aKeydownCount === 1 && sKeydownCount === 1 && aKeypressCount > 0 && aKeyupCount + sKeypressCount + sKeyupCount === 0, {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount,
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+					}
+				}
+			}).on('keypress', function(e) {
+				if (testActive) {
+					switch (e.key) {
+						case 'a':
+							aKeypressCount++;
+							aPressResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && aKeyupCount + sKeydownCount + sKeypressCount + sKeyupCount === 0, {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount,
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+						case 's':
+							sKeypressCount++;
+							sPressResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount + sKeyupCount === 0, {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount,
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+					}
+				}
+			}).on('keyup', function(e) {
+				if (testActive) {
+					switch (e.key) {
+						case 'a':
+							aKeyupCount++;
+							aUpResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount === 1 && sKeyupCount === 0, {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount,
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+						case 's':
+							sKeyupCount++;
+							sUpResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount === 1 && sKeyupCount === 1, {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount,
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+					}
+				}
+			});
+		});
+		
+		test('Test end', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#endKeyTest2').on('click', function() {
+					testActive = false;
+					result.pass();
+				});
+			});
+		});
+	})()</script>
 
 	<script type="text/javascript">
 		// make scripts visible in the page...

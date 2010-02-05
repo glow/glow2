@@ -166,10 +166,11 @@ Glow.provide(function(glow) {
 				});
 				
 				addListener(attachTo, 'keyup', function(nativeEvent) {
-					var keyCode = nativeEvent.keyCode;
-					// some keys (like printscreen) only fire keyup so activeKey doesn't get set
-					activeKey = activeKey || keyCode;
-					var preventDefault = glow.events._callListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
+					var keyCode = nativeEvent.keyCode,
+						preventDefault;
+						
+					activeKey = keyCode;
+					preventDefault = glow.events._callListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 					keysDown[keyCode] = false;
 					activeKey = undefined;
 					activeChar = undefined;
