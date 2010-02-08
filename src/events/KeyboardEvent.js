@@ -38,6 +38,9 @@ Glow.provide(function(glow) {
 		if (activeKey) {
 			this.key = keyCodeToId(activeKey);
 		}
+		if (activeChar) {
+			this.keyChar = String.fromCharCode(activeChar);
+		}
 		DomEvent.call(this, nativeEvent);
 	}
     
@@ -65,7 +68,7 @@ Glow.provide(function(glow) {
                         break;
                 }
         */
-        key: undefined,
+        key: '',
         /** 
             @name glow.events.KeyboardEvent#keyChar
             @type {string}
@@ -76,7 +79,7 @@ Glow.provide(function(glow) {
                 // prevent non-numbers being entered
                 return !isNaN( Number(event.keyChar) );
         */
-        keyChar: undefined
+        keyChar: ''
     });
 	
 	function addListener(elm, name, callback) {
@@ -160,8 +163,8 @@ Glow.provide(function(glow) {
 				});
 				
 				addListener(attachTo, 'keypress', function(nativeEvent) {
-					var preventDefault = glow.events._callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 					activeChar = nativeEvent.charCode || nativeEvent.keyCode;
+					var preventDefault = glow.events._callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 					return !preventDefault;
 				});
 				
@@ -170,10 +173,10 @@ Glow.provide(function(glow) {
 						preventDefault;
 						
 					activeKey = keyCode;
+					activeChar = undefined;
 					preventDefault = glow.events._callListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 					keysDown[keyCode] = false;
 					activeKey = undefined;
-					activeChar = undefined;
 					return !preventDefault;
 				});
 			})(attachTo); // get a reference to this particular attachTo value
@@ -253,7 +256,8 @@ Glow.provide(function(glow) {
 			221: ']',
 			222: '#', // opera sees # key as 3. Pah.
 			223: '`',
-			224: 'meta' // same as [ in opera
+			224: 'meta', // same as [ in opera
+			226: '\\' // this key appears on a US layout in webkit windows
 		},
 		noKeyPress = {};
 	

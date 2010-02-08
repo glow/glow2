@@ -45,10 +45,10 @@
 		var keysToTest = 'abc123'.split('').concat([
 				'backspace', 'tab', 'return', 'shift', 'control', 'alt', 'escape',
 				'space', 'pageup', 'pagedown', 'end', 'home', 'left', 'up', 'right', 'down',
-				'insert', 'delete', ';', '=', '-', '`', '1 (numpad)', '2 (numpad)', '3 (numpad)', '4 (numpad)', '5 (numpad)',
+				'insert', 'delete', ';', '=', '-', '1 (numpad)', '2 (numpad)', '3 (numpad)', '4 (numpad)', '5 (numpad)',
 				'6 (numpad)', '7 (numpad)', '8 (numpad)', '9 (numpad)', '0 (numpad)', 'f1', 'f2',
 				'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'numlock', 'scrolllock', 'pause', ',', '.',
-				'/', "'", '[', '\\', ']'
+				'/', '[', '\\', ']'
 			]);
 		
 		var testActive,
@@ -65,7 +65,8 @@
 			testActive = true;
 			testIndex++;
 			// we run 2 test groups on each key, one for pressing and one for holding
-			expectedKey = keysToTest[ testIndex ].replace(/\s+.*/, '');//keysToTest[ Math.floor(testIndex / 2) ];
+			expectedKey = keysToTest[ testIndex ].replace(/\s+.*/, ''); //keysToTest[ Math.floor(testIndex / 2) ];
+			expectedChar = expectedKey.length === 1 ? expectedKey.charAt(0) : '';
 			// we're looking for keyboard repeating on the odd numbered test groups
 			//expectMultipleKeyPress = testIndex % 2;
 			instructionElm.text(testInstructions[testIndex] + ' (click to move to next test)');
@@ -97,17 +98,18 @@
 				if (testActive) {
 					keydownCount++;
 					
-					results[testIndex * 3].ok(keypressCount === 0 && keyupCount === 0 && keydownCount === 1 && e.key === expectedKey, {
+					results[testIndex * 3].ok(keypressCount === 0 && keyupCount === 0 && keydownCount === 1 && e.key === expectedKey && e.keyChar === '', {
 						keydownCount: keydownCount,
 						keyCode: e.nativeEvent.keyCode,
 						charCode: e.nativeEvent.charCode,
-						key: e.key 
+						key: e.key,
+						keyChar: e.keyChar 
 					});
 				}
 			}).on('keypress', function(e) {
 				if (testActive) {
 					keypressCount++;
-					var pass = keyupCount === 0 && keydownCount > 0 && e.key === expectedKey;
+					var pass = keyupCount === 0 && keydownCount > 0 && e.key === expectedKey && e.keyChar === expectedChar;
 					
 					if (expectMultipleKeyPress) {
 						pass = pass && keypressCount > 1;
@@ -120,7 +122,8 @@
 						keypressCount: keypressCount,
 						keyCode: e.nativeEvent.keyCode,
 						charCode: e.nativeEvent.charCode,
-						key: e.key 
+						key: e.key,
+						keyChar: e.keyChar
 					})
 					
 					return false;
@@ -128,11 +131,12 @@
 			}).on('keyup', function(e) {
 				if (testActive) {
 					keyupCount++;
-					results[(testIndex * 3) + 2].ok(keypressCount > 0 && keyupCount === 1 && keydownCount > 0 && e.key === expectedKey, {
+					results[(testIndex * 3) + 2].ok(keypressCount > 0 && keyupCount === 1 && keydownCount > 0 && e.key === expectedKey && e.keyChar === '', {
 						keyupCount: keyupCount,
 						keyCode: e.nativeEvent.keyCode,
 						charCode: e.nativeEvent.charCode,
-						key: e.key 
+						key: e.key,
+						keyChar: e.keyChar
 					});
 					moveToNextTest();
 				}
@@ -188,24 +192,28 @@
 					switch (e.key) {
 						case 'a':
 							aKeydownCount++;
-							aDownResult.ok(aKeydownCount === 1 && aKeypressCount + aKeyupCount + sKeydownCount + sKeypressCount + sKeyupCount === 0, {
+							aDownResult.ok(e.key === 'a' && e.keyChar === '' && aKeydownCount === 1 && aKeypressCount + aKeyupCount + sKeydownCount + sKeypressCount + sKeyupCount === 0, {
 								aKeydownCount: aKeydownCount,
 								aKeypressCount: aKeypressCount,
 								aKeyupCount: aKeyupCount,
 								sKeydownCount: sKeydownCount,
 								sKeypressCount: sKeypressCount,
-								sKeyupCount: sKeyupCount
+								sKeyupCount: sKeyupCount,
+								key: e.key,
+								keyChar: e.keyChar
 							});
 							break;
 						case 's':
 							sKeydownCount++;
-							sDownResult.ok(aKeydownCount === 1 && sKeydownCount === 1 && aKeypressCount > 0 && aKeyupCount + sKeypressCount + sKeyupCount === 0, {
+							sDownResult.ok(e.key === 's' && e.keyChar === '' && aKeydownCount === 1 && sKeydownCount === 1 && aKeypressCount > 0 && aKeyupCount + sKeypressCount + sKeyupCount === 0, {
 								aKeydownCount: aKeydownCount,
 								aKeypressCount: aKeypressCount,
 								aKeyupCount: aKeyupCount,
 								sKeydownCount: sKeydownCount,
 								sKeypressCount: sKeypressCount,
-								sKeyupCount: sKeyupCount
+								sKeyupCount: sKeyupCount,
+								key: e.key,
+								keyChar: e.keyChar
 							});
 							break;
 					}
@@ -215,24 +223,28 @@
 					switch (e.key) {
 						case 'a':
 							aKeypressCount++;
-							aPressResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && aKeyupCount + sKeydownCount + sKeypressCount + sKeyupCount === 0, {
+							aPressResult.ok(e.key === 'a' && e.keyChar === 'a' && aKeydownCount === 1 && aKeypressCount > 0 && aKeyupCount + sKeydownCount + sKeypressCount + sKeyupCount === 0, {
 								aKeydownCount: aKeydownCount,
 								aKeypressCount: aKeypressCount,
 								aKeyupCount: aKeyupCount,
 								sKeydownCount: sKeydownCount,
 								sKeypressCount: sKeypressCount,
-								sKeyupCount: sKeyupCount
+								sKeyupCount: sKeyupCount,
+								key: e.key,
+								keyChar: e.keyChar
 							});
 							break;
 						case 's':
 							sKeypressCount++;
-							sPressResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount + sKeyupCount === 0, {
+							sPressResult.ok(e.key === 's' && e.keyChar === 's' && aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount + sKeyupCount === 0, {
 								aKeydownCount: aKeydownCount,
 								aKeypressCount: aKeypressCount,
 								aKeyupCount: aKeyupCount,
 								sKeydownCount: sKeydownCount,
 								sKeypressCount: sKeypressCount,
-								sKeyupCount: sKeyupCount
+								sKeyupCount: sKeyupCount,
+								key: e.key,
+								keyChar: e.keyChar
 							});
 							break;
 					}
@@ -242,24 +254,28 @@
 					switch (e.key) {
 						case 'a':
 							aKeyupCount++;
-							aUpResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount === 1 && sKeyupCount === 0, {
+							aUpResult.ok(e.key === 'a' && e.keyChar === '' && aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount === 1 && sKeyupCount === 0, {
 								aKeydownCount: aKeydownCount,
 								aKeypressCount: aKeypressCount,
 								aKeyupCount: aKeyupCount,
 								sKeydownCount: sKeydownCount,
 								sKeypressCount: sKeypressCount,
-								sKeyupCount: sKeyupCount
+								sKeyupCount: sKeyupCount,
+								key: e.key,
+								keyChar: e.keyChar
 							});
 							break;
 						case 's':
 							sKeyupCount++;
-							sUpResult.ok(aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount === 1 && sKeyupCount === 1, {
+							sUpResult.ok(e.key === 's' && e.keyChar === '' && aKeydownCount === 1 && aKeypressCount > 0 && sKeydownCount === 1 && sKeypressCount > 0 && aKeyupCount === 1 && sKeyupCount === 1, {
 								aKeydownCount: aKeydownCount,
 								aKeypressCount: aKeypressCount,
 								aKeyupCount: aKeyupCount,
 								sKeydownCount: sKeydownCount,
 								sKeypressCount: sKeypressCount,
-								sKeyupCount: sKeyupCount
+								sKeyupCount: sKeyupCount,
+								key: e.key,
+								keyChar: e.keyChar
 							});
 							break;
 					}
