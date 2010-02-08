@@ -163,7 +163,13 @@ Glow.provide(function(glow) {
 				});
 				
 				addListener(attachTo, 'keypress', function(nativeEvent) {
+					// some browsers store the charCode in .charCode, some in .keyCode
 					activeChar = nativeEvent.charCode || nativeEvent.keyCode;
+					// some browsers fire this event for non-printable chars, look at the previous keydown and see if we're expecting a printable char
+					if ( keyCodeToId(activeKey).length > 1 ) {
+						// non-printable chars have an ID length greater than 1
+						activeChar = undefined;
+					}
 					var preventDefault = glow.events._callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 					return !preventDefault;
 				});

@@ -42,8 +42,9 @@
 	<script type="text/javascript">(function() {
 		module('Key event order');
 		
+		// these are all the non-alphanumeric keys that we can safely detect across platform, browser and UK/US keyboard types
 		var keysToTest = 'abc123'.split('').concat([
-				'backspace', 'tab', 'return', 'shift', 'control', 'alt', 'escape',
+				'backspace', 'tab', 'return', 'shift', 'alt', 'escape',
 				'space', 'pageup', 'pagedown', 'end', 'home', 'left', 'up', 'right', 'down',
 				'insert', 'delete', ';', '=', '-', '1 (numpad)', '2 (numpad)', '3 (numpad)', '4 (numpad)', '5 (numpad)',
 				'6 (numpad)', '7 (numpad)', '8 (numpad)', '9 (numpad)', '0 (numpad)', 'f1', 'f2',
