@@ -36,14 +36,53 @@ test('glow.NodeList#clone', 12, function() {
 	equal(clones[1].nodeName, 'DIV', 'copy is div');
 	equal(clones[1].firstChild.nodeValue, 'C', 'copied inner text node');
 	equal(myNodeList[1].parentNode, divParent, 'original hasn\'t moved');
+	
+	
+	
 });
 
 test('glow.NodeList#clone data preserving', 0, function() {
+	// create something
+	var toClone = new glow.NodeList("#innerDiv1");
+	// add some data to it
+	// clone it
+	// check the data is still on the copied item
 	ok(false, 'todo, waiting for events & data');
 });
 
-test('glow.NodeList#clone events preserving', 0, function() {
-	ok(false, 'todo, waiting for events & data');
+test('glow.NodeList#clone events preserving', 4, function() {
+	var triggered = false;
+	function callback(event){				
+			triggered2 = true;
+			ok(event instanceof glow.events.Event, "event objected passed into listener");
+	}
+
+	
+	var toClone = new glow.NodeList("#innerDiv1");
+	
+	// add an Event to it
+	glow.events.addListeners(
+			toClone,
+			"customEvent",
+			callback
+		);
+	// check that the event is properly attached
+	glow.events.fire(toClone, 'customEvent');
+	
+	// clone it
+	var cloned = toClone.clone();
+	
+	var triggered = false;
+	
+	// check that the event is properly attached to the second element
+	glow.events.fire(cloned, 'customEvent');
+	
+	// check the event is on the copied item	
+	ok(glow.events.hasListener(cloned, "customEvent"), "Cloned element has attached event");
+	
+	//now destroy the first nodelist and check that the second still has it's event	
+	toClone.destroy;
+	ok(glow.events.hasListener(cloned, "customEvent"), "Cloned element has attached event after original is destroyed");
 });
 
 module('glow.NodeList#clone', {setup:setup, teardown:teardown});
