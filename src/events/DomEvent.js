@@ -131,6 +131,7 @@ Glow.provide(function(glow) {
 	
 	glow.util.extend(DomEvent, glow.events.Event); // DomEvent extends Event
 	
+	
 	/**
 		Add listener for an event fired by the browser.
 		@private

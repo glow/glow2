@@ -206,6 +206,45 @@ Glow.provide(function(glow) {
 	};
 	
 	/**
+		Copies the events from one nodelist to another
+		@private
+		@name glow.events._copyEvent
+		@see glow.NodeList#clone
+		@function
+	*/
+	glow.events._copyEvent = function(from, to){
+		var listenersToCopy,
+		i = [from].length,
+		listenersForEvent,
+		name,
+		callback,
+		thisVal;
+		
+		while(i--){
+			
+			var objIdent = [from][i][psuedoPrivateEventKey];
+			
+			listenersForEvent = eventListeners[objIdent];
+			
+				
+			if(!objIdent){
+					
+				return false;
+			}
+			else{
+				for ( var eventName in eventListeners[objIdent] ) {
+					name = eventName;
+					callback = eventListeners[objIdent][eventName][0][0];
+					thisVal = eventListeners[objIdent][eventName][0][1];
+				}				
+				glow.events._addDomEventListener([to], name, callback, thisVal);
+		}
+	
+		return;
+		}
+		
+	}
+	/**
 	@name glow.events.getListeners
 	@function
 	@param {Object[]} item  Item to find events for

@@ -506,16 +506,20 @@ Glow.provide(function(glow) {
 			var myClones = glow.get("h1, h2, h3, h4, h5, h6").clone();
 	*/
 	NodeListProto.clone = function() {
-		// TODO: make this work with events and data
 		var nodes = [],
 			i = this.length;
 		
 		while (i--) {
 			nodes[i] = this[i].cloneNode(true);
+			
+			glow.events._copyEvent(this[i], nodes[i]);
+			glow.NodeList._copyData(this[i], nodes[i]);
+			
 		}
 		
 		return new glow.NodeList(nodes);
 	};
+	
 	
 	/**
 		@name glow.NodeList#copy
