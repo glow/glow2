@@ -1161,12 +1161,47 @@ test('glow.NodeList#destroy edge cases', 6, function() {
 	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
 });
 
-test('glow.NodeList#destroy removes events', 1, function() {
-	ok(false, 'Todo (waiting on DOM events)');
+test('glow.NodeList#destroy removes events', 3, function() {
+	var shortLifeSpan = new glow.NodeList("#innerDiv1");
+	
+	var triggered = false;
+	function callback(event){				
+			triggered2 = true;
+			ok(event instanceof glow.events.Event, "event objected passed into listener");
+	}	
+	
+	// add an Event to it
+	glow.events.addListeners(
+			shortLifeSpan,
+			"customEvent",
+			callback
+		);
+	
+	// check that the event is properly attached
+	glow.events.fire(shortLifeSpan, 'customEvent');
+	
+	shortLifeSpan.destroy();
+	
+	triggered = false;
+	
+	// check that the event is properly attached
+	glow.events.fire(shortLifeSpan, 'customEvent');
+	
+	ok(!triggered, "Event could not be fired after element destroyed");
+
 });
 
-test('glow.NodeList#destroy removes data', 1, function() {
-	ok(false, 'Todo (waiting on #data)');
+test('glow.NodeList#destroy removes data', 2, function() {
+	var shortLifeSpan = new glow.NodeList("#innerDiv1");
+	
+	shortLifeSpan.data("colour", "green");	
+	
+	equal(shortLifeSpan.data("colour"), "green", 'Node has correct data attached before destroy');
+	
+	shortLifeSpan.destroy();
+	
+	ok(!shortLifeSpan.data("colour"), 'The node data has also been destroyed');
+	
 });
 
 module('glow.NodeList#remove', {setup:setup, teardown:teardown});
