@@ -212,18 +212,21 @@ Glow.provide(function(glow) {
 		}
 	};
 	/**
-		Copies the events from one nodelist to another
+		Copies the data from one nodelist to another
 		@private
 		@name glow.._copyData
 		@see glow.NodeList#clone
 		@function
 	*/
 	glow.NodeList._copyData = function(from, to){
-		if ( !glow.events.getListeners([from]) ){
+	
+		if ( !from[dataPropName] ){
 			return;
 		}
-		else{
-			
+		else{			
+			to = new glow.NodeList(to);
+			to.data( dataCache[from[dataPropName]] );			
+			return;
 		}
 		
 	}

@@ -47,7 +47,17 @@ test('glow.NodeList#clone data preserving', 0, function() {
 	// add some data to it
 	// clone it
 	// check the data is still on the copied item
-	ok(false, 'todo, waiting for events & data');
+	var somethingelse = new glow.NodeList("#innerDiv2");
+	
+	somethingelse.data("aprop", "avalue");
+	
+	toClone.data("colour", "red");
+	
+
+	
+	var cloned = toClone.clone();
+	
+	equal(cloned.data("colour"), 'red', 'Cloned node has expected data');
 });
 
 test('glow.NodeList#clone events preserving', 4, function() {
