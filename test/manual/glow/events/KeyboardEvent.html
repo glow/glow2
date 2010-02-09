@@ -303,7 +303,7 @@
 		<div id="endKeyTest3">Click here to end the test</div>
 	</div>
 	<script type="text/javascript">(function() {
-		module('Key event order on multiple keys');
+		module('Test removing listeners');
 		
 		test('Test start', function(result) {
 			glow.ready(function() {
@@ -419,6 +419,140 @@
 		test('Test end', function(result) {
 			glow.ready(function() {
 				new glow.NodeList('#endKeyTest3').on('click', function() {
+					testPhase = 0;
+					result.pass();
+				});
+			});
+		});
+	})()</script>
+	
+	<p>
+		Test delegating listeners
+	</p>
+	
+	<div class="testarea" id="delegateHook">
+		<div id="instruction4">Click here to begin the test</div>
+		<input id="input1" /><input id="input2" />
+		<div id="endKeyTest4">Click here to end the test</div>
+	</div>
+	<script type="text/javascript">(function() {
+		module('Delegating listeners');
+		
+		test('Test start', function(result) {
+			glow.ready(function() {
+				instructionElm = new glow.NodeList('#instruction4').on('click', function() {
+					if (testPhase === 0) {
+						instructionElm.text('Focus the first text input below and press a briefly, then repeat for the 2nd input');
+						testPhase = 1;
+					}
+					result.pass();
+				});
+			});
+		});
+		
+		var testPhase = 0,
+			aListenerResult = test('a listener result'),
+			sListenerResult = test('s listener result'),
+			instructionElm,
+			aKeydownCount = 0, aKeypressCount = 0, aKeyupCount = 0,
+			sKeydownCount = 0, sKeypressCount = 0, sKeyupCount = 0;
+		
+		
+		// here are some listeners we'll remove later
+		var keydownListener = function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeydownCount++;
+							break;
+						case 's':
+							sKeydownCount++;
+							break;
+					}
+				}
+			},
+			keypressListener = function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeypressCount++;
+							break;
+						case 's':
+							sKeypressCount++;
+							break;
+					}
+				}
+			},
+			keyupListener = function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeyupCount++;
+							break;
+						case 's':
+							sKeyupCount++;
+							break;
+					}
+				}
+			};
+		
+		glow.ready(function() {
+			new glow.NodeList('#delegateHook').delegate('keydown', '#input2', keydownListener).delegate('keypress', '#input2', keypressListener).delegate('keyup', '#input2', keyupListener);
+			
+			// our 2nd listeners
+			new glow.NodeList('#delegateHook').delegate('keydown', '#input2', function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeydownCount++;
+							break;
+						case 's':
+							sKeydownCount++;
+							break;
+					}
+				}
+			}).delegate('keypress', '#input2', function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeypressCount++;
+							break;
+						case 's':
+							sKeypressCount++;
+							break;
+					}
+				}
+			}).delegate('keyup', '#input2', function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeyupCount++;
+							aListenerResult.ok(aKeydownCount === 2 && aKeypressCount === 2 && aKeyupCount === 2 && e.source.id === 'input2', {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount,
+								'e.source.id': e.source.id
+							});
+							instructionElm.text('Now, press s briefly');
+							new glow.NodeList('#delegateHook').detachDelegate('keydown', '#input2', keydownListener).detachDelegate('keypress', '#input2', keypressListener).detachDelegate('keyup', '#input2', keyupListener);
+							testPhase = 2;
+							break;
+						case 's':
+							sKeyupCount++;
+							sListenerResult.ok(sKeydownCount === 1 && sKeypressCount === 1 && sKeyupCount === 1, {
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+					}
+				}
+			});
+		});
+		
+		test('Test end', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#endKeyTest4').on('click', function() {
 					testPhase = 0;
 					result.pass();
 				});
