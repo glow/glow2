@@ -507,15 +507,45 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.clone = function() {
 		var nodes = [],
+			eventIdProp = '__eventId' + glow.UID,
 			i = this.length;
+		
 		
 		while (i--) {
 			nodes[i] = this[i].cloneNode(true);
-			
-			glow.events._copyEvent(this[i], nodes[i]);
-			glow.NodeList._copyData(this[i], nodes[i]);
+			// some browsers (ie) also clone node properties as attributes
+			// we need to get rid of the eventId.
+			allCloneElms = new glow.NodeList( nodes ).get("*").push( nodes );
+			j = allCloneElms.length;
+				while(j--) {
+					nodes[i][eventIdProp] = null;
+					
+					// now copy over the data and events
+					glow.events._copyEvent(this[i], nodes[i]);
+					glow.NodeList._copyData(this[i], nodes[i]);
+				}
 			
 		}
+		// some browsers (ie) also clone node properties as attributes
+		// we need to get rid of the eventId.
+		//allCloneElms = new glow.NodeList( nodes ).get("*").push( nodes );
+		//j = allCloneElms.length;
+		
+		//while(j--) {
+			//allCloneElms[j][eventIdProp] = null;
+		//}
+		
+		
+				
+		// copy data from base elements to clone elements
+		/*allBaseElms = this.get("*").push( this );
+		i = allCloneElms.length;
+		while (i--) {
+			allCloneElms[i].removeAttribute(dataPropName);
+			glow.dom.get(allCloneElms[i]).data(
+			glow.dom.get(allBaseElms[i]).data()
+			);
+		}*/
 		
 		return new glow.NodeList(nodes);
 	};

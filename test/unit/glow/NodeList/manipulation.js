@@ -62,9 +62,13 @@ test('glow.NodeList#clone data preserving', 0, function() {
 
 test('glow.NodeList#clone events preserving', 4, function() {
 	var triggered = false;
+	var firedCount = 0;
 	function callback(event){				
 			triggered2 = true;
 			ok(event instanceof glow.events.Event, "event objected passed into listener");
+			triggered2 = false;
+			
+			
 	}
 
 	
@@ -82,7 +86,7 @@ test('glow.NodeList#clone events preserving', 4, function() {
 	// clone it
 	var cloned = toClone.clone();
 	
-	var triggered = false;
+	var triggered2 = false;
 	
 	// check that the event is properly attached to the second element
 	glow.events.fire(cloned, 'customEvent');
@@ -91,7 +95,7 @@ test('glow.NodeList#clone events preserving', 4, function() {
 	ok(glow.events.hasListener(cloned, "customEvent"), "Cloned element has attached event");
 	
 	//now destroy the first nodelist and check that the second still has it's event	
-	toClone.destroy;
+	toClone.destroy();
 	ok(glow.events.hasListener(cloned, "customEvent"), "Cloned element has attached event after original is destroyed");
 });
 
@@ -1596,6 +1600,7 @@ test('glow.dom.NodeList#unwrap edge cases', 3, function() {
 	equal(emptyList.unwrap(), emptyList, 'Empty nodelist');
 	equal(populatedList.unwrap(), populatedList, 'orphan element');
 	ok(!populatedList.unwrap()[0].parentNode, 'orphan element still no parent');
+
 });
 
 module('glow.NodeList#html', {setup:setup, teardown:teardown});
