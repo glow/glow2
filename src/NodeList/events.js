@@ -36,10 +36,10 @@ Glow.provide(function(glow) {
 		   });
 	*/
 	NodeListProto.on = function(eventName, callback, thisVal) {
-		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
 			
 		if (isKeyEvent) {
-			glow.events._addKeyEventListener(this, eventName, callback, thisVal);
+			glow.events._addKeyListener(this, eventName, callback, thisVal);
 		}
 		else { // assume it's a DOM event
 			glow.events._addDomEventListener(this, eventName, callback, thisVal);
@@ -72,10 +72,9 @@ Glow.provide(function(glow) {
 			glow.get('a').detach('click', clickListener);
 	*/
 	NodeListProto.detach = function(eventName, callback, thisVal) {
-		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
-			
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
 		if (isKeyEvent) {
-			// todo
+			glow.events._removeKeyListener(this, eventName, callback);
 		}
 		else { // assume it's a DOM event
 			glow.events._removeDomEventListener(this, eventName, callback, thisVal);

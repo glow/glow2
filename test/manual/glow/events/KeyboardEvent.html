@@ -66,7 +66,7 @@
 			testActive = true;
 			testIndex++;
 			// we run 2 test groups on each key, one for pressing and one for holding
-			expectedKey = keysToTest[ testIndex ].replace(/\s+.*/, ''); //keysToTest[ Math.floor(testIndex / 2) ];
+			expectedKey = keysToTest[ testIndex ].replace(/\s+.*/, ''); //keysToTest[ Math.floor(testIndex / 2) ].replace(/\s+.*/, '');
 			expectedChar = expectedKey.length === 1 ? expectedKey.charAt(0) : '';
 			// we're looking for keyboard repeating on the odd numbered test groups
 			//expectMultipleKeyPress = testIndex % 2;
@@ -288,6 +288,138 @@
 			glow.ready(function() {
 				new glow.NodeList('#endKeyTest2').on('click', function() {
 					testActive = false;
+					result.pass();
+				});
+			});
+		});
+	})()</script>
+	
+	<p>
+		Test removing listeners
+	</p>
+	
+	<div class="testarea">
+		<div id="instruction3">Click here to begin the test</div>
+		<div id="endKeyTest3">Click here to end the test</div>
+	</div>
+	<script type="text/javascript">(function() {
+		module('Key event order on multiple keys');
+		
+		test('Test start', function(result) {
+			glow.ready(function() {
+				instructionElm = new glow.NodeList('#instruction3').on('click', function() {
+					if (testPhase === 0) {
+						instructionElm.text('Press a briefly');
+						testPhase = 1;
+					}
+					result.pass();
+				});
+			});
+		});
+		
+		var testPhase = 0,
+			aListenerResult = test('a listener result'),
+			sListenerResult = test('s listener result'),
+			instructionElm,
+			aKeydownCount = 0, aKeypressCount = 0, aKeyupCount = 0,
+			sKeydownCount = 0, sKeypressCount = 0, sKeyupCount = 0;
+		
+		
+		// here are some listeners we'll remove later
+		var keydownListener = function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeydownCount++;
+							break;
+						case 's':
+							sKeydownCount++;
+							break;
+					}
+				}
+			},
+			keypressListener = function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeypressCount++;
+							break;
+						case 's':
+							sKeypressCount++;
+							break;
+					}
+				}
+			},
+			keyupListener = function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeyupCount++;
+							break;
+						case 's':
+							sKeyupCount++;
+							break;
+					}
+				}
+			};
+		
+		glow.ready(function() {
+			new glow.NodeList(document).on('keydown', keydownListener).on('keypress', keypressListener).on('keyup', keyupListener);
+			
+			// our 2nd listeners
+			new glow.NodeList(document).on('keydown', function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeydownCount++;
+							break;
+						case 's':
+							sKeydownCount++;
+							break;
+					}
+				}
+			}).on('keypress', function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeypressCount++;
+							break;
+						case 's':
+							sKeypressCount++;
+							break;
+					}
+				}
+			}).on('keyup', function(e) {
+				if (testPhase) {
+					switch (e.key) {
+						case 'a':
+							aKeyupCount++;
+							aListenerResult.ok(aKeydownCount === 2 && aKeypressCount === 2 && aKeyupCount === 2, {
+								aKeydownCount: aKeydownCount,
+								aKeypressCount: aKeypressCount,
+								aKeyupCount: aKeyupCount
+							});
+							instructionElm.text('Now, press s briefly');
+							new glow.NodeList(document).detach('keydown', keydownListener).detach('keypress', keypressListener).detach('keyup', keyupListener);
+							testPhase = 2;
+							break;
+						case 's':
+							sKeyupCount++;
+							sListenerResult.ok(sKeydownCount === 1 && sKeypressCount === 1 && sKeyupCount === 1, {
+								sKeydownCount: sKeydownCount,
+								sKeypressCount: sKeypressCount,
+								sKeyupCount: sKeyupCount
+							});
+							break;
+					}
+				}
+			});
+		});
+		
+		test('Test end', function(result) {
+			glow.ready(function() {
+				new glow.NodeList('#endKeyTest3').on('click', function() {
+					testPhase = 0;
 					result.pass();
 				});
 			});
