@@ -1161,7 +1161,7 @@ test('glow.NodeList#destroy edge cases', 6, function() {
 	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
 });
 
-test('glow.NodeList#destroy removes events', 3, function() {
+test('glow.NodeList#destroy removes events', 7, function() {
 	var shortLifeSpan = new glow.NodeList("#innerDiv1");
 	
 	var triggered = false;
@@ -1180,7 +1180,12 @@ test('glow.NodeList#destroy removes events', 3, function() {
 	// check that the event is properly attached
 	glow.events.fire(shortLifeSpan, 'customEvent');
 	
-	shortLifeSpan.destroy();
+	
+	returnNodeList = shortLifeSpan.destroy();
+	
+	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
+	notEqual(returnNodeList, shortLifeSpan, 'New nodelist returned');
+	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
 	
 	triggered = false;
 	
@@ -1188,18 +1193,26 @@ test('glow.NodeList#destroy removes events', 3, function() {
 	glow.events.fire(shortLifeSpan, 'customEvent');
 	
 	ok(!triggered, "Event could not be fired after element destroyed");
+	
+	glow.events.fire(returnNodeList, 'customEvent');
+	
+	ok(!triggered, "Return node event could not be fired after element destroyed");
 
 });
 
-test('glow.NodeList#destroy removes data', 2, function() {
+test('glow.NodeList#destroy removes data', 5, function() {
 	var shortLifeSpan = new glow.NodeList("#innerDiv1");
 	
 	shortLifeSpan.data("colour", "green");	
 	
 	equal(shortLifeSpan.data("colour"), "green", 'Node has correct data attached before destroy');
 	
-	shortLifeSpan.destroy();
+	returnNodeList = shortLifeSpan.destroy();
 	
+	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
+	notEqual(returnNodeList, shortLifeSpan, 'New nodelist returned');
+	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+
 	ok(!shortLifeSpan.data("colour"), 'The node data has also been destroyed');
 	
 });

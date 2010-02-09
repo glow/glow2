@@ -288,7 +288,7 @@ Glow.provide(function(glow) {
 	var tmpDiv = document.createElement('div');
 	
 	NodeListProto.destroy = function() {
-		// TODO: destory data & events
+		glow.NodeList._destroyData(this);
 		this.appendTo(tmpDiv);
 		tmpDiv.innerHTML = '';
 		return new glow.NodeList();
