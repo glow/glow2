@@ -434,7 +434,7 @@
 			});
 		});
 	</script>
-	
+
 	<h2>
 		Detach Event
 	</h2>
@@ -458,9 +458,7 @@
 					.detach('click', failOnClick);
 			});
 		});
-	</script>
-
-	
+	</script>	
 	
 	<h2>
 		Delegate Event
@@ -488,7 +486,6 @@
 			});
 		});
 	</script>
-
 	
 	<h2>
 		Detach Delegate Event
@@ -516,8 +513,103 @@
 		});
 	</script>
 
+	<h2>
+		Mouseenter and Mouseleave Events
+	</h2>
 	
+	<p>
+	Press the start button, move the mouse into the test area below (it should change color to indicate that you've
+	entered), then press the finish button. Move the mouse into the test area again and it should ignore your actions.
+	</p>
 	
+	<div class="testarea">
+	<button id="mouseenterleave-start">Start This Test</button>
+	<ol id="mouseenterleave-test" style="background-color:#ccc;padding:12px;">
+        <li style="background-color:#fff;border:1px solid #666;margin: 4px;"> Move Mouse Across Me </li>
+        <li style="background-color:#fff;border:1px solid #666;margin: 4px;"> Me Too </li>
+        <li style="background-color:#fff;border:1px solid #666;margin: 4px;"> And Me </li>
+    </ol>
+    <button id="mouseenterleave-done">Finish This Test</button>
+    </div>
+	
+	<script type="text/javascript">
+		module('Mouseenter Mouseleave');
+		
+		test('Mouseleave/enter only fires when leaving/entering the element it is set on.', function(result) {
+			glow.ready(function() {
+				var testElement = new glow.NodeList('#mouseenterleave-test');
+				
+				var mouseEnterCount,
+					mouseLeaveCount;
+				
+				function mousenterHandler() {
+//console.warn('mouseenter callback ran!');
+					testElement.css('background-color', '#993366');
+					mouseEnterCount++;
+				};
+				
+				function mousleaveHandler() {
+//console.warn('mouseleave callback ran!');
+					testElement.css('background-color', '#999999');
+					mouseLeaveCount++;
+				};
+				
+				document.getElementById('mouseenterleave-start').onclick = function() {
+					testElement
+					.on('mouseenter', mousenterHandler)
+					.on('mouseleave', mousleaveHandler);
+				
+					mouseEnterCount = 0;
+					mouseLeaveCount = 0;
+				}
+				
+				document.getElementById('mouseenterleave-done').onclick = function() {
+					var message = "mouseEnterCount: "+mouseEnterCount+", mouseLeaveCount: "+mouseLeaveCount+"." 
+					
+					if (mouseEnterCount === 1 && mouseLeaveCount === 1) { result.ok(true, message); }
+					else  { result.ok(false, message); }
+					
+					testElement
+					.detach('mouseenter', mousenterHandler)
+					.detach('mouseleave', mousleaveHandler);
+				}
+			});
+		});
+	</script>
+	
+<!--	
+	
+	<h2>stacking events</h2>
+	
+	<p id="my-attachto">hello</p>
+	
+	<script type="text/javascript">
+		var attachTo = new glow.NodeList(document.getElementById('my-attachto')),
+			eventName = 'zap';
+			
+		function callback(e) {
+			console.log( 'hello '+ (++callback.count) );
+		}
+		callback.count = 0;
+		
+		
+		glow.events.addListeners(attachTo, eventName, callback, attachTo);
+		glow.events.addListeners(attachTo, eventName, callback, attachTo);
+		
+		glow.events.fire(attachTo, eventName, null); // should hello twice
+		
+		glow.events.removeListeners(attachTo, eventName, callback);
+		glow.events.removeListeners(attachTo, eventName, callback);
+		
+		glow.events.fire(attachTo, eventName, null); // should do nothing
+		callback.count++;
+		
+		glow.events.addListeners(attachTo, eventName, callback, attachTo);
+		glow.events.fire(attachTo, eventName, null); // should hello once
+		
+	</script>
+	
+-->	
 	
 	<p><a name="zap">oops, did you get sent here from a test?</a></p>
 	<script type="text/javascript">
