@@ -178,9 +178,8 @@ Glow.provide(function(glow) {
 		Glow will call this by default on its own classes like NodeList and
 		widgets.
 	*/
-	
 	glow.events.removeListeners = function (item, eventName, callback) {
-		for(var i = 0, len = item.length; i < len; i++){	
+		for(var i = 0, leni = item.length; i < leni; i++){	
 			var objIdent = item[i][psuedoPrivateEventKey],
 				listenersForEvent;
 			if(!objIdent){
@@ -207,6 +206,45 @@ Glow.provide(function(glow) {
 		return true;			
 	};
 	
+	/**
+		Copies the events from one nodelist to another
+		@private
+		@name glow.events._copyEvent
+		@see glow.NodeList#clone
+		@function
+	*/
+	glow.events._copyEvent = function(from, to){
+		var listenersToCopy,
+		i = [from].length,
+		listenersForEvent,
+		name,
+		callback,
+		thisVal;
+		
+		while(i--){
+			
+			var objIdent = [from][i][psuedoPrivateEventKey];
+			
+			listenersForEvent = eventListeners[objIdent];
+			
+				
+			if(!objIdent){
+					
+				return false;
+			}
+			else{
+				for ( var eventName in eventListeners[objIdent] ) {
+					name = eventName;
+					callback = eventListeners[objIdent][eventName][0][0];
+					thisVal = eventListeners[objIdent][eventName][0][1];
+				}				
+				glow.events._addDomEventListener([to], name, callback, thisVal);
+		}
+	
+		return;
+		}
+		
+	}
 	/**
 	@name glow.events.getListeners
 	@function

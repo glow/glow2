@@ -36,14 +36,67 @@ test('glow.NodeList#clone', 12, function() {
 	equal(clones[1].nodeName, 'DIV', 'copy is div');
 	equal(clones[1].firstChild.nodeValue, 'C', 'copied inner text node');
 	equal(myNodeList[1].parentNode, divParent, 'original hasn\'t moved');
+	
+	
+	
 });
 
 test('glow.NodeList#clone data preserving', 0, function() {
-	ok(false, 'todo, waiting for events & data');
+	// create something
+	var toClone = new glow.NodeList("#innerDiv1");
+	// add some data to it
+	// clone it
+	// check the data is still on the copied item
+	var somethingelse = new glow.NodeList("#innerDiv2");
+	
+	somethingelse.data("aprop", "avalue");
+	
+	toClone.data("colour", "red");
+	
+
+	
+	var cloned = toClone.clone();
+	
+	equal(cloned.data("colour"), 'red', 'Cloned node has expected data');
 });
 
-test('glow.NodeList#clone events preserving', 0, function() {
-	ok(false, 'todo, waiting for events & data');
+test('glow.NodeList#clone events preserving', 4, function() {
+	var triggered = false;
+	var firedCount = 0;
+	function callback(event){				
+			triggered2 = true;
+			ok(event instanceof glow.events.Event, "event objected passed into listener");
+			triggered2 = false;
+			
+			
+	}
+
+	
+	var toClone = new glow.NodeList("#innerDiv1");
+	
+	// add an Event to it
+	glow.events.addListeners(
+			toClone,
+			"customEvent",
+			callback
+		);
+	// check that the event is properly attached
+	glow.events.fire(toClone, 'customEvent');
+	
+	// clone it
+	var cloned = toClone.clone();
+	
+	var triggered2 = false;
+	
+	// check that the event is properly attached to the second element
+	glow.events.fire(cloned, 'customEvent');
+	
+	// check the event is on the copied item	
+	ok(glow.events.hasListener(cloned, "customEvent"), "Cloned element has attached event");
+	
+	//now destroy the first nodelist and check that the second still has it's event	
+	toClone.destroy();
+	ok(glow.events.hasListener(cloned, "customEvent"), "Cloned element has attached event after original is destroyed");
 });
 
 module('glow.NodeList#clone', {setup:setup, teardown:teardown});
@@ -1112,12 +1165,60 @@ test('glow.NodeList#destroy edge cases', 6, function() {
 	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
 });
 
-test('glow.NodeList#destroy removes events', 1, function() {
-	ok(false, 'Todo (waiting on DOM events)');
+test('glow.NodeList#destroy removes events', 7, function() {
+	var shortLifeSpan = new glow.NodeList("#innerDiv1");
+	
+	var triggered = false;
+	function callback(event){				
+			triggered2 = true;
+			ok(event instanceof glow.events.Event, "event objected passed into listener");
+	}	
+	
+	// add an Event to it
+	glow.events.addListeners(
+			shortLifeSpan,
+			"customEvent",
+			callback
+		);
+	
+	// check that the event is properly attached
+	glow.events.fire(shortLifeSpan, 'customEvent');
+	
+	
+	returnNodeList = shortLifeSpan.destroy();
+	
+	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
+	notEqual(returnNodeList, shortLifeSpan, 'New nodelist returned');
+	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+	
+	triggered = false;
+	
+	// check that the event is properly attached
+	glow.events.fire(shortLifeSpan, 'customEvent');
+	
+	ok(!triggered, "Event could not be fired after element destroyed");
+	
+	glow.events.fire(returnNodeList, 'customEvent');
+	
+	ok(!triggered, "Return node event could not be fired after element destroyed");
+
 });
 
-test('glow.NodeList#destroy removes data', 1, function() {
-	ok(false, 'Todo (waiting on #data)');
+test('glow.NodeList#destroy removes data', 5, function() {
+	var shortLifeSpan = new glow.NodeList("#innerDiv1");
+	
+	shortLifeSpan.data("colour", "green");	
+	
+	equal(shortLifeSpan.data("colour"), "green", 'Node has correct data attached before destroy');
+	
+	returnNodeList = shortLifeSpan.destroy();
+	
+	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
+	notEqual(returnNodeList, shortLifeSpan, 'New nodelist returned');
+	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+
+	ok(!shortLifeSpan.data("colour"), 'The node data has also been destroyed');
+	
 });
 
 module('glow.NodeList#remove', {setup:setup, teardown:teardown});
@@ -1499,6 +1600,7 @@ test('glow.dom.NodeList#unwrap edge cases', 3, function() {
 	equal(emptyList.unwrap(), emptyList, 'Empty nodelist');
 	equal(populatedList.unwrap(), populatedList, 'orphan element');
 	ok(!populatedList.unwrap()[0].parentNode, 'orphan element still no parent');
+
 });
 
 module('glow.NodeList#html', {setup:setup, teardown:teardown});

@@ -211,7 +211,42 @@ Glow.provide(function(glow) {
 			}
 		}
 	};
+	/**
+		Copies the data from one nodelist to another
+		@private
+		@name glow.NodeList._copyData
+		@see glow.NodeList#clone
+		@function
+	*/
+	glow.NodeList._copyData = function(from, to){
+		if ( !from[dataPropName] ){
+			return;
+		}
+		else{			
+			to = new glow.NodeList(to);
+			to.data( dataCache[from[dataPropName]] );			
+			return;
+		}
 		
+	}
+	/**
+		Used to remove the data when a node is destroyed
+		@private
+		@name glow.NodeList._copyData
+		@see glow.NodeList#destroy
+		@function
+	*/
+	glow.NodeList._destroyData = function(removeFrom){
+		if ( !removeFrom && !removeFrom[0][dataPropName] ){
+			return;
+		}
+		else{
+			removeFromNode = new glow.NodeList(removeFrom);
+			removeFromNode.removeData();			
+			return;
+		}
+		
+	}
 	/**
 	@name glow.NodeList#data
 	@function

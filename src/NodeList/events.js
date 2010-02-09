@@ -36,10 +36,10 @@ Glow.provide(function(glow) {
 		   });
 	*/
 	NodeListProto.on = function(eventName, callback, thisVal) {
-		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
 			
 		if (isKeyEvent) {
-			glow.events._addKeyEventListener(this, name, callback, thisVal);
+			glow.events._addKeyListener(this, eventName, callback, thisVal);
 		}
 		else { // assume it's a DOM event
 			glow.events._addDomEventListener(this, eventName, callback, thisVal);
@@ -72,10 +72,9 @@ Glow.provide(function(glow) {
 			glow.get('a').detach('click', clickListener);
 	*/
 	NodeListProto.detach = function(eventName, callback, thisVal) {
-		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName.toLowerCase() + ' ') > -1);
-			
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
 		if (isKeyEvent) {
-			// todo
+			glow.events._removeKeyListener(this, eventName, callback);
 		}
 		else { // assume it's a DOM event
 			glow.events._removeDomEventListener(this, eventName, callback, thisVal);
@@ -139,7 +138,8 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.delegate = function(eventName, selector, callback, thisVal) {
 		var i = this.length,
-			attachTo;
+			attachTo,
+			isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
 		
 		while (i--) {
 			attachTo = this[i];
@@ -149,13 +149,18 @@ Glow.provide(function(glow) {
 					var context;
 					if (!!glow._sizzle.matches(selector, [e.source]).length) {
 						context = thisVal || e.source;
-						callback.call(context);
+						callback.call(context, e);
 					}
 				};
 				
 				delegatedCallbacks.push([callback, handler]);
 				
-				glow.events._addDomEventListener([attachTo], eventName, handler, thisVal);
+				if (isKeyEvent) {
+					glow.events._addKeyListener([attachTo], eventName, handler);
+				}
+				else { // assume it's a DOM event
+					glow.events._addDomEventListener([attachTo], eventName, handler, thisVal);
+				}
 			})(attachTo, thisVal);
 		}
 		
@@ -191,19 +196,26 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.detachDelegate = function(eventName, selector, callback, thisVal) {
 		var i = this.length,
-			attachTo;
+			attachTo,
+			isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1),
+			handler;
 		
 		while (i--) {
 			attachTo = this[i];
 			
 			for (var j = 0, lenj = delegatedCallbacks.length; j < lenj; j++) {
 				if (delegatedCallbacks[j][0] === callback) {
-					callback = delegatedCallbacks[j][1];
+					handler = delegatedCallbacks[j][1];
 					break;
 				}
 			}
 			
-			glow.events._removeDomEventListener([attachTo], eventName, callback, thisVal);
+			if (isKeyEvent) {
+				glow.events._removeKeyListener([attachTo], eventName, handler);
+			}
+			else { // assume it's a DOM event
+				glow.events._removeDomEventListener([attachTo], eventName, handler, thisVal);
+			}
 		}
 		
 		return this;
