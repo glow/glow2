@@ -176,7 +176,7 @@ Glow.provide(function(glow) {
 	*/
 	
 	glow.events.removeListeners = function (item, eventName, callback) {	
-		for(var i = 0, len = item.length; i < len; i++){	
+		for(var i = 0, leni = item.length; i < leni; i++){	
 			var objIdent = item[i][psuedoPrivateEventKey],
 				listenersForEvent;
 			if(!objIdent){
@@ -186,20 +186,18 @@ Glow.provide(function(glow) {
 			if(!eventListeners[objIdent]){
 				return false;
 			}
-		
+			
 			listenersForEvent = eventListeners[objIdent][eventName];
 			if(!listenersForEvent){
 				return false;
 			}			
 							
-			for(var i = 0, len = listenersForEvent.length; i < len; i++){						
-				if (listenersForEvent[i][0] == callback){
-					listenersForEvent.splice(i, 1);
+			for(var j = 0, lenj = listenersForEvent.length; j < lenj; j++){						
+				if (listenersForEvent[j][0] == callback){
+					listenersForEvent.splice(j, 1);
 					break;
 				}
-		
-			}
-					
+			}	
 		}
 		
 		return true;			
