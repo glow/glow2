@@ -146,10 +146,20 @@ Glow.provide(function(glow) {
 			
 			(function(attachTo, thisVal) {
 				var handler = function(e) {
-					var context;
-					if (!!glow._sizzle.matches(selector, [e.source]).length) {
-						context = thisVal || e.source;
-						callback.call(context, e);
+					var node = e.source;
+					
+					// if the source matches the selector,
+					// or 
+					// if the source is, or is within, attachTo and has a parent that matches the selector
+					while (node) {
+						if (!!glow._sizzle.matches(selector, [node]).length) {
+							callback.call((thisVal || node), e);
+							break;
+						}
+						
+						if (node === attachTo) { break; } // don't check parents above the attachTo
+						
+						node = node.parentNode;
 					}
 				};
 				
