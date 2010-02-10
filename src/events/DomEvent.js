@@ -130,61 +130,6 @@ Glow.provide(function(glow) {
 	}
 	
 	glow.util.extend(DomEvent, glow.events.Event); // DomEvent extends Event
-
-	// need to keep track of the original callback provided by the user and the
-	// callback we replaced it with when dealing with simulated events (like mouseenter).
-	// this is so we know which callback to remove later when the user askd to detach their original
-	var simulatedCallbacks = []; // like: [[callback, handler], [callback, handler]]
-	//like: simulatedCallbacks[uniqueId][simulatedEventName] = [[callback, simulatedCallback]];
-
-	function getSimulatedCallbackFromOriginal(id, eventName, originalCallback) {
-		var callbacks = simulatedCallbacks[id];
-		if (callbacks) { callbacks = callbacks[eventName]; }
-		
-		if (callbacks) {
-			for (var i = 0, leni = callbacks.length; i < leni; i++) {
-				if (callbacks[i][0] === originalCallback) {
-					return callbacks[i][1];
-				}
-			}
-		}
-	}
-	
-	// replace callback for simulated events (like mouseenter) with a more cross-browsery one
-	function simulate(eventName, attachTo, id, callback) {	
-		var simulatedCallback;
-		
-		simulatedCallback = getSimulatedCallbackFromOriginal(id, eventName, callback); // we've already made a simulated event on this item
-		
-		if (!simulatedCallback) {
-			// simulate this event
-			if (eventName === 'mouseenter') {
-				// on mouseover...
-				simulatedCallback = function(e) {
-					if (!new glow.NodeList(attachTo).contains(e.related)) {
-						callback.call(attachTo);
-					}
-				};
-			}
-			else if (eventName === 'mouseleave') {
-				// on mouseout...
-				simulatedCallback = function(e) {						
-					if (e.related != attachTo && new glow.NodeList(e.related).contains(attachTo)) {
-						callback.call(attachTo);
-					}
-				};
-			}
-			else { throw "Unsupported simulated event: "+eventName; }
-		
-			if (!simulatedCallbacks[id]) { simulatedCallbacks[id] = {}; }
-			if (!simulatedCallbacks[id][eventName]) { simulatedCallbacks[id][eventName] = []; }
-			simulatedCallbacks[id][eventName].push([callback, simulatedCallback]); // keep track of what we've replaced
-		}
-		
-		return simulatedCallback;
-	}
-	
-	
 	
 	/**
 		Add listener for an event fired by the browser.
@@ -197,24 +142,15 @@ Glow.provide(function(glow) {
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
 			id,
-			bridge,
-			simulated;
+			bridge;
 	
 		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
-			id = glow.events._getPrivateEventKey(attachTo);
-			
-			if (name === 'mouseenter') {
-				name = 'mouseover';
-				callback = simulate('mouseenter', attachTo, id, callback);
-			}
-			else if (name === 'mouseleave') {
-				name = 'mouseout';
-				callback = simulate('mouseleave', attachTo, id, callback);
-			}
 
 			// will add a unique id to this node, if there is not one already
 			glow.events.addListeners([attachTo], name, callback, (thisVal || attachTo));
+
+			id = glow.events._getPrivateEventKey(attachTo);
 
 			// check if there is already a bridge handler for this kind of event attached
 			// to this node (which will run all associated callbacks in Glow)
@@ -224,28 +160,58 @@ Glow.provide(function(glow) {
 				domEventHandlers[id][name].count++;
 				continue;
 			}
-			
+
 			// no bridge in place yet
 			bridge =
 			domEventHandlers[id][name] = { callback: null, count:1 };
 			
 			// attach a handler to tell Glow to run all the associated callbacks
 			(function(attachTo) {
-				bridge.callback = function(nativeEvent) {
-					var domEvent = new glow.events.DomEvent(nativeEvent);
-					var result = glow.events._callListeners(attachTo, name, domEvent); // fire() returns result of callback
+				if (name === 'mouseenter') {
+					bridge.callback = function(nativeEvent) {
+						var e = new glow.events.DomEvent(nativeEvent);
+						
+						if (!new glow.NodeList(attachTo).contains(e.related)) {
+							var result = glow.events._callListeners(attachTo, name, e); // fire() returns result of callback
+							
+							if (typeof result === 'boolean') { return result; }
+							else { return !e.defaultPrevented(); }
+						}
+					};
+					bridge.name = 'mouseover';
+				}
+				else if (name === 'mouseleave') {
+					bridge.callback = function(nativeEvent) {
+						var e = new glow.events.DomEvent(nativeEvent);
+						
+						if (e.related != attachTo && new glow.NodeList(e.related).contains(attachTo)) {
+							var result = glow.events._callListeners(attachTo, name, e); // fire() returns result of callback
+							
+							if (typeof result === 'boolean') { return result; }
+							else { return !e.defaultPrevented(); }
+						}
+					};
+					bridge.name = 'mouseout';
+				}
+				else {
+					bridge.callback = function(nativeEvent) {
+						var domEvent = new glow.events.DomEvent(nativeEvent);
+						var result = glow.events._callListeners(attachTo, name, domEvent); // fire() returns result of callback
+						
+						if (typeof result === 'boolean') { return result; }
+						else { return !domEvent.defaultPrevented(); }
+					};
 					
-					if (typeof result === 'boolean') { return result; }
-					else { return !domEvent.defaultPrevented(); }
-				};
+					bridge.name = name;
+				}
 				
 				if (attachTo.addEventListener) { // like DOM2 browsers	
-					attachTo.addEventListener(name, bridge.callback, (name === 'focus' || name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					attachTo.addEventListener(bridge.name, bridge.callback, (bridge.name === 'focus' || bridge.name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
 				}
 				else if (attachTo.attachEvent) { // like IE
-					if (name === 'focus')  attachTo.attachEvent('onfocusin', bridge.callback); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-					else if (name === 'blur') attachTo.attachEvent('onfocusout', bridge.callback); // cause that's how IE rolls...
-					attachTo.attachEvent('on' + name, bridge.callback);
+					if (bridge.name === 'focus')  attachTo.attachEvent('onfocusin', bridge.callback); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					else if (bridge.name === 'blur') attachTo.attachEvent('onfocusout', bridge.callback); // cause that's how IE rolls...
+					attachTo.attachEvent('on' + bridge.name, bridge.callback);
 				}
 				// older browsers?
 			})(attachTo);
@@ -263,7 +229,7 @@ Glow.provide(function(glow) {
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
 			id,
-			handler;
+			bridge;
 			
 		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
@@ -272,33 +238,23 @@ Glow.provide(function(glow) {
 			id = glow.events._getPrivateEventKey(attachTo);
 			if (!domEventHandlers[id] && !domEventHandlers[id][name]) { continue; }
 			
-			// is this callback for a simulated event, and thus one of the ones we replaced?
-			// need to get that replacement callback again, so we can remove it
-			if (name === 'mouseenter') {
-				callback = getSimulatedCallbackFromOriginal(id, name, callback);
-				name = 'mouseover';
-			}
-			else if (name === 'mouseleave') {
-				callback = getSimulatedCallbackFromOriginal(id, name, callback);
-				name = 'mouseout';
-			}
-			
 			glow.events.removeListeners([attachTo], name, callback);
-
-			if (domEventHandlers[id][name].count > 0) {
-				domEventHandlers[id][name].count--; // one less listener associated with this event
+			
+			bridge = domEventHandlers[id][name];
+			
+			if (bridge.count > 0) {
+				bridge.count--; // one less listener associated with this event
 		
-				if (domEventHandlers[id][name].count === 0) {  // no more listeners associated with this event
+				if (bridge.count === 0) {  // no more listeners associated with this event
 					// detach bridge handler to tell Glow to run all the associated callbacks
-					handler = domEventHandlers[id][name].callback;
-					
+									
 					if (attachTo.removeEventListener) { // like DOM2 browsers	
-						attachTo.removeEventListener(name, handler, (name === 'focus' || name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+						attachTo.removeEventListener(bridge.name, bridge.callback, (bridge.name === 'focus' || bridge.name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
 					}
 					else if (attachTo.detachEvent) { // like IE
-						if (name === 'focus')  attachTo.detachEvent('onfocusin', handler); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-						else if (name === 'blur') attachTo.detachEvent('onfocusout', handler); // cause that's how IE rolls...
-						attachTo.detachEvent('on' + name, handler);
+						if (bridge.name === 'focus')  attachTo.detachEvent('onfocusin', bridge.callback); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+						else if (bridge.name === 'blur') attachTo.detachEvent('onfocusout', bridge.callback); // cause that's how IE rolls...
+						attachTo.detachEvent('on' + bridge.name, bridge.callback);
 					}
 				}
 			}

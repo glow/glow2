@@ -381,13 +381,14 @@
 			});
 		});
 		
-		test('Change bubbles to form', function(result) {
-			glow.ready(function() {
-				new glow.NodeList('#test-form').on('change', function(e) {
-					result.pass();
-				});
-			});
-		});
+// 		// Must be simulated on IE which does not bubble onchange events
+// 		test('Change bubbles to form', function(result) {
+// 			glow.ready(function() {
+// 				new glow.NodeList('#test-form').on('change', function(e) { alert('changed');
+// 					result.pass();
+// 				});
+// 			});
+// 		});
 		
 		test('Blur bubbles to form', function(result) {
 			glow.ready(function() {
@@ -465,7 +466,7 @@
 	</h2>
 	
 	<div class="testarea" id="delegate-test">
-		<p id="p1" class="clicker" style="background-color:#ccc">Click me, I'm delegated.</p>
+		<p id="p1" class="clicker" style="background-color:#ccc"><b>Click me, I'm delegated.</b></p>
 		<p id="p2" style="background-color:#999">Then click me, I'm delegated too.</p>
 		<div id="p3" style="background-color:#666">Then click me, I'm not delegated.</div>
 	</div>
@@ -524,11 +525,13 @@
 	
 	<div class="testarea">
 	<button id="mouseenterleave-start">Start This Test</button>
-	<ol id="mouseenterleave-test" style="background-color:#ccc;padding:12px;">
-        <li style="background-color:#fff;border:1px solid #666;margin: 4px;"> Move Mouse Across Me </li>
+	
+	<ol id="mouseenterleave-test" style="background-color:#ccc;">
+        <li style="background-color:#fff;border:1px solid #666;margin: 4px;"><b>Move Mouse Across Me</b></li>
         <li style="background-color:#fff;border:1px solid #666;margin: 4px;"> Me Too </li>
         <li style="background-color:#fff;border:1px solid #666;margin: 4px;"> And Me </li>
     </ol>
+    
     <button id="mouseenterleave-done">Finish This Test</button>
     </div>
 	
@@ -542,22 +545,20 @@
 				var mouseEnterCount,
 					mouseLeaveCount;
 				
-				function mousenterHandler() {
-//console.warn('mouseenter callback ran!');
+				function mouseenterHandler() { //console.info('mouseenter callback ran!');
 					testElement.css('background-color', '#993366');
 					mouseEnterCount++;
 				};
 				
-				function mousleaveHandler() {
-//console.warn('mouseleave callback ran!');
+				function mouseleaveHandler() { //console.info('mouseleave callback ran!');
 					testElement.css('background-color', '#999999');
 					mouseLeaveCount++;
 				};
 				
 				document.getElementById('mouseenterleave-start').onclick = function() {
 					testElement
-					.on('mouseenter', mousenterHandler)
-					.on('mouseleave', mousleaveHandler);
+					.on('mouseenter', mouseenterHandler)
+					.on('mouseleave', mouseleaveHandler);
 				
 					mouseEnterCount = 0;
 					mouseLeaveCount = 0;
@@ -570,46 +571,15 @@
 					else  { result.ok(false, message); }
 					
 					testElement
-					.detach('mouseenter', mousenterHandler)
-					.detach('mouseleave', mousleaveHandler);
+					.detach('mouseenter', mouseenterHandler)
+					.detach('mouseleave', mouseleaveHandler);
+					
+					mouseEnterCount = 0;
+					mouseLeaveCount = 0;
 				}
 			});
 		});
 	</script>
-	
-<!--	
-	
-	<h2>stacking events</h2>
-	
-	<p id="my-attachto">hello</p>
-	
-	<script type="text/javascript">
-		var attachTo = new glow.NodeList(document.getElementById('my-attachto')),
-			eventName = 'zap';
-			
-		function callback(e) {
-			console.log( 'hello '+ (++callback.count) );
-		}
-		callback.count = 0;
-		
-		
-		glow.events.addListeners(attachTo, eventName, callback, attachTo);
-		glow.events.addListeners(attachTo, eventName, callback, attachTo);
-		
-		glow.events.fire(attachTo, eventName, null); // should hello twice
-		
-		glow.events.removeListeners(attachTo, eventName, callback);
-		glow.events.removeListeners(attachTo, eventName, callback);
-		
-		glow.events.fire(attachTo, eventName, null); // should do nothing
-		callback.count++;
-		
-		glow.events.addListeners(attachTo, eventName, callback, attachTo);
-		glow.events.fire(attachTo, eventName, null); // should hello once
-		
-	</script>
-	
--->	
 	
 	<p><a name="zap">oops, did you get sent here from a test?</a></p>
 	<script type="text/javascript">
