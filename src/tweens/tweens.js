@@ -3,9 +3,7 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.tweens
 	@namespace
-	@description Functions for modifying animations
-	@see <a href="../furtherinfo/tweens">What are tweens?</a>
-	
+	@description Functions for modifying animations	
 	*/
 	/*
 	PrivateMethod: _reverse
@@ -177,19 +175,7 @@ Glow.provide(function(glow) {
 			}
 		};	
 	};
-	
-	
-	/**
-	@name glow.tweens.bounceBoth
-	@function
-	@description Returns a combination of {@link glow.tweens.bounceIn bounceIn} and {@link glow.tweens.bounceOut bounceOut}
-	
-	@returns {Function}
-	*/
-	tweens.bounceBoth = function() {
-		return this.combine(this.bounceIn(), this.bounceOut());
-	};
-	
+		
 	
 	/**
 	@name glow.tweens.elasticIn
@@ -239,24 +225,7 @@ Glow.provide(function(glow) {
 			return a * Math.pow(2, -10 * t) * Math.sin( (t-s) * (2 * Math.PI) / p) + 1;
 		}
 	};
-	
-	
-	/**
-	@name glow.tweens.elasticBoth
-	@function
-	@description Returns a combination of {@link glow.tweens.elasticIn elasticIn} and {@link glow.tweens.elasticOut elasticOut}
-	
-	@param {Number} [amplitude=1] How strong the elasticity is.
-	
-	@param {Number} [period=0.3] The frequency period.
-	
-	@returns {Function}
-	*/
-	tweens.elasticBoth = function(a, p) {
-		p = p || 0.45;
-		return this.combine(this.elasticIn(a, p), this.elasticOut(a, p));
-	};
-	
+		
 	
 	/**
 	@name glow.tweens.combine

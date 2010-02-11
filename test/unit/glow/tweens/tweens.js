@@ -1,13 +1,13 @@
 module('glow.events');
 	test('Tweens basic tests', function() {
-	expect(39);
+	expect(33);
 	
 	var tweenTypes = [
 		"linear",
 		"easeIn", "easeOut", "easeBoth",
 		"overshootIn", "overshootOut", "overshootBoth",
-		"bounceIn", "bounceOut", "bounceBoth",
-		"elasticIn", "elasticOut", "elasticBoth"
+		"bounceIn", "bounceOut",
+		"elasticIn", "elasticOut"
 	],
 		i,
 		len = tweenTypes.length,
