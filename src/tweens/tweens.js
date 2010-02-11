@@ -7,7 +7,15 @@ Glow.provide(function(glow) {
 	@see <a href="../furtherinfo/tweens">What are tweens?</a>
 	
 	*/
-	
+	/*
+	PrivateMethod: _reverse
+		Takes a tween function and returns a function which does the reverse
+	*/
+	function _reverse(tween) {
+		return function(t) {
+			return 1 - tween(1 - t);
+		}
+	}
 	
 	/**
 	@name glow.tweens.linear
@@ -19,7 +27,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.linear = function() {};
+	tweens.linear = function() {
+		return function(t) { return t; };
+	};
 	
 	/**
 	@name glow.tweens.easeIn
@@ -33,7 +43,12 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.easeIn = function() {};
+	tweens.easeIn = function(strength) {
+		strength = strength || 2;
+		return function(t) {
+			return Math.pow(1, strength - 1) * Math.pow(t, strength);
+		}	
+	};
 	
 	
 	/**
@@ -48,7 +63,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.easeOut = function() {};
+	tweens.easeOut = function(strength) {
+		return _reverse(this.easeIn(strength));
+	};
 	
 	
 	/**
@@ -65,7 +82,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.easeBoth = function() {};
+	tweens.easeBoth = function(strength) {
+		return this.combine(this.easeIn(strength), this.easeOut(strength));
+	};
 	
 	
 	/**
@@ -79,7 +98,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.overshootIn = function() {};
+	tweens.overshootIn = function(amount) {
+		return _reverse(this.overshootOut(amount));
+	};
 	
 	
 	/**
@@ -93,7 +114,13 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.overshootOut = function() {};
+	tweens.overshootOut = function(amount) {
+		amount = amount || 1.70158;
+		return function(t) {
+			if (t == 0 || t == 1) { return t; }
+				return ((t -= 1)* t * ((amount + 1) * t + amount) + 1);
+			}
+	};
 	
 	
 	/**
@@ -107,7 +134,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.overshootBoth = function() {};
+	tweens.overshootBoth = function(amount) {
+		return this.combine(this.overshootIn(amount), this.overshootOut(amount));	
+	};
 	
 	
 	/**
@@ -117,7 +146,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.bounceIn = function() {};
+	tweens.bounceIn = function() {
+		return _reverse(this.bounceOut());
+	};
 	
 	
 	/**
@@ -127,7 +158,25 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.bounceOut = function() {};
+	tweens.bounceOut = function() {
+		return function(t) {
+			if (t < (1 / 2.75)) {
+				return 7.5625 * t * t;
+			}
+			
+			else if (t < (2 / 2.75)) {
+				return (7.5625 * (t -= (1.5 / 2.75)) * t + .75);
+			}
+			
+			else if (t < (2.5 / 2.75)) {
+				return (7.5625 * (t -= (2.25 / 2.75)) * t + .9375);
+			}
+			
+			else {
+				return (7.5625 * (t -= (2.625 / 2.75)) * t + .984375);
+			}
+		};	
+	};
 	
 	
 	/**
@@ -137,7 +186,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.bounceBoth = function() {};
+	tweens.bounceBoth = function() {
+		return this.combine(this.bounceIn(), this.bounceOut());
+	};
 	
 	
 	/**
@@ -151,7 +202,9 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.elasticIn = function() {};
+	tweens.elasticIn = function(a, p) {
+		return _reverse(this.elasticOut(a, p));
+	};
 	
 	
 	/**
@@ -168,7 +221,24 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.elasticOut = function() {};
+	tweens.elasticOut = function(a, p) {
+		return function (t) {
+			if (t == 0 || t == 1) {
+				return t;
+			}
+			if (!p) {
+				p = 0.3;
+			}
+			if (!a || a < 1) {
+				a = 1;
+				var s = p / 4;
+			}
+			else {
+				var s = p / (2 * Math.PI) * Math.asin(1 / a);
+			}
+			return a * Math.pow(2, -10 * t) * Math.sin( (t-s) * (2 * Math.PI) / p) + 1;
+		}
+	};
 	
 	
 	/**
@@ -182,7 +252,10 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.elasticBoth = function() {};
+	tweens.elasticBoth = function(a, p) {
+		p = p || 0.45;
+		return this.combine(this.elasticIn(a, p), this.elasticOut(a, p));
+	};
 	
 	
 	/**
@@ -209,7 +282,16 @@ Glow.provide(function(glow) {
 	
 	@returns {Function}
 	*/
-	tweens.combine = function() {};
+	tweens.combine = function(tweenIn, tweenOut) {
+		return function (t) {
+			if (t < 0.5) {
+				return tweenIn(t * 2) / 2;
+			}
+			else {
+				return tweenOut((t - 0.5) * 2) / 2 + 0.5;
+			}
+		}	
+	}
 	
 });
 
