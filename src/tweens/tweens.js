@@ -1,5 +1,5 @@
 Glow.provide(function(glow) {
-	glow.tweens = glow.tweens || {};
+	var tweens = glow.tweens = {};
 	/**
 	@name glow.tweens
 	@namespace
