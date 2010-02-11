@@ -142,6 +142,26 @@ test('Multiple pushes', 7, function() {
 	equal(myNodeList.length, 2, 'Length updated');
 });
 
+test('Comments and text nodes', 3, function() {
+	var myNodeList = new glow.NodeList(),
+		comment = document.createComment('hello'),
+		text = document.createTextNode('hello');
+	
+	myNodeList.push(comment).push(text);
+	
+	equal(myNodeList.length, 2, 'Length correct');
+	equal(myNodeList[0], comment, 'Comment node');
+	equal(myNodeList[1], text, 'Text node');
+});
+
+test('Ignored args', 1, function() {
+	var myNodeList = new glow.NodeList();
+	
+	myNodeList.push([]).push({}).push(null).push(undefined).push(123).push(new Date);
+	
+	equal(myNodeList.length, 0, 'Length correct');
+});
+
 module('glow.NodeList#eq');
 
 test('glow.NodeList#eq with NodeList arg', 8, function() {

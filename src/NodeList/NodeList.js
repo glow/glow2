@@ -12,7 +12,10 @@ Glow.provide(function(glow) {
 			It is recommended to create a NodeList using the shortcut function {@link glow}.
 			
 		@param {string | glow.NodeList | Node | Node[] | Window} contents Items to populate the NodeList with.
-			This parameter will be passed to {@link glow.NodeList#push}
+			This parameter will be passed to {@link glow.NodeList#push}.
+			
+			Strings will be treated as CSS selectors unless they start with '<', in which
+			case they'll be treated as an HTML string.
 			
 		@example
 			// empty NodeList
@@ -20,10 +23,15 @@ Glow.provide(function(glow) {
 
 		@example
 			// using glow to return a NodeList then chaining methods
-			glow("p").addClass("eg").append("<b>Hello!</b>");
+			glow('p').addClass('eg').append('<div>Hello!</div>');
+			
+		@example
+			// creating an element from a string
+			glow('<div>Hello!</div>').appendTo('body');
 		
 		@see <a href="../furtherinfo/creatingnodelists/">Creating NodeLists</a>
 		@see <a href="../furtherinfo/workingwithnodelists/">Working with NodeLists</a>
+		@see <a href="http://wiki.github.com/jeresig/sizzle/">Supported CSS selectors</a>
 	*/
 	function NodeList(contents) {
 		// call push if we've been given stuff to add
@@ -99,7 +107,7 @@ Glow.provide(function(glow) {
 			}
 			
 			// pull nodes out of child
-			if (wrap == tableWrap && str.indexOf('<tbody') == -1) {
+			if (wrap === tableWrap && str.indexOf('<tbody') === -1) {
 				// IE7 (and earlier) sometimes gives us a <tbody> even though we didn't ask for one
 				while (firstChild = childElm.firstChild) {
 					if (firstChild.nodeName != 'TBODY') {
@@ -160,38 +168,51 @@ Glow.provide(function(glow) {
 			myNodeList.push('<div>Foo</div>').push('h1');
 	*/
 	NodeListProto.push = function(nodes) {
-		if (typeof nodes == 'string') {
-			// if the string begins <, treat it as html, otherwise it's a selector
-			if (nodes.charAt(0) == '<') {
-				nodes = NodeList._strToNodes(nodes);
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.NodeList#push expects 1 argument, not '+arguments.length+'.');
 			}
+		/*gubed!*/
+		
+		if (nodes) {
+			if (typeof nodes === 'string') {
+				// if the string begins <, treat it as html, otherwise it's a selector
+				if (nodes.charAt(0) === '<') {
+					nodes = NodeList._strToNodes(nodes);
+				}
+				else {
+					nodes = glow._sizzle(nodes)
+				}
+				arrayPush.apply(this, nodes);
+			}
+			
+			else if ( nodes.nodeType || nodes.window == nodes ) {
+				if (this.length) {
+					arrayPush.call(this, nodes);
+				}
+				else {
+					this[0] = nodes;
+					this.length = 1;
+				}
+			}
+			else if (nodes.length !== undefined) {
+				if (nodes.constructor != Array) {
+					// convert array-like objects into an array
+					nodes = collectionToArray(nodes);
+				}
+				arrayPush.apply(this, nodes);
+			}
+			/*!debug*/
 			else {
-				nodes = glow._sizzle(nodes)
+				glow.debug.warn('[wrong type] glow.NodeList#push: Ignoring unexpected argument type, failing silently');
 			}
-			arrayPush.apply(this, nodes);
-		}
-		else if (nodes.nodeType || nodes.window) {
-			if (this.length > 1) {
-				arrayPush.call(this, nodes);
-			}
-			else {
-				this[0] = nodes;
-				this.length = 1;
-			}
-		}
-		else if (nodes.length !== undefined) {
-			if (nodes.constructor != Array) {
-				// convert array-like objects into an array
-				nodes = collectionToArray(nodes);
-			}
-			arrayPush.apply(this, nodes);
+			/*gubed!*/
 		}
 		/*!debug*/
 		else {
-			glow.debug.warn('glow.NodeList#push: Ignoring incorrect argument type, failing silently');
+			glow.debug.warn('[wrong type] glow.NodeList#push: Ignoring false argument type, failing silently');
 		}
 		/*gubed!*/
-
 		return this;
 	};
 	
@@ -201,8 +222,7 @@ Glow.provide(function(glow) {
 		@description Compares this NodeList to another
 			Returns true if both NodeLists contain the same items in the same order
 		
-		@param {string | Node | Node[] | glow.NodeList} nodeList The NodeList to compare to.
-			Strings will be treated as CSS selectors.
+		@param {Node | Node[] | glow.NodeList} nodeList The NodeList to compare to.
 		
 		@returns {boolean}
 		
@@ -213,6 +233,15 @@ Glow.provide(function(glow) {
 			glow('#blah').eq( document.getElementById('blah') );
 	*/
 	NodeListProto.eq = function(nodeList) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.NodeList#eq expects 1 argument, not ' + arguments.length + '.');
+			}
+			if (typeof nodeList !== 'object') {
+				glow.debug.warn('[wrong type] glow.NodeList#eq expects object argument, not ' + typeof nodeList + '.');
+			}
+		/*gubed!*/
+		
 		var len = this.length,
 			i = len;
 		
@@ -309,6 +338,11 @@ Glow.provide(function(glow) {
 			myNodeList.item(-1).addClass('last');
 	*/
 	NodeListProto.item = function(index) {
+		/*!debug*/
+			if ( arguments.length !== 1 ) {
+				glow.debug.warn('[wrong count] glow.NodeList#item expects 1 argument, got ' + arguments.length);
+			}
+		/*gubed!*/
 		// TODO: test which of these methods is faster (use the current one unless significantly slower)
 		return this.slice(index, (index + 1) || this.length);
 		// return new NodeList( index < 0 ? this[this.length + index] : this[index] );
@@ -346,8 +380,11 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.each = function(callback) {
 		/*!debug*/
+			if ( arguments.length !== 1 ) {
+				glow.debug.warn('[wrong count] glow.NodeList#each expects 1 argument, got ' + arguments.length);
+			}
 			if (typeof callback != 'function') {
-				glow.debug.error('Incorrect param in glow.NodeList#each. Expected "function", got ' + typeof callback);
+				glow.debug.warn('[wrong type] glow.NodeList#each expects "function", got ' + typeof callback);
 			}
 		/*gubed!*/
 		for (var i = 0, len = this.length; i<len; i++) {
@@ -389,14 +426,17 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.filter = function(test) {
 		/*!debug*/
+			if ( arguments.length !== 1 ) {
+				glow.debug.warn('[wrong count] glow.NodeList#filter expects 1 argument, got ' + arguments.length);
+			}
 			if ( !/^(function|string)$/.test(typeof test) ) {
-				glow.debug.error('Incorrect param in glow.NodeList#filter. Expected function/string, got ' + typeof test);
+				glow.debug.warn('[wrong type] glow.NodeList#each expects function/string, got ' + typeof test);
 			}
 		/*gubed!*/
 		var r = [],
 			ri = 0;
 		
-		if (typeof test == 'string') {
+		if (typeof test === 'string') {
 			r = glow._sizzle.matches(test, this);
 		}
 		else {	
@@ -426,6 +466,14 @@ Glow.provide(function(glow) {
 			}
 	*/
 	NodeListProto.is = function(selector) {
+		/*!debug*/
+			if ( arguments.length !== 1 ) {
+				glow.debug.warn('[wrong count] glow.NodeList#is expects 1 argument, got ' + arguments.length);
+			}
+			if ( typeof selector !== 'string' ) {
+				glow.debug.warn('[wrong type] glow.NodeList#is expects string, got ' + typeof selector);
+			}
+		/*gubed!*/
 		if ( !this[0] ) {
 			return false;
 		}

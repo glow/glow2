@@ -1595,11 +1595,14 @@ test('glow.dom.NodeList#unwrap element with 2 parents (detatched)', 2, function(
 
 test('glow.dom.NodeList#unwrap edge cases', 3, function() {
 	var emptyList = new glow.NodeList(),
-		populatedList = new glow.NodeList('<span></span>');
+		populatedList = new glow.NodeList('<span></span>'),
+		parentNode;
 	
 	equal(emptyList.unwrap(), emptyList, 'Empty nodelist');
 	equal(populatedList.unwrap(), populatedList, 'orphan element');
-	ok(!populatedList.unwrap()[0].parentNode, 'orphan element still no parent');
+	
+	parentNode = populatedList.unwrap()[0].parentNode;
+	ok(!(parentNode && parentNode.nodeType === 1), 'orphan element still no parent');
 
 });
 
