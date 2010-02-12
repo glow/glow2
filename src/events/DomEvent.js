@@ -45,7 +45,7 @@ Glow.provide(function(glow) {
 		*/
 		if (e.target) { this.source = e.target; } // like FF
 		else if (e.srcElement) { this.source = e.srcElement; } // like IE
-		if (this.source && this.source.nodeType !== 1) {
+		if (this.source && this.source.nodeType !== 1) { // like a textNode
 			this.source = this.source.parentNode;
 		}
 		
@@ -130,6 +130,7 @@ Glow.provide(function(glow) {
 	}
 	
 	glow.util.extend(DomEvent, glow.events.Event); // DomEvent extends Event
+
 	
 	/**
 		Add listener for an event fired by the browser.
@@ -138,84 +139,130 @@ Glow.provide(function(glow) {
 		@see glow.NodeList#on
 		@function
 	*/
-	glow.events._addDomEventListener = function(nodeList, name, callback, thisVal) {
+	glow.events._addDomEventListener = function(nodeList, eventName, callback, thisVal, selector) {
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
 			id,
-			bridge;
+			eId = eventName + (selector? '/'+selector : '');
 	
 		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
 
 			// will add a unique id to this node, if there is not one already
-			glow.events.addListeners([attachTo], name, callback, (thisVal || attachTo));
-
+			glow.events.addListeners([attachTo], eventName, callback, thisVal);
 			id = glow.events._getPrivateEventKey(attachTo);
 
-			// check if there is already a bridge handler for this kind of event attached
+			// check if there is already a handler for this kind of event attached
 			// to this node (which will run all associated callbacks in Glow)
 			if (!domEventHandlers[id]) { domEventHandlers[id] = {}; }
-			
-			if (domEventHandlers[id][name] && domEventHandlers[id][name].count > 0) { // already have bridge in place
-				domEventHandlers[id][name].count++;
+
+			if (domEventHandlers[id][eId] && domEventHandlers[id][eId].count > 0) { // already have handler in place
+				domEventHandlers[id][eId].count++;
 				continue;
 			}
 
 			// no bridge in place yet
-			bridge =
-			domEventHandlers[id][name] = { callback: null, count:1 };
+			domEventHandlers[id][eId] = { callback: null, count:1 };
 			
 			// attach a handler to tell Glow to run all the associated callbacks
 			(function(attachTo) {
-				if (name === 'mouseenter') {
-					bridge.callback = function(nativeEvent) {
-						var e = new glow.events.DomEvent(nativeEvent);
-						
-						if (!new glow.NodeList(attachTo).contains(e.related)) {
-							var result = glow.events._callListeners(attachTo, name, e); // fire() returns result of callback
-							
-							if (typeof result === 'boolean') { return result; }
-							else { return !e.defaultPrevented(); }
-						}
-					};
-					bridge.name = 'mouseover';
-				}
-				else if (name === 'mouseleave') {
-					bridge.callback = function(nativeEvent) {
-						var e = new glow.events.DomEvent(nativeEvent);
-						
-						if (e.related != attachTo && new glow.NodeList(e.related).contains(attachTo)) {
-							var result = glow.events._callListeners(attachTo, name, e); // fire() returns result of callback
-							
-							if (typeof result === 'boolean') { return result; }
-							else { return !e.defaultPrevented(); }
-						}
-					};
-					bridge.name = 'mouseout';
-				}
-				else {
-					bridge.callback = function(nativeEvent) {
-						var domEvent = new glow.events.DomEvent(nativeEvent);
-						var result = glow.events._callListeners(attachTo, name, domEvent); // fire() returns result of callback
-						
-						if (typeof result === 'boolean') { return result; }
-						else { return !domEvent.defaultPrevented(); }
-					};
-					
-					bridge.name = name;
-				}
+				var handler = domHandle(attachTo, eventName, selector);
 				
 				if (attachTo.addEventListener) { // like DOM2 browsers	
-					attachTo.addEventListener(bridge.name, bridge.callback, (bridge.name === 'focus' || bridge.name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					attachTo.addEventListener(handler.domName, handler, (eventName === 'focus' || eventName === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
 				}
 				else if (attachTo.attachEvent) { // like IE
-					if (bridge.name === 'focus')  attachTo.attachEvent('onfocusin', bridge.callback); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-					else if (bridge.name === 'blur') attachTo.attachEvent('onfocusout', bridge.callback); // cause that's how IE rolls...
-					attachTo.attachEvent('on' + bridge.name, bridge.callback);
+					if (eventName === 'focus')  attachTo.attachEvent('onfocusin', handler); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+					else if (eventName === 'blur') attachTo.attachEvent('onfocusout', handler); // cause that's how IE rolls...
+					attachTo.attachEvent('on' + handler.domName, handler);
 				}
 				// older browsers?
+				
+				domEventHandlers[id][eId].callback = handler;
 			})(attachTo);
 		}
+	}
+	
+	function domHandle(attachTo, eventName, selector) {
+		var handler;
+		
+		if (eventName === 'mouseenter') {
+			handler = function(nativeEvent, node) {
+				var e = new glow.events.DomEvent(nativeEvent),
+					container = node || attachTo;
+				
+				if (!new glow.NodeList(container).contains(e.related)) {
+					var result = glow.events._callListeners(attachTo, eventName, e, node); // fire() returns result of callback
+					
+					if (typeof result === 'boolean') { return result; }
+					else { return !e.defaultPrevented(); }
+				}
+			};
+			
+			if (selector) {
+				handler = delegate(attachTo, eventName, selector, handler);
+			}
+			
+			handler.domName = 'mouseover';
+		}
+		else if (eventName === 'mouseleave') {
+			handler = function(nativeEvent, node) {
+				var e = new glow.events.DomEvent(nativeEvent),
+					container = node || attachTo;
+					
+				if (!new glow.NodeList(container).contains(e.related)) {
+					var result = glow.events._callListeners(attachTo, eventName, e, node); // fire() returns result of callback
+					
+					if (typeof result === 'boolean') { return result; }
+					else { return !e.defaultPrevented(); }
+				}
+			};
+			
+			if (selector) {
+				handler = delegate(attachTo, eventName, selector, handler);
+			}
+			
+			handler.domName = 'mouseout';
+		}
+		else {
+			handler = function(nativeEvent, node) {
+				var domEvent = new glow.events.DomEvent(nativeEvent);
+				var result = glow.events._callListeners(attachTo, eventName, domEvent, node); // fire() returns result of callback
+				
+				if (typeof result === 'boolean') { return result; }
+				else { return !domEvent.defaultPrevented(); }
+			};
+			
+			if (selector) {
+				handler = delegate(attachTo, eventName, selector, handler);
+			}
+			
+			handler.domName = eventName;
+		}
+		
+		return handler;
+	}
+	
+	// wraps a handler in code to detect delegation
+	function delegate(attachTo, eventName, selector, handler) {
+	
+		return function(nativeEvent) { //console.log('dispatched, selector is: '+selector);
+			var e = new glow.events.DomEvent(nativeEvent);
+				node = e.source;
+			
+			// if the source matches the selector
+			while (node) {
+				if (!!glow._sizzle.matches(selector, [node]).length) {
+					// the wrapped handler is called here, pass in the node that matched so it can be used as `this`
+					return handler(nativeEvent, node);
+					//
+				}
+				
+				if (node === attachTo) { break; } // don't check parents above the attachTo
+				
+				node = node.parentNode;
+			}
+		};
 	}
 	
 	/**
@@ -225,36 +272,40 @@ Glow.provide(function(glow) {
 		@see glow.NodeList#detach
 		@function
 	*/
-	glow.events._removeDomEventListener = function(nodeList, name, callback) {
+	glow.events._removeDomEventListener = function(nodeList, eventName, callback, selector) {
 		var i = nodeList.length, // TODO: should we check that this nodeList is deduped?
 			attachTo,
 			id,
-			bridge;
+			eId = eventName + (selector? '/'+selector : ''),
+			bridge,
+			handler;
 			
 		while (i-- && nodeList[i]) {
 			attachTo = nodeList[i];
 			
 			// skip if there is no bridge for this kind of event attached
 			id = glow.events._getPrivateEventKey(attachTo);
-			if (!domEventHandlers[id] && !domEventHandlers[id][name]) { continue; }
+			if (!domEventHandlers[id] && !domEventHandlers[id][eId]) { continue; }
 			
-			glow.events.removeListeners([attachTo], name, callback);
-			
-			bridge = domEventHandlers[id][name];
+			glow.events.removeListeners([attachTo], eventName, callback);
+
+			bridge = domEventHandlers[id][eId]
 			
 			if (bridge.count > 0) {
 				bridge.count--; // one less listener associated with this event
 		
 				if (bridge.count === 0) {  // no more listeners associated with this event
 					// detach bridge handler to tell Glow to run all the associated callbacks
-									
+					
+					handler = bridge.callback;
+														
 					if (attachTo.removeEventListener) { // like DOM2 browsers	
-						attachTo.removeEventListener(bridge.name, bridge.callback, (bridge.name === 'focus' || bridge.name === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+						attachTo.removeEventListener(handler.domName, handler, (eventName === 'focus' || eventName === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
 					}
 					else if (attachTo.detachEvent) { // like IE
-						if (bridge.name === 'focus')  attachTo.detachEvent('onfocusin', bridge.callback); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-						else if (bridge.name === 'blur') attachTo.detachEvent('onfocusout', bridge.callback); // cause that's how IE rolls...
-						attachTo.detachEvent('on' + bridge.name, bridge.callback);
+						if (eventName === 'focus')  attachTo.detachEvent('onfocusin', handler); // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+						else if (eventName === 'blur') attachTo.detachEvent('onfocusout', handler); // cause that's how IE rolls...
+						attachTo.detachEvent('on' + handler.domName, handler);
 					}
 				}
 			}

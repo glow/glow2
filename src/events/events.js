@@ -50,7 +50,7 @@ Glow.provide(function(glow) {
 				objIdent = attachTo[i][psuedoPrivateEventKey] = objid++;
 			}
 					
-			listener = [ callback, thisVal || attachTo[i] ];
+			listener = [ callback, thisVal ];
 			eventsOnObject = eventListeners[objIdent];
 			if(!eventsOnObject){
 				eventsOnObject = eventListeners[objIdent] = {};
@@ -108,7 +108,7 @@ Glow.provide(function(glow) {
 	 *
 	 * */
 	
-	function callListeners(item, eventName, event) {
+	function callListeners(item, eventName, event, thisVal) {
 		var objIdent = item[psuedoPrivateEventKey],
 			listenersForEvent,
 			returnVal;			
@@ -129,7 +129,7 @@ Glow.provide(function(glow) {
 			
 		listenersForEvent = listenersForEvent.slice(0);
 		for (var i = 0, len = listenersForEvent.length; i < len; i++){
-			returnVal = listenersForEvent[i][0].call(listenersForEvent[i][1], event);
+			returnVal = listenersForEvent[i][0].call((listenersForEvent[i][1] || thisVal || item), event);
 			if (returnVal === false){
 				event.preventDefault();
 			}

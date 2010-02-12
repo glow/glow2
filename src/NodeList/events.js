@@ -144,40 +144,16 @@ Glow.provide(function(glow) {
 		while (i--) {
 			attachTo = this[i];
 			
-			(function(attachTo, thisVal) {
-				var handler = function(e) {
-					var node = e.source;
-					
-					// if the source matches the selector,
-					// or 
-					// if the source is, or is within, attachTo and has a parent that matches the selector
-					while (node) {
-						if (!!glow._sizzle.matches(selector, [node]).length) {
-							callback.call((thisVal || node), e);
-							break;
-						}
-						
-						if (node === attachTo) { break; } // don't check parents above the attachTo
-						
-						node = node.parentNode;
-					}
-				};
-				
-				delegatedCallbacks.push([callback, handler]);
-				
-				if (isKeyEvent) {
-					glow.events._addKeyListener([attachTo], eventName, handler);
-				}
-				else { // assume it's a DOM event
-					glow.events._addDomEventListener([attachTo], eventName, handler, thisVal);
-				}
-			})(attachTo, thisVal);
+			if (isKeyEvent) {
+// 					glow.events._addKeyListener([attachTo], eventName, handler);
+			}
+			else { // assume it's a DOM event
+				glow.events._addDomEventListener([attachTo], eventName, callback, thisVal, selector);
+			}
 		}
 		
 		return this;
 	}
-	
-	var delegatedCallbacks = []; // like: [[callback, handler], [callback, handler]]
 	
 	/**
 		@name glow.NodeList#detachDelegate
@@ -213,19 +189,12 @@ Glow.provide(function(glow) {
 		while (i--) {
 			attachTo = this[i];
 			
-			for (var j = 0, lenj = delegatedCallbacks.length; j < lenj; j++) {
-				if (delegatedCallbacks[j][0] === callback) {
-					handler = delegatedCallbacks[j][1];
-					break;
-				}
-			}
-			
 			if (isKeyEvent) {
-				glow.events._removeKeyListener([attachTo], eventName, handler);
-			}
-			else { // assume it's a DOM event
-				glow.events._removeDomEventListener([attachTo], eventName, handler, thisVal);
-			}
+// 				glow.events._removeKeyListener([attachTo], eventName, handler);
+ 			}
+ 			else {
+ 				glow.events._removeDomEventListener([attachTo], eventName, callback, selector);
+ 			}
 		}
 		
 		return this;

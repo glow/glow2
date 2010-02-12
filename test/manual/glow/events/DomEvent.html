@@ -460,7 +460,7 @@
 			});
 		});
 	</script>	
-	
+
 	<h2>
 		Delegate Event
 	</h2>
@@ -562,8 +562,10 @@
 				
 					mouseEnterCount = 0;
 					mouseLeaveCount = 0;
+					
+					// glow.events.fire(testElement, 'mouseleave');
 				}
-				
+
 				document.getElementById('mouseenterleave-done').onclick = function() {
 					var message = "mouseEnterCount: "+mouseEnterCount+", mouseLeaveCount: "+mouseLeaveCount+"." 
 					
@@ -577,6 +579,85 @@
 					mouseEnterCount = 0;
 					mouseLeaveCount = 0;
 				}
+			});
+		});
+	</script>
+	
+	<h2>
+		Delegated Mouseenter and Mouseleave Events
+	</h2>
+	
+	<p>
+	Press the start button, move the mouse into the test area below (it should change color to indicate that you've
+	entered), then press the finish button. Move the mouse into the test area again and it should ignore your actions.
+	</p>
+	
+	<div class="testarea">
+		<button id="delegate-mouseenterleave-start">Start This Test</button>
+		<div id="delegate-mouseenterleave-test" style="background-color:#CCFFFF; padding: 1px;">
+			<ol style="background-color:#ccc; margin:0;">
+				<li style="background-color:#fff; border:1px solid #666; margin:0 8px;"><b>Move</b> Mouse <b>Across</b> Me</li>
+			</ol>
+			
+			<ol style="background-color:#ccc; margin:0;">
+				<li style="background-color:#fff; border:1px solid #666; margin:0 8px;">Move <b>Mouse</b> Across <b>Me</b></li>
+			</ol>
+			<br>
+			<ol style="background-color:#ccc; margin:0;">
+				<li style="background-color:#fff; border:1px solid #666; margin:0 8px;"><b>Move</b> Mouse <b>Across</b> Me</li>
+			</ol>
+			<p>I'm not delegated.</p>
+		</div>
+		<button id="delegate-mouseenterleave-done">Finish This Test</button>
+    </div>
+	
+	<script type="text/javascript">
+		module('Delegated Mouseenter Mouseleave');
+		
+		test('Mouseleave/enter only fires when leaving/entering the element it is set on.', function(result) {
+			glow.ready(function() {
+				var testElement = new glow.NodeList('#delegate-mouseenterleave-test'),
+				mouseEnterCount,
+				mouseLeaveCount;
+				
+				function mouseenterHandler() { //console.info('mouseenter callback ran on '+this);
+					new glow.NodeList(this).css('background-color', '#993366');
+					mouseEnterCount++;
+				}
+				
+				function mouseleaveHandler() { //console.info('mouseleave callback ran!');
+					new glow.NodeList(this).css('background-color', '#CC9999');
+					mouseLeaveCount++;
+				}
+				
+				function fail() { result.fail(); }
+				
+				document.getElementById('delegate-mouseenterleave-start').onclick = function() {
+					testElement
+						.delegate('mouseenter', 'ol', mouseenterHandler)
+						.delegate('mouseleave', 'ol', mouseleaveHandler)
+						
+						.delegate('mouseenter', 'p', fail)
+						.detachDelegate('mouseenter', 'p', fail);
+				
+					mouseEnterCount = 0;
+					mouseLeaveCount = 0;
+				}
+				
+				document.getElementById('delegate-mouseenterleave-done').onclick = function() {
+					var message = "mouseEnterCount: "+mouseEnterCount+", mouseLeaveCount: "+mouseLeaveCount+"." 
+					
+					if (mouseEnterCount === 3 && mouseLeaveCount === 3) { result.ok(true, message); }
+					else  { result.ok(false, message); }
+					
+					testElement
+					.detachDelegate('mouseenter', 'ol', mouseenterHandler)
+					.detachDelegate('mouseleave', 'ol', mouseleaveHandler);
+					
+					mouseEnterCount = 0;
+					mouseLeaveCount = 0;
+				}
+				
 			});
 		});
 	</script>
