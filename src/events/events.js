@@ -1,53 +1,49 @@
-
-/**
+Glow.provide(function(glow) {
+	/**
 	@name glow.events
 	@namespace
 	@description Native browser and custom events
- */
-
-//-----------------------------------------------------------------
-
-Glow.provide(function(glow) {
-	glow.events = glow.events || {};
+	*/
+	var events = {};
 		
 	/* storage variables */
-	var r = {};
-	var eventListeners = {};
-	var eventid = 1;
-	var objid = 1;
-	var psuedoPrivateEventKey = '__eventId' + glow.UID;
-	var psuedoPreventDefaultKey = psuedoPrivateEventKey + 'PreventDefault';
-	var psuedoStopPropagationKey = psuedoPrivateEventKey + 'StopPropagation';
+	
+	var eventListeners = {}, /* TODO: EXplain this better as JSON */
+		eventid = 1, /* TODO: camelCase */
+		objIdCounter = 1, 
+		eventKey = '__eventId' + glow.UID; 
+		
 	
 	/**
 	@name glow.events.addListeners
 	@function
-	@param {Object[]} attachTo Array of objects to add listeners to
-	@param {String} name Name of the event to listen for
-	@param {Function} callback Function to call when the event fires.
-		The callback is passed a single event object. The type of this
+	@param {Object[]} attachTo Array of objects to add listeners to.
+	@param {string} name Name of the event to listen for.
+		Event names are case sensitive.
+	@param {function} callback Function to call when the event is fired.
+		The callback will be passed a single event object. The type of this
 		object depends on the event (see documentation for the event
 		you're listening to).
 	@param {Object} [thisVal] Value of 'this' within the callback.
 		By default, this is the object being listened to.
-		 
+	@see glow.events.Target#fire
 	@description Convenience method to add listeners to many objects at once.
-		If you're wanting to add a listener to a single object, use its
+		If you want to add a listener to a single object, use its
 		'on' method.
 	*/
-	glow.events.addListeners = function (attachTo, name, callback, thisVal) {
+	events.addListeners = function (attachTo, name, callback, thisVal) {
 		var listenerIds = [],
-			i = attachTo.length,
 			objIdent,
 			listener,
 			eventsOnObject,
 			currentListeners;
 	
 		//attach the event for each element, return an array of listener ids
+		var i = attachTo.length;
 		while (i--) {
-			objIdent = attachTo[i][psuedoPrivateEventKey];
+			objIdent = attachTo[i][eventKey];
 			if (!objIdent){
-				objIdent = attachTo[i][psuedoPrivateEventKey] = objid++;
+				objIdent = attachTo[i][eventKey] = objIdCounter++;
 			}
 					
 			listener = [ callback, thisVal ];
@@ -58,75 +54,73 @@ Glow.provide(function(glow) {
 					
 			currentListeners = eventsOnObject[name];
 			if(!currentListeners){
-				currentListeners = eventsOnObject[name] = [listener];
+				eventsOnObject[name] = [listener];
 			}
 			else{
 				currentListeners[currentListeners.length] = listener;
 			}							
 		}
+		return events;
 	};
 	
-	glow.events._getPrivateEventKey = function(node) {
-		if (!node[psuedoPrivateEventKey]) {
-			node[psuedoPrivateEventKey] = objid++;
+	events._getPrivateEventKey = function(node) {
+		if (!node[eventKey]) {
+			node[eventKey] = objid++;
 		}
 		
-		return node[psuedoPrivateEventKey];
+		return node[eventKey];
 	}
 	
 	/**
 	@name glow.events.fire
 	@function
 	@param {Object[]} items      Array of objects to add listeners to
-	@param {String}   eventName  Name of the event to fire
+	@param {string}   eventName  Name of the event to fire
 	@param {glow.events.Event|Object} [event] Event object to pass into listeners.
-       You can provide a simple object of key / value pairs which will
-       be added as properties of a glow.events.Event instance.
+       You can provide a simple object of key-value pairs which will
+       be added as properties on the glow.events.Event instance.
 		
 	@description Convenience method to fire events on multiple items at once.
-		If you're wanting to fire events on a single object, use its
+		If you want to fire events on a single object, use its
 		'fire' method.
 	*/
 		
-	glow.events.fire = function (items, eventName, event) {
+	events.fire = function (items, eventName, event) {
 		if (! event) {
-			event = new glow.events.Event();
+			event = new events.Event();
 		}
 		else if ( event.constructor === Object ) {
-			event = new glow.events.Event( event )
+			event = new events.Event( event )
 		}
-
-		for(var i = 0, len = items.length; i < len; i++) {
+		
+		// for loop, because order matters!
+		for(var i = 0, len = items.length; i < len; i++) { 
 			callListeners(items[i], eventName, event);
 		}
 			
 		return event;
 	};
 
-	/**
-	 * Private method to callListeners
-	 *
-	 * */
 	
+	/**
+	 @name glow.events-callListeners
+	 @private
+	*/
 	function callListeners(item, eventName, event, thisVal) {
-		var objIdent = item[psuedoPrivateEventKey],
+		var objIdent = item[eventKey],
 			listenersForEvent,
-			returnVal;			
+			returnedVal;			
 
-		if (!objIdent) {
+		if (!objIdent || !eventListeners[objIdent]) {
 			return event;
 		}
-			
-		if (!eventListeners[objIdent]) {
-			return false;
-		}
-			
+				
 		listenersForEvent = eventListeners[objIdent][eventName];
 			
 		if (!listenersForEvent) {
 			return event;
 		}
-			
+		// Slice to make sure we get a unique copy.
 		listenersForEvent = listenersForEvent.slice(0);
 		for (var i = 0, len = listenersForEvent.length; i < len; i++){
 			returnVal = listenersForEvent[i][0].call((listenersForEvent[i][1] || thisVal || item), event);
@@ -137,30 +131,32 @@ Glow.provide(function(glow) {
 			
 		return event;
 	}
-	glow.events._callListeners = callListeners;
+	events._callListeners = callListeners;
 		
 		
 	/**
 	@name glow.events.removeAllListeners
 	@function
-	@param {Object[]} items  Items to remove events from		    
+	@param {Object[]} items Items to remove events from		    
 	@description Removes all listeners attached to a given object.
 		This removes not only listeners you added, but listeners others
 		added too. For this reason it should only be used as part of a cleanup
 		operation on objects that are about to be destroyed.
-			   
-		Glow will call this by default on its own classes like NodeList and
-		widgets.
 	*/
 	
-	glow.events.removeAllListeners = function (items) {
-		for(var i = 0, len = items.length; i < len; i++){
-			var objIdent = items[i][psuedoPrivateEventKey];
-			if(!objIdent){
-					return false;
+	events.removeAllListeners = function (items) {
+		var objIdent;
+		
+		// TODO: switch for a while.
+		for (var i = 0, len = items.length; i < len; i++) {
+			
+			objIdent = items[i][eventKey];
+			
+			if (!objIdent) {
+				return false;
 			}
-			else{
-					delete ( eventListeners[objIdent] );
+			else {
+				delete eventListeners[objIdent];
 			}
 		}
 
@@ -171,31 +167,33 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.events.removeListeners
 	@function
-	@param {Object[]} item Item to remove events from
-	@param {String} eventName Name of the event to remove
-	@param {Function} callback callback
-	@decription Removes listeners for given object, with the given name with the given thisVal.
-		Glow will call this by default on its own classes like NodeList and
-		widgets.
+	@param {Object[]} items Items to remove events from.
+	@param {string} eventName Name of the event to remove.
+	@param {function} callback A reference to the original callback used when the listener was added.
+	@decription Removes listeners for an event.
 	*/
-	glow.events.removeListeners = function (item, eventName, callback) {
-		for(var i = 0, leni = item.length; i < leni; i++){	
-			var objIdent = item[i][psuedoPrivateEventKey],
-				listenersForEvent;
-			if(!objIdent){
-				return false;
+	events.removeListeners = function (item, eventName, callback) { /* TODO: items! */
+		var objIdent,
+			listenersForEvent;
+		
+		/* TODO: switch for a while */
+		for(var i = 0, leni = item.length; i < leni; i++){
+			
+			objIdent = item[i][eventKey];
+				
+			if(!objIdent || !eventListeners[objIdent]){
+				return events;
 			}
 			
-			if(!eventListeners[objIdent]){
-				return false;
-			}
 		
 			listenersForEvent = eventListeners[objIdent][eventName];
 			if(!listenersForEvent){
-				return false;
-			}			
+				return events;
+			}
+			
+			/* TODO: switch for a while */
 			for(var j = 0, lenj = listenersForEvent.length; j < lenj; j++){						
-				if (listenersForEvent[j][0] == callback){
+				if (listenersForEvent[j][0] === callback){
 					listenersForEvent.splice(j, 1);
 					break;
 				}
@@ -203,7 +201,7 @@ Glow.provide(function(glow) {
 			}
 		}
 		
-		return true;			
+		return events;			
 	};
 	
 	/**
@@ -213,7 +211,7 @@ Glow.provide(function(glow) {
 		@see glow.NodeList#clone
 		@function
 	*/
-	glow.events._copyEvent = function(from, to){
+	events._copyEvent = function(from, to){
 		var listenersToCopy,
 		i = [from].length,
 		listenersForEvent,
@@ -223,7 +221,7 @@ Glow.provide(function(glow) {
 		
 		while(i--){
 			
-			var objIdent = [from][i][psuedoPrivateEventKey];
+			var objIdent = [from][i][eventKey];
 			
 			listenersForEvent = eventListeners[objIdent];
 			
@@ -238,83 +236,83 @@ Glow.provide(function(glow) {
 					callback = eventListeners[objIdent][eventName][0][0];
 					thisVal = eventListeners[objIdent][eventName][0][1];
 				}				
-				glow.events._addDomEventListener([to], name, callback, thisVal);
+				events._addDomEventListener([to], name, callback, thisVal);
 		}
 	
 		return;
 		}
 		
 	}
-	/**
-	@name glow.events.getListeners
-	@function
-	@param {Object[]} item  Item to find events for
-	@decription Returns a list of listeners attached for the given item.
-
-	*/	
-	glow.events.getListeners = function(item){
-		for(var i = 0, len = item.length; i < len; i++){
-			var objIdent = item[i][psuedoPrivateEventKey];
-			if(!objIdent){
-				return false;
-			}
-			else{
-				// todo: need to return listeners in a sensible format
-				return eventListeners[objIdent];
-			}
-		}
-
-	
-		return false;
-	};
-	
-	/**
-	@name glow.events.hasListener
-	@function
-	@param {Object[]} item  Item to find events for
-	@param {String}   eventName  Name of the event to match
-	@decription Returns true if an event is found for the item supplied
-	
-	*/
-	
-	glow.events.hasListener = function (item, eventName) {
-		for(var i = 0, len = item.length; i < len; i++){	
-			var objIdent = item[i][psuedoPrivateEventKey],
-				listenersForEvent;
-				
-			if(!objIdent){
-				return false;
-			}
-			
-			if(!eventListeners[objIdent]){
-				return false;
-			}
-		
-			listenersForEvent = eventListeners[objIdent][eventName];
-			if(!listenersForEvent){
-				return false;
-			}
-			else{
-				return true;							
-			}					
-		}
-		
-		return false;			
-	};
+	///**
+	//@name glow.events.getListeners
+	//@function
+	//@param {Object[]} item Item to find events for
+	//@decription Returns a list of listeners attached for the given item.
+	//
+	//*/	
+	//glow.events.getListeners = function(item){
+	//	var objIdent; 
+	//	for (var i = 0, len = item.length; i < len; i++) {
+	//		
+	//		objIdent = item[i][eventKey];
+	//		
+	//		if (!objIdent) {
+	//			return false;
+	//		}
+	//		else {
+	//			// todo: need to return listeners in a sensible format
+	//			return eventListeners[objIdent];
+	//		}
+	//	}
+	//
+	//
+	//	return false;
+	//};
+	//
+	///**
+	//@name glow.events.hasListener
+	//@function
+	//@param {Object[]} item  Item to find events for
+	//@param {String}   eventName  Name of the event to match
+	//@decription Returns true if an event is found for the item supplied
+	//
+	//*/
+	//
+	//glow.events.hasListener = function (item, eventName) {
+	//	var objIdent,
+	//		listenersForEvent;
+	//		
+	//	for (var i = 0, len = item.length; i < len; i++) {	
+	//		objIdent = item[i][eventKey];
+	//			
+	//		if (!objIdent || !eventListeners[objIdent]) {
+	//			return false;
+	//		}
+	//				
+	//		listenersForEvent = eventListeners[objIdent][eventName];
+	//		if (!listenersForEvent) {
+	//			return false;
+	//		}
+	//		else {
+	//			return true;							
+	//		}					
+	//	}
+	//	
+	//	return false;			
+	//};
 	
 	/**
 	@name glow.events.Target
 	@class
 	@description An object that can have event listeners and fire events.
-		This is a base class for objects that can fire events. You can
-		extend this class to make your own objects have 'on' and 'fire'
+		Extend this class to make your own objects have 'on' and 'fire'
 		methods.
 		
 	@example
 		// Ball is our constructor
 		function Ball() {
-	     // ...
-		 }
+			// ...
+		}
 		       
 		// make Ball inherit from Target
 		glow.util.extend(Ball, glow.events.Target, {
@@ -331,24 +329,23 @@ Glow.provide(function(glow) {
 		});
 		       
 		// and events can be fired from Ball instances
-		    myBall.fire('bounce');
-	    */
+		myBall.fire('bounce');
+	*/
 	
-	glow.events.Target = function () {
+	events.Target = function () {
 			
 	};
-
+	var targetProto = events.Target.prototype;
 		
 	/**
 	@name glow.events.Target.extend
 	@function
-	@param {Object} obj Object to add methods to
+	@param {Object} obj Object to add Target instance methods to.
 		
 	@description Convenience method to add Target instance methods onto an object.
-		If you want to add events to a class, extend glow.events.Target instead.
+		If you want to add Target methods to a class, extend glow.events.Target instead.
 		       
 	@example
-		// myApplication is a singleton
 		var myApplication = {};
 		       
 		glow.events.Target.extend(myApplication);
@@ -362,19 +359,19 @@ Glow.provide(function(glow) {
 		});
 	*/
 	
-	glow.events.Target.extend = function (obj) {
+	events.Target.extend = function (obj) {
 		glow.util.apply( obj, glow.events.Target.prototype );
 	};
 		
 	/**
 	@name glow.events.Target#on
 	@function
-	@param {String}   eventName  Name of the event to listen for
-	@param {Function} callback   Function to call when the event fires.
+	@param {string} eventName Name of the event to listen for.
+	@param {function} callback Function to call when the event fires.
 		The callback is passed a single event object. The type of this
 		object depends on the event (see documentation for the event
 		you're listening to).
-	@param {Object}   [thisVal]  Value of 'this' within the callback.
+	@param {Object} [thisVal] Value of 'this' within the callback.
 		By default, this is the object being listened to.
 		
 	@description Listen for an event
@@ -387,21 +384,21 @@ Glow.provide(function(glow) {
 		});
 	*/
 	
-	glow.events.Target.prototype.on = function(eventName, callback, thisVal) {
-		glow.events.addListeners([this], eventName, callback, thisVal);
+	targetProto.on = function(eventName, callback, thisVal) {
+		glow.events.addListeners([this], eventName, callback, thisVal); // TODO: _addlistener
 		return this;
 	}
 		
 	/**
 	@name glow.events.Target#detach
 	@function
-	@param {String}   eventName  Name of the event to listen for
-	@param {Function} callback   Callback to detach
-	@param {Object}   [thisVal]  Value of 'this' within the callback.
+	@param {string} eventName Name of the event to remove.
+	@param {function} callback Callback to detach.
+	@param {Object} [thisVal] Value of 'this' within the callback.
 		By default, this is the object being listened to.
-	@description Remove an event listener
+	@description Remove an event listener.
 		
-	@returns this
+	@returns this Target object
 		
 	@example
 		function showListener() {
@@ -428,32 +425,23 @@ Glow.provide(function(glow) {
 		});
 		       
 		// this is because both callbacks are different function instances
-		// YUI do it more like this:
-		       
-		// add listener
-		var listenerHandle = myObj.on('show', function() {
-			alert('hi');
-		});
-		       
-		// remove listener
-		listenerHandle.detach();
-		       
-		// the problem here is we lose chaining
+	
 	*/
 		
-	glow.events.Target.prototype.detach = function(eventName, callback) {
+	targetProto.detach = function(eventName, callback) {
 		glow.events.removeListeners(this, eventName, callback);
+		return this;
 	}
 		
 	/**
 	@name glow.events.Target#fire
 	@function
-	@param {String} eventName Name of the event to fire
+	@param {string} eventName Name of the event to fire.
 	@param {glow.events.Event|Object} [event] Event object to pass into listeners.
-		    You can provide a simple object of key / value pairs which will
+		    You can provide a simple object of key-value pairs which will
 		    be added as properties of a glow.events.Event instance.
 		
-	@description Fire an event
+	@description Fire an event.
 		
 	@returns glow.events.Event
 		
@@ -471,7 +459,7 @@ Glow.provide(function(glow) {
 		myBall.fire( 'bounce', new BallBounceEvent(myBall) );
 	*/
 	
-	glow.events.Target.prototype.fire = function(eventName, event) {			
+	targetProto.fire = function(eventName, event) {			
 		return callListeners(this, eventName, event);
 	}
 		
@@ -480,9 +468,9 @@ Glow.provide(function(glow) {
 	@class
 	@param {Object} [properties] Properties to add to the Event instance.
 		Each key-value pair in the object will be added to the Event as
-		properties
+		properties.
 	       
-	@description Describes an event that occurred
+	@description Describes an event that occurred.
 		You don't need to create instances of this class if you're simply
 		listening to events. One will be provided as the first argument
 		in your callback.
@@ -502,7 +490,7 @@ Glow.provide(function(glow) {
 		// specialised event object
 		       
 		function RocketEvent() {
-		// ...
+			// ...
 		}
 		       
 		// inherit from glow.events.Event
@@ -521,12 +509,12 @@ Glow.provide(function(glow) {
 		});
 	*/
 		
-	glow.events.Event = function ( obj ) {			
-		if(obj) {
+	events.Event = function(obj) {			
+		if (obj) {
 			glow.util.apply(this, obj);
 		}
 	};
-		
+	var eventProto = events.Event.prototype;
 	/**
 	@name glow.events.Event#attachedTo
 	@type {Object}
@@ -571,14 +559,8 @@ Glow.provide(function(glow) {
 		});
 	*/
 	
-	glow.events.Event.prototype.preventDefault = function () {	
-		if (this[psuedoPreventDefaultKey]) { return; }
-		this[psuedoPreventDefaultKey] = true;
-		if (this.nativeEvent && this.nativeEvent.preventDefault) {
-			this.nativeEvent.preventDefault();
-			this.nativeEvent.returnValue = false;
-				
-		}			
+	eventProto.preventDefault = function () {	
+		this._defaultPrevented = true;		
 	};
 
 		
@@ -599,59 +581,11 @@ Glow.provide(function(glow) {
 		}
 	*/
 	
-	glow.events.Event.prototype.defaultPrevented = function () {
-		return !! this[psuedoPreventDefaultKey];
+	eventProto.defaultPrevented = function () {
+		return this._defaultPrevented;
 	};
 
-		
-	/**
-	@name glow.events.Event#stopPropagation
-	@function
-	@description Stops the event propagating. 
-		
-		For DOM events, this stops the event bubbling up through event 
-		listeners added to parent elements. The event object is marked as
-		having had propagation stopped (see 
-		{@link glow.events.Event#propagationStopped propagationStopped}).
-		
-	@example
-		// catch all click events that are not links
-		glow.events.addListener(
-			document,
-			'click',
-			function () { alert('document clicked'); }
-		);
-
-		glow.events.addListener(
-			'a',
-			'click',
-			function (e) { e.stopPropagation(); }
-		);
-	*/
 	
-	glow.events.Event.prototype.stopPropagation = function () {			
-		if (this[psuedoStopPropagationKey]) { return; }
-		this[psuedoStopPropagationKey] = true;
-		var e = this.nativeEvent;
-		if (e) {
-			e.cancelBubble = true;
-			if (e.stopPropagation) { e.stopPropagation(); }
-		}
-	};
-
-		
-	/**
-	@name glow.events.Event#propagationStopped
-	@function
-	@description Tests if propagation has been stopped for this event.
-		
-	@returns {Boolean}		
-		True if event propagation has been prevented.
-
-	*/
-	
-	glow.events.Event.prototype.propagationStopped = function () {
-		return !! this[psuedoStopPropagationKey];
-	};
-		
+	/* Export */
+	glow.events = events;
 });
