@@ -23,7 +23,10 @@
 			<file>src/NodeList/manipulation.js</file>
 			<file>src/NodeList/appearance.js</file>
 			<file>src/NodeList/events.js</file>
+			<file>src/NodeList/anim.js</file>
 			<file>src/tweens/tweens.js</file>
+			<file>src/anim/Anim.js</file>
+			<file>src/anim/Group.js</file>
 			<file>src/footer/core.js</file>
 		</js>
 		<css></css>

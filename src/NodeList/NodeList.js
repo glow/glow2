@@ -29,8 +29,6 @@ Glow.provide(function(glow) {
 			// creating an element from a string
 			glow('<div>Hello!</div>').appendTo('body');
 		
-		@see <a href="../furtherinfo/creatingnodelists/">Creating NodeLists</a>
-		@see <a href="../furtherinfo/workingwithnodelists/">Working with NodeLists</a>
 		@see <a href="http://wiki.github.com/jeresig/sizzle/">Supported CSS selectors</a>
 	*/
 	function NodeList(contents) {
