@@ -18,7 +18,7 @@ module('glow.events');
 		
 		function callback1(event){				
 			triggered1 = true;
-            ok(event instanceof glow.events.Event, "event objected passed into listener");
+            ok(event instanceof glow.events.Event, 'event objected passed into listener');
 		}
 
 		var listener = glow.events.addListeners(
@@ -44,18 +44,18 @@ module('glow.events');
 				
 		function callback2(event){				
 			triggered2 = true;
-			ok(event instanceof glow.events.Event, "event objected passed into listener");
+			ok(event instanceof glow.events.Event, 'event objected passed into listener');
 		}
 
 		glow.events.addListeners(
 			[myObj],
-			"myEventFirstEvent",
+			'myEventFirstEvent',
 			callback2
 		);
 				
 		glow.events.addListeners(
 			[myObj],
-			"myEventSecondEvent",
+			'myEventSecondEvent',
 			callback2
 		);
 			
@@ -63,7 +63,7 @@ module('glow.events');
 			
 		ok(e instanceof glow.events.Event, "generated event is glow.events.Event");
 	
-		equals(triggered2, true, "listener called and trigger2 true");
+		equals(triggered2, true, 'listener called and trigger2 true');
 			
 		var myObj1 = {},
             myObj2 = {},
@@ -76,7 +76,7 @@ module('glow.events');
 
 		glow.events.addListeners(
 			[myObj1, myObj2],
-			"myEventFirstEvent",
+			'myEventFirstEvent',
 			callback3
 		);				
 			
@@ -84,7 +84,7 @@ module('glow.events');
 			
 		ok(e instanceof glow.events.Event, "generated event is glow.events.Event");
 	
-		 equals(triggered3, true, "listener called and trigger3 true");
+		 equals(triggered3, true, 'listener called and trigger3 true');
 	});
 
 		
@@ -94,7 +94,7 @@ module('glow.events');
 		var myObj = {};		
 				
 		function callback(){
-			console.log("calledback");
+			console.log('calledback');
 		}
 
 		var listener = glow.events.addListeners(
@@ -105,15 +105,15 @@ module('glow.events');
 			
 		var e = glow.events.fire([myObj], 'trigger');
 			
-		ok(e instanceof glow.events.Event, "generated event is glow.events.Event");
+		ok(e instanceof glow.events.Event, 'generated event is glow.events.Event');
 			
 		ok( (glow.events.Event !== undefined), 'glow.events.Event exists' );
 			
-		ok(! e.defaultPrevented(), "default is not prevented without call to preventDefault");
+		ok(! e.defaultPrevented(), 'default is not prevented without call to preventDefault');
 			
 		e.preventDefault()
 			
-		ok( e.defaultPrevented(), "default is prevented after call to preventDefault" );
+		ok( e.defaultPrevented(), 'default is prevented after call to preventDefault' );
 			
 		
 			
@@ -138,19 +138,19 @@ module('glow.events');
 			
 		myApplication.fire('load');
 	
-		ok(triggered4 == true, "myApplication can fire events - triggered: "+triggered4 );
+		ok(triggered4 == true, 'myApplication can fire events - triggered: '+triggered4 );
 			
 		triggered4 = false;
 		myApplication.detach('load', testListener);
 			
 		myApplication.fire('load');
 					
-	    ok(triggered4 == true, "Event detached as event no longer firable" );
+	    ok(triggered4 == true, 'Event detached as event no longer firable' );
 	});
 		
 
 	test('glow.events.removeListeners', function() {
-		expect(4);
+		expect(3);
 					
 		var myObj7 = {},
 			myObj8 = {},
@@ -170,18 +170,17 @@ module('glow.events');
 			
 		glow.events.fire([myObj7], 'myToBeRemovedEvent');
 				
-		ok(triggered5 == true, "event is setup and added and fires: "+triggered5 );
+		ok(triggered5 == true, 'event is setup and added and fires: '+triggered5 );
 				
-		ok(glow.events.removeListeners([myObj7], "myToBeRemovedEvent", listener), "removeListeners returns true when listener removed");
+		ok(glow.events.removeListeners([myObj7], 'myToBeRemovedEvent', listener), 'removeListeners returns true when listener removed');
 				
 		triggered5 = false;
-		glow.events.removeListeners([myObj7], "myToBeRemovedEvent", callback7);
+		glow.events.removeListeners([myObj7], 'myToBeRemovedEvent', callback7);
 		glow.events.fire([myObj7], 'myToBeRemovedEvent');
 				
-		ok(triggered5 == false, "event was removed and couldn't be fired: "+triggered5);
-				
-		ok(!glow.events.removeListeners([myObj8], "myToBeRemovedEvent", callback7), "removeListeners returns false when trying to remove listeners from object without events");
+		ok(triggered5 == false, 'event was removed and couldn\'t be fired: '+triggered5);
 	});	
+		
 	
 	test('glow.events.removeAllListeners', function() {
 		expect(5);
@@ -216,21 +215,21 @@ module('glow.events');
 				
 			glow.events.fire([myObj7], 'myToBeRemovedEvent');
 				
-			ok(triggered6, "event is setup and added and fires: " + triggered6 );
+			ok(triggered6, 'event is setup and added and fires: ' + triggered6 );
 					
 			triggered6 = false;
 					
-			ok(glow.events.removeAllListeners([myObj7]), "removeAllListeners returns true when listener removed");
+			ok(glow.events.removeAllListeners([myObj7]), 'removeAllListeners returns true when listener removed');
 					
 			glow.events.fire([myObj7], 'myToBeRemovedEvent');
 					
-			ok(!triggered6, "event was removed and couldn't be fired: " + triggered6 );
+			ok(!triggered6, 'event was removed and couldn\'t be fired: ' + triggered6 );
 					
-			ok(!glow.events.removeAllListeners([objWithoutEvents]), "removeAllListeners returns false when trying to remove listeners from object without events");
+			ok(!glow.events.removeAllListeners([objWithoutEvents]), 'removeAllListeners returns false when trying to remove listeners from object without events');
 					
 			glow.events.fire([myObj8], 'myEvent');
 					
-			ok(!triggered7, "other events still work: " + triggered7 );
+			ok(triggered7, 'other events still work: ' + triggered7 );
 	});
 		
 		

@@ -8,8 +8,8 @@ Glow.provide(function(glow) {
 		
 	/* storage variables */
 	
-	var eventListeners = {}, /* TODO: EXplain this better as JSON */
-		eventid = 1, /* TODO: camelCase */
+	var eventListeners = {}, 
+		eventId = 1, /* TODO: camelCase */
 		objIdCounter = 1, 
 		eventKey = '__eventId' + glow.UID; 
 		
@@ -145,10 +145,10 @@ Glow.provide(function(glow) {
 	*/
 	
 	events.removeAllListeners = function (items) {
-		var objIdent;
+		var objIdent,
+		i = items.length;		
 		
-		// TODO: switch for a while.
-		for (var i = 0, len = items.length; i < len; i++) {
+		while(i--){
 			
 			objIdent = items[i][eventKey];
 			
@@ -174,10 +174,11 @@ Glow.provide(function(glow) {
 	*/
 	events.removeListeners = function (item, eventName, callback) { /* TODO: items! */
 		var objIdent,
-			listenersForEvent;
+			listenersForEvent,
+			i = item.length;
 		
-		/* TODO: switch for a while */
-		for(var i = 0, leni = item.length; i < leni; i++){
+	
+		while(i--){
 			
 			objIdent = item[i][eventKey];
 				
@@ -191,7 +192,7 @@ Glow.provide(function(glow) {
 				return events;
 			}
 			
-			/* TODO: switch for a while */
+			// for loop, because order matters
 			for(var j = 0, lenj = listenersForEvent.length; j < lenj; j++){						
 				if (listenersForEvent[j][0] === callback){
 					listenersForEvent.splice(j, 1);
@@ -385,7 +386,7 @@ Glow.provide(function(glow) {
 	*/
 	
 	targetProto.on = function(eventName, callback, thisVal) {
-		glow.events.addListeners([this], eventName, callback, thisVal); // TODO: _addlistener
+		glow.events.addListeners([this], eventName, callback, thisVal);
 		return this;
 	}
 		
