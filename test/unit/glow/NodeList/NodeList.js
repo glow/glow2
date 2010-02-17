@@ -121,6 +121,51 @@ test('NodeList creation via html string', 33, function() {
 	equal(myNodeList.length, 2, 'Length populated');
 });
 
+// these tests are dead simple as glow() simply calls new NodeList()
+module('glow.NodeList creation via glow()');
+
+test('Empty NodeList creation', 4, function() {
+	var myNodeList = glow();
+	
+	equal(myNodeList.constructor, glow.NodeList, 'Correct constructor');
+	ok(myNodeList instanceof glow.NodeList, 'Correct instanceof');
+	strictEqual(myNodeList[0], undefined, 'No items in new list');
+	strictEqual(myNodeList.length, 0, 'Length correct');
+});
+
+test('NodeList creation via selector', 4, function() {
+	var myNodeList = glow('#twoInnerDivs div, #twoInnerEms em:first-child');
+	
+	equal(myNodeList[0], byId('innerDiv1'), 'Item 0 as expected');
+	equal(myNodeList[1], byId('innerDiv2'), 'Item 1 as expected');
+	equal(myNodeList[2], byId('innerEm1'),  'Item 2 as expected');
+	equal(myNodeList.length, 3, 'Length populated');
+});
+
+test('NodeList creation via html element', 2, function() {
+	var myNodeList = glow( byId('innerDiv1') );
+	
+	equal(myNodeList[0], byId('innerDiv1'), 'Item 0 as expected');
+	equal(myNodeList.length, 1, 'Length populated');
+});
+
+test('NodeList creation via array / collection / NodeList', 3, function() {
+	var elms = [ byId('innerDiv1'), byId('innerDiv2') ],
+		myNodeList = glow(elms);
+	
+	equal(myNodeList[0], byId('innerDiv1'), 'Item 0 as expected (added via array)');
+	equal(myNodeList[1], byId('innerDiv2'), 'Item 1 as expected');
+	equal(myNodeList.length, 2, 'Length populated');
+});
+
+test('NodeList creation via html string', 3, function() {
+	var myNodeList = glow('<div id="aNewNode1">test</div><div id="aNewNode2">test</div>');
+	
+	equal(myNodeList[0] && myNodeList[0].id, 'aNewNode1', 'Item 0 as expected (added via string)');
+	equal(myNodeList[1] && myNodeList[1].id, 'aNewNode2', 'Item 1 as expected');
+	equal(myNodeList.length, 2, 'Length populated');
+});
+
 module('glow.NodeList#push');
 // NodeList uses this function so it's already been tested above
 

@@ -2,16 +2,7 @@
 if (!document.readyState) {
 	document.readyState = 'loading';
 	
-	/*--if (document.attachEvent) { // like IE
-		document.attachEvent('onreadystatechange',
-			function() {
-				if (document.readyState == 'complete') {
-					document.detachEvent('onreadystatechange', arguments.callee);
-				}
-			}
-		);
-	}
-	else */if (document.addEventListener) { // like Mozilla
+	if (document.addEventListener) { // like Mozilla
 		document.addEventListener('DOMContentLoaded',
 			function () {
 				document.removeEventListener('DOMContentLoaded', arguments.callee, false);
@@ -64,7 +55,7 @@ if (!document.readyState) {
 			opts.base += '/';
 		}
 		
-		glowInstance = new glow(version, opts.base);
+		glowInstance = createGlowInstance(version, opts.base);
 		Glow._build.instances[version] = glowInstance;
 		
 		glowInstance.debug = false; /*!debug*/ glowInstance.debug = true; /*gubed!*/
@@ -225,120 +216,137 @@ if (!document.readyState) {
 	}
 	
 	/**
-		@name glow
-		@static
-		@class
-		@description An instance of the Glow library. Returned by calling new Glow().
-		@property {string} version
-		@property {string} base
+		@name createGlowInstance
+		@private
+		@function
+		@description Creates an instance of the Glow library. 
+		@param {string} version
+		@param {string} base
 	 */
-	var glow = function(version, base) { /*debug*///log.info('new glow("'+Array.prototype.join.call(arguments, '", "')+'")');
-		this.version = version;
-		this.base = base || '';
-		this.map = getMap(version);
-		this._build = {
+	var createGlowInstance = function(version, base) { /*debug*///log.info('new glow("'+Array.prototype.join.call(arguments, '", "')+'")');
+		var glowInstance = function() {
+			return glow._coreFunc.apply(this, arguments);
+		};
+		
+		glowInstance.version = version;
+		glowInstance.base = base || '';
+		glowInstance.map = getMap(version);
+		glowInstance._build = {
 			loading: [],   // names of packages requested but not yet built, in same order as requested.
 			builders: {},  // completed but not yet built (waiting on dependencies). Like _build.builders[packageName]: [function, function, ...].
 			history: {},   // names of every package ever loaded for this instance
 			callbacks: []
 		};
-	}
-	
-	/**
-		@public
-		@name glow#load
-		@function
-		@description Add a package to this instance of the Glow library.
-		@param {string[]} ... The names of 1 or more packages to add.
-	 */
-	glow.prototype.load = function() { /*debug*///log.info('glow.load("'+Array.prototype.join.call(arguments, '", "')+'") for version '+this.version);
-		var name = '',
-			src,
-			depends;
 		
-		for (var i = 0, len = arguments.length; i < len; i++) {
-			name = arguments[i];
-			
-			if (this._build.history[name]) { /*debug*///log.info('already loaded package "'+name+'" for version '+this.version+', skipping.');
-				continue;
-			}
-			
-			this._build.history[name] = true;
-			
-			// packages have dependencies, listed in the map: a single js file, css files, or even other packages
-			depends = this.map[name]; /*debug*///log.info('depends for '+name+' '+this.version+': "'+depends.join('", "')+'"');
-			for (var j = 0, lenj = depends.length; j < lenj; j++) {
-				
-				if (depends[j].slice(-3) === '.js') { /*debug*///log.info('dependent js: "'+depends[j]+'"');
-					src = this.base + this.version + '/' + depends[j];
-					
-					// readyBlocks are removed in _release()
-					if (this._addReadyBlock) { this._addReadyBlock('glow_loading_'+name); } // provided by core
-					this._build.loading.push(name);
-					
-					injectJs(src);
-				}
-				else if (depends[j].slice(-4) === '.css') { /*debug*///log.info('dependent css "'+depends[j]+'"');
-					src = this.base + this.version + '/' + depends[j];
-					injectCss(src);
-				}
-				else { /*debug*///log.info('dependent package: "'+depends[j]+'"');
-					this.load(depends[j]); // recursively load dependency packages
-				}
-			}
+		// copy properties from glowInstanceMembers
+		for (var prop in glowInstanceMembers) {
+			glowInstance[prop] = glowInstanceMembers[prop];
 		}
 		
-		return this;
-	};
-	
-	/**
-		@public
-		@name glow#loaded
-		@function
-		@param {function} onLoadCallback Called when all the packages load.
-		@description Do something when all the packages load.
-	 */
-	glow.prototype.loaded = function(onLoadCallback) { /*debug*///log.info('glow.loaded('+typeof onLoadCallback+') for version '+this.version);
-		this._build.callbacks.push(onLoadCallback);
-		if (this._addReadyBlock) { this._addReadyBlock('glow_loading_loadedcallback'); }
-		
-		this._release();
-		
-		return this;
+		return glowInstance;
 	}
 	
+	
 	/**
+		@name glowInstanceMembers
 		@private
-		@name glow#_release
-		@function
-		@description If all loaded packages are now built, then run the onLoaded callbacks.
-	 */
-	glow.prototype._release = function() { /*debug*///log.info('glow._release("'+this.version+'")');
-		var callback;
-		
-		if (this._build.loading.length !== 0) { /*debug*///log.info('waiting for '+this._build.loading.length+' to finish.');
-			return;
+		@description All members of this object will be copied onto little-glow instances
+		@type {Object}
+	*/
+	var glowInstanceMembers = {
+		/**
+			@public
+			@name glow#load
+			@function
+			@description Add a package to this instance of the Glow library.
+			@param {string[]} ... The names of 1 or more packages to add.
+		 */
+		load: function() { /*debug*///log.info('glow.load("'+Array.prototype.join.call(arguments, '", "')+'") for version '+this.version);
+			var name = '',
+				src,
+				depends;
+			
+			for (var i = 0, len = arguments.length; i < len; i++) {
+				name = arguments[i];
+				
+				if (this._build.history[name]) { /*debug*///log.info('already loaded package "'+name+'" for version '+this.version+', skipping.');
+					continue;
+				}
+				
+				this._build.history[name] = true;
+				
+				// packages have dependencies, listed in the map: a single js file, css files, or even other packages
+				depends = this.map[name]; /*debug*///log.info('depends for '+name+' '+this.version+': "'+depends.join('", "')+'"');
+				for (var j = 0, lenj = depends.length; j < lenj; j++) {
+					
+					if (depends[j].slice(-3) === '.js') { /*debug*///log.info('dependent js: "'+depends[j]+'"');
+						src = this.base + this.version + '/' + depends[j];
+						
+						// readyBlocks are removed in _release()
+						if (this._addReadyBlock) { this._addReadyBlock('glow_loading_'+name); } // provided by core
+						this._build.loading.push(name);
+						
+						injectJs(src);
+					}
+					else if (depends[j].slice(-4) === '.css') { /*debug*///log.info('dependent css "'+depends[j]+'"');
+						src = this.base + this.version + '/' + depends[j];
+						injectCss(src);
+					}
+					else { /*debug*///log.info('dependent package: "'+depends[j]+'"');
+						this.load(depends[j]); // recursively load dependency packages
+					}
+				}
+			}
+			
+			return this;
+		},
+		/**
+			@public
+			@name glow#loaded
+			@function
+			@param {function} onLoadCallback Called when all the packages load.
+			@description Do something when all the packages load.
+		 */
+		loaded: function(onLoadCallback) { /*debug*///log.info('glow.loaded('+typeof onLoadCallback+') for version '+this.version);
+			this._build.callbacks.push(onLoadCallback);
+			if (this._addReadyBlock) { this._addReadyBlock('glow_loading_loadedcallback'); }
+			
+			this._release();
+			
+			return this;
+		},
+		/**
+			@private
+			@name glow#_release
+			@function
+			@description If all loaded packages are now built, then run the onLoaded callbacks.
+		 */
+		_release: function() { /*debug*///log.info('glow._release("'+this.version+'")');
+			var callback;
+			
+			if (this._build.loading.length !== 0) { /*debug*///log.info('waiting for '+this._build.loading.length+' to finish.');
+				return;
+			}
+			/*debug*///log.info('running '+this._build.callbacks.length+' loaded callbacks for version "'+this.version+'"');
+			
+			// run and remove each available _onloaded callback
+			while (callback = this._build.callbacks.shift()) {
+				callback(this);
+				if (this._removeReadyBlock) { this._removeReadyBlock('glow_loading_loadedcallback'); }
+			}
+		},
+		/**
+			@name glow#ready
+			@function
+			@param {function} onReadyCallback Called when all the packages load and the DOM is available.
+			@description Do something when all the packages load and the DOM is ready.
+		 */
+		ready: function(onReadyCallback) { /*debug*///log.info('(ember) glow#ready('+typeof onReadyCallback+') for version '+this.version+'. There are '+this._build.loading.length+' loaded packages waiting to be built.');
+			this.loaded(function(glow) {
+				glow.ready( function() { onReadyCallback(glow); } );
+			});
+			
+			return this;
 		}
-		/*debug*///log.info('running '+this._build.callbacks.length+' loaded callbacks for version "'+this.version+'"');
-		
-		// run and remove each available _onloaded callback
-		while (callback = this._build.callbacks.shift()) {
-			callback(this);
-			if (this._removeReadyBlock) { this._removeReadyBlock('glow_loading_loadedcallback'); }
-		}
-	}
-	
-	/**
-		@name glow#ready
-		@function
-		@param {function} onReadyCallback Called when all the packages load and the DOM is available.
-		@description Do something when all the packages load and the DOM is ready.
-	 */
-	glow.prototype.ready = function(onReadyCallback) { /*debug*///log.info('(ember) glow#ready('+typeof onReadyCallback+') for version '+this.version+'. There are '+this._build.loading.length+' loaded packages waiting to be built.');
-		this.loaded(function(glow) {
-			glow.ready( function() { onReadyCallback(glow); } );
-		});
-
-		return this;
 	}
 })();

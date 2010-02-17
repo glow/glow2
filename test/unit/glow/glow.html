@@ -132,7 +132,7 @@
 			
 			var glow = Glow('2', {_map: testMap});
 		
-				ok( (glow !== undefined), 'glow is defined.' );
+				equals(typeof glow, 'function', 'glow is a function');
 				equals(glow.version, '2.1.0', 'glow.version is set to the latest minor+bugfix version.');
 			
 			glow = Glow('2.0', {_map: testMap});
@@ -166,8 +166,7 @@
 			}
 		});
 		
-		test('commando', function() {
-			expect(3);
+		test('commando', 4, function() {
 			
 			stop(3000);
 			testHelper.addFrame('../data/t_tags.html', checkTags);
@@ -175,6 +174,7 @@
 			function checkTags(frame) {
 				with (frame) {
 					ok( (typeof glow !== 'undefined'), 'glow is defined.' );
+					equals(typeof glow, 'function', 'glow is a function');
 					ok( (typeof glow.util !== 'undefined'), 'glow.util is defined.' );
 					ok( (typeof glow.widgets !== 'undefined'), 'glow.widgets is defined.' );
 				}
