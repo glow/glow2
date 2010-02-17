@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow Appearance</title>
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript" src="../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
+	
+	
+	
+	<script type="text/javascript">
+		// start glow loading
+		window.glow = Glow(conf.version, {base: conf.base, debug: true});
+	</script>
+</head>
+
+<body>
+	<h1>Appearance methods</h1>
+	
+	<h2>Zooming / Position set to absolute</h2>
+	
+	<p>Instructions:</p>
+	<ol>
+		<li>Notice the red box in the top right corner of the screen.</li>
+		<li>Click <a href="#" id="test1">create box</a>.</li>
+		<li>Confirm that new green box that appears fully covers the red box.</li>
+		<li>Zoom the page size by 1</li>
+		<li>Refresh the page</li>
+		<li>Click <a href="#" id="test1">create box</a>.</li>
+		<li>Confirm that new green box that appears fully covers the red box (seeing red is a test fail).</li>
+	
+	</ol>
+
+	<script type="text/javascript">
+		
+			glow.ready(function() {
+				init();
+			});
+
+			function init(){
+				test1();
+				test2();
+				test3();
+				test4();
+				test5();
+			}
+			
+			function test1(){
+				var box = glow("<div>Fail</div>").appendTo("body");
+				box.css("height","100px")
+					.css("width","100px")
+					.css("background-color","red")
+					.css("position", "absolute")
+					.css("top", "0")
+					.css("right","0");
+				glow('#test1').on('click', function() {
+					var overlayBox = glow("<div>Pass</div>").appendTo("body");
+						overlayBox.css("height","100px")
+						.css("width","100px")
+						.css("background-color","green")
+						.css("position", "absolute")
+						.css("top", "0")
+						.css("right","0");
+				});
+			}
+			
+			
+			
+			function test2(){
+				var starterTextSize = glow("#starter").css("font-size");
+				var newText = glow("#copyTo");
+				newText.css("font-size", starterTextSize);
+			}
+			
+			function test3(){
+				var starterHeight = glow("#starter-2").css("height");
+				var starterWidth = glow("#starter-2").css("width");
+				var newBox = glow("#copyTo-2");
+				newBox.css("height", starterHeight);
+				newBox.css("width", starterWidth);
+			}
+			
+			function test4(){
+				var starterHeight = glow("#starter-3").css("height");
+				var starterWidth = glow("#starter-3").css("width");
+				var starterBorder = glow("#starter-3").css("border");
+				var newBox = glow("#copyTo-3");
+				newBox.css("height", starterHeight);
+				newBox.css("width", starterWidth);
+				newBox.css("border", starterBorder);
+			}
+			
+			function test5(){
+				var offset = glow("#starter-4");
+				var offsetTop = offset.offset().top;
+				var offsetLeft = offset.offset().left;
+				glow("#offset-results-top").html(offsetTop);
+				glow("#offset-results-left").html(offsetLeft);
+			
+			}
+	</script>
+	
+	
+	<h2>Zooming / Text size</h2>
+	
+	<p>Instructions:</p>
+	<ol>
+		<li>Notice the test text below - they should be the same size.</li>
+		<li>Zoom the page size by 1</li>
+		<li>Refresh the page</li>
+		
+	
+	</ol>
+	<p style="font-size:20px;" id="starter">I'm some test text</p>
+	<p id="copyTo">I'm going to get me some of test text's styles, and I should always be the same size</p>
+
+	
+	<h2>Zooming / Height & width</h2>
+	
+	<p>Instructions:</p>
+	<ol>
+		<li>Notice the red and green box below</li>
+		<li>Zoom the page size by 1</li>
+		<li>Refresh the page and check both boxes remain the same size</li>
+		
+	
+	</ol>
+	<div style="height:100px;width:100px;background-color:red;" id="starter-2">Box 1</div>
+	<div style="background-color:green;" id="copyTo-2">Box 2</div>
+	
+	
+	
+	<h2>Zooming / Borders</h2>
+	
+	<p>Instructions:</p>
+	<ol>
+		<li>Notice two blue boxes below which should both have 25px borders around them.</li>
+		<li>Zoom the page size by 1</li>
+		<li>Refresh the page and check both boxes remain the same size (including borders)</li>
+		
+	
+	</ol>
+	<div style="height:100px;width:100px;background-color:blue;border:25px solid red;" id="starter-3">Box 1</div>
+	<div style="background-color:blue;" id="copyTo-3">Box 2</div>
+	
+	<h2>Zooming / offset</h2>
+	
+	<div style="height:50px;width:50px;background-color:yellow;position:absolute;top:150px;right:10px;" id="starter-4">Offset test</div>
+	<ol>
+		<li>There is a small yellow square to the right, 150px from the top of the screen. It's offset will be shown below.</li>
+		<li>Refresh the page and check the values below remain the same (the left value will vary as your window size varies, but the first value should always be 150).</li>
+	</ol>
+	<p>Offset value: top: <span id="offset-results-top"></span> left: <span id="offset-results-left"></span></p>
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>
