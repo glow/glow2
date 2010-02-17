@@ -3,11 +3,13 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.tweens
 	@namespace
-	@description Functions for modifying animations	
+	@description Functions for controlling the motion of an animation
 	*/
+	
 	/*
-	PrivateMethod: _reverse
-		Takes a tween function and returns a function which does the reverse
+	@name _reverse
+	@private
+	@description Takes a tween function and returns a function which does the reverse
 	*/
 	function _reverse(tween) {
 		return function(t) {
@@ -18,12 +20,11 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.tweens.linear
 	@function
-	@description Returns linear tween.
+	@description Creates linear tween.	
+		Will transition values from start to finish with no
+		acceleration or deceleration.
 	
-	Will transition values from start to finish with no
-	acceleration or deceleration.
-	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.linear = function() {
 		return function(t) { return t; };
@@ -34,12 +35,11 @@ Glow.provide(function(glow) {
 	@function
 	@description Creates a tween which starts off slowly and accelerates.
 	
-	@param {Number} [strength=2] How strong the easing is.
+	@param {number} [strength=2] How strong the easing will be.
 	
-	A higher number means the animation starts off slowly and
-	ends more quickly.
+		The higher the number the slower the animation starts and the quicker it ends.
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.easeIn = function(strength) {
 		strength = strength || 2;
@@ -54,12 +54,11 @@ Glow.provide(function(glow) {
 	@function
 	@description Creates a tween which starts off fast and decelerates.
 	
-	@param {Number} [strength=2] How strong the easing is.
+	@param {number} [strength=2] How strong the easing will be.
 	
-	A higher number means the animation starts quickly and
-	ends more slowly.
+		The higher the number the quicker the animation starts and the slower it ends.
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.easeOut = function(strength) {
 		return _reverse(this.easeIn(strength));
@@ -71,14 +70,14 @@ Glow.provide(function(glow) {
 	@function
 	@description Creates a tween which starts off slowly, accelerates then decelerates after the half way point.
 	
-	This produces a smooth and natural looking transition.
+		This produces a smooth and natural looking transition.
 	
-	@param {Number} [strength=2] How strong the easing is.
+	@param {number} [strength=2] How strong the easing is.
 	
-	A higher number produces a greater difference between
-	start / end speed and the mid speed.
+		A higher number produces a greater difference between
+		start/end speed and the mid speed.
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.easeBoth = function(strength) {
 		return this.combine(this.easeIn(strength), this.easeOut(strength));
@@ -90,11 +89,11 @@ Glow.provide(function(glow) {
 	@function
 	@description Returns the reverse of {@link glow.tweens.overshootOut overshootOut}
 	
-	@param {Number} [amount=1.70158] How much to overshoot.
+	@param {number} [amount=1.70158] How much to overshoot.
 	
-	The default is 1.70158 which results in a 10% overshoot.
+		The default is 1.70158 which results in a 10% overshoot.
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.overshootIn = function(amount) {
 		return _reverse(this.overshootOut(amount));
@@ -106,11 +105,11 @@ Glow.provide(function(glow) {
 	@function
 	@description Creates a tween which overshoots its end point then returns to its end point.
 	
-	@param {Number} [amount=1.70158] How much to overshoot.
+	@param {number} [amount=1.70158] How much to overshoot.
 	
-	The default is 1.70158 which results in a 10% overshoot.
+		The default is 1.70158 which results in a 10% overshoot.
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.overshootOut = function(amount) {
 		amount = amount || 1.70158;
@@ -126,11 +125,11 @@ Glow.provide(function(glow) {
 	@function
 	@description Returns a combination of {@link glow.tweens.overshootIn overshootIn} and {@link glow.tweens.overshootOut overshootOut}
 	
-	@param {Number} [amount=1.70158] How much to overshoot.
+	@param {number} [amount=1.70158] How much to overshoot.
 	
-	The default is 1.70158 which results in a 10% overshoot.
+		The default is 1.70158 which results in a 10% overshoot.
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.overshootBoth = function(amount) {
 		return this.combine(this.overshootIn(amount), this.overshootOut(amount));	
@@ -142,7 +141,7 @@ Glow.provide(function(glow) {
 	@function
 	@description Returns the reverse of {@link glow.tweens.bounceOut bounceOut}
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.bounceIn = function() {
 		return _reverse(this.bounceOut());
@@ -154,7 +153,7 @@ Glow.provide(function(glow) {
 	@function
 	@description Returns a tween which bounces against the final value 3 times before stopping
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.bounceOut = function() {
 		return function(t) {
@@ -182,14 +181,14 @@ Glow.provide(function(glow) {
 	@function
 	@description Returns the reverse of {@link glow.tweens.elasticOut elasticOut}
 	
-	@param {Number} [amplitude=1] How strong the elasticity is.
+	@param {number} [amplitude=1] How strong the elasticity will be.
 	
-	@param {Number} [period=0.3] The frequency period.
+	@param {number} [frequency=3.33] The frequency.
 	
-	@returns {Function}
+	@returns {function}
 	*/
-	tweens.elasticIn = function(a, p) {
-		return _reverse(this.elasticOut(a, p));
+	tweens.elasticIn = function(amplitude, frequency) {
+		return _reverse(this.elasticOut(amplitude, frequency));
 	};
 	
 	
@@ -198,31 +197,30 @@ Glow.provide(function(glow) {
 	@function
 	@description Creates a tween which has an elastic movement.
 	
-	You can tweak the tween using the parameters but you'll
-	probably find the defaults sufficient.
+		You can tweak the tween using the parameters but you'll
+		probably find the defaults sufficient.
 	
-	@param {Number} [amplitude=1] How strong the elasticity is.
+	@param {number} [amplitude=1] How strong the elasticity is.
 	
-	@param {Number} [period=0.3] The frequency period.
+	@param {number} [frequency=3.33] The frequency.
 	
-	@returns {Function}
+	@returns {function}
 	*/
-	tweens.elasticOut = function(a, p) {
+	tweens.elasticOut = function(amplitude, frequency) {
+		var period = 1 / (frequency || 10 / 3);
+		amplitude = amplitude || 1;
 		return function (t) {
+			var s;
 			if (t == 0 || t == 1) {
 				return t;
 			}
-			if (!p) {
-				p = 0.3;
-			}
-			if (!a || a < 1) {
-				a = 1;
-				var s = p / 4;
+			if (amplitude < 1) {
+				s = period / 4;
 			}
 			else {
-				var s = p / (2 * Math.PI) * Math.asin(1 / a);
+				s = period / (2 * Math.PI) * Math.asin(1 / amplitude);
 			}
-			return a * Math.pow(2, -10 * t) * Math.sin( (t-s) * (2 * Math.PI) / p) + 1;
+			return amplitude * Math.pow(2, -10 * t) * Math.sin( (t-s) * (2 * Math.PI) / period) + 1;
 		}
 	};
 		
@@ -232,24 +230,24 @@ Glow.provide(function(glow) {
 	@function
 	@description Create a tween from two tweens.
 	
-	This can be useful to make custom tweens which, for example,
-	start with an easeIn and end with an overshootOut. To keep
-	the motion natural, you should configure your tweens so the
-	first ends and the same velocity that the second starts.
+		This can be useful to make custom tweens which, for example,
+		start with an easeIn and end with an overshootOut. To keep
+		the motion natural, you should configure your tweens so the
+		first ends and the same velocity that the second starts.
 	
-	@param {Function} tweenIn Tween to use for the first half
+	@param {function} tweenIn Tween to use for the first half
 	
-	@param {Function} tweenOut Tween to use for the second half
+	@param {function} tweenOut Tween to use for the second half
 	
 	@example
-	// 4.5 has been chosen for the easeIn strength so it
-	// ends at the same velocity as overshootOut starts.
-	var myTween = glow.tweens.combine(
-	glow.tweens.easeIn(4.5),
-	glow.tweens.overshootOut()
-	);
+		// 4.5 has been chosen for the easeIn strength so it
+		// ends at the same velocity as overshootOut starts.
+		var myTween = glow.tweens.combine(
+			glow.tweens.easeIn(4.5),
+			glow.tweens.overshootOut()
+		);
 	
-	@returns {Function}
+	@returns {function}
 	*/
 	tweens.combine = function(tweenIn, tweenOut) {
 		return function (t) {
