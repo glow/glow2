@@ -1,3 +1,16 @@
+/**
+	@name glow
+	@namespace
+	@version @VERSION@
+	@description The glow library namespace
+		The library can also be used as a function, which is a shortcut to
+		{@link glow.NodeList}.
+		
+	@example
+		var links = glow('a');
+		// is the same as
+		var links = new glow.NodeList('a');
+*/
 if (!window.Glow) { // loading packages via user SCRIPT tags?
 	window.Glow = {
 		provide: function(f) {

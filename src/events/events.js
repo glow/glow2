@@ -2,7 +2,7 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.events
 	@namespace
-	@description Native browser and custom events
+	@description Handling custom events
 	*/
 	var events = {};
 		

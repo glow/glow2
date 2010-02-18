@@ -19,14 +19,13 @@ if (!document.readyState) {
 	/**
 		@public
 		@name Glow
-		@constructor
+		@function
 		@description Creates an instance of the Glow JavaScript Library.
 		@param {string} [version]
 		@param {object} [opts]
 		@param {string} [opts.base] The path to the base folder, in which the Glow versions are kept.
 		@param {boolean} [opts.debug] Have all filenames modified to point to debug versions.
-
-	 */
+	*/
 	window.Glow = function(version, opts) { /*debug*///log.info('new Glow("'+Array.prototype.join.call(arguments, '", "')+'")');
 		var glowInstance;
 		

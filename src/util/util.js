@@ -1,3 +1,8 @@
+/**
+	@name glow.util
+	@namespace
+	@description Core JavaScript helpers
+*/
 Glow.provide(function(glow) {
 	var util = {},
 		undefined;
