@@ -1,20 +1,24 @@
-// track when document is ready, must run before the page is finished loading
-if (!document.readyState) {
-	document.readyState = 'loading';
-	
-	if (document.addEventListener) { // like Mozilla
-		document.addEventListener('DOMContentLoaded',
-			function () {
-				document.removeEventListener('DOMContentLoaded', arguments.callee, false);
-				document.readyState = 'complete';
-			},
-			false
-		);
-	}
-}
-
 (function() {
-	var glowMap;
+	var glowMap,
+		defaultBase,
+		document = window.document,
+		thisScriptSrc = ( document.body || document.getElementsByTagName('head')[0] ).lastChild.src;
+	
+	// get default base from last script element
+	defaultBase = thisScriptSrc.slice( 0, thisScriptSrc.lastIndexOf('/') ) + '/../';
+		
+	// track when document is ready, must run before the page is finished loading
+	if (!document.readyState) {
+		if (document.addEventListener) { // like Mozilla
+			document.addEventListener('DOMContentLoaded',
+				function () {
+					document.removeEventListener('DOMContentLoaded', arguments.callee, false);
+					document.readyState = 'complete';
+				},
+				false
+			);
+		}
+	}
 	
 	/**
 		@public
@@ -27,11 +31,11 @@ if (!document.readyState) {
 		@param {boolean} [opts.debug] Have all filenames modified to point to debug versions.
 	*/
 	window.Glow = function(version, opts) { /*debug*///log.info('new Glow("'+Array.prototype.join.call(arguments, '", "')+'")');
-		var glowInstance;
-		
 		opts = opts || {};
 		
-		var debug = (opts.debug)? '.debug' : '';
+		var glowInstance,
+			debug = (opts.debug)? '.debug' : '',
+			base = opts.base || defaultBase;
 
 		glowMap = {
 			versions: ['2.0.0', '@'+'SRC@'],
@@ -50,11 +54,11 @@ if (!document.readyState) {
 		}
 		
 		// opts.base should be formatted like a directory
-		if (opts.base && opts.base.charAt(opts.base.length-1) !== '/') {
-			opts.base += '/';
+		if (base.slice(-1) !== '/') {
+			base += '/';
 		}
 		
-		glowInstance = createGlowInstance(version, opts.base);
+		glowInstance = createGlowInstance(version, base);
 		Glow._build.instances[version] = glowInstance;
 		
 		glowInstance.debug = false; /*!debug*/ glowInstance.debug = true; /*gubed!*/
@@ -228,7 +232,7 @@ if (!document.readyState) {
 		};
 		
 		glow.version = version;
-		glow.base = base || '';
+		glow.base = base;
 		glow.map = getMap(version);
 		glow._build = {
 			loading: [],   // names of packages requested but not yet built, in same order as requested.
