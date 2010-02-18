@@ -1,5 +1,169 @@
-Please see http://www.bbc.co.uk/glow/ for full documentation and contact details.
+Glow 2.0.0 alpha 1
+==================
 
+This is the first release of Glow 2. It is intended for testing and shouldn't be used in a live environment.
 
-Regards,
-The Glow Team
+Loading Glow
+============
+
+There are 2 options for loading Glow onto your page
+
+Asynchronous loading (recommended)
+----------------------------------
+
+This makes Glow load in the background, which doesn't block page rendering. This can also be used to load only the parts of Glow that are needed.
+
+<!-- Include the loader, this is best at the end of your page -->
+<script type="text/javascript" src="/scripts/glow/2.0.0/glow.js"></script>
+<script type="text/javascript">
+	// load glow
+	Glow(2).ready(function(glow) {
+		// glow has loaded and the DOM is ready
+		glow('body').append('glow is ready!');
+	});
+</script>
+
+Another benefit is glow doesn't hit the global scope, it only exists inside your ready callback. Although it isn’t ideal in terms of bandwidth, multiple versions of glow can be loaded safely on the same page.
+
+For larger apps, this pattern may be more useful 
+
+<script type="text/javascript">
+	(function() {
+		var glow = Glow(2).ready(init);
+		
+		function init() {
+			// initialise your application here
+		}
+	})();
+</script>
+
+Later, when we add more features, Glow will be split into packages. If we had any widgets, you would load them like this:
+
+<script type="text/javascript">
+	// load glow
+	Glow(2).load('widgets').ready(function(glow) {
+		// glow has loaded and the DOM is ready
+		glow('body').append('glow & glow.widgets is ready!');
+	});
+</script>
+
+At the moment there’s only one package, 'core'. This is loaded as soon as you call Glow(2).
+
+These methods of loading Glow replace Gloader, which was used to load Glow 1.
+
+The full docs for Glow can be found in glow.debug.js, search for "@name Glow"
+
+Synchronous loading
+-------------------
+
+Using the loader is optional, you can load Glow synchronously into the global scope via:
+
+<!-- Include the loader, this is best at the end of your page -->
+<script type="text/javascript" src="/scripts/glow/2.0.0/core.js"></script>
+<script type="text/javascript">
+	// glow has loaded into the global scope
+	glow.ready(function() {
+		// now the dom is ready
+		glow('body').append('glow is ready!')
+	});
+</script>
+
+Interacting with the DOM
+========================
+
+You can use glow as a function to get elements by CSS selector or create them by HTML string.
+
+glow('#nav li:first-child').css('background', 'red');
+glow('<p>New paragraph</p>').appendTo('body');
+
+glow() is simply a shortcut.
+
+glow('h1')
+is the same as
+new glow.NodeList('h1')
+
+The full docs for glow.NodeList can be found in core.debug.js, search for "@name glow.NodeList"
+
+Differences from Glow 1
+-----------------------
+
+The NodeList API is very similar to Glow 1, most of the work has been on performance for this module.
+
+Glow 2 uses Sizzle as its CSS selector engine, greatly improving the range of selectors that can be used.
+
+CSS can also be used to search for, and filter elements. For instance:
+
+// get all the items in the NodeList that have class 'active'
+myNodeList.filter('.active');
+
+// get the parent element that's a child list-item of #nav
+myNodeList.parent('#nav > li');
+
+Events
+======
+
+The full docs for glow.events can be found in core.debug.js, search for "@name glow.events"
+
+Custom Events
+-------------
+
+Now, any object can extend or be enhanced by glow.events.Target. This gives it instance methods like 'on', 'detach' and 'fire'.
+
+function Ball() {}
+glow.util.extend(Ball, glow.event.Target, {
+	bounce: function() {
+		// fire the bounce event
+		this.fire('bounce');
+	}
+});
+
+// and other code can listen for these events
+var myBall = new Ball();
+myBall.on('bounce', function() {
+	glow('body').append('<p>boing!</p>');
+});
+
+DOM Events
+----------
+
+Rather than the long-winded glow.events.addListener, NodeList now has an 'on' method.
+
+glow('#nav a').on('click', function() {
+	alert('You just clicked a link in the nav');
+});
+
+The above will add a listener to each link in #nav. As a more efficient alternative, you could use event delegation...
+
+glow('#nav').delegate('click', 'a', function() {
+	alert('You just clicked a link in the nav');
+});
+
+The above adds one listener to the nav, but only fires your callback if the user clicks on a link inside the nav. This means that the event will also fire for links created after the listener is added.
+
+Keyboard Events
+---------------
+
+Keyboard events have been normalised to fire keydown and keyup once per key press, whereas the keypress event will repeat while the key is held down.
+
+Details of which keys have been pressed have been normalised across browsers.
+
+// adding key listeners for a sideways-scrolling shooter
+glow('#spaceshipGameScreen').on('keydown', function() {
+	if (e.key === 'up') {
+		spaceship.startMoveUp();
+	}
+	else if (e.key === 'down') {
+		spaceship.startMoveDown();
+	}
+}).on('keyup', function(e) {
+	if (e.key === 'up') {
+		spaceship.stopMoveUp();
+	}
+	else if (e.key === 'down') {
+		spaceship.stopMoveDown();
+	}
+}).on('keypress', function(e) {
+	if (e.key === 'space') {
+		spaceship.fireLasers();
+	}
+})

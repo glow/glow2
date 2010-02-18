@@ -1,5 +1,12 @@
 Glow Changelog
 
-2.0.0
+2.0.0 alpha 1
 
-* In development, nothing to see here yet!
+First release including the following modules:
+
+* Glow - the loader
+* glow - the library
+* glow.NodeList
+* glow.events
+* glow.env
+* glow.util
