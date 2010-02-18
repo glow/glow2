@@ -224,14 +224,14 @@ if (!document.readyState) {
 		@param {string} base
 	 */
 	var createGlowInstance = function(version, base) { /*debug*///log.info('new glow("'+Array.prototype.join.call(arguments, '", "')+'")');
-		var glowInstance = function() {
-			return glow._coreFunc.apply(this, arguments);
+		var glow = function(nodeListContents) {
+			return new glow.NodeList(nodeListContents);
 		};
 		
-		glowInstance.version = version;
-		glowInstance.base = base || '';
-		glowInstance.map = getMap(version);
-		glowInstance._build = {
+		glow.version = version;
+		glow.base = base || '';
+		glow.map = getMap(version);
+		glow._build = {
 			loading: [],   // names of packages requested but not yet built, in same order as requested.
 			builders: {},  // completed but not yet built (waiting on dependencies). Like _build.builders[packageName]: [function, function, ...].
 			history: {},   // names of every package ever loaded for this instance
@@ -240,10 +240,10 @@ if (!document.readyState) {
 		
 		// copy properties from glowInstanceMembers
 		for (var prop in glowInstanceMembers) {
-			glowInstance[prop] = glowInstanceMembers[prop];
+			glow[prop] = glowInstanceMembers[prop];
 		}
 		
-		return glowInstance;
+		return glow;
 	}
 	
 	
