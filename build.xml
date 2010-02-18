@@ -127,10 +127,9 @@
 		<echo message="Adding includes to source" />
 		
 		<loadfile property="include.glowbug.js" srcfile="${INCLUDE_DIR}glowbug.js"/>
-		<replaceregexp match="/\*!include:glowbug\.js\*/" flags="g">
-			<substitution expression="${include.glowbug.js}"/>
+		<replace token="/*!include:glowbug.js*/" value="${include.glowbug.js}">
 			<fileset dir="${BUILDSRC_DIR}" includes="**/*.js"/>
-		</replaceregexp>
+		</replace>
 		
 		<echo message="Adding real version number to source"/>
 		
