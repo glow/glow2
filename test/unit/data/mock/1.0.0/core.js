@@ -100,7 +100,7 @@ Glow.provide(function(glow) {
 		@name bindReady
 		@description Add listener to document to detect when page is ready.
 	 */
-	function bindReady() {
+	var bindReady = function() {
 		//don't do this stuff if the dom is already ready
 		if (glow.isDomReady) { return; }
 		glow._addReadyBlock('glow_domReady'); // wait for dom to be ready
@@ -165,7 +165,7 @@ Glow.provide(function(glow) {
 		else {
 			throw new Error('Unable to bind glow ready listener to document.');
 		}
-	}
+	};
 
 	glow.notSupported = ( // here are the browsers we don't support
 		glow.env.ie < 6 ||
