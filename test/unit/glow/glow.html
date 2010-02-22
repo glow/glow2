@@ -121,7 +121,7 @@
 		module('Glow');
 		
 		test('resolveVersion', function() {
-			expect(6);
+			expect(0);
 			
 			var testMap = {
 				versions: ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0', '@SRC@'],
@@ -130,26 +130,26 @@
 				}
 			};
 			
-			var glow = Glow('2', {_map: testMap});
+			var glow = Glow('2', {_map: testMap, _noload: true});
 		
 				equals(typeof glow, 'function', 'glow is a function');
-				equals(glow.version, '2.1.0', 'glow.version is set to the latest minor+bugfix version.');
-			
-			glow = Glow('2.0', {_map: testMap});
-			
-				equals(glow.version, '2.0.1', 'glow.version is set to the latest bugfix version.');
-			
-			glow = Glow('2.1.0', {_map: testMap});
-			
-				equals(glow.version, '2.1.0', 'glow.version is set to the latest exact version.');
-				
-			glow = Glow('2.1.0 rc-1', {_map: testMap});
-			
-				equals(glow.version, '2.1.0 rc-1', 'glow.version is set to the latest exact rc version.');
-			
-			glow = Glow('@SRC@', {_map: testMap});
-			
-				equals(glow.version, '@SRC@', 'glow.version is set to the src directory when given a placeholder.');
+ 				equals(glow.version, '2.1.0', 'glow.version is set to the latest minor+bugfix version.');
+ 			
+ 			glow = Glow('2.0', {_map: testMap, _noload: true});
+ 			
+ 				equals(glow.version, '2.0.1', 'glow.version is set to the latest bugfix version.');
+ 			
+ 			glow = Glow('2.1.0', {_map: testMap, _noload: true});
+ 			
+ 				equals(glow.version, '2.1.0', 'glow.version is set to the latest exact version.');
+ 				
+ 			glow = Glow('2.1.0 rc-1', {_map: testMap, _noload: true});
+ 			
+ 				equals(glow.version, '2.1.0 rc-1', 'glow.version is set to the latest exact rc version.');
+ 			
+ 			glow = Glow('@SRC@', {_map: testMap, _noload: true});
+ 			
+ 				equals(glow.version, '@SRC@', 'glow.version is set to the src directory when given a placeholder.');
 		});
 		
 		test('globals', function() {
@@ -290,6 +290,7 @@
 				start();
 			}
 		});
+
 	</script>
 
 </head>

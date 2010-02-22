@@ -63,7 +63,7 @@
 		
 		glowInstance.UID = 'glow' + Math.floor(Math.random() * (1<<30));
 
- 		glowInstance.load('core'); // core is always loaded;
+ 		if (!opts._noload) { glowInstance.load('core'); } // core is always loaded;
  		 		
 		return glowInstance;
 	}
