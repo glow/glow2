@@ -5,7 +5,86 @@
 */
 Glow.provide(function(glow) {
 	var undefined,
-		AnimProto;
+		AnimProto,
+		activeAnims = [],
+		activeAnimsLen = 0,
+		animInterval;
+	
+	/**
+		@private
+		@function
+		@description This is called on each interval
+			This set the properties of each animation per frame.
+	*/
+	function onInterval() {
+		var dateNum = new Date().valueOf(),
+			i = activeAnimsLen,
+			anim;
+		
+		while (i--) {
+			// ideally, this processing would be a function of Anim, but it's quicker this way
+			anim = activeAnims[i];
+			anim.position = (dateNum - anim._syncTime) / 1000;
+			
+			// see if this animation is ready to complete
+			if (anim.position >= anim.duration) {
+				anim.position = anim.duration;
+				anim.value = anim.tween(1);
+				// render final frame
+				anim.fire('frame');
+				// fire 'frame' and 'complete' and see if we're going to loop (preventing default)
+				if ( anim.fire('complete').defaultPrevented() || anim.loop ) {
+					// loop the animation
+					anim._syncTime = dateNum;
+				}
+				// else deactivave the anim
+				else {
+					// reset the stop position so further starts start from the beginning
+					anim._stopPos = 0;
+					deactivateAnim(anim);
+					// destroy the anim if needed
+					anim.destroyOnComplete && anim.destroy();
+				}
+				continue;
+			}
+			
+			// set up the value and render a frame
+			anim.value = anim.tween( anim.position / anim.duration );
+			anim.fire('frame');
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Calls 'frame' on an animation on an interval	
+	*/
+	function activateAnim(anim) {
+		// if this is the first anim, start the timer
+		if (!activeAnimsLen) {
+			// 13 is the rate most browsers update their date object, more frequent is a waste of CPU
+			animInterval = setInterval(onInterval, 13);
+		}
+		activeAnims[activeAnimsLen] = anim;
+		// this id is used to quickly remove the anim from the array later
+		anim._activeId = activeAnimsLen++;
+		anim.playing = true;
+	}
+	
+	/**
+		@private
+		@function
+		@description Stops calling 'frame' on an animation on an interval
+	*/
+	function deactivateAnim(anim) {
+		activeAnims.splice(anim._activeId, 1);
+		activeAnimsLen--;
+		// if we're out of anims, stop the timer
+		if (!activeAnimsLen) {
+			clearInterval(animInterval);
+		}
+		anim.playing = false;
+	}
 	
 	/**
 		@name glow.anim.Anim
@@ -24,14 +103,11 @@ Glow.provide(function(glow) {
 		@param {function|string} [opts.tween='easeBoth'] The way the value moves through time.
 			Strings are treated as properties of {@link glow.tweens}, although
 			a tween function can be provided.
-		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops).
+		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops)?
 			This will free any DOM references the animation may have created. Once
 			the animation is destroyed, it cannot be started again.
 		@param {boolean} [opts.loop=true] Loop the animation.
 			Looped animations will fire a 'complete' event on each loop.
-			
-			// implementation note: (delete this later)
-			this is just a shortcut for setting #loop
 			
 		@example
 			// Using glow.anim.Anim to animate an SVG blur over 5 seconds
@@ -87,10 +163,54 @@ Glow.provide(function(glow) {
 
 		@see {@link glow.NodeList#anim} - shortcut for animating CSS values on an element
 	*/
-	function Anim() {
-		// implementation note: make this work if the user omits 'new'
-	}
+	
+	function Anim(duration, opts) {
+		if (this === glow.anim) {
+			return new Anim(duration, opts);
+		}
+		
+		opts = opts || {};
+		
+		this.destroyOnComplete = (opts.destroyOnComplete !== false);
+		
+		if (typeof opts.tween === 'string') {
+			this.tween = glow.tweens[opts.tween]();
+		}
+		else {
+			this.tween = opts.tween || this.tween;
+		}
+		
+		this.loop = !!opts.loop;
+		this.duration = duration;
+	};
+	
+	glow.util.extend(Anim, glow.events.Target);
 	AnimProto = Anim.prototype;
+	
+	/**
+		@name glow.anim.Anim#_activeId
+		@private
+		@type number
+		@description The index this anim exists in activeAnims
+	*/
+	
+	/**
+		@name glow.anim.Anim#_syncTime
+		@private
+		@type number
+		@description Number used to work out where the animation should be against the current date
+			If an animation starts at 0, this number will be new Date().valueOf(), it'll be
+			lower for animations that start at a midpoint
+	*/
+	
+	/**
+		@name glow.anim.Anim#_stopPos
+		@private
+		@type number
+		@description The position the animation was stopped at
+			This is set on .stop() and used to resume from
+			the same place on .start()
+	*/
 	
 	/**
 		@name glow.anim.Anim#duration
@@ -114,30 +234,28 @@ Glow.provide(function(glow) {
 	AnimProto.position = 0;
 	
 	/**
-		@name glow.anim.Anim#isPlaying
+		@name glow.anim.Anim#playing
+		@type boolean
 		@description true if the animation is playing.
-		@returns {boolean}
 	*/
-	AnimProto.isPlaying = false;
+	AnimProto.playing = false;
 	
 	/**
 		@name glow.anim.Anim#loop
+		@type boolean
 		@description Loop the animation?
 			This value can be changed while an animation is playing.
 			
 			Looped animations will fire a 'complete' event on each loop.
-			
-		@returns {boolean}
-		
-		// implementation note: (delete this later)
-		Looping is handled by returning false in the 'complete' event and should
-		be implemented something like:
-		
-		thisAnim.on('complete', function() {
-			return !this.loop;
-		});
 	*/
-	AnimProto.loop = false;
+	
+	/**
+		@name glow.anim.Anim#destroyOnComplete
+		@type boolean
+		@description Destroy the animation once it completes (unless it loops)?
+			This will free any DOM references the animation may have created. Once
+			the animation is destroyed, it cannot be started again.
+	*/
 	
 	/**
 		@name glow.anim.Anim#value
@@ -161,19 +279,21 @@ Glow.provide(function(glow) {
 		@function
 		@description Starts playing the animation
 		
-		@param {number} [start] Position to start the animation at, in seconds.
+		@param {number} [position] Position to start the animation at, in seconds.
 			By default, this will be the last position of the animation (if it was stopped)
 			or 0.
 		
 		@returns {glow.anim.Anim}
-		
-		// implementation note: (delete this later)
-		anim.start(6.5);
-		is simply a shortcut for
-		anim.goTo(6.5).start();
-		The order is important, so the start event fires after the goTo
 	*/
-	AnimProto.start = function() {};
+	AnimProto.start = function(position) {
+		if ( !this.fire('start').defaultPrevented() ) {
+			// we set 'playing' here so goTo knows
+			this.playing = true;
+			this.goTo(position || this._stopPos || 0);
+			activateAnim(this);
+		}
+		return this;
+	};
 	
 	/**
 		@name glow.anim.Anim#stop
@@ -182,7 +302,12 @@ Glow.provide(function(glow) {
 			Stopped animations can be resumed by calling {@link glow.anim.Anim#start start}.
 		@returns {glow.anim.Anim}
 	*/
-	AnimProto.stop = function() {};
+	AnimProto.stop = function() {
+		if ( !this.fire('stop').defaultPrevented() ) {
+			this._stopPos = this.position;
+			deactivateAnim(this);
+		}
+	};
 	
 	/**
 		@name glow.anim.Anim#destroy
@@ -192,7 +317,10 @@ Glow.provide(function(glow) {
 			completes.
 		@returns {glow.anim.Anim}
 	*/
-	AnimProto.destroy = function() {};
+	AnimProto.destroy = function() {
+		glow.events.removeAllListeners( [this] );
+		return this;
+	};
 	
 	/**
 		@name glow.anim.Anim#goTo
@@ -208,7 +336,17 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.anim.Anim}
 	*/
-	AnimProto.goTo = function() {};
+	AnimProto.goTo = function(pos) {
+		// set stopPos to this so the next call to start() starts from here
+		this._stopPos = this.position = pos;
+		// move the syncTime for this position if we're playing
+		if (this.playing) {
+			this._syncTime = new Date - (pos * 1000);
+		}
+		this.value = this.tween(pos / this.duration);
+		this.fire('frame');
+		return this;
+	};
 	
 	/**
 		@name glow.anim.Anim#target
@@ -318,7 +456,7 @@ Glow.provide(function(glow) {
 			// Make an animation loop 5 times
 			var loopCount = 5;
 			myAnim.on('complete', function() {
-				return !!loopCount--;
+				return !loopCount--;
 			});
 	*/
 	

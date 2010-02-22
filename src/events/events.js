@@ -460,7 +460,14 @@ Glow.provide(function(glow) {
 		myBall.fire( 'bounce', new BallBounceEvent(myBall) );
 	*/
 	
-	targetProto.fire = function(eventName, event) {			
+	targetProto.fire = function(eventName, event) {
+		if (! event) {
+			event = new events.Event();
+		}
+		else if ( event.constructor === Object ) {
+			event = new events.Event( event )
+		}
+		
 		return callListeners(this, eventName, event);
 	}
 		
