@@ -192,10 +192,16 @@ Glow.provide(function(glow) {
 					container = node || attachTo;
 				
 				if (!new glow.NodeList(container).contains(e.related)) {
-					var result = glow.events._callListeners(attachTo, eventName, e, node); // fire() returns result of callback
-					
-					if (typeof result === 'boolean') { return result; }
-					else { return !e.defaultPrevented(); }
+					var result = glow.events._callListeners(attachTo, eventName, e, node),
+						prevented = result.defaultPrevented();
+				
+					if (typeof prevented === 'boolean') {
+						if (prevented) {
+							if (nativeEvent.preventDefault) { event.preventDefault(); } // like FF
+							else { nativeEvent.returnValue = false; } // like IE
+						}
+						return !prevented;
+					}
 				}
 			};
 			
@@ -211,10 +217,16 @@ Glow.provide(function(glow) {
 					container = node || attachTo;
 					
 				if (!new glow.NodeList(container).contains(e.related)) {
-					var result = glow.events._callListeners(attachTo, eventName, e, node); // fire() returns result of callback
-					
-					if (typeof result === 'boolean') { return result; }
-					else { return !e.defaultPrevented(); }
+					var result = glow.events._callListeners(attachTo, eventName, e, node),
+						prevented = result.defaultPrevented();
+				
+					if (typeof prevented === 'boolean') {
+						if (prevented) {
+							if (nativeEvent.preventDefault) { event.preventDefault(); } // like FF
+							else { nativeEvent.returnValue = false; } // like IE
+						}
+						return !prevented;
+					}
 				}
 			};
 			
@@ -226,11 +238,17 @@ Glow.provide(function(glow) {
 		}
 		else {
 			handler = function(nativeEvent, node) {
-				var domEvent = new glow.events.DomEvent(nativeEvent);
-				var result = glow.events._callListeners(attachTo, eventName, domEvent, node); // fire() returns result of callback
-				
-				if (typeof result === 'boolean') { return result; }
-				else { return !domEvent.defaultPrevented(); }
+				var domEvent = new glow.events.DomEvent(nativeEvent),
+					result = glow.events._callListeners(attachTo, eventName, domEvent, node), // fire() returns an event object			
+					prevented = result.defaultPrevented();
+
+				if (typeof prevented === 'boolean') {
+					if (prevented) {
+						if (nativeEvent.preventDefault) { event.preventDefault(); } // like FF
+						else { nativeEvent.returnValue = false; } // like IE
+					}
+					return !prevented;
+				}
 			};
 			
 			if (selector) {
@@ -254,7 +272,8 @@ Glow.provide(function(glow) {
 			while (node) {
 				if (!!glow._sizzle.matches(selector, [node]).length) {
 					// the wrapped handler is called here, pass in the node that matched so it can be used as `this`
-					return handler(nativeEvent, node);
+					var result = handler(nativeEvent, node);
+					return result;
 					//
 				}
 				
