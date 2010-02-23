@@ -197,7 +197,7 @@ Glow.provide(function(glow) {
 				
 					if (typeof prevented === 'boolean') {
 						if (prevented) {
-							if (nativeEvent.preventDefault) { event.preventDefault(); } // like FF
+							if (nativeEvent.preventDefault) { nativeEvent.preventDefault(); } // like FF
 							else { nativeEvent.returnValue = false; } // like IE
 						}
 						return !prevented;
@@ -222,7 +222,7 @@ Glow.provide(function(glow) {
 				
 					if (typeof prevented === 'boolean') {
 						if (prevented) {
-							if (nativeEvent.preventDefault) { event.preventDefault(); } // like FF
+							if (nativeEvent.preventDefault) { nativeEvent.preventDefault(); } // like FF
 							else { nativeEvent.returnValue = false; } // like IE
 						}
 						return !prevented;
@@ -244,7 +244,7 @@ Glow.provide(function(glow) {
 
 				if (typeof prevented === 'boolean') {
 					if (prevented) {
-						if (nativeEvent.preventDefault) { event.preventDefault(); } // like FF
+						if (nativeEvent.preventDefault) { nativeEvent.preventDefault(); } // like FF
 						else { nativeEvent.returnValue = false; } // like IE
 					}
 					return !prevented;
