@@ -8,10 +8,13 @@
 	
 	<script type="text/javascript">
 		globals = {};
-		
+
 		for (var p in window) {
-			if (typeof globals[p] == 'undefined') { globals[p] = true; }
+			if (typeof globals[p] === 'undefined') { globals[p] = true; }
 		}
+		// this is required for FireFox 2. I cannot explain why.
+		if (window['addEventListener']) { globals['addEventListener'] = true; }
+		
 	</script>
 	
 	<script type="text/javascript">
@@ -28,7 +31,7 @@
 			var diff = [];
 			
 			for (var p in window) {
-				if (typeof globals[p] == 'undefined') { if (p.indexOf('[[') !== 0) diff.push(p); }
+				if (typeof globals[p] === 'undefined') { diff.push(p); }
 			}
 			
 			if (parent.callbacks && parent.callbacks[window.name]) {
