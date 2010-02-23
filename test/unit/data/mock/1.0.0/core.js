@@ -169,7 +169,7 @@ Glow.provide(function(glow) {
 
 	glow.notSupported = ( // here are the browsers we don't support
 		glow.env.ie < 6 ||
-		(glow.env.gecko < 1.9 && !/^1\.8\.1/.test(env.version)) ||
+		(glow.env.gecko < 1.9 && !/^1\.8\.1/.test(glow.env.version)) ||
 		glow.env.opera < 9 ||
 		glow.env.webkit < 412
 	);
