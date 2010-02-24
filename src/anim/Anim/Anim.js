@@ -182,6 +182,8 @@ Glow.provide(function(glow) {
 		
 		this.loop = !!opts.loop;
 		this.duration = duration;
+		// defined & used in prop.js
+		this._targets = [];
 	};
 	
 	glow.util.extend(Anim, glow.events.Target);
@@ -319,6 +321,7 @@ Glow.provide(function(glow) {
 	*/
 	AnimProto.destroy = function() {
 		glow.events.removeAllListeners( [this] );
+		this._targets = undefined;
 		return this;
 	};
 	
@@ -347,81 +350,6 @@ Glow.provide(function(glow) {
 		this.fire('frame');
 		return this;
 	};
-	
-	/**
-		@name glow.anim.Anim#target
-		@function
-		@description Set the target object for subsequent calls to {@link glow.anim.Anim#prop prop}
-		@param {Object} newTarget New target object
-			
-		@returns {glow.anim.Anim}
-	*/
-	AnimProto.target = function() {};
-	
-	/**
-		@name glow.anim.Anim#prop
-		@function
-		@description Animate a property of an object.
-			This shortcut adds a listener onto the animation's 'frame' event
-			and changes an specific property from one value to another.
-			
-			Values can be simple, such as '42', or more complex, such as 'rgba(255, 255, 0, 0.8)'
-			
-			Before calling this, set the target object via {@link glow.anim.Anim#target}.
-			
-		@param {string} propertyName Name of the property to animate.
-		@param {Object} opts Options object
-		@param {string} [opts.template] Template for complex values
-			Templates can be used for values which are strings rather than numbers.
-			
-			Question-marks are used within templates as placeholders for animated
-			values. For instance, in the template '?em' the question-mark would be
-			replaced with a number resulting in animated values like '1.5em'.
-			
-			Multiple Question-marks can be used for properties with more than
-			one animated value, eg 'rgba(?, ?, ?, ?)'. The values will be animated
-			independently.
-			
-			A literal question-mark can be placed in a template by preceeding it
-			with a backslash.
-			
-		@param {number|number[]} [opts.from] Value(s) to animate from
-			This can be a single number, or an array of numbers; one for each
-			question-mark in the template.
-			
-			If ommited, the from value(s) will be taken from the object. This
-			will fail if the current value is undefined or is in a format
-			different to the template.
-			
-		@param {number|number[]} opts.to Value(s) to animate to
-			This can be a single number, or an array of numbers; one for each
-			question-mark in the template.
-			
-		@param {boolean|boolean[]} opts.round Round values to the nearest whole number?
-			Use this to prevent the property being set to a fractional value.
-			
-			This can be a single boolean, or an array of booleans; one for each
-			question-mark in the template. This is useful for templates like 'rgba(?, ?, ?, ?)',
-			where the rgb values need to be whole numbers, but the alpha value is
-			between 0-1.
-			
-		@param {boolean|boolean[]} [opts.round=false] Round values to the nearest whole number?
-			Use this to prevent the property being set to a fractional value.
-			
-			This can be a single boolean, or an array of booleans; one for each
-			question-mark in the template. This is useful for templates like 'rgba(?, ?, ?, ?)',
-			where the rgb values need to be whole numbers, but the alpha value is
-			between 0-1.
-		
-		@param {boolean|boolean[]} [opts.allowNegative=true] Allow values to be negative?
-			If false, negative values will become zero.
-			
-			This can be a single boolean, or an array of booleans; one for each
-			question-mark in the template.
-			
-		@returns {glow.anim.Anim}
-	*/
-	AnimProto.prop = function() {};
 	
 	/**
 		@name glow.anim.Anim#event:start

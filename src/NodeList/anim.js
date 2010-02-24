@@ -70,7 +70,10 @@ Glow.provide(function(glow) {
 			This supports the same CSS properties as {@link glow.NodeList#anim},
 			but the animation is not started until the previous animation (added
 			via {@link glow.NodeList#anim anim} or {@link glow.NodeList#animNext animNext})
-			ends.
+			on that element ends.
+			
+			If there are no queued animations on the element, the animation starts
+			straight away.
 		
 		@param {number} duration Length of the animation in seconds.
 		@param {Object} Properties to animate.
@@ -91,7 +94,6 @@ Glow.provide(function(glow) {
 			the animation is destroyed, it cannot be started again.
 		@param {boolean} [opts.loop=true] Loop the animation.
 		@param {boolean} [opts.startNow=false] Start the animation straight away?
-			The animation will start when the previous animation in the queue ends.
 		
 		@returns {glow.anim.Anim}
 		

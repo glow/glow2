@@ -123,7 +123,7 @@ test('2 animations running at once', 9, function() {
 	}).on('complete', function() {
 		var duration = new Date - startTime;
 		eventLog.push('anim1 complete');
-		ok(duration > 1000 && duration < 2000, 'anim1 duration correct ' + duration);
+		ok(duration >= 1000 && duration < 2000, 'anim1 duration correct ' + duration);
 	});
 	
 	anim2.on('start', function() {
@@ -137,7 +137,7 @@ test('2 animations running at once', 9, function() {
 		eventLog.push('anim2 complete');
 		
 		var duration = new Date - startTime;
-		ok(duration > 2000, 'anim2 duration correct ' + duration);
+		ok(duration >= 2000, 'anim2 duration correct ' + duration);
 		
 		same(eventLog, [
 			'anim1 start',

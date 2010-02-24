@@ -25,7 +25,8 @@
 			<file>src/NodeList/events.js</file>
 			<file>src/NodeList/anim.js</file>
 			<file>src/tweens/tweens.js</file>
-			<file>src/anim/Anim.js</file>
+			<file>src/anim/Anim/Anim.js</file>
+			<file>src/anim/Anim/prop.js</file>
 			<file>src/anim/Timeline.js</file>
 			<file>src/footer/core.js</file>
 		</js>
