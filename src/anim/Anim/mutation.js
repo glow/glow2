@@ -98,7 +98,7 @@ Glow.provide(function(glow) {
 		// double the length of the animation
 		this.duration *= 2;
 		this.tween = function(t) {
-			return (t < 0.5) ? oldTween(t * 2) : oldTweenReversed( (t - 0.5) * 2 )
+			return (t < 0.5) ? oldTween(t * 2) : oldTweenReversed( (t - 0.5) * 2 );
 		}
 		// invalidate the stored reversed tween
 		this._preReverseTween = undefined;

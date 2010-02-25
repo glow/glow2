@@ -53,6 +53,7 @@ Glow.provide(function(glow) {
 				alert('done!');
 			});
 		
+		@see {@link glow.NodeList#queueAnim} - Queue an animation to run after the current anim
 		@see {@link glow.NodeList#fadeIn} - Shortcut to fade elements in
 		@see {@link glow.NodeList#fadeOut} - Shortcut to fade elements out
 		@see {@link glow.NodeList#fadeToggle} - Shortcut to toggle the fade of an element
@@ -64,12 +65,12 @@ Glow.provide(function(glow) {
 	NodeListProto.anim = function() {};
 	
 	/**
-		@name glow.NodeList#animNext
+		@name glow.NodeList#queueAnim
 		@function
 		@description Queue an animation to run after the current animation
 			This supports the same CSS properties as {@link glow.NodeList#anim},
 			but the animation is not started until the previous animation (added
-			via {@link glow.NodeList#anim anim} or {@link glow.NodeList#animNext animNext})
+			via {@link glow.NodeList#anim anim} or {@link glow.NodeList#queueAnim queueAnim})
 			on that element ends.
 			
 			If there are no queued animations on the element, the animation starts
@@ -102,11 +103,11 @@ Glow.provide(function(glow) {
 			// when the mouse is over it, and back again when the mouse
 			// exits.
 			glow('#nav').delegate('mouseenter', 'li', function() {
-				glow(this).animNext(0.5, {
+				glow(this).queueAnim(0.5, {
 					'background-color': 'yellow'
 				});
 			}).delegate('mouseleave', 'li', function() {
-				glow(this).animNext(0.5, {
+				glow(this).queueAnim(0.5, {
 					'background-color': 'white'
 				});
 			});
@@ -119,7 +120,7 @@ Glow.provide(function(glow) {
 		@see {@link glow.NodeList#slideToggle} - Shortcut to toggle an element open / shut
 
 	*/
-	NodeListProto.animNext = function() {
+	NodeListProto.queueAnim = function() {
 		// implementation note, don't calculated the 'from' values until we're
 		// just about to play
 	};
