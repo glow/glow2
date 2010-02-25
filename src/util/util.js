@@ -102,6 +102,29 @@ Glow.provide(function(glow) {
 		}
 	};
 	
+	/**
+		@name glow.util.escapeRegex
+		@function
+		@description Escape special regex chars from a string
+
+		@param {string} str String to escape
+		
+		@returns {string} Escaped string
+		
+		@example
+			var str = glow.util.escapeRegex('[Hello. Is this escaped?]');
+			// Outputs:
+			// \[Hello\. Is this escaped\?\]
+	*/
+	util.escapeRegex = function(str) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.util.escapeRegex expects 1 argument, not '+arguments.length+'.');
+			}
+		/*gubed!*/
+		return String(str).replace(/[.*+?^${}()|[\]\/\\]/g, '\\$&');
+	}
+	
 	// export
 	glow.util = util;
 });
