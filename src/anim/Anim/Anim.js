@@ -280,6 +280,7 @@ Glow.provide(function(glow) {
 		@name glow.anim.Anim#start
 		@function
 		@description Starts playing the animation
+			If the animation is already playing, this has no effect.
 		
 		@param {number} [position] Position to start the animation at, in seconds.
 			By default, this will be the last position of the animation (if it was stopped)
@@ -288,7 +289,7 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.start = function(position) {
-		if ( !this.fire('start').defaultPrevented() ) {
+		if ( !this.playing && !this.fire('start').defaultPrevented() ) {
 			// we set 'playing' here so goTo knows
 			this.playing = true;
 			this.goTo(position || this._stopPos || 0);
@@ -302,10 +303,12 @@ Glow.provide(function(glow) {
 		@function
 		@description Stops the animation playing.
 			Stopped animations can be resumed by calling {@link glow.anim.Anim#start start}.
+			
+			If the animation isn't playing, this has no effect.
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.stop = function() {
-		if ( !this.fire('stop').defaultPrevented() ) {
+		if ( this.playing && !this.fire('stop').defaultPrevented() ) {
 			this._stopPos = this.position;
 			deactivateAnim(this);
 		}
@@ -314,7 +317,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.anim.Anim#destroy
 		@function
-		@description Destroys the animation & detaches references to DOM nodes
+		@description Destroys the animation & detaches references to objects
 			This frees memory & is called automatically when an animation
 			completes.
 		@returns {glow.anim.Anim}

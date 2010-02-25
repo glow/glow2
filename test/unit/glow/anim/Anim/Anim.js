@@ -451,5 +451,4 @@ test('String tween', 1, function() {
 });
 
 // to test:
-// prop (and target)
 // memory creep

@@ -134,7 +134,6 @@ test('Single val prop anim (no template) allowNegative=false & round=true', 2, f
 test('Single val with template', 3, function() {
 	stop();
 	
-	// elasticOut will try and go below zero
 	var anim = glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {};
@@ -171,7 +170,6 @@ test('Single val with template', 3, function() {
 test('Multiple ?, single value & escaping ?', 2, function() {
 	stop();
 	
-	// elasticOut will try and go below zero
 	var anim = glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {};
@@ -200,7 +198,6 @@ test('Multiple ?, single value & escaping ?', 2, function() {
 test('Multiple ?, multiple values', 2, function() {
 	stop();
 	
-	// elasticOut will try and go below zero
 	var anim = glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {};
@@ -260,7 +257,6 @@ test('Multiple ?, allowNegative & round', 3, function() {
 test('Multiple ?, multiple values, no from vals', 2, function() {
 	stop();
 	
-	// elasticOut will try and go below zero
 	var anim = glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {testProp:'[hello 0px 80px world]'};
@@ -281,6 +277,3 @@ test('Multiple ?, multiple values, no from vals', 2, function() {
 	
 	anim.start();
 });
-
-// test
-// Any security holes using eval? Make sure everything's escaped

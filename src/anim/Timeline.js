@@ -53,14 +53,10 @@ Glow.provide(function(glow) {
 				animTimeline.track(
 					// add a pause to the start of the anim, this creates the wave effect
 					(i / 100),
-					// move up
-					div.anim({
+					// move up & down
+					div.anim(1, {
 						top: [70, 0]
-					}),
-					// move down
-					div.anim({
-						top: [0, 70]
-					})
+					}).pingPong()
 				);
 			});
 			
