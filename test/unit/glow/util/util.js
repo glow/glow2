@@ -79,7 +79,7 @@ test("extend", 12, function() {
 	equals(SubClass.base, BaseClass, "sub.base property set");
 });
 
-test('escapeRegex', 100, function() {
+test('escapeRegex', 2, function() {
 	equal(typeof glow.util.escapeRegex, 'function', 'escapeRegex is function');
 	equal(
 		glow.util.escapeRegex('[Hello. Is | this* escaped?]'),
