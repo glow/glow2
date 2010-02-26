@@ -28,7 +28,7 @@
 			<file>src/anim/Anim/Anim.js</file>
 			<file>src/anim/Anim/prop.js</file>
 			<file>src/anim/Anim/mutation.js</file>
-			<file>src/anim/Timeline.js</file>
+			<file>src/anim/Timeline/Timeline.js</file>
 			<file>src/footer/core.js</file>
 		</js>
 		<css></css>
