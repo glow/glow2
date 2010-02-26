@@ -1,6 +1,45 @@
 Glow.provide(function(glow) {
 	var undefined,
-		TimelineProto;
+		TimelineProto,
+		Anim = glow.anim.Anim;
+	
+	/**
+		@private
+		@description Listener for the start event on the sync anim the timeline uses
+			'this' is the Timeline
+	*/
+	function animStart(e) {
+		this.fire('start', e);
+	}
+	
+	/**
+		@private
+		@description Listener for the stop event on the sync anim the timeline uses
+			'this' is the Timeline
+	*/
+	function animStop(e) {
+		this.fire('stop', e);
+	}
+	
+	/**
+		@private
+		@description Listener for the frame event on the sync anim the timeline uses
+			'this' is the Timeline
+	*/
+	function animFrame(e) {
+		this.goTo(this._anim.position);
+		this.fire('frame', e);
+	}
+	
+	/**
+		@private
+		@description Listener for the complete event on the sync anim the timeline uses
+			'this' is the Timeline
+	*/
+	function animComplete(e) {
+		this.fire('complete', e);
+		return !this.loop;
+	}
 	
 	/**
 		@name glow.anim.Timeline
@@ -15,9 +54,6 @@ Glow.provide(function(glow) {
 		
 		@param {boolean} [opts.loop=true] Loop the animation.
 			Looped timelines will fire a 'complete' event on each loop.
-			
-			// implementation note: (delete this later)
-			this is just a shortcut for setting #loop
 			
 		@param {boolean} [opts.destroyOnComplete=true] Destroy animations in the timeline once it completes (unless it loops).
 			This will free any DOM references the animations may have created. Once
@@ -62,9 +98,28 @@ Glow.provide(function(glow) {
 			
 			animTimeline.start();
 	*/
-	function Timeline() {
-		// make this work even if it's called without 'new'
+	function Timeline(opts) {
+		if (this === glow.anim) {
+			return new Timeline(opts);
+		}
+		opts = opts || {};
+		this.destroyOnComplete = (opts.destroyOnComplete !== false);
+		this.loop = !!opts.loop;
+		this._tracks = [];
+		this._currentIndexes = [];
+		this._startPos = [];
+		
+		// create an animation to sync the timeline
+		this._anim = new Anim(0, {
+				destroyOnComplete: false,
+				tween: 'linear'
+			})
+			.on('start', animStart, this)
+			.on('stop', animStop, this)
+			.on('frame', animFrame, this)
+			.on('complete', animComplete, this);
 	}
+	glow.util.extend(Timeline, glow.events.Target);
 	TimelineProto = Timeline.prototype;
 	
 	/**
@@ -87,11 +142,11 @@ Glow.provide(function(glow) {
 	TimelineProto.position = 0;
 	
 	/**
-		@name glow.anim.Timeline#isPlaying
+		@name glow.anim.Timeline#playing
 		@description true if the animation is playing.
 		@returns {boolean}
 	*/
-	TimelineProto.isPlaying = false;
+	TimelineProto.playing = false;
 	
 	/**
 		@name glow.anim.Timeline#loop
@@ -102,7 +157,54 @@ Glow.provide(function(glow) {
 			
 		@returns {boolean}
 	*/
-	TimelineProto.loop = false;
+	
+	/**
+		@name glow.anim.Timeline#destroyOnComplete
+		@type boolean
+		@description Destroy the animation once it completes (unless it loops)?
+			This will free any DOM references the animation may have created. Once
+			the animation is destroyed, it cannot be started again.
+	*/
+	
+	/**
+		@name glow.anim.Timeline#_tracks
+		@private
+		@type Array[]
+		@description An array of arrays.
+			Each array represents a track, containing a combination of
+			animations and functions
+	*/
+	
+	/**
+		@name glow.anim.Timeline#_currentIndexes
+		@private
+		@type number[]
+		@description Array of the current indexes within _tracks
+			The indexes refer to which items that were last sent a .goTo90
+	*/
+	
+	/**
+		@name glow.anim.Timeline#_startPos
+		@private
+		@type Array[]
+		@description Mirrors _tracks
+			Contains the start positions of the items in _tracks
+	*/
+	
+	/**
+		@name glow.anim.Timeline#_anim
+		@private
+		@type glow.anim.Anim
+		@description The single animation used to fire frames for this animation
+	*/
+	
+	/**
+		@name glow.anim.Timeline#_lastPos
+		@private
+		@type number
+		@description Last position rendered
+	*/
+	TimelineProto._lastPos = 0;
 	
 	/**
 		@name glow.anim.Timeline#start
@@ -115,7 +217,10 @@ Glow.provide(function(glow) {
 		
 		@returns {glow.anim.Timeline}
 	*/
-	TimelineProto.start = function() {};
+	TimelineProto.start = function() {
+		this._anim.start();
+		return this;
+	};
 	
 	/**
 		@name glow.anim.Timeline#stop
@@ -124,7 +229,10 @@ Glow.provide(function(glow) {
 			Stopped animations can be resumed by calling {@link glow.anim.Timeline#start start}.
 		@returns {glow.anim.Timeline}
 	*/
-	TimelineProto.stop = function() {};
+	TimelineProto.stop = function() {
+		this._anim.stop();
+		return this;
+	};
 	
 	/**
 		@name glow.anim.Timeline#destroy
@@ -134,6 +242,48 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.destroy = function() {};
+	
+	function moveForward(timeline) {
+		var i = timeline._tracks.length,
+			track,
+			item,
+			itemIndex,
+			itemStart,
+			timelinePosition = timeline.position;
+		
+		while (i--) {
+			track = timeline._tracks[i];
+			itemIndex = timeline._currentIndexes[i];
+
+			while ( item = track[itemIndex] ) {
+				itemStart = timeline._startPos[i][itemIndex];
+				// deal with functions in the timeline
+				if (typeof item === 'function') {
+					item();
+				}
+				// deal with animations in the timeline
+				else if (timelinePosition - itemStart >= item.duration) {
+					// the animation we're currently playing has come to
+					// an end, play the last frame and move on to the next
+					item.goTo(item.duration).fire('complete');
+					item.playing = false;
+				}
+				else {
+					// the animation we're playing is somewhere in the middle
+					if (!item.playing) {
+						// ohh, we're just starting this animation
+						item.fire('start');
+						item.playing = true;
+					}
+					item.goTo(timelinePosition - itemStart);
+					// we're not done with this item, break
+					break;
+				}
+				itemIndex++;
+			}
+			timeline._currentIndexes[i] = itemIndex;
+		}
+	}
 	
 	/**
 		@name glow.anim.Timeline#goTo
@@ -148,20 +298,38 @@ Glow.provide(function(glow) {
 			myTimeline.goTo(2.5);
 			
 		@returns {glow.anim.Timeline}
-		
-		// implementation note: (delete this later)
-		This isn't as simple as glow.anim.Anim#goTo, this needs to go through
-		all animations and set finished animations to their end position,
-		then set all animations that haven't started to their start position.
-		
-		Imagine each of these animations are 1 second long
-		var myTimeline = glow.anim.Timeline().track(anim1, anim2, anim3);
-		Calling myTimeline.goTo(1.5) will have this effect
-		anim1.goTo(1);
-		anim2.goTo(0.5);
-		anim3.goTo(0);
 	*/
-	TimelineProto.goTo = function() {};
+	TimelineProto.goTo = function(pos) {
+		if (pos > this.duration) {
+			pos = this.duration;
+		}
+		else if (pos < 0) {
+			pos = 0;
+		}
+		
+		//var resetAll = pos < this._lastPos;
+		this.position = pos;
+		moveForward(this);
+		this._lastPos = pos;
+		return this;
+	};
+	
+	/**
+		@private
+		@description This method is applied to animations / timeline when they're adopted
+	*/
+	function methodNotAllowed() {
+		throw new Error('Cannot call this method on items contained in a timeline');
+	}
+	
+	/**
+		@private
+		@description Overwrite methods on animations / timelines that no longer apply
+	*/
+	function adoptAnim(anim) {
+		anim.stop();
+		anim.start = anim.stop = anim.destroy = anim.reverse = anim.pingPong = methodNotAllowed;
+	}
 	
 	/**
 		@name glow.anim.Timeline#track
@@ -181,7 +349,36 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.anim.Timeline}
 	*/
-	TimelineProto.track = function() {};
+	TimelineProto.track = function() {
+		var args = arguments,
+			tracksLen = this._tracks.length,
+			track = this._tracks[tracksLen] = [],
+			trackDuration = 0,
+			trackDurations = this._startPos[tracksLen] = [],
+			trackItem;
+		
+		// loop through the added tracks
+		for (var i = 0, leni = args.length; i < leni; i++) {
+			trackItem = track[i] = args[i];
+			
+			if (trackItem instanceof Anim) {
+				adoptAnim(trackItem);
+			}
+			// convert numbers into empty animations
+			else if (typeof trackItem === 'number') {
+				track[i] = new Anim(trackItem);
+			}
+			// record the start time for this anim
+			trackDurations[i] = trackDuration;
+			trackDuration += trackItem.duration || 0;
+		}
+		
+		// update duration and anim duration
+		this._anim.duration = this.duration = Math.max(this.duration, trackDuration);
+		this._currentIndexes[tracksLen] = 0;
+		
+		return this;
+	};
 	
 	/**
 		@name glow.anim.Timeline#event:start
@@ -189,6 +386,14 @@ Glow.provide(function(glow) {
 		@description Fires when an animation starts.
 			Preventing this event (by returning false or calling {@link glow.events.Event#preventDefault preventDefault})
 			prevents this animation from starting.
+		
+		@param {glow.events.Event} event Event Object
+	*/
+	
+	/**
+		@name glow.anim.Timeline#event:frame
+		@event
+		@description Fires on each frame of the animation
 		
 		@param {glow.events.Event} event Event Object
 	*/

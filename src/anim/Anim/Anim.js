@@ -343,6 +343,12 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.goTo = function(pos) {
+		if (pos > this.duration) {
+			pos = this.duration;
+		}
+		else if (pos < 0) {
+			pos = 0;
+		}
 		// set stopPos to this so the next call to start() starts from here
 		this._stopPos = this.position = pos;
 		// move the syncTime for this position if we're playing
@@ -360,6 +366,18 @@ Glow.provide(function(glow) {
 		@description Fires when an animation starts.
 			Preventing this event (by returning false or calling {@link glow.events.Event#preventDefault preventDefault})
 			prevents this animation from starting.
+		
+		@param {glow.events.Event} event Event Object
+	*/
+	
+	/**
+		@name glow.anim.Anim#event:frame
+		@event
+		@description Fires on each frame of the animation
+			Use a combination of this event and {@link glow.anim.Anim#value value}
+			to create custom animations.
+			
+			See the {@link glow.anim.Anim constructor} for usage examples.
 		
 		@param {glow.events.Event} event Event Object
 	*/
