@@ -133,7 +133,7 @@ test('event sequence - Adding animations to a timeline', 17, function() {
 		equal(anim2PositionLog.slice(-1)[0], 0.5, 'anim2 end pos');
 		equal(Math.max.apply(null, anim2PositionLog), 0.5, 'anim2 positions look right');
 		// this animation may take less than 500 as frames are dropped
-		ok(anim2Duration >= 490, 'anim2 duration looks right: ' + anim2Duration);
+		ok(anim2Duration >= 480, 'anim2 duration looks right: ' + anim2Duration);
 		
 		equal(timelinePositionLog[0], 0, 'timeline start pos');
 		equal(timelinePositionLog.slice(-1)[0], 0.75, 'timeline end pos');
@@ -499,6 +499,57 @@ test('Looping', 2, function() {
 		}).start();
 });
 
-// looping
+test('goTo', 15, function() {
+	var anim1 = glow.anim.Anim(0.25, {tween: 'linear'}),
+		anim2 = glow.anim.Anim(0.25, {tween: 'linear'}),
+		anim3 = glow.anim.Anim(0.25, {tween: 'linear'}),
+		anim1Val = 0,
+		anim2Val = 0,
+		anim3Val = 0,
+		timeline = glow.anim.Timeline().track(anim1, anim2, anim3);
+		
+	anim1.on('frame', function() {
+		anim1Val = this.value;
+	});
+	
+	anim2.on('frame', function() {
+		anim2Val = this.value;
+	});
+	
+	anim3.on('frame', function() {
+		anim3Val = this.value;
+	});
+	
+	timeline.goTo(0.25);
+	
+	equal(anim1Val, 1, 'pos 0.25 anim1 val');
+	equal(anim2Val, 0, 'pos 0.25 anim2 val');
+	equal(anim3Val, 0, 'pos 0.25 anim3 val');
+	
+	timeline.goTo(0.75);
+	
+	equal(anim1Val, 1, 'pos 0.75 anim1 val');
+	equal(anim2Val, 1, 'pos 0.75 anim2 val');
+	equal(anim3Val, 1, 'pos 0.75 anim3 val');
+	
+	timeline.goTo(0.125);
+	
+	equal(anim1Val, 0.5, 'pos 0.125 anim1 val');
+	equal(anim2Val, 0, 'pos 0.125 anim2 val');
+	equal(anim3Val, 0, 'pos 0.125 anim3 val');
+	
+	timeline.goTo(0.75).goTo(0.375);
+	
+	equal(anim1Val, 1, 'pos 0.375 anim1 val');
+	equal(anim2Val, 0.5, 'pos 0.375 anim2 val');
+	equal(anim3Val, 0, 'pos 0.375 anim3 val');
+	
+	timeline.goTo(0.75).goTo(0.625);
+	
+	equal(anim1Val, 1, 'pos 0.625 anim1 val');
+	equal(anim2Val, 1, 'pos 0.625 anim2 val');
+	equal(anim3Val, 0.5, 'pos 0.625 anim3 val');
+});
+
 // goto (before & after current position)
 // destroying

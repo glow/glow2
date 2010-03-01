@@ -262,7 +262,15 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.destroy = function() {};
-	
+
+	/**
+		@private
+		@function
+		@description Moves a timeline forward onto timeline.position
+			This deals with moving all the tracks forward from their
+			current position to the new position. This is done on
+			every frame, via timeline.goTo
+	*/
 	function moveForward(timeline) {
 		var i = timeline._tracks.length,
 			track,
@@ -306,11 +314,55 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
+		@private
+		@function
+		@description
+			This goes through all animations that start after the new position
+			& before the previous position and calls their first frames.
+	*/
+	function moveBackward(timeline) {
+		var i = timeline._tracks.length,
+			j,
+			track,
+			item,
+			itemStart,
+			timelinePosition = timeline.position;
+		
+		while (i--) {
+			track = timeline._tracks[i];
+			j = timeline._currentIndexes[i] + 1;
+			
+			while (j--) {
+				item = track[j];
+				
+				if (!item) {
+					continue;
+				}
+				// we don't need to reset items before the new position,
+				// their frames are rendered by 'moveForward'
+				if ( timeline._startPos[i][j] < timeline.position ) {
+					break;
+				}
+				// we only want to deal with animations
+				if (typeof item !== 'function') {
+					item.goTo(0);
+				}
+			}
+			
+			timeline._currentIndexes[i] = j;
+		}
+		
+		// as a shortcut, we use 'moveForward' to trigger the frame for the new position
+		// on the current items
+		moveForward(timeline);
+	}
+	
+	/**
 		@name glow.anim.Timeline#goTo
 		@function
 		@description Goes to a specific point in the animation.
 		@param {number} pos Position in the animation to go to, in seconds
-
+		
 		@example
 			// move the animation to 2.5 seconds in
 			// If the animation is playing, it will continue to play from the new position.
@@ -320,6 +372,8 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.goTo = function(pos) {
+		var resetAll;
+		
 		if (pos > this.duration) {
 			pos = this.duration;
 		}
@@ -327,9 +381,10 @@ Glow.provide(function(glow) {
 			pos = 0;
 		}
 		
-		//var resetAll = pos < this._lastPos;
 		this.position = pos;
-		moveForward(this);
+		
+		(pos < this._lastPos) ? moveBackward(this) : moveForward(this);
+		
 		this._lastPos = pos;
 		return this;
 	};
