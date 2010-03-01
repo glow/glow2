@@ -10,7 +10,7 @@ Glow.provide(function(glow) {
 	*/
 	function animStart(e) {
 		this.fire('start', e);
-		this.playing = true;
+		this.playing = !e.defaultPrevented();
 	}
 	
 	/**
@@ -20,7 +20,7 @@ Glow.provide(function(glow) {
 	*/
 	function animStop(e) {
 		this.fire('stop', e);
-		this.playing = false;
+		this.playing = e.defaultPrevented();
 	}
 	
 	/**
@@ -43,8 +43,7 @@ Glow.provide(function(glow) {
 	*/
 	function animComplete(e) {
 		this.fire('complete', e);
-		this.playing = this.loop;
-		return !this.loop;
+		return !( this.playing = this.loop );
 	}
 	
 	/**

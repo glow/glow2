@@ -357,7 +357,148 @@ test('Timelines in timelines', 4, function() {
 	timeline2.start();
 });
 
-// event cancelling
+test('Event cancelling', 1, function() {
+	stop(2000);
+	
+	var anim1 = glow.anim.Anim(0.25),
+		anim2 = glow.anim.Anim(0.25),
+		timeline1 = glow.anim.Timeline().track(anim1, anim2),
+		cancelStart = true,
+		stopped = false,
+		eventLog = [];
+		
+	timeline1.on('start', function() {
+		eventLog.push('start');
+		// cancel the start event once
+		var r = !cancelStart;
+		if (cancelStart) {
+			cancelStart = false;
+			// call start again in a bit
+			setTimeout(function() {
+				eventLog.push('timeout');
+				timeline1.start();
+			}, 500)
+		}
+		return r;
+	}).on('frame', function() {
+		if (eventLog.slice(-1)[0] !== 'frame') {
+			eventLog.push('frame');
+		}
+		if (!stopped && this.position > 0.25) {
+			stopped = true;
+			this.stop();
+		}
+	}).on('stop', function() {
+		eventLog.push('stop');
+		return false;
+	}).on('complete', function() {
+		eventLog.push('complete');
+		same(eventLog, [
+			'start',
+			'timeout',
+			'start',
+			'frame',
+			'stop',
+			'frame',
+			'complete'
+		], 'Correct events');
+		start();
+		
+	}).start();
+});
+
+test('event cancelling (complete)', 2, function() {
+	stop(5000);
+	
+	var loopCount = 2,
+		firstFrame = true,
+		lastPos = 0.5,
+		correctPositions = true,
+		eventLog = [],
+		anim = glow.anim.Anim(0.5),
+		anim = glow.anim.Timeline().track(anim).on('start', function() {
+			eventLog.push('start');
+		}).on('frame', function() {
+			if (eventLog.slice(-1)[0] !== 'frame') {
+				eventLog.push('frame');
+			}
+			if (firstFrame) {
+				firstFrame = false;
+				correctPositions = correctPositions && (lastPos > this.position);
+			} else {
+				correctPositions = correctPositions && (lastPos <= this.position);
+			}
+			lastPos = this.position;
+		}).on('stop', function() {
+			// shouldn't fire
+			eventLog.push('stop');
+		}).on('complete', function() {
+			eventLog.push('complete');
+			if (!loopCount) {
+				same(eventLog, [
+					'start',
+					'frame',
+					'complete',
+					'frame',
+					'complete',
+					'frame',
+					'complete'
+				], 'Correct events');
+				ok(correctPositions, 'Positions look correct')
+				start();
+			}
+			firstFrame = true;
+			return !loopCount--;
+		}).start();
+});
+
+test('Looping', 2, function() {
+	stop(5000);
+	
+	var loopCount = 2,
+		firstFrame = true,
+		lastPos = 0.5,
+		correctPositions = true,
+		eventLog = [],
+		anim = glow.anim.Anim(0.5),
+		timeline = glow.anim.Timeline({loop:true}).track(anim).on('start', function() {
+			eventLog.push('start');
+		}).on('frame', function() {
+			if (eventLog.slice(-1)[0] !== 'frame') {
+				eventLog.push('frame');
+			}
+			if (firstFrame) {
+				firstFrame = false;
+				correctPositions = correctPositions && (lastPos > this.position);
+			} else {
+				correctPositions = correctPositions && (lastPos <= this.position);
+			}
+			lastPos = this.position;
+		}).on('stop', function() {
+			// shouldn't fire
+			eventLog.push('stop');
+		}).on('complete', function() {
+			eventLog.push('complete');
+			if (!loopCount) {
+				same(eventLog, [
+					'start',
+					'frame',
+					'complete',
+					'frame',
+					'complete',
+					'frame',
+					'complete'
+				], 'Correct events');
+				ok(correctPositions, 'Positions look correct')
+				start();
+			}
+			firstFrame = true;
+			if (!loopCount--) {
+				this.loop = false;
+			}
+		}).start();
+});
+
 // looping
 // goto (before & after current position)
 // destroying
