@@ -29,7 +29,7 @@ Glow.provide(function(glow) {
 			@type {Event | MouseEvent | UIEvent}
 			@description The native event object provided by the browser.
 		 */
-		 this.nativeEvent = e;
+		this.nativeEvent = e;
 		
 		/** 
 			@name glow.events.DomEvent#type
@@ -134,8 +134,18 @@ Glow.provide(function(glow) {
 		}
 	}
 	
-	glow.util.extend(DomEvent, events.Event); // DomEvent extends Event
-
+	glow.util.extend(DomEvent, events.Event, {
+		// no docs for this as it simply adds DOM behaviour to glow.events.Event#preventDefault
+		preventDefault: function() {
+			var nativeEvent = this.nativeEvent;
+			if (nativeEvent) {
+				nativeEvent.preventDefault && nativeEvent.preventDefault();
+				nativeEvent.returnValue = false;
+			}
+			// call the original method
+			events.Event.prototype.preventDefault.call(this);
+		}
+	});
 	
 	/**
 		Add listener for an event fired by the browser.
