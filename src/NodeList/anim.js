@@ -1,6 +1,56 @@
 Glow.provide(function(glow) {
 	var NodeListProto = glow.NodeList.prototype,
-		undefined;
+		undefined,
+		parseFloat = window.parseFloat,
+		cssTemplates,
+		// used to detect which CSS properties require units
+		simpleValWithUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
+		getUnit = /\D+$/,
+		usesYAxis = /height|top/;
+		
+	// these templates are used for animating complex CSS values
+	// (simpler values are handled with regex)
+	// u1...un is replaced with a CSS unit later
+	// values are: [template, round, allowNegative]
+	cssTemplates = {
+		'background-position': ['?u1 ?u2', 1, 1]
+	}
+	
+	// TODO: get this from appearence.js
+	function toStyleProp(prop) {
+		if (prop == 'float') {
+			return glow.env.ie ? 'styleFloat' : 'cssFloat';
+		}
+		return prop.replace(/-(\w)/g, function(match, p1) {
+			return p1.toUpperCase();
+		});
+	}
+	
+	/**
+		@private
+		@function
+		@param {nodelist} element
+		@param {string} toUnit (em|%|pt...)
+		@param {string} axis (x|y)
+		@description Converts a css unit.
+			We need to know the axis for calculating relative values, since they're
+			relative to the width / height of the parent element depending
+			on the situation.
+	*/
+	var testElement = glow('<div style="position:absolute;visibility:hidden;border:0;margin:0;padding:0"></div>');
+	
+	function convertCssUnit(element, value, toUnit, axis) {
+		var elmStyle = testElement[0].style,
+			axisProp = (axis === 'x') ? 'width' : 'height',
+			startPixelValue,
+			toUnitPixelValue;
+		
+		startPixelValue = testElement.css(axisProp, value).insertAfter(element)[axisProp]();
+		// using 10 of the unit then dividing by 10 to increase accuracy
+		toUnitPixelValue = testElement.css(axisProp, 10 + toUnit)[axisProp]() / 10;
+		testElement.remove();
+		return startPixelValue / toUnitPixelValue;
+	}
 	
 	/**
 		@name glow.NodeList#anim
@@ -15,7 +65,7 @@ Glow.provide(function(glow) {
 			</ul>
 		
 		@param {number} duration Length of the animation in seconds.
-		@param {Object} Properties to animate.
+		@param {Object} properties Properties to animate.
 			This is an object where the key is the CSS property and the value
 			is the value to animate to.
 			
@@ -62,7 +112,46 @@ Glow.provide(function(glow) {
 		@see {@link glow.NodeList#slideToggle} - Shortcut to toggle an element open / shut
 
 	*/
-	NodeListProto.anim = function() {};
+	NodeListProto.anim = function(duration, properties, opts) {
+		var anim = new glow.anim.Anim(duration).target( this[0].style ),
+			to,
+			from,
+			fromUnit,
+			toUnit,
+			property,
+			round,
+			propertyIsArray;
+		
+		for (var propName in properties) {
+			property = properties[propName];
+			propertyIsArray = property.push;
+			to   = propertyIsArray ? property[1] : property;
+			from = propertyIsArray ? property[0] : this.css(propName);
+			
+			// are we dealing with a simple number + unit, eg "5px"
+			if ( simpleValWithUnitsRe.test(propName) ) {
+				toUnit   = ( getUnit.exec(to)   || ['px'] )[0];
+				fromUnit = ( getUnit.exec(from) || ['px'] )[0];
+				round = (toUnit === 'px');
+				
+				if (toUnit !== fromUnit) {
+					from = convertCssUnit( this[0], from, toUnit, usesYAxis.test(propName) ? 'y' : 'x' );
+				}
+				
+				anim.prop(toStyleProp(propName), {
+					template: '?' + toUnit,
+					from: parseFloat(from),
+					to: parseFloat(to),
+					round: round
+				})
+			}
+			else {
+				throw new Error('Not yet implemented');
+			}
+		}
+		
+		return anim.start();
+	};
 	
 	/**
 		@name glow.NodeList#queueAnim
