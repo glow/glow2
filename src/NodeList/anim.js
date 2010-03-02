@@ -53,6 +53,7 @@ Glow.provide(function(glow) {
 				alert('done!');
 			});
 		
+		@see {@link glow.NodeList#queueAnim} - Queue an animation to run after the current anim
 		@see {@link glow.NodeList#fadeIn} - Shortcut to fade elements in
 		@see {@link glow.NodeList#fadeOut} - Shortcut to fade elements out
 		@see {@link glow.NodeList#fadeToggle} - Shortcut to toggle the fade of an element
@@ -62,6 +63,67 @@ Glow.provide(function(glow) {
 
 	*/
 	NodeListProto.anim = function() {};
+	
+	/**
+		@name glow.NodeList#queueAnim
+		@function
+		@description Queue an animation to run after the current animation
+			This supports the same CSS properties as {@link glow.NodeList#anim},
+			but the animation is not started until the previous animation (added
+			via {@link glow.NodeList#anim anim} or {@link glow.NodeList#queueAnim queueAnim})
+			on that element ends.
+			
+			If there are no queued animations on the element, the animation starts
+			straight away.
+		
+		@param {number} duration Length of the animation in seconds.
+		@param {Object} Properties to animate.
+			This is an object where the key is the CSS property and the value
+			is the value to animate to.
+			
+			The value can also be an array, where the first item is the value to
+			animate from, and the second is the value to animate to.
+			
+			Numerical values will be treated as 'px' if the property requires units.
+		
+		@param {Object} [opts] Options object
+		@param {function|string} [opts.tween='easeBoth'] The motion of the animation.
+			Strings are treated as properties of {@link glow.tweens}, although
+			a tween function can be provided.
+		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops).
+			This will free any DOM references the animation may have created. Once
+			the animation is destroyed, it cannot be started again.
+		@param {boolean} [opts.loop=true] Loop the animation.
+		@param {boolean} [opts.startNow=false] Start the animation straight away?
+		
+		@returns {glow.anim.Anim}
+		
+		@example
+			// change a nav item's background colour from white to yellow
+			// when the mouse is over it, and back again when the mouse
+			// exits.
+			glow('#nav').delegate('mouseenter', 'li', function() {
+				glow(this).queueAnim(0.5, {
+					'background-color': 'yellow'
+				});
+			}).delegate('mouseleave', 'li', function() {
+				glow(this).queueAnim(0.5, {
+					'background-color': 'white'
+				});
+			});
+		
+		@see {@link glow.NodeList#fadeIn} - Shortcut to fade elements in
+		@see {@link glow.NodeList#fadeOut} - Shortcut to fade elements out
+		@see {@link glow.NodeList#fadeToggle} - Shortcut to toggle the fade of an element
+		@see {@link glow.NodeList#slideOpen} - Shortcut to slide an element open
+		@see {@link glow.NodeList#slideShut} - Shortcut to slide an element shut
+		@see {@link glow.NodeList#slideToggle} - Shortcut to toggle an element open / shut
+
+	*/
+	NodeListProto.queueAnim = function() {
+		// implementation note, don't calculated the 'from' values until we're
+		// just about to play
+	};
 	
 	/**
 		@name glow.NodeList#fadeIn

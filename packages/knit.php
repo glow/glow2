@@ -26,8 +26,9 @@ $conf = array(
 /**** main ****/
 
 function errorHandler($msg) {
+	$msg = str_replace("\\", "\\\\", $msg);
 	$msg = str_replace("'", "\\'", $msg);
-	$msg = preg_replace("/[\r\n]/", " ", $msg);
+	$msg = preg_replace("/[\r\n]/", "\\n", $msg);
     echo "\nalert('Knit Error: $msg.');\n";
     exit(1);
 }
