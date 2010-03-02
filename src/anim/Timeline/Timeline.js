@@ -261,7 +261,26 @@ Glow.provide(function(glow) {
 			This frees memory & is called automatically when the animation completes
 		@returns {glow.anim.Timeline}
 	*/
-	TimelineProto.destroy = function() {};
+	TimelineProto.destroy = function() {
+		var i = timeline._tracks.length,
+			j,
+			item;
+		
+		// destroy animations in tracks	
+		while (i--) {
+			j = this._tracks[i].length;
+			while (j--) {
+				item = this._tracks[i][j];
+				item.destroy && item.destroy();
+			}
+		}
+		
+		// destroy syncing animation
+		this._anim.destroy();
+		// remove listeners
+		glow.events.removeAllListeners( [this] );
+		this._tracks = undefined;
+	};
 
 	/**
 		@private

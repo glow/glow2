@@ -551,5 +551,31 @@ test('goTo', 15, function() {
 	equal(anim3Val, 0.5, 'pos 0.625 anim3 val');
 });
 
-// goto (before & after current position)
-// destroying
+test('destroy', 1, function() {
+	stop();
+	
+	var eventLog = [],
+		anim = glow.anim.Anim(0.5)
+		timeline = glow.anim.Timeline().track(anim).on('start', function() {
+			eventLog.push('start');
+		}).on('frame', function() {
+			if (eventLog.slice(-1)[0] !== 'frame') {
+				eventLog.push('frame');
+			}
+		}).on('stop', function() {
+			// shouldn't fire
+			eventLog.push('stop');
+		}).on('complete', function() {
+			eventLog.push('complete');
+			
+			// the animation will auto-destroy now, if we try and play it again it won't fire events
+			setTimeout(function() {
+				// restart anim, events should be gone by now
+				anim.start();
+			}, 0);
+			setTimeout(function() {
+				same(eventLog, ['start', 'frame', 'complete'], 'Correct event sequence');
+				start();
+			}, 250);
+		}).start();
+});
