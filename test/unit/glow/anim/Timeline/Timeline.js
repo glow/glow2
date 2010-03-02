@@ -24,18 +24,20 @@ test('Creating Timeline instances', 9, function() {
 	strictEqual(timeline3.destroyOnComplete, false, 'destroyOnComplete set');
 });
 
-test('Adding animations to a timeline', 4, function() {
-	var anim1 = glow.anim.Anim(3),
+test('Adding animations to a timeline', 6, function() {
+	var anim1 = glow.anim.Anim(3).start(),
 		anim2 = glow.anim.Anim(2),
 		timeline = glow.anim.Timeline(),
 		returnVal;
 		
 	equal(typeof timeline.track, 'function', '#track correct type');
+	equal(anim1.playing, true, 'anim1 is playing');
 	
 	returnVal = timeline.track(anim1, anim2);
 	
 	equal(returnVal, timeline, '#track returns self');
 	equal(timeline.duration, 5, 'Duration updated');
+	equal(anim1.playing, false, 'anim1 stopped after entering timeline');
 	
 	// once an animation is owned by a timeline, certain methods can no longer
 	// be used. Test that they now throw errors
@@ -57,7 +59,7 @@ test('Adding animations to a timeline', 4, function() {
 	equal(illegalMethods.length * 2, errorsThrown, 'Prevented methods now throw errors');
 });
 
-test('event sequence - Adding animations to a timeline', 13, function() {
+test('event sequence - Adding animations to a timeline', 17, function() {
 	stop(5000);
 	
 	var anim1 = glow.anim.Anim(0.25),
@@ -68,6 +70,7 @@ test('event sequence - Adding animations to a timeline', 13, function() {
 		timelineEventLog = [],
 		anim1PositionLog = [],
 		anim2PositionLog = [],
+		timelinePositionLog = [],
 		anim1Start,
 		anim1Duration,
 		anim2Start,
@@ -109,10 +112,12 @@ test('event sequence - Adding animations to a timeline', 13, function() {
 		timelineEventLog.push('start');
 	}).on('frame', function() {
 		if (timelineEventLog.slice(-1)[0] !== 'frame') {
+			strictEqual(this.playing, true, 'timeline playing is true');
 			timelineEventLog.push('frame');
 		}
 		anim1PositionLog.push( anim1.position );
 		anim2PositionLog.push( anim2.position );
+		timelinePositionLog.push( this.position );
 	}).on('stop', function() {
 		// shouldn't fire
 		timelineEventLog.push('stop');
@@ -127,7 +132,12 @@ test('event sequence - Adding animations to a timeline', 13, function() {
 		equal(anim2PositionLog[0], 0, 'anim2 start pos');
 		equal(anim2PositionLog.slice(-1)[0], 0.5, 'anim2 end pos');
 		equal(Math.max.apply(null, anim2PositionLog), 0.5, 'anim2 positions look right');
-		ok(anim2Duration >= 500, 'anim2 duration looks right: ' + anim2Duration);
+		// this animation may take less than 500 as frames are dropped
+		ok(anim2Duration >= 490, 'anim2 duration looks right: ' + anim2Duration);
+		
+		equal(timelinePositionLog[0], 0, 'timeline start pos');
+		equal(timelinePositionLog.slice(-1)[0], 0.75, 'timeline end pos');
+		equal(Math.max.apply(null, timelinePositionLog), 0.75, 'timeline positions look right');
 		
 		same(animEventLog, [
 			'anim1: start',
@@ -192,13 +202,162 @@ test('multiple tracks - Adding animations to a timeline', 9, function() {
 	timeline.start();
 });
 
-// timeline properties: position, playing (more?)
-// anim properties: playing
-// are animations added to timelines stopped?
-// adding functions & numbers to a timeline
-// stopping and resuming
-// adding timelines to a timeline
-// Do functions in a timeline sync?
+test('Adding numbers and functions to timeline', 3, function() {
+	stop();
+	
+	var anim1 = glow.anim.Anim(0.5),
+		timeline,
+		startTime,
+		anim1PositionLog = [],
+		anim1Started = false;
+	
+	function callback() {
+		var callbackStartTime = new Date;
+		ok( callbackStartTime - startTime >= 250, 'Number treated as pause: ' + (callbackStartTime - startTime) );
+		equal(anim1Started, false, 'Callback called before anim');
+		// block for 0.25 sec
+		while (new Date - start < 250);
+	}
+	
+	anim1.on('start', function() {
+		anim1Started = true;
+	}).on('frame', function() {
+		anim1PositionLog.push( this.position );
+	});
+	
+	timeline = glow.anim.Timeline().track(0.25, callback, anim1).on('complete', function() {
+		ok(anim1PositionLog[0] >= 0.25, 'anim1 starts 0.25 in: ' + anim1PositionLog[0]);
+		start();
+	});
+	
+	startTime = new Date;
+	timeline.start();
+});
+
+test('stopping & resuming', 3, function() {
+	stop();
+	
+	var anim1 = glow.anim.Anim(0.25),
+		anim2 = glow.anim.Anim(0.25),
+		stoppedAndResumed = false,
+		anim1Log = [],
+		anim2Log = [],
+		timelineLog = [],
+		timeline;
+	
+	anim1.on('start', function() {
+		anim1Log.push('start');
+	}).on('stop', function() {
+		anim1Log.push('stop');
+	}).on('frame', function() {
+		if (anim1Log.slice(-1)[0] !== 'frame') {
+			anim1Log.push('frame');
+		}
+		if (this.position > 0.125 && !stoppedAndResumed) {
+			timeline.stop();
+			setTimeout(function() {
+				anim1Log.push('timeout');
+				timeline.start();
+			}, 250);
+			
+			stoppedAndResumed = true;
+		}
+	}).on('complete', function() {
+		anim1Log.push('complete');
+	});
+	
+	anim2.on('start', function() {
+		anim2Log.push('start');
+	}).on('stop', function() {
+		anim2Log.push('stop');
+	}).on('frame', function() {
+		if (anim2Log.slice(-1)[0] !== 'frame') {
+			anim2Log.push('frame');
+		}
+	}).on('complete', function() {
+		anim2Log.push('complete');
+	});
+	
+	timeline = glow.anim.Timeline().track(anim1, anim2).on('start', function() {
+		timelineLog.push('start');
+	}).on('stop', function() {
+		timelineLog.push('stop');
+	}).on('frame', function() {
+		if (timelineLog.slice(-1)[0] !== 'frame') {
+			timelineLog.push('frame');
+		}
+	}).on('complete', function() {
+		timelineLog.push('complete');
+		
+		same(anim1Log, [
+			'start',
+			'frame',
+			'stop',
+			'timeout',
+			'start',
+			'frame',
+			'complete'
+		]);
+		
+		same(anim2Log, [
+			'start',
+			'frame',
+			'complete'
+		]);
+		
+		same(timelineLog, [
+			'start',
+			'frame',
+			'stop',
+			'start',
+			'frame',
+			'complete'
+		]);
+		
+		start();
+	});
+
+	timeline.start();
+});
+
+test('Timelines in timelines', 4, function() {
+	stop();
+	
+	var anim1 = glow.anim.Anim(0.25),
+		anim2 = glow.anim.Anim(0.25),
+		anim3 = glow.anim.Anim(0.25),
+		anim1Complete,
+		anim2Complete,
+		anim3Complete,
+		timeline1 = glow.anim.Timeline().track(anim2, anim3),
+		timeline1Complete,
+		timeline2 = glow.anim.Timeline().track(anim1, timeline1);
+		
+	anim1.on('complete', function() {
+		anim1Complete = true;
+	});
+	anim2.on('complete', function() {
+		anim2Complete = true;
+	});
+	anim3.on('complete', function() {
+		anim3Complete = true;
+	});
+	timeline1.on('complete', function() {
+		timeline1Complete = true;
+	});
+		
+	timeline2.on('complete', function() {
+		ok(anim1Complete, 'anim1 completed');
+		ok(anim2Complete, 'anim2 completed');
+		ok(anim3Complete, 'anim3 completed');
+		ok(timeline1Complete, 'timeline1 completed');
+		start();
+	})
+	
+	timeline2.start();
+});
+
 // event cancelling
 // looping
 // goto (before & after current position)
+// destroying

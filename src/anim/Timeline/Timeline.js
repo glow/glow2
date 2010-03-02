@@ -10,6 +10,7 @@ Glow.provide(function(glow) {
 	*/
 	function animStart(e) {
 		this.fire('start', e);
+		this.playing = true;
 	}
 	
 	/**
@@ -19,6 +20,7 @@ Glow.provide(function(glow) {
 	*/
 	function animStop(e) {
 		this.fire('stop', e);
+		this.playing = false;
 	}
 	
 	/**
@@ -28,7 +30,10 @@ Glow.provide(function(glow) {
 	*/
 	function animFrame(e) {
 		this.goTo(this._anim.position);
-		this.fire('frame', e);
+		// if we're still playing, fire frame
+		if (this._anim.playing) {
+			this.fire('frame', e);
+		}
 	}
 	
 	/**
@@ -38,6 +43,7 @@ Glow.provide(function(glow) {
 	*/
 	function animComplete(e) {
 		this.fire('complete', e);
+		this.playing = this.loop;
 		return !this.loop;
 	}
 	
@@ -230,7 +236,22 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.stop = function() {
+		var i = this._tracks.length,
+			item;
+		
 		this._anim.stop();
+		// check in case the event has been cancelled
+		if (!this._anim.playing) {
+			while (i--) {
+				// get the current playing item for this track
+				item = this._tracks[i][ this._currentIndexes[i] ];
+				// check there is an item playing
+				if (item) {
+					item.fire('stop');
+					item.playing = false;
+				}
+			}
+		}
 		return this;
 	};
 	
@@ -361,7 +382,7 @@ Glow.provide(function(glow) {
 		for (var i = 0, leni = args.length; i < leni; i++) {
 			trackItem = track[i] = args[i];
 			
-			if (trackItem instanceof Anim) {
+			if (trackItem instanceof Anim || trackItem instanceof Timeline) {
 				adoptAnim(trackItem);
 			}
 			// convert numbers into empty animations
