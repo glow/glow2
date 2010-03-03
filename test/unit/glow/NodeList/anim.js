@@ -45,7 +45,7 @@ test('animating position', 6, function() {
 	});
 });
 
-test('animating size with units', 6, function() {
+test('animating size with units', 4, function() {
 	stop(2000);
 	
 	var nodeList = glow('#positionTest'),
@@ -53,16 +53,10 @@ test('animating size with units', 6, function() {
 		heightLog = [],
 		widthLog = [];
 	
-	equals(typeof nodeList.anim, 'function', '#anim exists');
-	
 	anim = glow('#positionTest').anim(0.5, {
 		height: '10%',
 		width: '50%'
-	});
-	
-	equals(anim.constructor, glow.anim.Anim, '#anim returns glow.anim.Anim');
-	
-	anim.on('frame', function() {
+	}).on('frame', function() {
 		heightLog.push( nodeList.css('height') );
 		widthLog.push( nodeList.css('width') );
 	}).on('complete', function() {
@@ -76,10 +70,28 @@ test('animating size with units', 6, function() {
 	});
 });
 
+test('animating colour', 2, function() {
+	stop(2000);
+	
+	var nodeList = glow('#positionTest'),
+		anim,
+		colourLog = [];
+	
+	anim = glow('#positionTest').anim(0.5, {
+		'background-color': 'aqua'
+	}).on('frame', function() {
+		colourLog.push( nodeList.css('background-color') );
+	}).on('complete', function() {
+		equal(colourLog[0], 'rgb(255, 0, 0)', 'height start value');
+		equal(colourLog.slice(-1)[0], 'rgb(0, 255, 255)', 'height end value');
+		
+		start();
+	});
+});
+
 // tween, loop, startNow
 // does it work on all elements in the nodelist
 // does opacity work in IE?
-// to & from units differ
 
 module('glow.NodeList#queueAnim', {setup:setup, teardown:teardown});
 

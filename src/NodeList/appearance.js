@@ -1,5 +1,6 @@
 Glow.provide(function(glow) {
-	var NodeListProto = glow.NodeList.prototype,
+	var NodeList = glow.NodeList,
+		NodeListProto = NodeList.prototype,
 		doc = document,	
 		win = window;
 			
@@ -105,7 +106,7 @@ Glow.provide(function(glow) {
 			}
 			//some results need post processing
 			if (prop.indexOf('color') != -1) { //deal with colour values
-				r = normaliseCssColor(r).toString();
+				r = NodeList._parseColor(r).toString();
 			} else if (r.indexOf('url') == 0) { //some browsers put quotes around the url, get rid
 				r = r.replace(/\"/g,'');
 			}
@@ -120,67 +121,73 @@ Glow.provide(function(glow) {
 		return elm.offsetWidth ||
 			elm.offsetHeight;
 	}
-	/*
-	PrivateMethod: normaliseCssColor
-		Converts a CSS colour into "rgb(255, 255, 255)" or "transparent" format
+	
+	var mathRound = Math.round,
+		parseIntFunc = parseInt,
+		parseFloatFunc = parseFloat,
+		htmlColorNames = {
+			black: 0,
+			silver: 0xc0c0c0,
+			gray: 0x808080,
+			white: 0xffffff,
+			maroon: 0x800000,
+			red: 0xff0000,
+			purple: 0x800080,
+			fuchsia: 0xff00ff,
+			green: 0x8000,
+			lime: 0xff00,
+			olive: 0x808000,
+			yellow: 0xffff00,
+			navy: 128,
+			blue: 255,
+			teal: 0x8080,
+			aqua: 0xffff,
+			orange: 0xffa500
+		},
+		colorRegex = /^rgb\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)/i;
+	
+	/**
+		@name glow.NodeList._parseColor
+		@private
+		@function
+		@description Convert a CSS colour string into a normalised format
+		@returns {string} String in format rgb(0, 0, 0)
+			Returned string also has r, g & b number properties
 	*/
-
-	function normaliseCssColor(val) {
+	NodeList._parseColor = function (val) {
 		if (/^(transparent|rgba\(0, ?0, ?0, ?0\))$/.test(val)) { return 'transparent'; }
-			var match, //tmp regex match holder
-				r, g, b, //final colour vals
-				hex, //tmp hex holder
-				mathRound = Math.round,
-				parseIntFunc = parseInt,
-				parseFloatFunc = parseFloat,
-					htmlColorNames = {
-					black: 0,
-					silver: 0xc0c0c0,
-					gray: 0x808080,
-					white: 0xffffff,
-					maroon: 0x800000,
-					red: 0xff0000,
-					purple: 0x800080,
-					fuchsia: 0xff00ff,
-					green: 0x8000,
-					lime: 0xff00,
-					olive: 0x808000,
-					yellow: 0xffff00,
-					navy: 128,
-					blue: 255,
-					teal: 0x8080,
-					aqua: 0xffff,
-					orange: 0xffa500
-				},
-				colorRegex = /^rgb\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)/i;
+		
+		var match, //tmp regex match holder
+			r, g, b, //final colour vals
+			hex; //tmp hex holder
 
-			if (match = colorRegex.exec(val)) { //rgb() format, cater for percentages
-				r = match[2] ? mathRound(((parseFloatFunc(match[1]) / 100) * 255)) : parseIntFunc(match[1]);
-				g = match[4] ? mathRound(((parseFloatFunc(match[3]) / 100) * 255)) : parseIntFunc(match[3]);
-				b = match[6] ? mathRound(((parseFloatFunc(match[5]) / 100) * 255)) : parseIntFunc(match[5]);
-			} else {
-				if (typeof val == 'number') {
-					hex = val;
-				} else if (val.charAt(0) == '#') {
-					if (val.length == '4') { //deal with #fff shortcut
-						val = '#' + val.charAt(1) + val.charAt(1) + val.charAt(2) + val.charAt(2) + val.charAt(3) + val.charAt(3);
-					}
-					hex = parseIntFunc(val.slice(1), 16);
-				} else {
-					hex = htmlColorNames[val];
+		if (match = colorRegex.exec(val)) { //rgb() format, cater for percentages
+			r = match[2] ? mathRound(((parseFloatFunc(match[1]) / 100) * 255)) : parseIntFunc(match[1]);
+			g = match[4] ? mathRound(((parseFloatFunc(match[3]) / 100) * 255)) : parseIntFunc(match[3]);
+			b = match[6] ? mathRound(((parseFloatFunc(match[5]) / 100) * 255)) : parseIntFunc(match[5]);
+		} else {
+			if (typeof val == 'number') {
+				hex = val;
+			} else if (val.charAt(0) == '#') {
+				if (val.length == '4') { //deal with #fff shortcut
+					val = val.replace(/\w/g, '$&$&');
 				}
-
-				r = (hex) >> 16;
-				g = (hex & 0x00ff00) >> 8;
-				b = (hex & 0x0000ff);
+				hex = parseIntFunc(val.slice(1), 16);
+			} else {
+				hex = htmlColorNames[val];
 			}
 
-			val = new String('rgb(' + r + ', ' + g + ', ' + b + ')');
-			val.r = r;
-			val.g = g;
-			val.b = b;
-			return val;
+			r = (hex) >> 16;
+			g = (hex & 0x00ff00) >> 8;
+			b = (hex & 0x0000ff);
 		}
+
+		val = new String('rgb(' + r + ', ' + g + ', ' + b + ')');
+		val.r = r;
+		val.g = g;
+		val.b = b;
+		return val;
+	}
 	/*
 	PrivateMethod: getElmDimension
 		Gets the size of an element as an integer, not including padding or border

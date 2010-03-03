@@ -1,10 +1,11 @@
 Glow.provide(function(glow) {
-	var NodeListProto = glow.NodeList.prototype,
+	var NodeList = glow.NodeList,
+		NodeListProto = NodeList.prototype,
 		undefined,
 		parseFloat = window.parseFloat,
 		cssTemplates,
 		// used to detect which CSS properties require units
-		simpleValWithUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
+		requiresUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
 		getUnit = /\D+$/,
 		usesYAxis = /height|top/;
 		
@@ -120,33 +121,55 @@ Glow.provide(function(glow) {
 			toUnit,
 			property,
 			round,
-			propertyIsArray;
+			propertyIsArray,
+			stylePropName;
 		
 		for (var propName in properties) {
 			property = properties[propName];
 			propertyIsArray = property.push;
+			stylePropName = toStyleProp(propName);
 			to   = propertyIsArray ? property[1] : property;
 			from = propertyIsArray ? property[0] : this.css(propName);
 			
+			// deal with colour values
+			if ( propName.indexOf('color') !== -1 ) {
+				to = NodeList._parseColor(to);
+				to = [to.r, to.g, to.b];
+				from = NodeList._parseColor(from);
+				from = [from.r, from.g, from.b];
+				
+				anim.prop(stylePropName, {
+					// we only need a template if we have units
+					template: 'rgb(?,?,?)',
+					from: from,
+					to: to,
+					round: true,
+					allowNegative: false
+				});
+			}
 			// are we dealing with a simple number + unit, eg "5px"
-			if ( simpleValWithUnitsRe.test(propName) ) {
-				toUnit   = ( getUnit.exec(to)   || ['px'] )[0];
-				fromUnit = ( getUnit.exec(from) || ['px'] )[0];
+			else {
+				toUnit   = ( getUnit.exec(to)   || [''] )[0];
+				fromUnit = ( getUnit.exec(from) || [''] )[0];
 				round = (toUnit === 'px');
+				
+				// create initial units if required
+				if ( !(toUnit && fromUnit) && requiresUnitsRe.test(propName) ) {
+					toUnit = toUnit || 'px';
+					fromUnit = fromUnit || 'px';
+				}
 				
 				if (toUnit !== fromUnit) {
 					from = convertCssUnit( this[0], from, toUnit, usesYAxis.test(propName) ? 'y' : 'x' );
 				}
 				
-				anim.prop(toStyleProp(propName), {
-					template: '?' + toUnit,
+				anim.prop(stylePropName, {
+					// we only need a template if we have units
+					template: toUnit ? '?' + toUnit : undefined,
 					from: parseFloat(from),
 					to: parseFloat(to),
 					round: round
 				})
-			}
-			else {
-				throw new Error('Not yet implemented');
 			}
 		}
 		
