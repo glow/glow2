@@ -6,7 +6,7 @@ Glow.provide(function(glow) {
 		// used to detect which CSS properties require units
 		requiresUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|fontSize/,
 		// which simple CSS values cannot be negative
-		//noNegativeValsRs = /width|height|padding/,
+		noNegativeValsRe = /width|height|padding/,
 		getUnit = /\D+$/,
 		usesYAxis = /height|top/;
 	
@@ -80,8 +80,8 @@ Glow.provide(function(glow) {
 			fromUnit,
 			round = [],
 			template = '',
-			requiresUnits = requiresUnitsRe.test(stylePropName);//,
-			//allowNegative = !noNegativeValsRs.test(stylePropName);
+			requiresUnits = requiresUnitsRe.test(stylePropName),
+			allowNegative = !noNegativeValsRe.test(stylePropName);
 		
 		from = String(from).split(' ');
 		to = String(to).split(' ');
@@ -89,13 +89,14 @@ Glow.provide(function(glow) {
 		for (var i = 0, leni = to.length; i < leni; i++) {
 			toUnit   = ( getUnit.exec( to[i] )   || [''] )[0];
 			fromUnit = ( getUnit.exec( from[i] ) || [''] )[0];
-			round[i] = (toUnit === 'px');
 			
 			// create initial units if required
 			if (requiresUnits) {
 				toUnit = toUnit || 'px';
 				fromUnit = fromUnit || 'px';
 			}
+			
+			round[i] = (toUnit === 'px');
 			
 			// make the 'from' unit the same as the 'to' unit
 			if (toUnit !== fromUnit) {
@@ -111,8 +112,8 @@ Glow.provide(function(glow) {
 			template: template,
 			from: from,
 			to: to,
-			round: round//,
-			//allowNegative: allowNegative
+			round: round,
+			allowNegative: allowNegative
 		});
 	}
 	

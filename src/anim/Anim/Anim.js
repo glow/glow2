@@ -62,7 +62,7 @@ Glow.provide(function(glow) {
 	function activateAnim(anim) {
 		// if this is the first anim, start the timer
 		if (!activeAnimsLen) {
-			animInterval = setInterval(onInterval, 0);
+			animInterval = setInterval(onInterval, 13);
 		}
 		activeAnims[activeAnimsLen] = anim;
 		// this id is used to quickly remove the anim from the array later

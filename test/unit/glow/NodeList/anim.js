@@ -36,6 +36,7 @@ test('animating position', 6, function() {
 		topLog.push( nodeList.css('top') );
 		leftLog.push( nodeList.css('left') );
 	}).on('complete', function() {
+		console.log('complete');
 		equal(topLog[0], '10px', 'top start position');
 		equal(topLog.slice(-1)[0], '50px', 'top end position');
 		
