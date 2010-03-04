@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>Widget Example</title>
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript" src="../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+	
+	<script type="text/javascript">
+		// start glow loading
+		window.glow = Glow(conf.version, {base: conf.base, debug: true});
+	</script>
+	
+	<style type="text/css" media="screen">
+		.glow-label {
+			background-color: #ccc;
+			padding: 2px;
+			font-family: verdana, sans-serif;
+		}
+		.glow-label-disabled {
+			color: #fff;
+		}
+		
+		.glow-updownwidget {
+			border: 1px solid gray;
+			width: 180px;
+			padding: 1px;
+		}
+		.glow-updownwidget-display {
+			padding: 4px;
+			height: 24px;
+			font-size: 18px;
+			font-weight: bold;
+			text-align: middle;
+		}
+		
+		.title {
+			font-size: 120%;
+			font-weight: bold;
+		}
+		#title-label {
+			background-color: #35565D;
+			color: #fff;
+		}
+	</style>
+	
+</head>
+<body>
+
+<p id="title"></p>
+<p id="counter"></p>
+
+
+<script type="text/javascript">
+	
+	// mock, for testing only
+	i18n = {
+		en: {
+			LABEL_TITLE: 'My Widget',
+			LABEL_UP:   'Increase.',
+			LABEL_DOWN: 'Decrease.'
+		},
+		pirate: {
+			LABEL_TITLE: 'Me Jolly Widget, Ahoy!',
+			LABEL_UP:   'Up ye go, Arr!',
+			LABEL_DOWN: 'Down ye go, Arr!'
+		}
+	};
+	i18n.getLocalPack = function(locale) {
+		if (!i18n[locale]) { locale = 'en'; }
+		return i18n[locale];
+	}
+	i18n.getLocaleName = function() {
+		// find locale name from html tag attribute
+		return 'en';
+	}
+
+	
+	glow.load('widgets').ready(function() {
+		
+		/**
+			@constructor
+			@param {HTMLElement} container
+			@param {object} [opts]
+		 */
+		function Label(container, opts) {
+			this.on('init', function(e) {
+				this.caption = e.opts.caption;
+				this.captions = i18n.getLocalPack(i18n.getLocaleName());
+			});
+			
+			this.on('bind', function(e) {
+				this.container = e.container;
+				if (opts.id !== undefined) { this.container[0].id = opts.id; }
+				if (opts.className !== undefined) { this.container.addClass(opts.className); }
+			});
+			
+			this.on('render', function(e) {
+				this.container.addClass('glow-label');
+				this.container.html(this.captions[this.caption]);
+			});
+			
+			this.on('locale', function(e) {
+				this.captions = i18n.getLocalPack(e.localeName);
+				if (this.rendered) { this.render(); }
+			});
+			
+			this.on('disable', function(e) {
+				if (e.disabled) { this.container.addClass('glow-label-disabled'); }
+				else { this.container.removeClass('glow-label-disabled'); }
+			});
+			
+			this.init(opts);
+			this.bind(container);
+			this.render();
+		}
+		glow.util.extend(Label, glow.widgets.Widget);
+		
+		/**
+			@constructor
+			@param {number} startValue
+			@param {HTMLElement} container
+			@param {object} [opts]
+		 */
+		function Counter(startValue, container, opts) {
+			var label = new Label(document.createElement('DIV'), opts);
+				
+			this.sync(label);
+			
+			this.on('init', function(e) {
+				this._value = (e.opts.startValue !== undefined)? e.opts.startValue : (this._value !== undefined)? this._value : startValue;
+				this._delta = (e.opts.delta !== undefined)? e.opts.delta : (this._delta !== undefined)? this._delta : 1;
+				
+				label.init(e.opts);
+			});
+			
+			this.on('bind', function(e) {
+				this.display = new glow.NodeList(document.createElement('DIV'));
+				e.container.append(this.display);
+				
+				var that = this;
+				label.container.on('click', function(e) {
+					if (that.disabled) { return; }
+					that.value(that._value += that._delta);
+				});
+				e.container.append(label.container);
+			});
+			
+			this.on('render', function(e) {
+				this.displayValue();
+				
+				label.render();
+				
+				this.container.addClass('glow-updownwidget');
+				this.display.addClass('glow-updownwidget-display');
+			});
+			
+			this.init(opts);
+			this.bind(container);
+			this.render();
+		}
+		glow.util.extend(Counter, glow.widgets.Widget);
+		
+		Counter.prototype.displayValue = function() {
+			this.display.html('' + this._value);
+		}
+		
+		Counter.prototype.value = function(n) {
+			this._value = 0 + n;
+			this.displayValue();
+		}
+		
+//// example ////
+
+		// example of a Label widget by itself
+		// example of passing in id and className
+		var myTitle = new Label('#title', {id: 'title-label', className: 'title', caption: 'LABEL_TITLE'});
+		
+		// example of a compound widget that contains a Label widget
+		var myWidget = new Counter(0, '#counter', {delta: +6, caption: 'LABEL_UP'});
+		
+		setTimeout(function() {
+			myWidget.init({delta: -1, caption: 'LABEL_DOWN'}).render();
+		}, 3000);
+		
+		setTimeout(function() {
+			myWidget.disable();
+		}, 6000);
+		
+		setTimeout(function() {
+			myWidget.enable();
+		}, 9000);
+		
+		setTimeout(function() {
+			myWidget.value(100);
+		}, 12000);
+		
+		setTimeout(function() {
+			myWidget.locale('pirate');
+			myTitle.locale('pirate')
+		}, 15000);
+	});
+</script>
+
+</body>
+</html>
