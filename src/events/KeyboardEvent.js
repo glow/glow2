@@ -8,7 +8,7 @@ Glow.provide(function(glow) {
 		// the charCode for the last keypress (returned to undefined on keyup & keydown)
 		activeChar,
 		DomEvent = glow.events.DomEvent,
-		_callListeners = glow.events._callListeners,
+		_callDomListeners = glow.events._callDomListeners,
 		_getPrivateEventKey = glow.events._getPrivateEventKey,
 		// object of event names & listeners, eg:
 		// {
@@ -57,7 +57,7 @@ Glow.provide(function(glow) {
 				
 				Alphanumeric keys are represented by 0-9 and A-Z uppercase. Other safe cross-browser values are:
 				
-				<dl>
+				<ul>
 					<li>backspace</li>
 					<li>tab</li>
 					<li>return</li>
@@ -99,7 +99,7 @@ Glow.provide(function(glow) {
 					<li>[</li>
 					<li>\</li>
 					<li>]</li>
-				</dl>
+				</ul>
 				
 				Some keys may trigger actions in your browser and operating system, some
 				are not cancelable.
@@ -135,7 +135,14 @@ Glow.provide(function(glow) {
         keyChar: ''
     });
 	
-	// add a dom listener
+	/** 
+		@private
+		@description Add a listener onto a DOM element
+		
+		@param {HTMLElement} elm
+		@param {string} name Event name, without 'on' at the start
+		@param {function} callback Callback for the event
+	*/
 	function addListener(elm, name, callback) {
 		if (elm.addEventListener) { // like DOM2 browsers	
 			elm.addEventListener(name, callback, false);
@@ -145,7 +152,14 @@ Glow.provide(function(glow) {
 		}
 	}
 	
-	// remove a dom listener
+	/** 
+		@private
+		@description Removes a listener onto a DOM element
+		
+		@param {HTMLElement} elm
+		@param {string} name Event name, without 'on' at the start
+		@param {function} callback Callback for the event
+	*/
 	function removeListener(elm, name, callback) {
 		if (elm.removeEventListener) { // like DOM2 browsers	
 			elm.removeEventListener(name, callback, false);
@@ -155,7 +169,13 @@ Glow.provide(function(glow) {
 		}
 	}
 	
-	// takes a keyCode from a keydown listener and returns true if the browser will also fire a keypress
+	/** 
+		@private
+		@description Do we expect the browser to fire a keypress after a given keydown?
+		
+		@param {number} keyCode keyCode from a keydown listener
+		@param {boolean} defaultPrevented Was the keydown prevented?
+	*/
 	function expectKeypress(keyCode, defaultPrevented) {
 		var keyName;
 		
@@ -175,8 +195,14 @@ Glow.provide(function(glow) {
 		return false;
 	}
 	
-	// Add the key listeners for firing glow's normalised key events.
-	// returns an entry for eventKeysRegistered
+	/** 
+		@private
+		@description Add the key listeners for firing glow's normalised key events.
+		
+		@param {HTMLElement} attachTo Element to attach listeners to
+		
+		@returns {Object[]} an entry for eventKeysRegistered
+	*/
 	function addDomKeyListeners(attachTo) {
 		var keydownHandler, keypressHandler, keyupHandler,
 			// Even though the user may only be interested in one key event, we need all 3 listeners to normalise any of them
@@ -192,12 +218,12 @@ Glow.provide(function(glow) {
 			if ( !keysDown[keyCode] ) {
 				activeKey = keyCode;
 				activeChar = undefined;
-				preventDefault = _callListeners( attachTo, 'keydown', new KeyboardEvent(nativeEvent) ).defaultPrevented();
+				preventDefault = _callDomListeners( attachTo, 'keydown', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 				keysDown[keyCode] = true;
 			}
 			// we want to fire a keyPress event here if the browser isn't going to fire one itself
 			if ( !expectKeypress(keyCode, preventDefault) ) {
-				preventDefaultKeyPress = _callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
+				preventDefaultKeyPress = _callDomListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 			}
 			// return false if either the keydown or fake keypress event was cancelled
 			return !(preventDefault || preventDefaultKeyPress);
@@ -211,7 +237,7 @@ Glow.provide(function(glow) {
 				// non-printable chars have an ID length greater than 1
 				activeChar = undefined;
 			}
-			var preventDefault = _callListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
+			var preventDefault = _callDomListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 			return !preventDefault;
 		};
 		
@@ -221,7 +247,7 @@ Glow.provide(function(glow) {
 				
 			activeKey = keyCode;
 			activeChar = undefined;
-			preventDefault = _callListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
+			preventDefault = _callDomListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 			keysDown[keyCode] = false;
 			activeKey = undefined;
 			return !preventDefault;
@@ -239,16 +265,17 @@ Glow.provide(function(glow) {
 		@name glow.events._addKeyListener
 		@private
 		@function
-		@description Add listener for a key event fired by the browser.
+		@description Add DOM listeners for key events fired by the browser
+			Avoids adding more than one.
+		
+		@param {glow.NodeList} nodeList Elements to add listeners to
+		
 		@see glow.NodeList#on
 	*/
-	glow.events._addKeyListener = function(nodeList, name, callback, thisVal) {
+	glow.events._addKeyListener = function(nodeList) {
 		var i = nodeList.length,
 			attachTo,
 			eventKey;
-		
-		// will add a unique id to this node, if there is not one already
-		glow.events.addListeners(nodeList, name, callback, thisVal);
 	
 		while (i--) {
 			attachTo = nodeList[i];
@@ -268,20 +295,21 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
-		Remove listener for an event fired by the browser.
-		@private
 		@name glow.events._removeKeyListener
-		@see glow.NodeList#detach
+		@private
 		@function
+		@description Remove DOM listeners for key events fired by the browser
+			Avoids removing DOM listeners until all Glow listeners have been removed
+		
+		@param {glow.NodeList} nodeList Elements to remove listeners from
+		
+		@see glow.NodeList#detach
 	*/
-	glow.events._removeKeyListener = function(nodeList, name, callback) {
+	glow.events._removeKeyListener = function(nodeList) {
 		var i = nodeList.length,
 			attachTo,
 			eventKey,
 			eventRegistry;
-		
-		// remove the glow events
-		glow.events.removeListeners(nodeList, name, callback);
 		
 		while (i--) {
 			attachTo = nodeList[i];
@@ -291,7 +319,7 @@ Glow.provide(function(glow) {
 			eventRegistry = eventKeysRegistered[eventKey];
 			// exist if there are no key events registered for this node
 			if ( !eventRegistry ) {
-				return;
+				continue;
 			}
 			if ( --eventRegistry[0] === 0 ) {
 				// our glow listener count is zero, we have no need for the dom listeners anymore
@@ -302,8 +330,15 @@ Glow.provide(function(glow) {
 			}
 		}
 	}
-	
-	// convert a keyCode to a string name for that key
+	/**
+		@private
+		@function
+		@description convert a keyCode to a string name for that key
+		
+		@param {number} keyCode
+		
+		@returns {string} ID for that key. Is a letter a-z, number 0-9, or id from 'keyIds'
+	*/
 	function keyCodeToId(keyCode) {
 		// key codes for 0-9 A-Z are the same as their char codes
 		if ( (keyCode >= keyCodeA && keyCode <= keyCodeZ) || (keyCode >= keyCode0 && keyCode <= keyCode9) ) {

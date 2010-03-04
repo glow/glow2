@@ -37,12 +37,16 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.on = function(eventName, callback, thisVal) {
 		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
-			
+		
+		// add standard glow listeners
+		glow.events.addListeners(this, eventName, callback, thisVal);
+		
+		// add the bridge functions if needed
 		if (isKeyEvent) {
-			glow.events._addKeyListener(this, eventName, callback, thisVal);
+			glow.events._addKeyListener(this);
 		}
 		else { // assume it's a DOM event
-			glow.events._addDomEventListener(this, eventName, callback, thisVal);
+			glow.events._addDomEventListener(this, eventName);
 		}
 		
 		return this;
@@ -71,13 +75,18 @@ Glow.provide(function(glow) {
 			// removing listeners
 			glow.get('a').detach('click', clickListener);
 	*/
-	NodeListProto.detach = function(eventName, callback, thisVal) {
+	NodeListProto.detach = function(eventName, callback) {
 		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
+		
+		// remove standard glow listeners
+		glow.events.removeListeners(this, eventName, callback);
+		
+		// remove the bridge functions if needed
 		if (isKeyEvent) {
-			glow.events._removeKeyListener(this, eventName, callback);
+			glow.events._removeKeyListener(this);
 		}
 		else { // assume it's a DOM event
-			glow.events._removeDomEventListener(this, eventName, callback, thisVal);
+			glow.events._removeDomEventListener(this, eventName);
 		}
 		
 		return this;
@@ -137,19 +146,20 @@ Glow.provide(function(glow) {
 			});
 	*/
 	NodeListProto.delegate = function(eventName, selector, callback, thisVal) {
-		var i = this.length,
-			attachTo,
-			isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
 		
-		while (i--) {
-			attachTo = this[i];
-			
-			if (isKeyEvent) {
-// 					glow.events._addKeyListener([attachTo], eventName, handler);
-			}
-			else { // assume it's a DOM event
-				glow.events._addDomEventListener([attachTo], eventName, callback, thisVal, selector);
-			}
+		// add standard glow listeners
+		glow.events.addListeners(this, eventName + '/' + selector, callback, thisVal);
+		
+		// register delegates
+		glow.events._registerDelegate(this, eventName, selector);
+		
+		// add the bridge functions if needed
+		if (isKeyEvent) {
+			glow.events._addKeyListener(this);
+		}
+		else { // assume it's a DOM event
+			glow.events._addDomEventListener(this, eventName);
 		}
 		
 		return this;
@@ -181,20 +191,20 @@ Glow.provide(function(glow) {
 			glow.get('#nav').detachDelegate('click', 'a', clickListener);
 	*/
 	NodeListProto.detachDelegate = function(eventName, selector, callback, thisVal) {
-		var i = this.length,
-			attachTo,
-			isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1),
-			handler;
+		var isKeyEvent = (keyEventNames.indexOf(' ' + eventName + ' ') > -1);
 		
-		while (i--) {
-			attachTo = this[i];
-			
-			if (isKeyEvent) {
-// 				glow.events._removeKeyListener([attachTo], eventName, handler);
- 			}
- 			else {
- 				glow.events._removeDomEventListener([attachTo], eventName, callback, selector);
- 			}
+		// remove standard glow listeners
+		glow.events.removeListeners(this, eventName + '/' + selector, callback);
+		
+		// unregister delegates
+		glow.events._unregisterDelegate(this, eventName, selector);
+		
+		// remove the bridge functions if needed
+		if (isKeyEvent) {
+			glow.events._removeKeyListener(this);
+		}
+		else { // assume it's a DOM event
+			glow.events._removeDomEventListener(this, eventName);
 		}
 		
 		return this;
