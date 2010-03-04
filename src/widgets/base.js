@@ -16,6 +16,7 @@ Glow.provide(function(glow) {
 		}
 		glow.util.extend(MyWidget, glow.widgets.Widget);
 	@property {boolean} initialized
+	@property {boolean} bound
 	@property {boolean} rendered
 	@property {boolean} destroyed
 	@property {boolean} disabled
@@ -24,6 +25,7 @@ Glow.provide(function(glow) {
  */
 	var Widget = function(conf) {
 		this.initialized = false;
+		this.bound = false;
 		this.rendered = false;
 		this.destroyed = false;
 		this.disabled = false;
@@ -77,10 +79,16 @@ Glow.provide(function(glow) {
 			(function (observer) {
 				glow.events.addListeners([observer], 'notify', function(e) {
 					// handle notifications about changes to the disabled state
-					if (e.disabled !== undefined) { observer.disabled = !!e.disabled; observer.fire('disabledChanged', e); }
+					if (e.disabled !== undefined) {
+						observer.fire('disable', e);
+						if (!e.defaultPrevented()) { observer.disabled = e.disabled; }
+					}
 					
 					// handle notifications about changes to the localeName
-					if (e.localeName !== undefined) { observer.localeName = e.localeName; observer.fire('localeChanged', e); }
+					if (e.localeName !== undefined) {
+						observer.fire('locale', e);
+						if (!e.defaultPrevented()) { observer.localeName = e.localeName; }
+					}
 				});
 			})(observers[i]);
 		}
@@ -109,7 +117,7 @@ Glow.provide(function(glow) {
 	@developer
 	@name glow.widgets.Widget#disable
 	@method
-	@description Sets the disabled property of this widget to true and fires the disabledChanged event.
+	@description Sets the disabled property of this widget to true and fires the disable event.
 	If other widgets are synced with this one, they will become disabled too.
 	
 	@see glow.widgets.Widget#enable
@@ -125,15 +133,14 @@ Glow.provide(function(glow) {
 		c.disable(); // a, b, and c are now disabled
  */
 	Widget.prototype.disable = function(_b) {
-		var e;
+		var e,
+			disabled = (typeof _b === 'boolean')? _b : true;
 		
-		this.disabled = (typeof _b === 'boolean')? _b : true;
-		
-		e = new glow.events.Event({disabled: this.disabled});
-		this.fire('disabledChanged', e);
+		e = new glow.events.Event({disabled: disabled});
+		this.fire('disable', e);
 		
 		// notify observing widgets about this change
-		if (!e.defaultPrevented()) { this.fire('sync', e); }
+		if (!e.defaultPrevented()) { this.disabled = e.disabled; this.fire('sync', e); }
 		
 		return this;
 	}
@@ -142,7 +149,7 @@ Glow.provide(function(glow) {
 	@developer
 	@name glow.widgets.Widget#enable
 	@method
-	@description Sets the disabled property of this widget to false and fires the disabledChanged event.
+	@description Sets the disabled property of this widget to false and fires the disable event.
 	If other widgets are synced with this one, they will become enabled too.
 	
 	@see glow.widgets.Widget#disable
@@ -169,7 +176,7 @@ Glow.provide(function(glow) {
 	@name glow.widgets.Widget#locale
 	@method
 	@param {string} localeName
-	@description Sets the locale name of this module and fires the localeChanged event
+	@description Sets the locale name of this module and fires the locale event
 	If other widgets are synced with this one, they will have their locale changed too.
 	
 	@see glow.widgets.Widget#sync
@@ -183,7 +190,7 @@ Glow.provide(function(glow) {
 		this.localeName = localeName;
 		
 		e = new glow.events.Event({localeName: this.localeName});
-		this.fire('localeChanged', e);
+		this.fire('locale', e);
 		
 		// notify observing widgets about this change
 		if (!e.defaultPrevented()) { this.fire('sync', e); }
@@ -196,7 +203,7 @@ Glow.provide(function(glow) {
 	@function
 	@param {object} opts
 	@description Augment this method with your own functionality that deals with configuring and intializing this widget.
-	@fires glow.widgets.Widget#event:initialized
+	@fires glow.widgets.Widget#event:init
 	@example
 		function MyWidget(opts) {
 			this.init(opts);
@@ -228,9 +235,30 @@ Glow.provide(function(glow) {
 	Widget.prototype.init = function(opts) {
 		var e;
 		
-		this.initialized = true;
 		e = new glow.events.Event({opts: opts});
-		this.fire('initialized', e);
+		this.fire('init', e);
+		
+		if (!e.defaultPrevented()) { this.initialized = true; }
+		
+		return this;
+	}
+
+/**
+	@developer
+	@name glow.widgets.Widget#bind
+	@function
+	@description Augment this method with your own functionality that deals with binding to any HTML elements used by this widget.
+	@param {selector|HTMLElement|NodeList} container
+	@fires glow.widgets.Widget#event:bind
+ */
+	Widget.prototype.bind = function(container) {
+		var e,
+		container = new glow.NodeList(container);
+		
+		e = new glow.events.Event({container: container});
+		this.fire('bind', e);
+		
+		if (!e.defaultPrevented()) { this.container = container; }
 		
 		return this;
 	}
@@ -240,7 +268,8 @@ Glow.provide(function(glow) {
 	@name glow.widgets.Widget#render
 	@function
 	@description Cause any functionality that deals with visual layout or UI display to run.
-	@fires glow.widgets.Widget#event:rendered
+	Note that unlike the bind phase, which would normally happen only once, the render phase may happen multiple times, for example whenever the disabled state changes.
+	@fires glow.widgets.Widget#event:render
 	
 	@example
 		function MyWidget() {
@@ -273,9 +302,10 @@ Glow.provide(function(glow) {
 	Widget.prototype.render = function(cascade) {
 		var e;
 		
-		this.rendered = true;
 		e = new glow.events.Event();
-		this.fire('rendered', e);
+		this.fire('render', e);
+		
+		if (!e.defaultPrevented()) { this.rendered = true; }
 		
 		return this;
 	}
@@ -285,14 +315,15 @@ Glow.provide(function(glow) {
 	@name glow.widgets.Widget#destroy
 	@function
 	@description Cause any functionality that deals with removing and deleting this widget to run.
-	@fires glow.widgets.Widget#event:destroyed
+	@fires glow.widgets.Widget#event:destroy
  */
 	Widget.prototype.destroy = function() {
 		var e;
 		
-		this.destroyed = true;
 		e = new glow.events.Event();
-		this.fire('destroyed', e);
+		this.fire('destroy', e);
+		
+		if (!e.defaultPrevented()) { this.destroyed = true; }
 		
 		return this;
 	}
@@ -300,41 +331,50 @@ Glow.provide(function(glow) {
 
 /**
 	@developer
-	@name glow.widgets.Widget#event:disabledChanged
+	@name glow.widgets.Widget#event:disable
 	@event
-	@description Fired after the disabled property is changed via the {@link glow.widgets.Widget#disable disable} or {@link glow.widgets.Widget#enable enable} method.
+	@description Fired after the disabled property is changed via the {@link glow.widgets.Widget#disable} or {@link glow.widgets.Widget#enable} method.
 	This includes widgets that are changed as a result of being synced to this one.
  */
 
 /**
 	@developer
-	@name glow.widgets.Widget#event:localeChanged
+	@name glow.widgets.Widget#event:locale
 	@event
 	@description Fired after the locale name is changed via the {@link glow.widgets.Widget#locale locale} method.
 	This includes widgets that are changed as a result of being synced to this one.
  */
 
+
 /**
 	@developer
-	@name glow.widgets.Widget#event:initialized
+	@name glow.widgets.Widget#event:init
 	@event
-	@description Fired after this widget is initialized.
+	@description Fired when init is called on this widget.
 	@see glow.widgets.Widget#init
  */
 
 /**
 	@developer
-	@name glow.widgets.Widget#event:rendered
+	@name glow.widgets.Widget#event:bind
 	@event
-	@description Fired after this widget is rendered.
+	@description Fired when bind is called on this widget.
 	@see glow.widgets.Widget#render
  */
 
 /**
 	@developer
-	@name glow.widgets.Widget#event:destroyed
+	@name glow.widgets.Widget#event:render
 	@event
-	@description Fired after this widget is destroyed.
+	@description Fired when render is called on this widget.
+	@see glow.widgets.Widget#bind
+ */
+
+/**
+	@developer
+	@name glow.widgets.Widget#event:destroy
+	@event
+	@description Fired when destroy is called on this widget.
 	@see glow.widgets.Widget#destroy
  */
 
