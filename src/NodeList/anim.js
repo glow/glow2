@@ -139,9 +139,55 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
+		@private
+		@function
+		@description Makes an animtion adjust CSS values over time
+	*/
+	function addCssAnim(nodeList, anim, properties) {
+		var to, from,
+			property,
+			propertyIsArray,
+			stylePropName;
+		
+		for (var propName in properties) {
+			property = properties[propName];
+			propertyIsArray = property.push;
+			stylePropName = toStyleProp(propName);
+			to = propertyIsArray ? property[1] : property;
+			i = nodeList.length;
+			
+			// do this for each nodelist item
+			while (i--) {
+				// skip non-element nodes
+				if ( nodeList[i].nodeType !== 1 ) { continue; }
+				// set new target
+				anim.target( nodeList[i].style );
+				
+				from = propertyIsArray ? property[0] : nodeList.item(i).css(propName);
+				
+				// deal with colour values
+				if ( propName.indexOf('color') !== -1 ) {
+					animateColor(anim, stylePropName, from, to);
+				}
+				// nice special case for IE
+				else if (glow.env.ie && stylePropName === 'opacity') {
+					animateIeOpacity(nodeList[i], anim, from, to);
+				}
+				// assume we're dealing with simple numbers, or numbers + unit
+				// eg "5px", "5px 2em", "10px 5px 1em 4px"
+				else {
+					animateValues(nodeList[i], anim, stylePropName, from, to);
+				}
+			}
+		}
+	}
+	
+	/**
 		@name glow.NodeList#anim
 		@function
 		@description Animate CSS properties of elements
+			All elements in the NodeList are animated
+			
 			All CSS values which are simple numbers (with optional unit)
 			are supported. Eg: width, margin-top, left
 			
@@ -205,56 +251,36 @@ Glow.provide(function(glow) {
 	NodeListProto.anim = function(duration, properties, opts) {
 		opts = opts || {};
 		
-		var anim = new glow.anim.Anim(duration, opts),
-			to, from,
-			property,
-			propertyIsArray,
-			stylePropName,
-			startNow = !(opts.startNow === false);
+		var anim = new glow.anim.Anim(duration, opts);
 		
-		for (var propName in properties) {
-			property = properties[propName];
-			propertyIsArray = property.push;
-			stylePropName = toStyleProp(propName);
-			to = propertyIsArray ? property[1] : property;
-			i = this.length;
-			
-			// do this for each nodelist item
-			while (i--) {
-				// skip non-element nodes
-				if ( this[i].nodeType !== 1 ) { continue; }
-				// set new target
-				anim.target( this[i].style );
-				
-				from = propertyIsArray ? property[0] : this.item(i).css(propName);
-				
-				// deal with colour values
-				if ( propName.indexOf('color') !== -1 ) {
-					animateColor(anim, stylePropName, from, to);
-				}
-				// nice special case for IE
-				else if (glow.env.ie && stylePropName === 'opacity') {
-					animateIeOpacity(this[i], anim, from, to);
-				}
-				// assume we're dealing with simple numbers, or numbers + unit
-				// eg "5px", "5px 2em", "10px 5px 1em 4px"
-				else {
-					animateValues(this[i], anim, stylePropName, from, to);
-				}
-			}
-		}
+		addCssAnim(this, anim, properties);
 		
-		startNow && anim.start();
+		// auto start
+		!(opts.startNow === false) && anim.start();
 		return anim;
 	};
+	
+	/**
+		@private
+		@function
+		@description Used as a listener for an animations's stop event.
+			'this' is a nodelist of the animating item
+			
+			Set in queueAnim
+	*/
+	function queueAnimStop() {
+		this.removeData('glow_lastQueuedAnim').removeData('glow_currentAnim');
+	}
 	
 	/**
 		@name glow.NodeList#queueAnim
 		@function
 		@description Queue an animation to run after the current animation
+			All elements in the NodeList are animated
+		
 			This supports the same CSS properties as {@link glow.NodeList#anim},
 			but the animation is not started until the previous animation (added
-			via {@link glow.NodeList#anim anim} or {@link glow.NodeList#queueAnim queueAnim})
+			via {@link glow.NodeList#queueAnim queueAnim})
 			on that element ends.
 			
 			If there are no queued animations on the element, the animation starts
@@ -277,10 +303,8 @@ Glow.provide(function(glow) {
 		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops).
 			This will free any DOM references the animation may have created. Once
 			the animation is destroyed, it cannot be started again.
-		@param {boolean} [opts.loop=true] Loop the animation.
-		@param {boolean} [opts.startNow=false] Start the animation straight away?
 		
-		@returns {glow.anim.Anim}
+		@returns {glow.NodeList}
 		
 		@example
 			// change a nav item's background colour from white to yellow
@@ -295,6 +319,20 @@ Glow.provide(function(glow) {
 					'background-color': 'white'
 				});
 			});
+			
+		@example
+			// adding listeners to a queued anim
+			glow('#elementToAnimate').queueAnim(0.5, {
+				height: 0
+			}).lastQueuedAnim().on('complete', function() {
+				alert('Animation complete!');
+			});
+			
+		@example
+			// stopping and clearing current animation queue.
+			// The next animation created via queueAnim will start
+			// immediately
+			glow('#elementToAnimate').curentAnim().stop();
 		
 		@see {@link glow.NodeList#fadeIn} - Shortcut to fade elements in
 		@see {@link glow.NodeList#fadeOut} - Shortcut to fade elements out
@@ -304,10 +342,88 @@ Glow.provide(function(glow) {
 		@see {@link glow.NodeList#slideToggle} - Shortcut to toggle an element open / shut
 
 	*/
-	NodeListProto.queueAnim = function() {
-		// implementation note, don't calculated the 'from' values until we're
-		// just about to play
+	NodeListProto.queueAnim = function(duration, properties, opts) {
+		opts = opts || {};
+		
+		var i = this.length,
+			item,
+			lastQueuedAnim,
+			anim,
+			startNewAnim;
+		
+		// we don't want animations starting now
+		opts.startNow = false;
+		
+		while (i--) {
+			item = this.item(i);
+			if (item[0].nodeType !== 1) { continue; }
+			lastQueuedAnim = item.data('glow_lastQueuedAnim');
+			// add a listener to 'stop', to clear the queue
+			anim = new glow.anim.Anim(duration, opts).on('stop', queueAnimStop, item);
+			item.data('glow_lastQueuedAnim', anim);
+			
+			// closure some properties
+			(function(item, properties, anim) {
+				startNextAnim = function() {
+					addCssAnim(item, anim, properties);
+					anim.start();
+					item.data('glow_currentAnim', anim);
+				}
+			})(item, properties, anim);
+			
+			// do we start the anim now, or after the next one?
+			if (lastQueuedAnim) {
+				lastQueuedAnim.on('complete', startNextAnim);
+			}
+			else {
+				startNextAnim();
+			}
+		}
+		
+		return this;
 	};
+	
+	/**
+		@name glow.NodeList#currentAnim
+		@function
+		@description Get the currently playing animation added via {@link glow.NodeList#queueAnim queueAnim} for this element
+			If no animation is currently playing, an empty animation is returned.
+			This means you don't need to check to see if the item is defined before
+			calling methods on it.
+			
+			This method acts on the first item in the NodeList.
+		
+		@returns {glow.anim.Anim}
+			
+		@example
+			// stopping and clearing current animation queue.
+			// The next animation created via queueAnim will start
+			// immediately
+			glow('#elementToAnimate').curentAnim().stop();
+		
+		@example
+			// Is the element animating as part of queueAnim?
+			glow('#elementToAnimate').curentAnim().playing; // true/false
+	*/
+	NodeListProto.currentAnim = function() {
+		return this.data('glow_currentAnim') || glow.anim.Anim(0);
+	}
+	
+	/**
+		@name glow.NodeList#lastQueuedAnim
+		@function
+		@description Get the last animation added via {@link glow.NodeList#queueAnim queueAnim} for this element
+			If no animation has been added, an empty animation is returned.
+			This means you don't need to check to see if the item is defined before
+			calling methods on it.
+			
+			This method acts on the first item in the NodeList.
+		
+		@returns {glow.anim.Anim}
+	*/
+	NodeListProto.lastQueuedAnim = function() {
+		return this.data('glow_lastQueuedAnim') || glow.anim.Anim(0);
+	}
 	
 	/**
 		@name glow.NodeList#fadeIn

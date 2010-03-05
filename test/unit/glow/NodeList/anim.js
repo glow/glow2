@@ -199,4 +199,112 @@ test('Opacity', 2, function() {
 
 module('glow.NodeList#queueAnim', {setup:setup, teardown:teardown});
 
-// TODO
+test('2 queued animations', 4, function() {
+	stop(2000);
+
+	var valueLog = [],
+		topLog = [],
+		returnVal,
+		nodeList = glow('#positionTest');
+	
+	equal(typeof nodeList.queueAnim, 'function', '#queueAnim is present');
+	
+	returnVal = nodeList.queueAnim(0.25, {
+		left: 200
+	});
+	
+	equal(returnVal, nodeList, '#queueAnim returns same NodeList');
+	
+	nodeList.lastQueuedAnim().on('frame', function() {
+		valueLog.push( nodeList.css('left') );
+	});
+	
+	nodeList.queueAnim(0.25, {
+		left: 500
+	}).lastQueuedAnim().on('frame', function() {
+		valueLog.push( nodeList.css('left') );
+	}).on('complete', function() {
+		valueLog.push( nodeList.css('left') );
+		
+		equal(valueLog.slice(-1)[0], '500px', 'end value');
+		
+		// check that animations run one after the other, and the 2nd starts where the 1st ended
+		var i = valueLog.length,
+			valsAscend = true;
+		
+		while (--i) {
+			if ( parseFloat( valueLog[i] ) < parseFloat( valueLog[i - 1] ) ) {
+				valsAscend = false;
+				break;
+			}
+		}
+		
+		ok(valsAscend, 'Values ascend');
+		
+		start();
+	});
+});
+
+test('Works on multiple NodeList elements', 3, function() {
+	stop(2000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer')[0].childNodes ),
+		positionTest = glow('#positionTest'),
+		positionTest2 = glow('#positionTest2');
+		
+	nodeList.queueAnim(0.25, {
+		width: '200px'
+	});
+	
+	positionTest2.queueAnim(0.25, {
+		width: 0
+	}).lastQueuedAnim().on('frame', function() {
+		valueLog1.push( positionTest.css('width') );
+		valueLog2.push( positionTest2.css('width') );
+	}).on('complete', function() {
+		valueLog1.push( positionTest.css('width') );
+		valueLog2.push( positionTest2.css('width') );
+		
+		equal(valueLog1.join(''), new Array(valueLog1.length + 1).join('200px'), 'Element 1 2nd half vals correct');
+		
+		equal(valueLog2[0], '200px', 'start value');
+		equal(valueLog2.slice(-1)[0], '0px', 'end value');
+		
+		start();
+	});
+});
+
+test('Clearing a queue', 2, function() {
+	stop(2000);
+	
+	var valueLog = [],
+		nodeList = glow('#positionTest'),
+		smallestHeight;
+		
+	nodeList.queueAnim(0.25, {
+		height: 0
+	}).lastQueuedAnim().on('frame', function() {
+		if (this.value > 0.5) {
+			// stop the queue
+			nodeList.currentAnim().stop();
+			smallestHeight = nodeList.height();
+			
+			// this anim should play straight away
+			nodeList.queueAnim(0.25, {
+				height: 90
+			}).lastQueuedAnim().on('frame', function() {
+				valueLog.push( nodeList.height() )
+			}).on('complete', function() {
+				valueLog.push( nodeList.height() )
+				equal(valueLog.slice(-1)[0], 90, 'end value');
+				ok(Math.min.apply(null, valueLog) >= smallestHeight, 'Height not below 50');
+				
+				start();
+			});
+		}
+		valueLog.push( nodeList.height() );
+	});
+});
