@@ -22,35 +22,43 @@
 	</script>
 	
 	<style type="text/css" media="screen">
-		.glow-label {
+		.glow-label-container {
 			background-color: #ccc;
 			padding: 2px;
 			font-family: verdana, sans-serif;
 		}
-		.glow-label-disabled {
+		.glow-label-container .disabled {
 			color: #fff;
 		}
 		
-		.glow-updownwidget {
+		.glow-counter-container {
 			border: 1px solid gray;
 			width: 180px;
 			padding: 1px;
 		}
-		.glow-updownwidget-display {
+		.glow-counter-container .display {
 			padding: 4px;
 			height: 24px;
 			font-size: 18px;
 			font-weight: bold;
 			text-align: middle;
+			color: #933;
 		}
 		
-		.title {
-			font-size: 120%;
-			font-weight: bold;
+		.glow-counter-container .disabled .display {
+			color: #ccc;
 		}
-		#title-label {
-			background-color: #35565D;
-			color: #fff;
+		
+		.titular {
+			padding: 0px;
+		}
+		.titular #title {
+			font-size: 18px;
+			font-weight: bold;
+			background-color: #fff;
+			color: #35565D;
+			padding: 2px;
+			margin-bottom: 10px;
 		}
 	</style>
 	
@@ -93,21 +101,20 @@
 			@param {HTMLElement} container
 			@param {object} [opts]
 		 */
-		function Label(container, opts) {
+		function Label(content, opts) {
+			this.name = 'label';
+			
 			this.on('init', function(e) {
 				this.caption = e.opts.caption;
 				this.captions = i18n.getLocalPack(i18n.getLocaleName());
 			});
 			
 			this.on('bind', function(e) {
-				this.container = e.container;
-				if (opts.id !== undefined) { this.container[0].id = opts.id; }
 				if (opts.className !== undefined) { this.container.addClass(opts.className); }
 			});
 			
 			this.on('render', function(e) {
-				this.container.addClass('glow-label');
-				this.container.html(this.captions[this.caption]);
+				this.content.html(this.captions[this.caption]);
 			});
 			
 			this.on('locale', function(e) {
@@ -115,13 +122,8 @@
 				if (this.rendered) { this.render(); }
 			});
 			
-			this.on('disable', function(e) {
-				if (e.disabled) { this.container.addClass('glow-label-disabled'); }
-				else { this.container.removeClass('glow-label-disabled'); }
-			});
-			
 			this.init(opts);
-			this.bind(container);
+			this.bind(content);
 			this.render();
 		}
 		glow.util.extend(Label, glow.widgets.Widget);
@@ -132,41 +134,40 @@
 			@param {HTMLElement} container
 			@param {object} [opts]
 		 */
-		function Counter(startValue, container, opts) {
-			var label = new Label(document.createElement('DIV'), opts);
+		function Counter(startValue, content, opts) {
+			this.name = 'counter';
+			this.label = new Label(document.createElement('DIV'), opts);
 				
-			this.sync(label);
+			this.sync(this.label);
 			
 			this.on('init', function(e) {
 				this._value = (e.opts.startValue !== undefined)? e.opts.startValue : (this._value !== undefined)? this._value : startValue;
 				this._delta = (e.opts.delta !== undefined)? e.opts.delta : (this._delta !== undefined)? this._delta : 1;
 				
-				label.init(e.opts);
+				this.label.init(e.opts);
 			});
 			
 			this.on('bind', function(e) {
 				this.display = new glow.NodeList(document.createElement('DIV'));
-				e.container.append(this.display);
+				this.display.addClass('display');
+				this.content.append(this.display);
 				
 				var that = this;
-				label.container.on('click', function(e) {
+				this.label.container.on('click', function(e) {
 					if (that.disabled) { return; }
 					that.value(that._value += that._delta);
 				});
-				e.container.append(label.container);
+				this.content.append(this.label.container);
 			});
 			
 			this.on('render', function(e) {
 				this.displayValue();
 				
-				label.render();
-				
-				this.container.addClass('glow-updownwidget');
-				this.display.addClass('glow-updownwidget-display');
+				this.label.render();
 			});
 			
 			this.init(opts);
-			this.bind(container);
+			this.bind(content);
 			this.render();
 		}
 		glow.util.extend(Counter, glow.widgets.Widget);
@@ -184,10 +185,12 @@
 
 		// example of a Label widget by itself
 		// example of passing in id and className
-		var myTitle = new Label('#title', {id: 'title-label', className: 'title', caption: 'LABEL_TITLE'});
+		var theTitle = new Label('#title', {className: 'titular', caption: 'LABEL_TITLE'});
 		
 		// example of a compound widget that contains a Label widget
 		var myWidget = new Counter(0, '#counter', {delta: +6, caption: 'LABEL_UP'});
+		
+		myWidget.label.sync(theTitle); // keep the title synced with the widget label?
 		
 		setTimeout(function() {
 			myWidget.init({delta: -1, caption: 'LABEL_DOWN'}).render();
@@ -207,7 +210,6 @@
 		
 		setTimeout(function() {
 			myWidget.locale('pirate');
-			myTitle.locale('pirate')
 		}, 15000);
 	});
 </script>

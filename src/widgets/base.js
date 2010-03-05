@@ -15,13 +15,18 @@ Glow.provide(function(glow) {
 			arguments.callee.base.apply(this, arguments);
 		}
 		glow.util.extend(MyWidget, glow.widgets.Widget);
-	@property {boolean} initialized
-	@property {boolean} bound
-	@property {boolean} rendered
-	@property {boolean} destroyed
-	@property {boolean} disabled
-	@property {string} localeName A string identifying the locale of this widget.
-	
+	@property {boolean} initialized (read-only) Set to true when a widget's init stage is complete.
+	@property {boolean} bound (read-only) Set to true when a widget's bind stage is complete.
+	@property {boolean} rendered (read-only) Set to true when a widget's render stage is complete.
+	@property {boolean} destroyed (read-only) Set to true when a widget's destroy stage is complete.
+	@property {glow.NodeList} container (read-only) The outermost wrapper element added by glow.widgets.Widget.
+	The wrapper's purpose is to maintain state and theme information. If you wish to move your widget you must move your
+	widget's container, otherwise you will lose all state and theme information along with their associated styles.
+	@property {glow.NodeList} content (read-only) The first child element inside the wrapper elements added by glow.widgets.Widget.
+	This is often passed into the widget's constructor, and refers to an existing element on the page.
+	The intent of this element is to hold the content of your widget.
+	@property {boolean} disabled (read-only) Set to true when a widget becomes disabled.
+	@property {boolean} localeName (read-only) Set to the name of the locale when that is changed.
  */
 	var Widget = function(conf) {
 		this.initialized = false;
@@ -40,6 +45,7 @@ Glow.provide(function(glow) {
 	@param {glow.widgets.Widget} ... Child widgets to synchronize with.
 	@description Specify a group of widgets that should stay in sync with this one.
 	These synced widgets can listen for a `notify` event on themselves, defining their own handler for the provided event.
+	The disabled and locale methods automatically synchronize with their synced child widgets.
 	@example
 		function MyWidget() {
 			this.value = 0; // initially
@@ -81,13 +87,13 @@ Glow.provide(function(glow) {
 					// handle notifications about changes to the disabled state
 					if (e.disabled !== undefined) {
 						observer.fire('disable', e);
-						if (!e.defaultPrevented()) { observer.disabled = e.disabled; }
+						if (!e.defaultPrevented()) { applyDisabled.call(observer, e.disabled); observer.fire('sync', e); }
 					}
 					
 					// handle notifications about changes to the localeName
 					if (e.localeName !== undefined) {
 						observer.fire('locale', e);
-						if (!e.defaultPrevented()) { observer.localeName = e.localeName; }
+						if (!e.defaultPrevented()) { observer.localeName = e.localeName; observer.fire('sync', e); }
 					}
 				});
 			})(observers[i]);
@@ -97,6 +103,10 @@ Glow.provide(function(glow) {
 		this.on('sync', function(e) { glow.events.fire(observers, 'notify', e); });
 		
 		return this;
+	}
+	
+	function applySync(e) {
+	
 	}
 
 /**
@@ -115,11 +125,11 @@ Glow.provide(function(glow) {
 
 /**
 	@developer
-	@name glow.widgets.Widget#disable
+	@name glow.widgets.Widget#disabled
 	@method
 	@description Sets the disabled property of this widget to true and fires the disable event.
 	If other widgets are synced with this one, they will become disabled too.
-	
+	@param {boolean} [state=true] 
 	@see glow.widgets.Widget#enable
 	@see glow.widgets.Widget#sync
 	
@@ -140,9 +150,21 @@ Glow.provide(function(glow) {
 		this.fire('disable', e);
 		
 		// notify observing widgets about this change
-		if (!e.defaultPrevented()) { this.disabled = e.disabled; this.fire('sync', e); }
+		if (!e.defaultPrevented()) {
+			applyDisabled.call(this, e.disabled);
+			this.fire('sync', e);
+		}
 		
 		return this;
+	}
+	
+	function applyDisabled(disabledState) {
+		if (disabledState) { 
+			this.container.get('.glow-' + this.name + '-theme').addClass('disabled');
+		}
+		else { this.container.get('.glow-' + this.name + '-theme').removeClass('disabled'); }
+		
+		this.disabled = disabledState;
 	}
 
 /**
@@ -235,7 +257,7 @@ Glow.provide(function(glow) {
 	Widget.prototype.init = function(opts) {
 		var e;
 		
-		e = new glow.events.Event({opts: opts});
+		e = new glow.events.Event({opts: (opts || {})});
 		this.fire('init', e);
 		
 		if (!e.defaultPrevented()) { this.initialized = true; }
@@ -251,14 +273,21 @@ Glow.provide(function(glow) {
 	@param {selector|HTMLElement|NodeList} container
 	@fires glow.widgets.Widget#event:bind
  */
-	Widget.prototype.bind = function(container) {
-		var e,
-		container = new glow.NodeList(container);
+	Widget.prototype.bind = function(content) {
+		var e;
 		
-		e = new glow.events.Event({container: container});
+		this.content = new glow.NodeList(content);
+		this.content.wrap('<div class="glow-' + this.name + '-container"><div class="glow-' + this.name + '-theme"><div class="glow-' + this.name + '-state"></div></div></div>');
+		this.container = this.content.parent('.' + 'glow-' + this.name + '-container');
+		
+		e = new glow.events.Event();
 		this.fire('bind', e);
 		
-		if (!e.defaultPrevented()) { this.container = container; }
+		if (!e.defaultPrevented()) {
+			this.bound = true;
+			
+			// todo: unwrap?
+		}
 		
 		return this;
 	}
