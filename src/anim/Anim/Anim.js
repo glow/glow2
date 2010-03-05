@@ -62,8 +62,7 @@ Glow.provide(function(glow) {
 	function activateAnim(anim) {
 		// if this is the first anim, start the timer
 		if (!activeAnimsLen) {
-			// 13 is the rate most browsers update their date object, more frequent is a waste of CPU
-			animInterval = setInterval(onInterval, 13);
+			animInterval = setInterval(onInterval, 0);
 		}
 		activeAnims[activeAnimsLen] = anim;
 		// this id is used to quickly remove the anim from the array later

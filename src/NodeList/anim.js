@@ -3,19 +3,12 @@ Glow.provide(function(glow) {
 		NodeListProto = NodeList.prototype,
 		undefined,
 		parseFloat = window.parseFloat,
-		cssTemplates,
 		// used to detect which CSS properties require units
-		requiresUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
+		requiresUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|fontSize/,
+		// which simple CSS values cannot be negative
+		//noNegativeValsRs = /width|height|padding/,
 		getUnit = /\D+$/,
 		usesYAxis = /height|top/;
-		
-	// these templates are used for animating complex CSS values
-	// (simpler values are handled with regex)
-	// u1...un is replaced with a CSS unit later
-	// values are: [template, round, allowNegative]
-	cssTemplates = {
-		'background-position': ['?u1 ?u2', 1, 1]
-	}
 	
 	// TODO: get this from appearence.js
 	function toStyleProp(prop) {
@@ -54,16 +47,90 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
+		@private
+		@function
+		@description Animate a colour value
+	*/
+	function animateColor(anim, stylePropName, from, to) {
+		to = NodeList._parseColor(to);
+		to = [to.r, to.g, to.b];
+		from = NodeList._parseColor(from);
+		from = [from.r, from.g, from.b];
+		
+		anim.prop(stylePropName, {
+			// we only need a template if we have units
+			template: 'rgb(?,?,?)',
+			from: from,
+			to: to,
+			round: true,
+			allowNegative: false
+		});
+	}
+	
+	/**
+		@private
+		@function
+		@description Animate simple values
+			This is a set of space-separated numbers (42) or numbers + unit (42em)
+			
+			Units can be mixed
+	*/
+	function animateValues(element, anim, stylePropName, from, to) {
+		var toUnit,
+			fromUnit,
+			round = [],
+			template = '',
+			requiresUnits = requiresUnitsRe.test(stylePropName);//,
+			//allowNegative = !noNegativeValsRs.test(stylePropName);
+		
+		from = String(from).split(' ');
+		to = String(to).split(' ');
+		
+		for (var i = 0, leni = to.length; i < leni; i++) {
+			toUnit   = ( getUnit.exec( to[i] )   || [''] )[0];
+			fromUnit = ( getUnit.exec( from[i] ) || [''] )[0];
+			round[i] = (toUnit === 'px');
+			
+			// create initial units if required
+			if (requiresUnits) {
+				toUnit = toUnit || 'px';
+				fromUnit = fromUnit || 'px';
+			}
+			
+			// make the 'from' unit the same as the 'to' unit
+			if (toUnit !== fromUnit) {
+				from = convertCssUnit( element, from, toUnit, usesYAxis.test(stylePropName) ? 'y' : 'x' );
+			}
+			
+			template += ' ?' + toUnit;
+			from[i] = parseFloat( from[i] );
+			to[i]   = parseFloat( to[i] );
+		}
+		
+		anim.prop(stylePropName, {
+			template: template,
+			from: from,
+			to: to,
+			round: round//,
+			//allowNegative: allowNegative
+		});
+	}
+	
+	/**
 		@name glow.NodeList#anim
 		@function
 		@description Animate CSS properties of elements
-			All CSS properties which are simple numbers (width, top, margin-left etc)
-			are supported. Additionally, the following more complex properties are
-			supported:
+			All CSS values which are simple numbers (with optional unit)
+			are supported. Eg: width, margin-top, left
 			
-			<ul>
-				<li>TODO</li>
-			</ul>
+			All CSS values which are space-separated values are supported
+			(eg background-position, margin, padding), although a 'from'
+			value must be provided for short-hand properties like 'margin'.
+			
+			All CSS colour values are supported. Eg: color, background-color.
+			
+			Other CSS properties, including those with limited support, can
+			be animated using {@link glow.anim.Anim#prop}.
 		
 		@param {number} duration Length of the animation in seconds.
 		@param {Object} properties Properties to animate.
@@ -114,15 +181,15 @@ Glow.provide(function(glow) {
 
 	*/
 	NodeListProto.anim = function(duration, properties, opts) {
-		var anim = new glow.anim.Anim(duration).target( this[0].style ),
+		opts = opts || {};
+		
+		var anim = new glow.anim.Anim(duration, opts).target( this[0].style ),
 			to,
 			from,
-			fromUnit,
-			toUnit,
 			property,
-			round,
 			propertyIsArray,
-			stylePropName;
+			stylePropName,
+			startNow = !(opts.startNow === false);
 		
 		for (var propName in properties) {
 			property = properties[propName];
@@ -133,47 +200,17 @@ Glow.provide(function(glow) {
 			
 			// deal with colour values
 			if ( propName.indexOf('color') !== -1 ) {
-				to = NodeList._parseColor(to);
-				to = [to.r, to.g, to.b];
-				from = NodeList._parseColor(from);
-				from = [from.r, from.g, from.b];
-				
-				anim.prop(stylePropName, {
-					// we only need a template if we have units
-					template: 'rgb(?,?,?)',
-					from: from,
-					to: to,
-					round: true,
-					allowNegative: false
-				});
+				animateColor(anim, stylePropName, from, to);
 			}
-			// are we dealing with a simple number + unit, eg "5px"
+			// assume we're dealing with simple numbers, or numbers + unit
+			// eg "5px", "5px 2em", "10px 5px 1em 4px"
 			else {
-				toUnit   = ( getUnit.exec(to)   || [''] )[0];
-				fromUnit = ( getUnit.exec(from) || [''] )[0];
-				round = (toUnit === 'px');
-				
-				// create initial units if required
-				if ( !(toUnit && fromUnit) && requiresUnitsRe.test(propName) ) {
-					toUnit = toUnit || 'px';
-					fromUnit = fromUnit || 'px';
-				}
-				
-				if (toUnit !== fromUnit) {
-					from = convertCssUnit( this[0], from, toUnit, usesYAxis.test(propName) ? 'y' : 'x' );
-				}
-				
-				anim.prop(stylePropName, {
-					// we only need a template if we have units
-					template: toUnit ? '?' + toUnit : undefined,
-					from: parseFloat(from),
-					to: parseFloat(to),
-					round: round
-				})
+				animateValues(this[0], anim, stylePropName, from, to);
 			}
 		}
 		
-		return anim.start();
+		startNow && anim.start();
+		return anim;
 	};
 	
 	/**
