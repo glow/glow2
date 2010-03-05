@@ -36,7 +36,6 @@ test('animating position', 6, function() {
 		topLog.push( nodeList.css('top') );
 		leftLog.push( nodeList.css('left') );
 	}).on('complete', function() {
-		console.log('complete');
 		equal(topLog[0], '10px', 'top start position');
 		equal(topLog.slice(-1)[0], '50px', 'top end position');
 		
@@ -154,8 +153,32 @@ test('Avoiding negative values', 1, function() {
 	});
 });
 
-// avoiding negative vals
-// does it work on all elements in the nodelist
+test('Works on multiple NodeList elements', 4, function() {
+	stop(2000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer')[0].childNodes ),
+		positionTest = glow('#positionTest'),
+		positionTest2 = glow('#positionTest2');
+		
+	nodeList.anim(0.25, {
+		width: '200px'
+	}, {startNow:false}).on('frame', function() {
+		valueLog1.push( positionTest.css('width') );
+		valueLog2.push( positionTest2.css('width') );
+	}).on('complete', function() {
+		equal(valueLog1[0], '100px', 'start value');
+		equal(valueLog1.slice(-1)[0], '200px', 'end value');
+		
+		equal(valueLog2[0], '100px', 'start value');
+		equal(valueLog2.slice(-1)[0], '200px', 'end value');
+		
+		start();
+	}).start();
+});
+
 // does opacity work in IE?
 
 module('glow.NodeList#queueAnim', {setup:setup, teardown:teardown});

@@ -184,9 +184,8 @@ Glow.provide(function(glow) {
 	NodeListProto.anim = function(duration, properties, opts) {
 		opts = opts || {};
 		
-		var anim = new glow.anim.Anim(duration, opts).target( this[0].style ),
-			to,
-			from,
+		var anim = new glow.anim.Anim(duration, opts),
+			to, from,
 			property,
 			propertyIsArray,
 			stylePropName,
@@ -196,17 +195,27 @@ Glow.provide(function(glow) {
 			property = properties[propName];
 			propertyIsArray = property.push;
 			stylePropName = toStyleProp(propName);
-			to   = propertyIsArray ? property[1] : property;
-			from = propertyIsArray ? property[0] : this.css(propName);
+			to = propertyIsArray ? property[1] : property;
+			i = this.length;
 			
-			// deal with colour values
-			if ( propName.indexOf('color') !== -1 ) {
-				animateColor(anim, stylePropName, from, to);
-			}
-			// assume we're dealing with simple numbers, or numbers + unit
-			// eg "5px", "5px 2em", "10px 5px 1em 4px"
-			else {
-				animateValues(this[0], anim, stylePropName, from, to);
+			// do this for each nodelist item
+			while (i--) {
+				// skip non-element nodes
+				if ( this[i].nodeType !== 1 ) { continue; }
+				// set new target
+				anim.target( this[i].style );
+				
+				from = propertyIsArray ? property[0] : this.item(i).css(propName);
+				
+				// deal with colour values
+				if ( propName.indexOf('color') !== -1 ) {
+					animateColor(anim, stylePropName, from, to);
+				}
+				// assume we're dealing with simple numbers, or numbers + unit
+				// eg "5px", "5px 2em", "10px 5px 1em 4px"
+				else {
+					animateValues(this[i], anim, stylePropName, from, to);
+				}
 			}
 		}
 		
