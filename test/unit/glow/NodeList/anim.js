@@ -179,7 +179,23 @@ test('Works on multiple NodeList elements', 4, function() {
 	}).start();
 });
 
-// does opacity work in IE?
+test('Opacity', 2, function() {
+	stop(2000);
+
+	var valueLog = [],
+		nodeList = glow('#positionTest');
+		
+	nodeList.anim(0.25, {
+		opacity: 0
+	}, {startNow:false}).on('frame', function() {
+		valueLog.push( nodeList.css('opacity') );
+	}).on('complete', function() {
+		equal(valueLog[0], '1', 'start value');
+		equal(valueLog.slice(-1)[0], '0', 'end value');
+		
+		start();
+	}).start();
+});
 
 module('glow.NodeList#queueAnim', {setup:setup, teardown:teardown});
 

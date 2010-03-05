@@ -6,7 +6,7 @@ Glow.provide(function(glow) {
 		// used to detect which CSS properties require units
 		requiresUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|fontSize/,
 		// which simple CSS values cannot be negative
-		noNegativeValsRe = /width|height|padding/,
+		noNegativeValsRe = /width|height|padding|opacity/,
 		getUnit = /\D+$/,
 		usesYAxis = /height|top/;
 	
@@ -63,6 +63,27 @@ Glow.provide(function(glow) {
 			from: from,
 			to: to,
 			round: true,
+			allowNegative: false
+		});
+	}
+	
+	/**
+		@private
+		@function
+		@description Animate opacity in IE's 'special' way
+	*/
+	function animateIeOpacity(elm, anim, from, to) {
+		to   = parseFloat(to)   * 100;
+		from = parseFloat(from) * 100;
+		
+		// give the element 'hasLayout'
+		elm.style.zoom = 1;
+		
+		anim.prop('filter', {
+			// we only need a template if we have units
+			template: 'alpha(opacity=?)',
+			from: from,
+			to: to,
 			allowNegative: false
 		});
 	}
@@ -210,6 +231,10 @@ Glow.provide(function(glow) {
 				// deal with colour values
 				if ( propName.indexOf('color') !== -1 ) {
 					animateColor(anim, stylePropName, from, to);
+				}
+				// nice special case for IE
+				else if (glow.env.ie && stylePropName === 'opacity') {
+					animateIeOpacity(this[i], anim, from, to);
 				}
 				// assume we're dealing with simple numbers, or numbers + unit
 				// eg "5px", "5px 2em", "10px 5px 1em 4px"
