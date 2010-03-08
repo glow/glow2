@@ -1,25 +1,25 @@
 module('glow.widgets base class');
-// mock, for testing only
-	i18n = {
-		en: {
-			LABEL_TITLE: 'My Widget',
-			LABEL_UP:   'Increase.',
-			LABEL_DOWN: 'Decrease.'
-		},
-		pirate: {
-			LABEL_TITLE: 'Me Jolly Widget, Ahoy!',
-			LABEL_UP:   'Up ye go, Arr!',
-			LABEL_DOWN: 'Down ye go, Arr!'
+	// mock, for testing only
+		i18n = {
+			en: {
+				LABEL_TITLE: 'My Widget',
+				LABEL_UP:   'Increase.',
+				LABEL_DOWN: 'Decrease.'
+			},
+			pirate: {
+				LABEL_TITLE: 'Me Jolly Widget, Ahoy!',
+				LABEL_UP:   'Up ye go, Arr!',
+				LABEL_DOWN: 'Down ye go, Arr!'
+			}
+		};
+		i18n.getLocalPack = function(locale) {
+			if (!i18n[locale]) { locale = 'en'; }
+			return i18n[locale];
 		}
-	};
-	i18n.getLocalPack = function(locale) {
-		if (!i18n[locale]) { locale = 'en'; }
-		return i18n[locale];
-	}
-	i18n.getLocaleName = function() {
-		// find locale name from html tag attribute
-		return 'en';
-	}
+		i18n.getLocaleName = function() {
+			// find locale name from html tag attribute
+			return 'en';
+		}
 
 	
 
@@ -141,6 +141,15 @@ module('glow.widgets base class');
 		ok( glow(".glow-counter-container .disabled").length == 0, 'Disabled state removed' );
 	});
 	
+	test('Checks classname addition', function() {			
+        expect(1);	
+	
+		ok( (glow(".titular").length == 1), 'Specified classname added to widget');
+	
+		
+
+	});
+	
 	test('Checks syncing', function() {			
         expect(3);	
 		ok( glow(".glow-label-container #title").html() == 'My Widget', 'Synced title widget is set to en' );
@@ -154,6 +163,7 @@ module('glow.widgets base class');
 		//cleanup
 		glow('.glow-label-container, .glow-counter-container').remove();
 	});
+	
 
 	
 	

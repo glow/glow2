@@ -8,11 +8,11 @@ Glow.provide(function(glow) {
 		
 	/* storage variables */
 	
-	var eventListeners = {}, 
-		eventId = 1, /* TODO: camelCase */
+	var eventListeners = {}, // eventName[callback][thisVal] 
+		eventId = 1,
 		objIdCounter = 1, 
 		eventKey = '__eventId' + glow.UID; 
-		
+
 	
 	/**
 	@name glow.events.addListeners
