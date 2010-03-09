@@ -184,7 +184,11 @@ Glow.provide(function(glow) {
 			}
 
 			if (argsLen === 1) { // GETting value from name
-				if (node.attributes[name]) { // in IE node.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
+				if ( glow.env.ie && (name === 'href' || name === 'src') ) {
+					value = node.getAttribute(name, 2);
+					return (value === null)? '' : value;
+				}
+				else if (node.attributes[name]) { // in IE node.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
 					return (!node.attributes[name].specified)? '' : node.attributes[name].value;
 				}
 				else if (node.getAttributeNode) { // in IE getAttribute() does not always work so we use getAttributeNode if we can
