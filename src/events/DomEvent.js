@@ -184,7 +184,6 @@ Glow.provide(function(glow) {
 					attachTo.addEventListener(handler.domName, handler, (eventName === 'focus' || eventName === 'blur')); // run in bubbling phase except for focus and blur, see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
 				}
 				else if (attachTo.attachEvent) { // like IE
-					alert(handler.domName);
 					attachTo.attachEvent('on' + handler.domName, handler);
 				}
 				// older browsers?
