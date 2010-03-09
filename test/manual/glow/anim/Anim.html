@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow KeyboardEvent</title>
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript" src="../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
+	
+	<script type="text/javascript">
+		// set up logging...
+		window.log = log4javascript.getDefaultLogger();
+	</script>
+	
+	<script type="text/javascript">
+		// start glow loading
+		window.glow = Glow(conf.version, {base: conf.base, debug: true});
+	</script>
+	
+	<style type="text/css">
+		#mexWave {
+			position: relative;
+			height: 170px;
+		}
+		#mexWave div {
+			height: 100px;
+			background: red;
+			width: 7px;
+			position: absolute;
+		}
+		#roundedCorners {
+			overflow: hidden;
+		}
+		#roundedCorners div {
+			float: left;
+			margin: 0 10px 10px 0;
+			background: #00f;
+			width: 80px;
+			height: 80px;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Mexican Wave!</h1>
+	
+	<div id="mexWave"></div>
+	
+	<p><a href="#" id="mexStart">Start</a> | <a href="#" id="mexStop">Stop</a></p>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#mexWave').html( new Array(101).join('<div></div>') );
+			
+			var animTimeline = glow.anim.Timeline({
+				loop: true
+			});
+			
+			//create a wave up & wave down anim for each div
+			var wavingDivs = glow("#mexWave div").each(function(i) {
+				var div = glow(this).css('left', i * 8);
+			
+				animTimeline.track(
+					// add a pause to the start of the anim, this creates the wave effect
+					(i / 100),
+					// move up & down
+					div.anim(1, {
+						top: [70, 0]
+					}).pingPong()
+				);
+			});
+			
+			glow('#mexStart').on('click', function() {
+				animTimeline.start();
+				return false;
+			});
+			
+			glow('#mexStop').on('click', function() {
+				animTimeline.stop();
+				return false;
+			});
+		});
+	</script>
+	
+	<h1>Glowing links</h1>
+	
+	<p id="glowLinks">
+		This <a href="#">paragraph</a> has some <a href="#">links</a>
+	</p>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			var propName;
+			
+			if (glow.env.webkit) {
+				propName = 'WebkitBoxShadow';
+			}
+			else if (glow.env.gecko) {
+				propName = 'MozBoxShadow';
+			}
+			
+			glow('#glowLinks').delegate('mouseenter', 'a', function() {
+				var link = glow(this),
+					currentAnim = link.data('glowAnim'),
+					anim ;
+				
+				if (currentAnim) {
+					currentAnim.reverse().start();
+				}
+				else {
+					anim = glow.anim.Anim(0.5, {destroyOnComplete: false})
+					link.data('glowAnim', anim);
+					
+					anim.target(this.style).prop(propName, {
+						template: '0 0 ?px rgba(0, 0, 255, ?)',
+						from: [120, 0],
+						to: [5, 1]
+					}).start();
+				}
+			});
+			
+			glow('#glowLinks').delegate('mouseleave', 'a', function() {
+				glow(this).data('glowAnim').reverse().start();
+			});
+		});
+	</script>
+	
+	<h1>Rounded Corners</h1>
+	
+	<div id="roundedCorners"></div>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			var propName;
+			
+			glow('#roundedCorners').html( new Array().join('<div></div>') )
+			
+			if (glow.env.webkit) {
+				propName = 'WebkitBorderRadius';
+			}
+			else if (glow.env.gecko) {
+				propName = 'MozBorderRadius';
+			}
+			
+			glow('#glowLinks').delegate('mouseenter', 'a', function() {
+				var link = glow(this),
+					currentAnim = link.data('cornerAnim'),
+					anim ;
+				
+				if (currentAnim) {
+					currentAnim.reverse().start();
+				}
+				else {
+					anim = glow.anim.Anim(0.5, {destroyOnComplete: false})
+					link.data('cornerAnim', anim);
+					
+					anim.target(this.style).prop(propName, {
+						template: '?px',
+						from: 0,
+						to: 50
+					}).start();
+				}
+			});
+			
+			glow('#glowLinks').delegate('mouseleave', 'a', function() {
+				glow(this).data('cornerAnim').reverse().start();
+			});
+		});
+	</script>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>

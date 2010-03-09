@@ -392,7 +392,6 @@ Glow.provide(function(glow) {
 	*/
 	TimelineProto.goTo = function(pos) {
 		var resetAll;
-		
 		if (pos > this.duration) {
 			pos = this.duration;
 		}
@@ -460,7 +459,7 @@ Glow.provide(function(glow) {
 			}
 			// convert numbers into empty animations
 			else if (typeof trackItem === 'number') {
-				track[i] = new Anim(trackItem);
+				trackItem = track[i] = new Anim(trackItem);
 			}
 			// record the start time for this anim
 			trackDurations[i] = trackDuration;

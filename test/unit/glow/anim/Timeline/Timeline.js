@@ -555,7 +555,7 @@ test('destroy', 1, function() {
 	stop();
 	
 	var eventLog = [],
-		anim = glow.anim.Anim(0.5)
+		anim = glow.anim.Anim(0.5),
 		timeline = glow.anim.Timeline().track(anim).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
@@ -570,9 +570,9 @@ test('destroy', 1, function() {
 			
 			// the animation will auto-destroy now, if we try and play it again it won't fire events
 			setTimeout(function() {
-				// restart anim, events should be gone by now
-				anim.start();
-			}, 0);
+				// restart timeline, events should be gone by now
+				timeline.start();
+			}, 13);
 			setTimeout(function() {
 				same(eventLog, ['start', 'frame', 'complete'], 'Correct event sequence');
 				start();
