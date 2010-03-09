@@ -90,7 +90,6 @@ woosh.addTests('glow2-src', {
 	'form val': new woosh.TimeTest(1, function() {
 		form.val();
 		if (++testCount == 200) {
-			console.log(form.val())
 			return form.nm1;
 		}
 	})

@@ -1,4 +1,4 @@
-woosh.addTests('jq-140', {
+woosh.addTests('jq-142', {
 	'$preTest': function(prevTest, nextTest) {
 		if (!prevTest) {
 			

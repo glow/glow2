@@ -6,7 +6,6 @@ woosh.addTests('glow-170', {
 		}
 		htmlForTest.innerHTML = htmlForTestHTML;
 		form = glow.dom.get('form');
-		console.log(form);
 		window.paragraphs = glow.dom.get('p');
 		window.paragraph = paragraphs.slice(0,1);
 		window.testBin = glow.dom.get('#testBin');
