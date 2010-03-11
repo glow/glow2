@@ -42,8 +42,16 @@ Glow.provide(function(glow) {
 			'this' is the Timeline
 	*/
 	function animComplete(e) {
+		// mirror .loop
+		this._anim.loop = this.loop;
+		// fire complete with same event object so it can be cancelled by user
 		this.fire('complete', e);
-		return !( this.playing = this.loop );
+		// find out if we're going to loop, set .playing
+		var loop = this.playing = ( this.loop || e.defaultPrevented() );
+		// if we're not looping, destroy
+		if (!loop && this.destroyOnComplete) {
+			this.destroy();
+		}
 	}
 	
 	/**
@@ -262,7 +270,7 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.destroy = function() {
-		var i = timeline._tracks.length,
+		var i = this._tracks.length,
 			j,
 			item;
 		
@@ -280,6 +288,7 @@ Glow.provide(function(glow) {
 		// remove listeners
 		glow.events.removeAllListeners( [this] );
 		this._tracks = undefined;
+		return this;
 	};
 
 	/**
@@ -307,6 +316,8 @@ Glow.provide(function(glow) {
 				// deal with functions in the timeline
 				if (typeof item === 'function') {
 					item();
+					itemIndex++;
+					break;
 				}
 				// deal with animations in the timeline
 				else if (timelinePosition - itemStart >= item.duration) {
@@ -421,7 +432,7 @@ Glow.provide(function(glow) {
 	*/
 	function adoptAnim(anim) {
 		anim.stop();
-		anim.start = anim.stop = anim.destroy = anim.reverse = anim.pingPong = methodNotAllowed;
+		anim.start = anim.stop = anim.reverse = anim.pingPong = methodNotAllowed;
 	}
 	
 	/**

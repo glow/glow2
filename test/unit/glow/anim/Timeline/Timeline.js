@@ -41,7 +41,7 @@ test('Adding animations to a timeline', 6, function() {
 	
 	// once an animation is owned by a timeline, certain methods can no longer
 	// be used. Test that they now throw errors
-	var illegalMethods = ['start', 'stop', 'destroy', 'reverse', 'pingPong'],
+	var illegalMethods = ['start', 'stop', 'reverse', 'pingPong'],
 		i = illegalMethods.length,
 		errorsThrown = 0;
 	
@@ -206,7 +206,7 @@ test('Adding numbers and functions to timeline', 3, function() {
 		ok( callbackStartTime - startTime >= 250, 'Number treated as pause: ' + (callbackStartTime - startTime) );
 		equal(anim1Started, false, 'Callback called before anim');
 		// block for 0.25 sec
-		while (new Date - start < 250);
+		while (new Date - callbackStartTime < 250);
 	}
 	
 	anim1.on('start', function() {
@@ -356,7 +356,7 @@ test('Event cancelling', 1, function() {
 		cancelStart = true,
 		stopped = false,
 		eventLog = [];
-		
+	
 	timeline1.on('start', function() {
 		eventLog.push('start');
 		// cancel the start event once
@@ -423,6 +423,7 @@ test('event cancelling (complete)', 2, function() {
 			// shouldn't fire
 			eventLog.push('stop');
 		}).on('complete', function() {
+			console.log(loopCount);
 			eventLog.push('complete');
 			if (!loopCount) {
 				same(eventLog, [
