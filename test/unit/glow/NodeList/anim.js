@@ -61,7 +61,8 @@ test('animating size with units', 4, function() {
 		heightLog.push( nodeList.css('height') );
 		widthLog.push( nodeList.css('width') );
 	}).on('complete', function() {
-		equal(heightLog[0], '100px', 'height start position');
+		// there can be rounding errors in the conversion - allow it to be 2 pixels out
+		ok(Math.abs(parseFloat( heightLog[0] ) - 100) < 3, 'height start position');
 		equal(heightLog.slice(-1)[0], '30px', 'height end position');
 		
 		equal(widthLog[0], '100px', 'width start position');
@@ -104,6 +105,35 @@ test('animating space separated values & from values', 2, function() {
 	}).on('complete', function() {
 		equal(marginLog[0], '0px 0px 10px 10px', 'start value');
 		equal(marginLog.slice(-1)[0], '10px 50px 5px 15px', 'end value');
+		
+		start();
+	}).start();
+});
+
+test('animating scrolling', 4, function() {
+	stop(2000);
+	
+	var nodeList = glow('#scrollTest'),
+		anim,
+		topLog = [],
+		leftLog = [];
+	
+	
+	nodeList.scrollLeft(0).scrollTop(0);
+	
+	// defer the start of the animation so we pick up the first frame
+	anim = nodeList.anim(0.5, {
+		scrollTop: 200,
+		scrollLeft: 100
+	}, {startNow:false}).on('frame', function() {
+		topLog.push( nodeList.scrollTop() );
+		leftLog.push( nodeList.scrollLeft() );
+	}).on('complete', function() {
+		equal(topLog[0], 0, 'top start position');
+		equal(topLog.slice(-1)[0], 200, 'top end position');
+		
+		equal(leftLog[0], 0, 'left start position');
+		equal(leftLog.slice(-1)[0], 100, 'left end position');
 		
 		start();
 	}).start();
@@ -306,5 +336,260 @@ test('Clearing a queue', 2, function() {
 			});
 		}
 		valueLog.push( nodeList.height() );
+	});
+});
+
+module('animation shortcuts', {setup:setup, teardown:teardown});
+
+test('fadeOut & fadeIn', 6, function() {
+	stop(15000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer')[0].childNodes ),
+		positionTest = glow('#positionTest'),
+		positionTest2 = glow('#positionTest2');
+		
+	nodeList.fadeOut(0.25);
+	
+	positionTest2.data('glow_fadeOut').on('frame', function() {
+		valueLog1.push( positionTest.css('opacity') );
+		valueLog2.push( positionTest2.css('opacity') );
+	}).on('complete', function() {
+		valueLog1.push( positionTest.css('opacity') );
+		valueLog2.push( positionTest2.css('opacity') );
+		
+		equal(valueLog1.slice(-1)[0], '0', 'end value');
+		equal(valueLog2.slice(-1)[0], '0', 'end value');
+		equal(positionTest.css('display'), 'none', 'item hidden');
+		
+		nodeList.fadeIn(0.25);
+		
+		positionTest2.data('glow_fadeIn').on('frame', function() {
+			valueLog1.push( positionTest.css('opacity') );
+			valueLog2.push( positionTest2.css('opacity') );
+		}).on('complete', function() {
+			valueLog1.push( positionTest.css('opacity') );
+			valueLog2.push( positionTest2.css('opacity') );
+			equal(positionTest.css('display'), 'block', 'item shown');
+			
+			equal(valueLog1.slice(-1)[0], '1', 'end value');
+			equal(valueLog2.slice(-1)[0], '1', 'end value');
+			
+			start();
+		});
+	});
+});
+
+test('fadeOut & fadeIn - interrupt', 4, function() {
+	stop(15000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer')[0].childNodes ),
+		positionTest = glow('#positionTest'),
+		positionTest2 = glow('#positionTest2'),
+		lowestOpacity;
+		
+	nodeList.fadeOut(1);
+	
+	positionTest2.data('glow_fadeOut').on('frame', function() {
+		valueLog1.push( parseFloat( positionTest.css('opacity') ) );
+		valueLog2.push( parseFloat( positionTest2.css('opacity') ) );
+		if (this.value > 0.5) {
+			lowestOpacity = parseFloat( positionTest2.css('opacity') )
+			
+			nodeList.fadeIn(1);
+			
+			positionTest2.data('glow_fadeIn').on('frame', function() {
+				valueLog1.push( parseFloat( positionTest.css('opacity') ) );
+				valueLog2.push( parseFloat( positionTest2.css('opacity') ) );
+			}).on('complete', function() {
+				valueLog1.push( parseFloat( positionTest.css('opacity') ) );
+				valueLog2.push( parseFloat( positionTest2.css('opacity') ) );
+				
+				ok(Math.min.apply(null, valueLog1) >= lowestOpacity, 'low value');
+				ok(Math.min.apply(null, valueLog2) >= lowestOpacity, 'low value');
+				
+				equal(valueLog1.slice(-1)[0], 1, 'end value');
+				equal(valueLog2.slice(-1)[0], 1, 'end value');
+				
+				start();
+			});
+		}
+	}).on('complete', function() {
+		ok(false, 'Complete fired - it shouldn\'t')
+		
+	});
+});
+
+test('fadeToggle', 6, function() {
+	stop(15000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer')[0].childNodes ),
+		positionTest = glow('#positionTest'),
+		positionTest2 = glow('#positionTest2');
+		
+	nodeList.fadeToggle(0.25);
+	
+	positionTest2.data('glow_fadeOut').on('frame', function() {
+		valueLog1.push( positionTest.css('opacity') );
+		valueLog2.push( positionTest2.css('opacity') );
+	}).on('complete', function() {
+		valueLog1.push( positionTest.css('opacity') );
+		valueLog2.push( positionTest2.css('opacity') );
+		
+		equal(valueLog1.slice(-1)[0], '0', 'end value');
+		equal(valueLog2.slice(-1)[0], '0', 'end value');
+		equal(positionTest.css('display'), 'none', 'item hidden');
+		
+		nodeList.fadeToggle(0.25);
+		
+		positionTest2.data('glow_fadeIn').on('frame', function() {
+			valueLog1.push( positionTest.css('opacity') );
+			valueLog2.push( positionTest2.css('opacity') );
+		}).on('complete', function() {
+			valueLog1.push( positionTest.css('opacity') );
+			valueLog2.push( positionTest2.css('opacity') );
+			equal(positionTest.css('display'), 'block', 'item shown');
+			
+			equal(valueLog1.slice(-1)[0], '1', 'end value');
+			equal(valueLog2.slice(-1)[0], '1', 'end value');
+			
+			start();
+		});
+	});
+});
+
+test('slideOpen & slideShut', 4, function() {
+	stop(15000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer2')[0].childNodes ),
+		slideTest1 = glow('#slideTest1'),
+		slideTest2 = glow('#slideTest2'),
+		fullHeight1 = slideTest1.css('height'),
+		fullHeight2 = slideTest2.css('height');
+		
+	nodeList.slideShut(0.5);
+	
+	slideTest2.data('glow_slideShut').on('frame', function() {
+		valueLog1.push( slideTest1.css('height') );
+		valueLog2.push( slideTest2.css('height') );
+	}).on('complete', function() {
+		valueLog1.push( slideTest1.css('height') );
+		valueLog2.push( slideTest2.css('height') );
+		
+		equal(valueLog1.slice(-1)[0], '0px', 'end value');
+		equal(valueLog2.slice(-1)[0], '0px', 'end value');
+		
+		nodeList.slideOpen(0.5);
+		
+		slideTest2.data('glow_slideOpen').on('frame', function() {
+			valueLog1.push( slideTest1.css('height') );
+			valueLog2.push( slideTest2.css('height') );
+		}).on('complete', function() {
+			valueLog1.push( slideTest1.css('height') );
+			valueLog2.push( slideTest2.css('height') );
+			
+			equal(valueLog1.slice(-1)[0], fullHeight1, 'end value');
+			equal(valueLog2.slice(-1)[0], fullHeight2, 'end value');
+			
+			start();
+		});
+	});
+});
+
+test('slideOpen & slideShut - interrupt', 4, function() {
+	stop(15000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer2')[0].childNodes ),
+		slideTest1 = glow('#slideTest1'),
+		slideTest2 = glow('#slideTest2'),
+		fullHeight1 = parseFloat( slideTest1.css('height') ),
+		fullHeight2 = parseFloat( slideTest2.css('height') ),
+		lowestHeight1,
+		lowestHeight2;
+		
+	nodeList.slideShut(1);
+	
+	slideTest2.data('glow_slideShut').on('frame', function() {
+		valueLog1.push( parseFloat( slideTest1.css('height') ) );
+		valueLog2.push( parseFloat( slideTest2.css('height') ) );
+		if (this.value > 0.5) {
+			lowestHeight1 = parseFloat( slideTest1.css('height') )
+			lowestHeight2 = parseFloat( slideTest2.css('height') )
+			
+			nodeList.slideOpen(1);
+			
+			slideTest2.data('glow_slideOpen').on('frame', function() {
+				valueLog1.push( parseFloat( slideTest1.css('height') ) );
+				valueLog2.push( parseFloat( slideTest2.css('height') ) );
+			}).on('complete', function() {
+				valueLog1.push( parseFloat( slideTest1.css('height') ) );
+				valueLog2.push( parseFloat( slideTest2.css('height') ) );
+				
+				ok(Math.min.apply(null, valueLog1) >= lowestHeight1, 'low value');
+				ok(Math.min.apply(null, valueLog2) >= lowestHeight2, 'low value');
+				
+				equal(valueLog1.slice(-1)[0], fullHeight1, 'end value');
+				equal(valueLog2.slice(-1)[0], fullHeight2, 'end value');
+				start();
+			});
+		}
+	}).on('complete', function() {
+		ok(false, 'Complete fired - it shouldn\'t')
+		
+	});
+});
+
+test('slideToggle', 4, function() {
+	stop(2000);
+
+	var valueLog1 = [],
+		valueLog2 = [],
+		// this nodelist contains elements, text nodes and comment nodes
+		nodeList = glow( glow('#testElmsContainer2')[0].childNodes ),
+		slideTest1 = glow('#slideTest1'),
+		slideTest2 = glow('#slideTest2'),
+		fullHeight1 = parseFloat( slideTest1.css('height') ),
+		fullHeight2 = parseFloat( slideTest2.css('height') );
+		
+	nodeList.slideToggle(0.25);
+	
+	slideTest2.data('glow_slideShut').on('frame', function() {
+		valueLog1.push( parseFloat( slideTest1.css('height') ) );
+		valueLog2.push( parseFloat( slideTest2.css('height') ) );
+	}).on('complete', function() {
+		valueLog1.push( parseFloat( slideTest1.css('height') ) );
+		valueLog2.push( parseFloat( slideTest2.css('height') ) );
+		
+		equal(valueLog1.slice(-1)[0], 0, 'end value');
+		equal(valueLog2.slice(-1)[0], 0, 'end value');
+		
+		nodeList.slideToggle(0.25);
+		
+		slideTest2.data('glow_slideOpen').on('frame', function() {
+			valueLog1.push( parseFloat( slideTest1.css('height') ) );
+			valueLog2.push( parseFloat( slideTest2.css('height') ) );
+		}).on('complete', function() {
+			valueLog1.push( parseFloat( slideTest1.css('height') ) );
+			valueLog2.push( parseFloat( slideTest2.css('height') ) );
+			
+			equal(valueLog1.slice(-1)[0], fullHeight1, 'end value');
+			equal(valueLog2.slice(-1)[0], fullHeight2, 'end value');
+			
+			start();
+		});
 	});
 });

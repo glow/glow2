@@ -155,7 +155,7 @@ Glow.provide(function(glow) {
 			
 		// this is easy if from values are already specified
 		// or there isn't a template to follow
-		if (opts.from || !template) {
+		if (opts.from !== undefined || !template) {
 			return opts.from || propValue;
 		}
 		

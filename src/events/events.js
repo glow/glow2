@@ -8,11 +8,11 @@ Glow.provide(function(glow) {
 		
 	/* storage variables */
 	
-	var eventListeners = {}, 
-		eventId = 1, /* TODO: camelCase */
+	var eventListeners = {}, // eventName[callback][thisVal] 
+		eventId = 1,
 		objIdCounter = 1, 
 		eventKey = '__eventId' + glow.UID; 
-		
+
 	
 	/**
 	@name glow.events.addListeners
@@ -65,7 +65,7 @@ Glow.provide(function(glow) {
 	
 	events._getPrivateEventKey = function(node) {
 		if (!node[eventKey]) {
-			node[eventKey] = objid++;
+			node[eventKey] = objIdCounter++;
 		}
 		
 		return node[eventKey];

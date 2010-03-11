@@ -235,6 +235,7 @@ Glow.provide(function(glow) {
 				else if (eventName === 'blur') {
 					handler.domName = 'focusout';
 				}
+				handler.domName = eventName;
 			}
 			else {
 				handler.domName = eventName;

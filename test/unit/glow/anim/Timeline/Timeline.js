@@ -59,7 +59,7 @@ test('Adding animations to a timeline', 6, function() {
 	equal(illegalMethods.length * 2, errorsThrown, 'Prevented methods now throw errors');
 });
 
-test('event sequence - Adding animations to a timeline', 17, function() {
+test('event sequence - Adding animations to a timeline', 15, function() {
 	stop(5000);
 	
 	var anim1 = glow.anim.Anim(0.25),
@@ -70,17 +70,12 @@ test('event sequence - Adding animations to a timeline', 17, function() {
 		timelineEventLog = [],
 		anim1PositionLog = [],
 		anim2PositionLog = [],
-		timelinePositionLog = [],
-		anim1Start,
-		anim1Duration,
-		anim2Start,
-		anim2Duration;
+		timelinePositionLog = [];
 	
 	equal(timeline.duration, 0.75, 'Duration updated');
 	
 	anim1.on('start', function() {
 		animEventLog.push('anim1: start');
-		anim1Start = new Date;
 	}).on('frame', function() {
 		if (animEventLog.slice(-1)[0] !== 'anim1: frame') {
 			animEventLog.push('anim1: frame');
@@ -90,12 +85,10 @@ test('event sequence - Adding animations to a timeline', 17, function() {
 		animEventLog.push('anim1: stop');
 	}).on('complete', function() {
 		animEventLog.push('anim1: complete');
-		anim1Duration = new Date - anim1Start;
 	});
 	
 	anim2.on('start', function() {
 		animEventLog.push('anim2: start');
-		anim2Start = new Date;
 	}).on('frame', function() {
 		if (animEventLog.slice(-1)[0] !== 'anim2: frame') {
 			animEventLog.push('anim2: frame');
@@ -105,7 +98,6 @@ test('event sequence - Adding animations to a timeline', 17, function() {
 		animEventLog.push('anim2: stop');
 	}).on('complete', function() {
 		animEventLog.push('anim2: complete');
-		anim2Duration = new Date - anim2Start;
 	});
 	
 	timeline.on('start', function() {
@@ -127,13 +119,11 @@ test('event sequence - Adding animations to a timeline', 17, function() {
 		equal(anim1PositionLog[0], 0, 'anim1 start pos');
 		equal(anim1PositionLog.slice(-1)[0], 0.25, 'anim1 end pos');
 		equal(Math.max.apply(null, anim1PositionLog), 0.25, 'anim1 positions look right');
-		ok(anim1Duration >= 250 && anim1Duration < 500, 'anim1 duration looks right: ' + anim1Duration);
 		
 		equal(anim2PositionLog[0], 0, 'anim2 start pos');
 		equal(anim2PositionLog.slice(-1)[0], 0.5, 'anim2 end pos');
 		equal(Math.max.apply(null, anim2PositionLog), 0.5, 'anim2 positions look right');
 		// this animation may take less than 500 as frames are dropped
-		ok(anim2Duration >= 480, 'anim2 duration looks right: ' + anim2Duration);
 		
 		equal(timelinePositionLog[0], 0, 'timeline start pos');
 		equal(timelinePositionLog.slice(-1)[0], 0.75, 'timeline end pos');
@@ -555,7 +545,7 @@ test('destroy', 1, function() {
 	stop();
 	
 	var eventLog = [],
-		anim = glow.anim.Anim(0.5)
+		anim = glow.anim.Anim(0.5),
 		timeline = glow.anim.Timeline().track(anim).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
@@ -570,9 +560,9 @@ test('destroy', 1, function() {
 			
 			// the animation will auto-destroy now, if we try and play it again it won't fire events
 			setTimeout(function() {
-				// restart anim, events should be gone by now
-				anim.start();
-			}, 0);
+				// restart timeline, events should be gone by now
+				timeline.start();
+			}, 13);
 			setTimeout(function() {
 				same(eventLog, ['start', 'frame', 'complete'], 'Correct event sequence');
 				start();

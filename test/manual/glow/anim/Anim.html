@@ -1,0 +1,375 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow Animations</title>
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript" src="../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
+	
+	<script type="text/javascript">
+		// set up logging...
+		window.log = log4javascript.getDefaultLogger();
+	</script>
+	
+	<script type="text/javascript">
+		// start glow loading
+		window.glow = Glow(conf.version, {base: conf.base, debug: true});
+	</script>
+	
+	<style type="text/css">
+		body {
+			font-family: arial, sans-serif;
+		}
+		#mexWave {
+			position: relative;
+			height: 170px;
+		}
+		#mexWave div {
+			height: 100px;
+			background: red;
+			width: 8px;
+			position: absolute;
+			top: 70px;
+		}
+		#roundedCorners {
+			width: 840px;
+			height: 420px;
+		}
+		#roundedCorners div {
+			float: left;
+			margin: 0 2px 2px 0;
+			background: rgb(200,200,200);
+			width: 40px;
+			height: 40px;
+		}
+		#slidingBoxes div {
+			overflow: hidden;
+			height: 0;
+			width: 500px;
+		}
+		#slideBox1 {
+			background: #cfc;
+		}
+		#slideBox2 {
+			background: #ccf;
+		}
+		#slideBox3 {
+			background: #fcc;
+		}
+		#slideBox4 {
+			background: #cff;
+		}
+		#slideBox5 {
+			background: #fcf;
+		}
+		#simpleAnim {
+			height: 100px;
+			position: relative;
+		}
+		#simpleAnimDiv {
+			height: 100px;
+			width: 100px;
+			background: red;
+			position: absolute;
+		}
+		#glowLinks a {
+			display: inline-block;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Simple Anim</h1>
+	
+	<div id="simpleAnim">
+		<div id="simpleAnimDiv"></div>
+	</div>
+	
+	<ol>
+		<li><a href="#" id="simpleAnimGo">Here to begin the animation</a></li>
+		<li>
+			The square below should move to the right and fade to green
+		</li>
+	</ol>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#simpleAnimGo').on('click', function() {
+				glow('#simpleAnimDiv').anim(2, {
+					left: 700,
+					'background-color': 'green'
+				});
+				return false;
+			});
+		});
+	</script>
+	
+	<h1>Sliding</h1>
+	
+	<ol>
+		<li>
+			Click the links below. Each should reveal content using a sliding effect.
+		</li>
+		<li>
+			Clicking while an animation is in progress should reverse the direction of the animtion
+		</li>
+	</ol>
+	
+	<p id="slideButtons"><a href="#slideBox1">Box 1 Toggle</a> | <a href="#slideBox2">Box 2 Toggle</a> | <a href="#slideBox3">Box 3 Toggle</a> | <a href="#slideBox4">Box 4 Toggle</a> | <a href="#slideBox5">Box 5 Toggle</a></p>
+	<div id="slidingBoxes">
+		<div id="slideBox1">
+			1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox2">
+			2 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox3">
+			3 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox4">
+			4 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox5">
+			5 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#slideButtons').children().on('click', function() {
+				glow( glow(this).attr('href') ).slideToggle();
+				return false;
+			});
+		});
+	</script>
+	
+	<h1>Mexican Wave!</h1>
+	
+	<ol>
+		<li>
+			Start the wave below
+		</li>
+		<li>
+			The animation should loop and animate the same on every loop
+		</li>
+		<li>
+			Stop the wave
+		</li>
+	</ol>
+	
+	<div id="mexWave"></div>
+	
+	<p><a href="#" id="mexStart">Start</a> | <a href="#" id="mexStop">Stop</a></p>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#mexWave').html( new Array(101).join('<div></div>') );
+			
+			var animTimeline = glow.anim.Timeline({
+				loop: true
+			});
+			
+			//create a wave up & wave down anim for each div
+			var wavingDivs = glow("#mexWave div").each(function(i) {
+				var div = glow(this).css('left', i * 8);
+			
+				animTimeline.track(
+					// add a pause to the start of the anim, this creates the wave effect
+					(i / 100),
+					// move up & down
+					div.anim(1, {
+						top: 0,
+						'background-color': '#fa0'
+					}).pingPong()
+				);
+			});
+			
+			glow('#mexStart').on('click', function() {
+				animTimeline.start();
+				return false;
+			});
+			
+			glow('#mexStop').on('click', function() {
+				animTimeline.stop();
+				return false;
+			});
+		});
+	</script>
+	
+	<h1>Scrolling to top</h1>
+	
+	<ol>
+		<li>
+			<a href="#" id="scrollToTop">Click to scroll to top</a>
+		</li>
+		<li>
+			The window should smoothly scroll to the top of the page, with a bounce effect
+		</li>
+	</ol>
+	
+	<p><a href="#" id="scrollToTop">Scroll to top</a></p>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#scrollToTop').on('click', function() {
+				glow(window).anim(2, {
+					scrollTop: 0
+				}, {tween: 'bounceOut'});
+				return false;
+			});
+		});
+	</script>
+	
+	<h1>Experimental animations</h1>
+	
+	<p>
+		The following are animation experiments &amp; may not work on every
+		browser.
+	</p>
+	
+	<h2>Glowing links</h2>
+	
+	<p id="glowLinks">
+		This <a href="#">paragraph</a> has some <a href="#">links</a>
+	</p>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			var propName;
+			
+			if (glow.env.webkit) {
+				propName = 'WebkitBoxShadow';
+			}
+			else if (glow.env.gecko) {
+				propName = 'MozBoxShadow';
+			}
+			
+			glow('#glowLinks').delegate('mouseenter', 'a', function() {
+				var link = glow(this),
+					currentAnim = link.data('glowAnim'),
+					anim;
+				
+				if (currentAnim) {
+					currentAnim.reverse().start();
+				}
+				else {
+					anim = glow.anim.Anim(0.35, {
+						destroyOnComplete: false,
+						tween: 'easeOut'
+					});
+					link.data('glowAnim', anim);
+					
+					anim.target(this.style).prop(propName, {
+						template: '0 0 ?px rgba(0, 0, 255, ?)',
+						from: [120, 0],
+						to: [15, 1]
+					}).start();
+				}
+			});
+			
+			glow('#glowLinks').delegate('mouseleave', 'a', function() {
+				glow(this).data('glowAnim').reverse().start();
+			});
+		});
+	</script>
+	
+	<h2>Rounded Corners</h2>
+	
+	<div id="roundedCorners"></div>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			var propName, propName2;
+			
+			glow('#roundedCorners').html( new Array(201).join('<div class="rc"></div>') )
+			
+			if (glow.env.webkit) {
+				propName = 'WebkitBorderRadius';
+				propName2 = 'WebkitTransform';
+			}
+			else if (glow.env.gecko) {
+				propName = 'MozBorderRadius';
+				propName2 = 'MozTransform';
+			}
+			
+			glow('#roundedCorners').delegate('mouseenter', '.rc', function() {
+				var div = glow(this),
+					currentAnim = div.data('cornerAnim'),
+					anim,
+					brightness;
+				
+				if (currentAnim) {
+					currentAnim.reverse().start();
+				}
+				else {
+					anim = glow.anim.Anim(0.5, {
+						destroyOnComplete: false,
+						tween: glow.tweens.overshootOut(5)
+					});
+					div.data('cornerAnim', anim);
+					brightness = Math.random() * 255;
+					anim.target(this.style).prop('backgroundColor', {
+						template: 'rgb(?,?,?)',
+						from: [200,200,200],
+						to: [brightness, brightness, 255],
+						round: true
+					}).prop(propName, {
+						template: '?px',
+						from: 0,
+						to: 20
+					}).prop(propName2, {
+						template: 'scale(?)',
+						from: 1,
+						to: 2
+					}).on('complete', function() {
+						// clear the scale so un-scaled items don't overlap scaled ones
+						if (div.prop('style')[propName2] === 'scale(1)') {
+							div.prop('style')[propName2] = '';
+						}
+					}).start();
+				}
+			});
+		});
+	</script>
+	
+	<h2>ASCII Progress Bar</h2>
+	
+	<p><a href="#" id="beginAscii">Go!</a></p>
+	
+	<pre id="asciiProgress" style="font-size:2em;font-weight:bold">[--------------------------------------------------] 0%</pre>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			var progressBar = glow('#asciiProgress'),
+				barSize = 50;
+			
+			glow('#beginAscii').on('click', function() {
+				glow.anim.Anim(5).on('frame', function() {
+					var onChars = Math.floor(this.value * barSize),
+						offChars = barSize - onChars,
+						// add the | and - chars
+						barStr = new Array(onChars + 1).join('+') + new Array(offChars + 1).join('-');
+					
+					progressBar.text('[' + barStr + '] ' + Math.floor(this.value * 100) + '%');
+				}).start();
+				return false;
+			});
+		});
+	</script>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>
