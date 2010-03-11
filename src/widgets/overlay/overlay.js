@@ -1,4 +1,6 @@
-/**
+		/* Constructor ************************** */
+		
+		/**
 		@name glow.widgets.Overlay
 		@class
 		@description A container element displayed on top of the other page content
@@ -71,6 +73,10 @@
 			);
 			overlay.show();
 		*/
+		
+		
+		
+		/* Events ************************** */
 		/**
 			@name glow.widgets.Overlay#event:show
 			@event
@@ -110,3 +116,82 @@
 			@description Fired when the overlay has fully hidden, after any hiding animation has completed
 			@param {glow.events.Event} event Event Object
 		*/
+		
+		/* Properties ******************************** */
+		
+		/**
+			@name glow.widgets.Overlay#content
+			@description The content of the overlay
+			@type glow.dom.NodeList
+		*/
+		
+		/**
+				@name glow.widgets.Overlay#container
+				@description The overlay's container.
+					Use this to alter the width of the overlay. You can also
+					manually position the overlay using this node when autoPosition is false.
+				@type glow.dom.NodeList
+		*/
+		
+		/**
+			@name glow.widgets.Overlay#autoPosition
+			@description Position the overlay relative to the viewport
+				If true, the overlay will be positioned to the viewport according to the x & y
+				options. If false, you will have to set the position manually by setting the left / top css styles of the
+				container property.
+			@type Boolean
+			*/
+		
+		/**
+			@name glow.widgets.Overlay#isShown
+			@description True if the overlay is showing
+			@type Boolean
+			*/
+		
+		/**
+			 * @name glow.widgets.Overlay#returnTo
+			 * @description Element to give focus to when the overlay closes
+			 *   For accessibility purposes you may want to set an element to give focus to when the overlay closes.
+			 *   This meanss devices which present data to the user by the cursor position (such as screen readers)
+			 *   will be sent somewhere useful.
+			 * @type selector|Element|glow.dom.NodeList
+			 */
+		
+	/* Methods ******************************************** */
+	
+	
+	/**
+			@name glow.widgets.Overlay#setPosition
+			@function
+			@description Change or recalculate the position of the overlay
+				Call with parameters to
+				change the position of the overlay or call without parameters to recalculate
+				the position of the overlay. You may need to call this without parameters
+				if relative positions become invalid.
+
+			@param {Number|String} [x]
+				distance of overlay from the left of the viewport. If the unit is a percentage
+				then 0% is aligned to the left of the viewport, 100% is aligned to the right of viewport and 50% is centered.
+			@param {Number|String} [y]
+				distance of overlay from the top of the viewport. If the unit is a percentage
+				then 0% is aligned to the left of the viewport, 100% is aligned to the right of viewport and 50% is centered.
+
+			@returns this
+			*/
+	
+	
+	/**
+			@name glow.widgets.Overlay#show
+			@function
+			@description Displays the overlay
+
+			@returns this
+			*/
+	
+	/**
+			@name glow.widgets.Overlay#hide
+			@function
+			@description Hides the overlay
+
+			@returns this
+			*/
