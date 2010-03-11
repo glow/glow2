@@ -151,7 +151,7 @@ Glow.provide(function(glow) {
 			// Make an ASCII progress bar animate from:
 			// [--------------------] 0%
 			// to
-			// [||||||||||||||||||||] 100%
+			// [++++++++++++++++++++] 100%
 			var progressBar = glow('#progressBar'),
 				// our progress bar is 20 chars
 				barSize = 20;
@@ -160,7 +160,7 @@ Glow.provide(function(glow) {
 				var onChars = Math.floor(this.value * barSize),
 					offChars = barSize - onChars,
 					// add the | and - chars
-					barStr = new Array(onChars + 1).join('|') + new Array(offChars + 1).join('-');
+					barStr = new Array(onChars + 1).join('+') + new Array(offChars + 1).join('-');
 				
 				progressBar.text('[' + barStr + '] ' + Math.floor(this.value * 100) + '%');
 			}).start();

@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title>Manual Test: Glow KeyboardEvent</title>
+	<title>Manual Test: Glow Animations</title>
 	
 	<script type="text/javascript">
 		// configure the manual test...
@@ -34,23 +34,95 @@
 		#mexWave div {
 			height: 100px;
 			background: red;
-			width: 7px;
+			width: 8px;
 			position: absolute;
+			top: 70px;
 		}
 		#roundedCorners {
-			overflow: hidden;
+			width: 420px;
+			height: 420px;
 		}
 		#roundedCorners div {
 			float: left;
-			margin: 0 10px 10px 0;
-			background: #00f;
-			width: 80px;
-			height: 80px;
+			margin: 0 2px 2px 0;
+			background: rgb(200,200,200);
+			width: 40px;
+			height: 40px;
+		}
+		#slidingBoxes div {
+			overflow: hidden;
+			height: 0;
+			width: 500px;
+		}
+		#slideBox1 {
+			background: #cfc;
+		}
+		#slideBox2 {
+			background: #ccf;
+		}
+		#slideBox3 {
+			background: #fcc;
+		}
+		#simpleAnim {
+			height: 100px;
+			position: relative;
+		}
+		#simpleAnimDiv {
+			height: 100px;
+			width: 100px;
+			background: red;
+			position: absolute;
+		}
+		#glowLinks a {
+			display: inline-block;
 		}
 	</style>
 </head>
 
 <body>
+	
+	<h1>Sliding</h1>
+	
+	<p id="slideButtons"><a href="#slideBox1" id="box1Toggle">Box 1 Toggle</a> | <a href="#slideBox2" id="box2Toggle">Box 2 Toggle</a> | <a href="#slideBox3" id="box3Toggle">Box 3 Toggle</a></p>
+	<div id="slidingBoxes">
+		<div id="slideBox1">
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox2">
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox3">
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#slideButtons').children().on('click', function() {
+				glow( glow(this).attr('href') ).slideToggle();
+				return false;
+			});
+		});
+	</script>
+	
+	<h1>Simple Anim</h1>
+	
+	<p><a href="#" id="simpleAnimGo">Go!</a></p>
+	<div id="simpleAnim">
+		<div id="simpleAnimDiv"></div>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#simpleAnimGo').on('click', function() {
+				glow('#simpleAnimDiv').anim(2, {
+					left: 400
+				});
+				return false;
+			});
+		});
+	</script>
+	
 	<h1>Mexican Wave!</h1>
 	
 	<div id="mexWave"></div>
@@ -74,7 +146,8 @@
 					(i / 100),
 					// move up & down
 					div.anim(1, {
-						top: [70, 0]
+						top: 0,
+						'background-color': '#fa0'
 					}).pingPong()
 				);
 			});
@@ -111,19 +184,22 @@
 			glow('#glowLinks').delegate('mouseenter', 'a', function() {
 				var link = glow(this),
 					currentAnim = link.data('glowAnim'),
-					anim ;
+					anim;
 				
 				if (currentAnim) {
 					currentAnim.reverse().start();
 				}
 				else {
-					anim = glow.anim.Anim(0.5, {destroyOnComplete: false})
+					anim = glow.anim.Anim(0.35, {
+						destroyOnComplete: false,
+						tween: 'easeOut'
+					});
 					link.data('glowAnim', anim);
 					
 					anim.target(this.style).prop(propName, {
 						template: '0 0 ?px rgba(0, 0, 255, ?)',
 						from: [120, 0],
-						to: [5, 1]
+						to: [15, 1]
 					}).start();
 				}
 			});
@@ -140,39 +216,80 @@
 	
 	<script type="text/javascript" class="showSrc">
 		Glow('@SRC@').ready(function(glow) {
-			var propName;
+			var propName, propName2;
 			
-			glow('#roundedCorners').html( new Array().join('<div></div>') )
+			glow('#roundedCorners').html( new Array(101).join('<div class="rc"></div>') )
 			
 			if (glow.env.webkit) {
 				propName = 'WebkitBorderRadius';
+				propName2 = 'WebkitTransform';
 			}
 			else if (glow.env.gecko) {
 				propName = 'MozBorderRadius';
+				propName2 = 'MozTransform';
 			}
 			
-			glow('#glowLinks').delegate('mouseenter', 'a', function() {
-				var link = glow(this),
-					currentAnim = link.data('cornerAnim'),
-					anim ;
+			glow('#roundedCorners').delegate('mouseenter', '.rc', function() {
+				var div = glow(this),
+					currentAnim = div.data('cornerAnim'),
+					anim,
+					brightness;
 				
 				if (currentAnim) {
 					currentAnim.reverse().start();
 				}
 				else {
-					anim = glow.anim.Anim(0.5, {destroyOnComplete: false})
-					link.data('cornerAnim', anim);
-					
-					anim.target(this.style).prop(propName, {
+					anim = glow.anim.Anim(0.5, {
+						destroyOnComplete: false,
+						tween: glow.tweens.overshootOut(5)
+					});
+					div.data('cornerAnim', anim);
+					brightness = Math.random() * 255;
+					anim.target(this.style).prop('backgroundColor', {
+						template: 'rgb(?,?,?)',
+						from: [200,200,200],
+						to: [brightness, brightness, 255],
+						round: true
+					}).prop(propName, {
 						template: '?px',
 						from: 0,
-						to: 50
+						to: 20
+					}).prop(propName2, {
+						template: 'scale(?)',
+						from: 1,
+						to: 2
+					}).on('complete', function() {
+						// clear the scale so un-scaled items don't overlap scaled ones
+						if (div.prop('style')[propName2] === 'scale(1)') {
+							div.prop('style')[propName2] = '';
+						}
 					}).start();
 				}
 			});
+		});
+	</script>
+	
+	<h1>ASCII Progress Bar</h1>
+	
+	<p><a href="#" id="beginAscii">Go!</a></p>
+	
+	<pre id="asciiProgress">[--------------------------------------------------] 0%</pre>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			var progressBar = glow('#asciiProgress'),
+				barSize = 50;
 			
-			glow('#glowLinks').delegate('mouseleave', 'a', function() {
-				glow(this).data('cornerAnim').reverse().start();
+			glow('#beginAscii').on('click', function() {
+				glow.anim.Anim(5).on('frame', function() {
+					var onChars = Math.floor(this.value * barSize),
+						offChars = barSize - onChars,
+						// add the | and - chars
+						barStr = new Array(onChars + 1).join('+') + new Array(offChars + 1).join('-');
+					
+					progressBar.text('[' + barStr + '] ' + Math.floor(this.value * 100) + '%');
+				}).start();
+				return false;
 			});
 		});
 	</script>
