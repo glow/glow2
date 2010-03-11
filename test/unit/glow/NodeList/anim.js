@@ -156,7 +156,6 @@ test('auto-starting, tweens and looping', 2, function() {
 				ok(true, 'Looping works');
 				start();
 			}
-			firstFrame = true;
 			if (!loopCount--) {
 				this.loop = false;
 			}

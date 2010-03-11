@@ -168,7 +168,7 @@ Glow.provide(function(glow) {
 		@description Makes an animtion adjust CSS values over time
 	*/
 	function addCssAnim(nodeList, anim, properties) {
-		var to, from,
+		var to, from, i,
 			property,
 			propertyIsArray,
 			stylePropName;
@@ -390,7 +390,7 @@ Glow.provide(function(glow) {
 			item,
 			lastQueuedAnim,
 			anim,
-			startNewAnim;
+			startNextAnim;
 		
 		// we don't want animations starting now
 		opts.startNow = false;

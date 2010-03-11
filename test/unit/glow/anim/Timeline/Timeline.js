@@ -423,7 +423,6 @@ test('event cancelling (complete)', 2, function() {
 			// shouldn't fire
 			eventLog.push('stop');
 		}).on('complete', function() {
-			console.log(loopCount);
 			eventLog.push('complete');
 			if (!loopCount) {
 				same(eventLog, [

@@ -123,8 +123,8 @@ Glow.provide(function(glow) {
 		// Slice to make sure we get a unique copy.
 		listenersForEvent = listenersForEvent.slice(0);
 		for (var i = 0, len = listenersForEvent.length; i < len; i++){
-			returnVal = listenersForEvent[i][0].call((listenersForEvent[i][1] || thisVal || item), event);
-			if (returnVal === false){
+			returnedVal = listenersForEvent[i][0].call((listenersForEvent[i][1] || thisVal || item), event);
+			if (returnedVal === false){
 				event.preventDefault();
 			}
 		}
