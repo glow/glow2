@@ -426,6 +426,53 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
+		@private
+		@function
+		@description This function generates the various anim shortcut functions
+	*/
+	function animShortcut(animName, animReverseName, animPropsFunc, defaultTween, onComplete) {
+		return function(duration, opts) {
+			opts = opts || {};
+			
+			var item,
+				reverseAnim,
+				currentAnim,
+				calcDuration,
+				i = this.length;
+				
+			opts.tween = opts.tween || defaultTween;
+			
+			if (duration === undefined) {
+				duration = 1;
+			}
+			
+			calcDuration = duration;
+			
+			while (i--) {
+				item = this.item(i);
+				currentAnim = item.data('glow_' + animName);
+				// if this isn't an element ,or we're already animating it, skip
+				if ( item[0].nodeType !== 1 || (currentAnim && currentAnim.playing) ) { continue; }
+				
+				// if there's a reverse anim happening & it's playing, get rid
+				reverseAnim = item.data('glow_' + animReverseName);
+				if (reverseAnim && reverseAnim.playing) {
+					// reduce the duration if we're not fading out as much
+					calcDuration = duration * (reverseAnim.position / reverseAnim.duration);
+					
+					reverseAnim.stop().destroy();
+				}
+				
+				item.data('glow_' + animName,
+					item.anim( calcDuration, animPropsFunc(item), opts ).on('complete', onComplete, item)
+				);
+			}
+			
+			return this;
+		}
+	};
+	
+	/**
 		@name glow.NodeList#fadeIn
 		@function
 		@description Fade elements in
@@ -437,7 +484,7 @@ Glow.provide(function(glow) {
 			Strings are treated as properties of {@link glow.tweens}, although
 			a tween function can be provided.
 			
-		@returns {glow.anim.Anim}
+		@returns {glow.NodeList}
 		
 		@example
 			// make a tooltip fade in & out
@@ -449,7 +496,16 @@ Glow.provide(function(glow) {
 				tooltip.fadeOut();
 			});
 	*/
-	NodeListProto.fadeIn = function() {};
+	NodeListProto.fadeIn = animShortcut('fadeIn', 'fadeOut', function(item) {
+		item.css('display', 'block');
+		return {opacity: 1};
+	}, 'easeOut', function() {
+		// on comlpete
+		// we remove the filter from IE to bring back cleartype
+		if (glow.env.ie) {
+			this[0].style.filter = '';
+		}
+	});
 	
 	/**
 		@name glow.NodeList#fadeOut
@@ -463,7 +519,7 @@ Glow.provide(function(glow) {
 			Strings are treated as properties of {@link glow.tweens}, although
 			a tween function can be provided.
 			
-		@returns {glow.anim.Anim}
+		@returns {glow.NodeList}
 		
 		@example
 			// make a tooltip fade in & out
@@ -475,7 +531,11 @@ Glow.provide(function(glow) {
 				tooltip.fadeOut();
 			});
 	*/
-	NodeListProto.fadeOut = function() {};
+	NodeListProto.fadeOut = animShortcut('fadeOut', 'fadeIn', function() {
+		return {opacity:0}
+	}, 'easeIn', function() {
+		this.css('display', 'none');
+	});
 	
 	/**
 		@name glow.NodeList#fadeToggle
@@ -498,7 +558,7 @@ Glow.provide(function(glow) {
 			By default, 'easeIn' is used for fading out, and 'easeOut' is
 			used for fading in.
 			
-		@returns {glow.anim.Anim}
+		@returns {glow.NodeList}
 		
 		@example
 			// make a tooltip fade in & out
@@ -508,7 +568,26 @@ Glow.provide(function(glow) {
 				tooltip.fadeToggle();
 			});
 	*/
-	NodeListProto.fadeToggle = function() {};
+	NodeListProto.fadeToggle = function(duration, opts) {
+		var i = this.length,
+			item,
+			fadeOutAnim;
+		
+		while (i--) {
+			item = this.item(i);
+			if (item[0].nodeType === 1) {
+				// if the element has an opacity of 0, or is currently fading out
+				if ( item.css('opacity') === '0' || ((fadeOutAnim = item.data('glow_fadeOut')) && fadeOutAnim.playing) ) {
+					item.fadeIn(duration, opts);
+				}
+				else {
+					item.fadeOut(duration, opts);
+				}
+			}
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.NodeList#slideOpen
@@ -519,14 +598,6 @@ Glow.provide(function(glow) {
 			
 			If the element is currently sliding shut, the slideShut animation
 			will be automatically stopped.
-			
-			// Implementation note: (delete me later)
-			This is a simplification from Glow 1. Glow 1 would try to determine
-			if it should animate to height:auto or the height set in the CSS. But
-			this got messy if the height was set to zero in the CSS.
-			
-			Also, Glow 1 may have always started this animation at zero-height,
-			but animating it from its current height is better IMO
 		
 		@param {number} [duration=1] Duration in seconds
 		@param {Object} [opts] Options object
@@ -534,7 +605,7 @@ Glow.provide(function(glow) {
 			Strings are treated as properties of {@link glow.tweens}, although
 			a tween function can be provided.
 			
-		@returns {glow.anim.Anim}
+		@returns {glow.NodeList}
 		
 		@example
 			var menuContent = glow('#menu div.content');
@@ -555,7 +626,16 @@ Glow.provide(function(glow) {
 			glow('<div>' + newContent + '</div>').appendTo('#content').height(0).slideOpen();
 			
 	*/
-	NodeListProto.slideOpen = function() {};
+	NodeListProto.slideOpen = animShortcut('slideOpen', 'slideShut', function(item) {
+		var currentHeight = item.css('height'),
+			fullHeight;
+		item.css('height', 'auto');
+		fullHeight = item.css('height');
+		item.css('height', currentHeight);
+		return {height: fullHeight}
+	}, 'easeBoth', function() {
+		this.css('height', 'auto');
+	});
 	
 	/**
 		@name glow.NodeList#slideShut
@@ -572,7 +652,7 @@ Glow.provide(function(glow) {
 			Strings are treated as properties of {@link glow.tweens}, although
 			a tween function can be provided.
 			
-		@returns {glow.anim.Anim}
+		@returns {glow.NodeList}
 		
 		@example
 			var menuContent = glow('#menu div.content');
@@ -583,7 +663,12 @@ Glow.provide(function(glow) {
 				menuContent.slideShut();
 			});
 	*/
-	NodeListProto.slideShut = function() {};
+	NodeListProto.slideShut = animShortcut('slideShut', 'slideOpen', function(item) {
+		if ( item.css('overflow') === 'visible' ) {
+			item.css('overflow', 'hidden');
+		}
+		return {height: 0}
+	}, 'easeBoth', function() {});
 	
 	/**
 		@name glow.NodeList#slideToggle
@@ -603,7 +688,7 @@ Glow.provide(function(glow) {
 			Strings are treated as properties of {@link glow.tweens}, although
 			a tween function can be provided.
 			
-		@returns {glow.anim.Anim}
+		@returns {glow.NodeList}
 		
 		@example
 			var menuContent = glow('#menuContent');
@@ -612,5 +697,24 @@ Glow.provide(function(glow) {
 				menuContent.slideToggle();
 			});
 	*/
-	NodeListProto.slideToggle = function() {};
+	NodeListProto.slideToggle = function(duration, opts) {
+		var i = this.length,
+			item,
+			slideShutAnim;
+		
+		while (i--) {
+			item = this.item(i);
+			if (item[0].nodeType === 1) {
+				// if the element has an height of 0, or is currently sliding shut
+				if ( item.height() === 0 || ((slideShutAnim = item.data('glow_slideShut')) && slideShutAnim.playing) ) {
+					item.slideOpen(duration, opts);
+				}
+				else {
+					item.slideShut(duration, opts);
+				}
+			}
+		}
+		
+		return this;
+	};
 });

@@ -181,12 +181,13 @@ test('2 animations running at once', 9, function() {
 	anim2.start();
 });
 
-test('animation stopping and resuming', 4, function() {
+test('animation stopping and resuming', 5, function() {
 	stop();
 	
 	var eventLog = [],
 		positionLog = [],
 		firstHalf = true,
+		returnVal,
 		anim = glow.anim.Anim(1).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
@@ -195,7 +196,8 @@ test('animation stopping and resuming', 4, function() {
 			}
 			if (firstHalf && this.position >= 0.5) {
 				firstHalf = false;
-				anim.stop();
+				returnVal = anim.stop();
+				equal(returnVal, anim, '#stop returns self');
 				ok(Math.max.apply(null, positionLog) <= 0.5, 'First half position vals lte 0.5');
 				positionLog = [];
 				// use a set timeout to see if the animation continues playing

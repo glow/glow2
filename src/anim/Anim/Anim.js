@@ -65,8 +65,7 @@ Glow.provide(function(glow) {
 			animInterval = setInterval(onInterval, 13);
 		}
 		activeAnims[activeAnimsLen] = anim;
-		// this id is used to quickly remove the anim from the array later
-		anim._activeId = activeAnimsLen++;
+		activeAnimsLen++;
 		anim.playing = true;
 	}
 	
@@ -76,13 +75,19 @@ Glow.provide(function(glow) {
 		@description Stops calling 'frame' on an animation on an interval
 	*/
 	function deactivateAnim(anim) {
-		activeAnims.splice(anim._activeId, 1);
-		activeAnimsLen--;
-		// if we're out of anims, stop the timer
-		if (!activeAnimsLen) {
-			clearInterval(animInterval);
+		// decided to search forward, animations ending are more likely to be older & at the start of the array
+		for (var i = 0, leni = activeAnims.length; i < leni; i++) {
+			if (activeAnims[i] === anim) {
+				activeAnims.splice(i, 1);
+				activeAnimsLen--;
+				// if we're out of anims, stop the timer
+				if (!activeAnimsLen) {
+					clearInterval(animInterval);
+				}
+				anim.playing = false;
+				return;
+			}
 		}
-		anim.playing = false;
 	}
 	
 	/**
@@ -187,13 +192,6 @@ Glow.provide(function(glow) {
 	
 	glow.util.extend(Anim, glow.events.Target);
 	AnimProto = Anim.prototype;
-	
-	/**
-		@name glow.anim.Anim#_activeId
-		@private
-		@type number
-		@description The index this anim exists in activeAnims
-	*/
 	
 	/**
 		@name glow.anim.Anim#_syncTime
@@ -311,6 +309,7 @@ Glow.provide(function(glow) {
 			this._stopPos = this.position;
 			deactivateAnim(this);
 		}
+		return this;
 	};
 	
 	/**
