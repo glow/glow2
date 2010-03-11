@@ -110,6 +110,35 @@ test('animating space separated values & from values', 2, function() {
 	}).start();
 });
 
+test('animating scrolling', 4, function() {
+	stop(2000);
+	
+	var nodeList = glow('#scrollTest'),
+		anim,
+		topLog = [],
+		leftLog = [];
+	
+	
+	nodeList.scrollLeft(0).scrollTop(0);
+	
+	// defer the start of the animation so we pick up the first frame
+	anim = nodeList.anim(0.5, {
+		scrollTop: 200,
+		scrollLeft: 100
+	}, {startNow:false}).on('frame', function() {
+		topLog.push( nodeList.scrollTop() );
+		leftLog.push( nodeList.scrollLeft() );
+	}).on('complete', function() {
+		equal(topLog[0], 0, 'top start position');
+		equal(topLog.slice(-1)[0], 200, 'top end position');
+		
+		equal(leftLog[0], 0, 'left start position');
+		equal(leftLog.slice(-1)[0], 100, 'left end position');
+		
+		start();
+	}).start();
+});
+
 test('auto-starting, tweens and looping', 2, function() {
 	stop(2000);
 	

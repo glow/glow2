@@ -4,7 +4,7 @@ Glow.provide(function(glow) {
 		undefined,
 		parseFloat = window.parseFloat,
 		// used to detect which CSS properties require units
-		requiresUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|fontSize/,
+		requiresUnitsRe = /width|height|top$|bottom$|left$|right$|spacing$|indent$|fontSize/i,
 		// which simple CSS values cannot be negative
 		noNegativeValsRe = /width|height|padding|opacity/,
 		getUnit = /\D+$/,
@@ -91,6 +91,30 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
+		@description Scroll positions
+	*/
+	function animateScroll(elm, anim, from, to, scrollTopOrLeft) {
+		var diff;
+		
+		to   = parseFloat(to);
+		from = parseFloat(from);
+		elm = glow(elm);
+		
+		// auto-get start value if there isn't one
+		if ( isNaN(from) ) {
+			from = elm[scrollTopOrLeft]();
+		}
+		
+		diff = to - from;
+		
+		anim.on('frame', function() {
+			elm[scrollTopOrLeft]( diff * this.value + from );
+		});
+	}
+	
+	/**
+		@private
+		@function
 		@description Animate simple values
 			This is a set of space-separated numbers (42) or numbers + unit (42em)
 			
@@ -158,8 +182,16 @@ Glow.provide(function(glow) {
 			
 			// do this for each nodelist item
 			while (i--) {
+				// deal with special values, scrollTop and scrollLeft which aren't really CSS
+				// This is the only animation that can work on the window object too
+				if ( propName.indexOf('scroll') === 0 && (nodeList[i].scrollTo || nodeList[i].scrollTop !== undefined) ) {
+					animateScroll(nodeList[i], anim, from, to, propName);
+					continue;
+				}
+				
 				// skip non-element nodes
 				if ( nodeList[i].nodeType !== 1 ) { continue; }
+				
 				// set new target
 				anim.target( nodeList[i].style );
 				
@@ -185,7 +217,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.NodeList#anim
 		@function
-		@description Animate CSS properties of elements
+		@description Animate properties of elements
 			All elements in the NodeList are animated
 			
 			All CSS values which are simple numbers (with optional unit)
@@ -197,7 +229,10 @@ Glow.provide(function(glow) {
 			
 			All CSS colour values are supported. Eg: color, background-color.
 			
-			Other CSS properties, including those with limited support, can
+			'scrollLeft' and 'scrollTop' can be animated for elements and
+			the window object.
+			
+			Other properties, including CSS properties with limited support, can
 			be animated using {@link glow.anim.Anim#prop}.
 		
 		@param {number} duration Length of the animation in seconds.
@@ -237,6 +272,12 @@ Glow.provide(function(glow) {
 				'opacity': 0
 			}).on('complete', function() {
 				alert('done!');
+			});
+			
+		@example
+			// Scroll the window to the top
+			glow(window).anim(2, {
+				scrollTop: 0
 			});
 		
 		@see {@link glow.NodeList#queueAnim} - Queue an animation to run after the current anim

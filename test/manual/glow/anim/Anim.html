@@ -27,6 +27,9 @@
 	</script>
 	
 	<style type="text/css">
+		body {
+			font-family: arial, sans-serif;
+		}
 		#mexWave {
 			position: relative;
 			height: 170px;
@@ -39,7 +42,7 @@
 			top: 70px;
 		}
 		#roundedCorners {
-			width: 420px;
+			width: 840px;
 			height: 420px;
 		}
 		#roundedCorners div {
@@ -63,6 +66,12 @@
 		#slideBox3 {
 			background: #fcc;
 		}
+		#slideBox4 {
+			background: #cff;
+		}
+		#slideBox5 {
+			background: #fcf;
+		}
 		#simpleAnim {
 			height: 100px;
 			position: relative;
@@ -80,19 +89,58 @@
 </head>
 
 <body>
+	<h1>Simple Anim</h1>
+	
+	<div id="simpleAnim">
+		<div id="simpleAnimDiv"></div>
+	</div>
+	
+	<ol>
+		<li><a href="#" id="simpleAnimGo">Here to begin the animation</a></li>
+		<li>
+			The square below should move to the right and fade to green
+		</li>
+	</ol>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#simpleAnimGo').on('click', function() {
+				glow('#simpleAnimDiv').anim(2, {
+					left: 700,
+					'background-color': 'green'
+				});
+				return false;
+			});
+		});
+	</script>
 	
 	<h1>Sliding</h1>
 	
-	<p id="slideButtons"><a href="#slideBox1" id="box1Toggle">Box 1 Toggle</a> | <a href="#slideBox2" id="box2Toggle">Box 2 Toggle</a> | <a href="#slideBox3" id="box3Toggle">Box 3 Toggle</a></p>
+	<ol>
+		<li>
+			Click the links below. Each should reveal content using a sliding effect.
+		</li>
+		<li>
+			Clicking while an animation is in progress should reverse the direction of the animtion
+		</li>
+	</ol>
+	
+	<p id="slideButtons"><a href="#slideBox1">Box 1 Toggle</a> | <a href="#slideBox2">Box 2 Toggle</a> | <a href="#slideBox3">Box 3 Toggle</a> | <a href="#slideBox4">Box 4 Toggle</a> | <a href="#slideBox5">Box 5 Toggle</a></p>
 	<div id="slidingBoxes">
 		<div id="slideBox1">
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+			1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
 		</div>
 		<div id="slideBox2">
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+			2 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
 		</div>
 		<div id="slideBox3">
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+			3 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox4">
+			4 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
+		</div>
+		<div id="slideBox5">
+			5 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ipsum enim, blandit vel iaculis eu, molestie sed dolor. Quisque malesuada mi ut tellus molestie porta. Ut nisi orci, dapibus a aliquam vitae, pellentesque id nulla. Pellentesque rutrum, lectus et aliquam tempor, purus enim ullamcorper dui, ac interdum libero nunc sit amet urna.
 		</div>
 	</div>
 	
@@ -105,25 +153,19 @@
 		});
 	</script>
 	
-	<h1>Simple Anim</h1>
-	
-	<p><a href="#" id="simpleAnimGo">Go!</a></p>
-	<div id="simpleAnim">
-		<div id="simpleAnimDiv"></div>
-	</div>
-	
-	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
-			glow('#simpleAnimGo').on('click', function() {
-				glow('#simpleAnimDiv').anim(2, {
-					left: 400
-				});
-				return false;
-			});
-		});
-	</script>
-	
 	<h1>Mexican Wave!</h1>
+	
+	<ol>
+		<li>
+			Start the wave below
+		</li>
+		<li>
+			The animation should loop and animate the same on every loop
+		</li>
+		<li>
+			Stop the wave
+		</li>
+	</ol>
 	
 	<div id="mexWave"></div>
 	
@@ -164,7 +206,38 @@
 		});
 	</script>
 	
-	<h1>Glowing links</h1>
+	<h1>Scrolling to top</h1>
+	
+	<ol>
+		<li>
+			<a href="#" id="scrollToTop">Click to scroll to top</a>
+		</li>
+		<li>
+			The window should smoothly scroll to the top of the page, with a bounce effect
+		</li>
+	</ol>
+	
+	<p><a href="#" id="scrollToTop">Scroll to top</a></p>
+	
+	<script type="text/javascript" class="showSrc">
+		Glow('@SRC@').ready(function(glow) {
+			glow('#scrollToTop').on('click', function() {
+				glow(window).anim(2, {
+					scrollTop: 0
+				}, {tween: 'bounceOut'});
+				return false;
+			});
+		});
+	</script>
+	
+	<h1>Experimental animations</h1>
+	
+	<p>
+		The following are animation experiments &amp; may not work on every
+		browser.
+	</p>
+	
+	<h2>Glowing links</h2>
 	
 	<p id="glowLinks">
 		This <a href="#">paragraph</a> has some <a href="#">links</a>
@@ -210,7 +283,7 @@
 		});
 	</script>
 	
-	<h1>Rounded Corners</h1>
+	<h2>Rounded Corners</h2>
 	
 	<div id="roundedCorners"></div>
 	
@@ -218,7 +291,7 @@
 		Glow('@SRC@').ready(function(glow) {
 			var propName, propName2;
 			
-			glow('#roundedCorners').html( new Array(101).join('<div class="rc"></div>') )
+			glow('#roundedCorners').html( new Array(201).join('<div class="rc"></div>') )
 			
 			if (glow.env.webkit) {
 				propName = 'WebkitBorderRadius';
@@ -269,11 +342,11 @@
 		});
 	</script>
 	
-	<h1>ASCII Progress Bar</h1>
+	<h2>ASCII Progress Bar</h2>
 	
 	<p><a href="#" id="beginAscii">Go!</a></p>
 	
-	<pre id="asciiProgress">[--------------------------------------------------] 0%</pre>
+	<pre id="asciiProgress" style="font-size:2em;font-weight:bold">[--------------------------------------------------] 0%</pre>
 	
 	<script type="text/javascript" class="showSrc">
 		Glow('@SRC@').ready(function(glow) {
