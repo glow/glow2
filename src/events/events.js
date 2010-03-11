@@ -65,7 +65,7 @@ Glow.provide(function(glow) {
 	
 	events._getPrivateEventKey = function(node) {
 		if (!node[eventKey]) {
-			node[eventKey] = objid++;
+			node[eventKey] = objIdCounter++;
 		}
 		
 		return node[eventKey];
