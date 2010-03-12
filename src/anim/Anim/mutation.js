@@ -71,9 +71,17 @@ Glow.provide(function(glow) {
 			});
 	*/
 	AnimProto.reverse = function() {
-		var newPosition = this.position && (1 - this.position / this.duration) * this.duration;
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#reverse expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
+		var newPosition = this.position && (1 - this.position / this.duration) * this.duration,
+			oldTween = this.tween;
+		
 		// reverse the tween
 		this.tween = this._preReverseTween || mirrorTween(this.tween);
+		this._preReverseTween = oldTween;
 		return this.goTo(newPosition);
 	}
 	
@@ -93,6 +101,11 @@ Glow.provide(function(glow) {
 			}).pingPong();
 	*/
 	AnimProto.pingPong = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#pingPong expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		var oldTween = this.tween,
 			oldTweenReversed = mirrorTween(oldTween);
 		// double the length of the animation

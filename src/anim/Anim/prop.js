@@ -36,6 +36,14 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.target = function(newTarget) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#target expects 1 argument, not ' + arguments.length + '.');
+			}
+			if (typeof newTarget !== 'object') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#target expects object as "newTarget" argument, not ' + typeof newTarget + '.');
+			}
+		/*gubed!*/
 		this._targets[ this._targets.length ] = newTarget;
 		return this;
 	};
@@ -226,6 +234,27 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.prop = function(propName, opts) {
+		/*!debug*/
+			if (arguments.length !== 2) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#prop expects 2 arguments, not ' + arguments.length + '.');
+			}
+			if (typeof propName !== 'string') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects string as "propName" argument, not ' + typeof propName + '.');
+			}
+			if (typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+			if (opts.to === undefined) {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects number/array as "opts.to" argument, not ' + typeof opts.to + '.');
+			}
+			if (opts.template !== undefined && typeof opts.template !== 'string') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects string as "opts.template" argument, not ' + typeof opts.template + '.');
+			}
+			if (this._targets.length === 0) {
+				glow.debug.warn('[unmet prerequisite] glow.anim.Anim#target must be called before glow.anim.Anim#prop');
+			}
+		/*gubed!*/
+		
 		var targetIndex = this._targets.length - 1,
 			target = this._targets[targetIndex];
 		

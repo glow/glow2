@@ -169,6 +169,21 @@ Glow.provide(function(glow) {
 	*/
 	
 	function Anim(duration, opts) {
+		/*!debug*/
+			if (arguments.length > 2) {
+				glow.debug.warn('[wrong count] glow.anim.Anim expects 1 or 2 arguments, not ' + arguments.length + '.');
+			}
+			if (typeof duration !== 'number') {
+				glow.debug.warn('[wrong type] glow.anim.Anim expects number as "duration" argument, not ' + typeof duration + '.');
+			}
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.anim.Anim expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+			if ( opts && typeof opts.tween === 'string' && !glow.tweens[opts.tween] ) {
+				glow.debug.warn('[wrong value] glow.anim.Anim - tween ' + opts.tween + ' does not exist');
+			}
+		/*gubed!*/
+		
 		if (this === glow.anim) {
 			return new Anim(duration, opts);
 		}
@@ -286,6 +301,15 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.start = function(position) {
+		/*!debug*/
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#start expects 0 or 1 argument, not ' + arguments.length + '.');
+			}
+			if (position !== undefined && typeof position !== 'number') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#start expects number as "position" argument, not ' + typeof position + '.');
+			}
+		/*gubed!*/
+		
 		if ( !this.playing && !this.fire('start').defaultPrevented() ) {
 			// we set 'playing' here so goTo knows
 			this.playing = true;
@@ -305,6 +329,11 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.stop = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#stop expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		if ( this.playing && !this.fire('stop').defaultPrevented() ) {
 			this._stopPos = this.position;
 			deactivateAnim(this);
@@ -321,6 +350,11 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.destroy = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#destroy expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		glow.events.removeAllListeners( [this] );
 		this._targets = undefined;
 		return this;
@@ -340,20 +374,28 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.anim.Anim}
 	*/
-	AnimProto.goTo = function(pos) {
-		if (pos > this.duration) {
-			pos = this.duration;
+	AnimProto.goTo = function(position) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#goTo expects 1 argument, not ' + arguments.length + '.');
+			}
+			if (typeof position !== 'number') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#goTo expects number as "position" argument, not ' + typeof position + '.');
+			}
+		/*gubed!*/
+		if (position > this.duration) {
+			position = this.duration;
 		}
-		else if (pos < 0) {
-			pos = 0;
+		else if (position < 0) {
+			position = 0;
 		}
 		// set stopPos to this so the next call to start() starts from here
-		this._stopPos = this.position = pos;
+		this._stopPos = this.position = position;
 		// move the syncTime for this position if we're playing
 		if (this.playing) {
-			this._syncTime = new Date - (pos * 1000);
+			this._syncTime = new Date - (position * 1000);
 		}
-		this.value = this.tween(pos / this.duration);
+		this.value = this.tween(position / this.duration);
 		this.fire('frame');
 		return this;
 	};
