@@ -36,11 +36,6 @@
 				If the unit is a percentage	then 0% is aligned to the left of
 				the viewport, 100% is aligned to the right of viewport and 50%
 				is centered.
-			@param {String} [opts.ariaRole] The aria role of the overlay.
-				This is used for accessibility purposes. No role is defined by default.
-			@param {Object} [opts.ariaProperties] Key-value pairs of aria properties and values
-				These are applied to the overlay container for accessibility purposes.
-				By default the overlay is a polite live area.
 			@param {selector|Element|glow.dom.NodeList} [opts.returnTo] Element to give focus to when the overlay closes
 				For accessibility purposes you may want to set an element to give focus to when the overlay closes.
 				This meanss devices which present data to the user by the cursor position (such as screen readers)
@@ -134,11 +129,9 @@
 		*/
 		
 		/**
-			@name glow.widgets.Overlay#autoPosition
+			@name glow.widgets.Overlay#position
 			@description Position the overlay relative to the viewport
-				If true, the overlay will be positioned to the viewport according to the x & y
-				options. If false, you will have to set the position manually by setting the left / top css styles of the
-				container property.
+				If left as default, will display centrally to the viewpoint, else set an x and y co-ordinate (x, y).
 			@type Boolean
 			*/
 		
