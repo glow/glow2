@@ -112,6 +112,14 @@ Glow.provide(function(glow) {
 			animTimeline.start();
 	*/
 	function Timeline(opts) {
+		/*!debug*/
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.anim.Timeline expects 0 or 1 arguments, not ' + arguments.length + '.');
+			}
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.anim.Iimeline expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+		/*gubed!*/
 		if (this === glow.anim) {
 			return new Timeline(opts);
 		}
@@ -243,6 +251,12 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.stop = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.anim.Timeline#stop expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
+		
 		var i = this._tracks.length,
 			item;
 		
@@ -270,6 +284,12 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.destroy = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.anim.Timeline#destroy expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
+		
 		var i = this._tracks.length,
 			j,
 			item;
@@ -391,7 +411,7 @@ Glow.provide(function(glow) {
 		@name glow.anim.Timeline#goTo
 		@function
 		@description Goes to a specific point in the animation.
-		@param {number} pos Position in the animation to go to, in seconds
+		@param {number} position Position in the animation to go to, in seconds
 		
 		@example
 			// move the animation to 2.5 seconds in
@@ -401,20 +421,29 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.anim.Timeline}
 	*/
-	TimelineProto.goTo = function(pos) {
+	TimelineProto.goTo = function(position) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.anim.Timeline#goTo expects 1 argument, not ' + arguments.length + '.');
+			}
+			if (typeof position !== 'number') {
+				glow.debug.warn('[wrong type] glow.anim.Timeline#goTo expects number as "position" argument, not ' + typeof position + '.');
+			}
+		/*gubed!*/
+		
 		var resetAll;
-		if (pos > this.duration) {
-			pos = this.duration;
+		if (position > this.duration) {
+			position = this.duration;
 		}
-		else if (pos < 0) {
-			pos = 0;
+		else if (position < 0) {
+			position = 0;
 		}
 		
-		this.position = pos;
+		this.position = position;
 		
-		(pos < this._lastPos) ? moveBackward(this) : moveForward(this);
+		(position < this._lastPos) ? moveBackward(this) : moveForward(this);
 		
-		this._lastPos = pos;
+		this._lastPos = position;
 		return this;
 	};
 	
@@ -454,6 +483,12 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Timeline}
 	*/
 	TimelineProto.track = function() {
+		/*!debug*/
+			if (arguments.length < 1) {
+				glow.debug.warn('[wrong count] glow.anim.Timeline#track expects at least 1 argument, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
+		
 		var args = arguments,
 			tracksLen = this._tracks.length,
 			track = this._tracks[tracksLen] = [],
@@ -472,6 +507,12 @@ Glow.provide(function(glow) {
 			else if (typeof trackItem === 'number') {
 				trackItem = track[i] = new Anim(trackItem);
 			}
+			/*!debug*/
+				else if (typeof trackItem !== 'function') {
+					glow.debug.warn('[wrong type] glow.anim.Timeline#track all arguments must be number/glow.anim.Anim/glow.anim.Timeline/function, arg ' + i + ' is ' + typeof trackItem + '.');
+				}
+			/*gubed!*/
+			
 			// record the start time for this anim
 			trackDurations[i] = trackDuration;
 			trackDuration += trackItem.duration || 0;
