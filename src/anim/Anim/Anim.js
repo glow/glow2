@@ -159,7 +159,7 @@ Glow.provide(function(glow) {
 			glow.anim.Anim(2).on('frame', function() {
 				var onChars = Math.floor(this.value * barSize),
 					offChars = barSize - onChars,
-					// add the | and - chars
+					// add the + and - chars
 					barStr = new Array(onChars + 1).join('+') + new Array(offChars + 1).join('-');
 				
 				progressBar.text('[' + barStr + '] ' + Math.floor(this.value * 100) + '%');
