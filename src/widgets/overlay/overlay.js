@@ -3,12 +3,9 @@
 		/**
 		@name glow.widgets.Overlay
 		@class
+		@augments glow.widgets
 		@description A container element displayed on top of the other page content
-
-		<div class="info">Widgets must be called in a <code>glow.ready()</code> call.</div>
-		@see <a href="../furtherinfo/widgets/overlay/">Overlay user guide</a>
-
-		@param {selector|Element|glow.dom.NodeList} content
+		@param {selector|Element|NodeList} content
 			the element that contains the contents of the overlay. If this is
 			in the document it will be moved to document.body.
 
@@ -20,7 +17,7 @@
 				used to indicate to the user that the overlay is modal. If provided then the modal property is set to true.
 			@param {Boolean} [opts.closeOnMaskClick="true"] if true then listens for a click event on the mask and hides when it fires
 			@param {String|Function} [opts.anim="null"] A transition for showing / hiding the panel
-				Can be "fade" or "slide", or a function which returns a glow.anim.Animation or glow.anim.Timeline.
+				Can be "fade" or "slide", or a function which returns a glow.anim.Anim or glow.anim.Timeline.
 				The function is passed the overlay as the first parameter, and 'true' if the overlay is showing, 'false' if it's hiding.
 			@param {Number} [opts.zIndex="9991"] The z-index to set on the overlay
 				If the overlay is modal, the zIndex of the mask will be set to one less than the value of this attribute.
@@ -36,7 +33,7 @@
 				If the unit is a percentage	then 0% is aligned to the left of
 				the viewport, 100% is aligned to the right of viewport and 50%
 				is centered.
-			@param {selector|Element|glow.dom.NodeList} [opts.returnTo] Element to give focus to when the overlay closes
+			@param {selector|Element|NodeList} [opts.returnTo] Element to give focus to when the overlay closes
 				For accessibility purposes you may want to set an element to give focus to when the overlay closes.
 				This meanss devices which present data to the user by the cursor position (such as screen readers)
 				will be sent somewhere useful.
@@ -44,7 +41,7 @@
 				When set to true, any Flash movie without wmode "transparent" or "opaque" will be hidden when
 				the overlay shows. This is because they always appear on top of other elements on the page. Flash
 				movies inside the overlay are excluded from hiding.
-			@param {selector|Element|glow.dom.NodeList} [opts.hideWhileShown] Elements to hide while the overlay is shown
+			@param {selector|Element|NodeList} [opts.hideWhileShown] Elements to hide while the overlay is shown
 				This is useful for hiding page elements which always appear on top of other page elements.
 				Flash movies can be handled easier using the hideWindowedFlash option.
 			@param {Function} [opts.hideFilter] Exclude elements from hiding
@@ -60,7 +57,7 @@
 
 		@example
 			var overlay = new glow.widgets.Overlay(
-				glow.dom.create(
+				glow(
 					'<div>' +
 					'  <p>Your Story has been saved.</p>' +
 					'</div>'
@@ -117,7 +114,7 @@
 		/**
 			@name glow.widgets.Overlay#content
 			@description The content of the overlay
-			@type glow.dom.NodeList
+			@type NodeList
 		*/
 		
 		/**
@@ -125,7 +122,7 @@
 				@description The overlay's container.
 					Use this to alter the width of the overlay. You can also
 					manually position the overlay using this node when autoPosition is false.
-				@type glow.dom.NodeList
+				@type NodeList
 		*/
 		
 		/**
@@ -147,7 +144,7 @@
 			 *   For accessibility purposes you may want to set an element to give focus to when the overlay closes.
 			 *   This meanss devices which present data to the user by the cursor position (such as screen readers)
 			 *   will be sent somewhere useful.
-			 * @type selector|Element|glow.dom.NodeList
+			 * @type selector|Element|NodeList
 			 */
 		
 	/* Methods ******************************************** */
