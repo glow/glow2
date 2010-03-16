@@ -1,20 +1,20 @@
 	/**
-		@name glow.widgets.Overlay
+		@name glow.ui.Overlay
 		@class
-		@augments glow.widgets
+		@augments glow.ui
 		@description A container element displayed on top of the other page content
 		@param {selector|Element|NodeList} content
 			the element that contains the contents of the overlay. If this is
 			in the document it will be moved to document.body.
 
-		@param {Object} opts
+		@param {object} opts
 			Zero or more of the following as properties of an object:
 			@param {Boolean} [opts.modal="false"] Is the overlay modal?
 				If true then a default Mask will be created if one is not provided.
-			@param {glow.widgets.Mask} [opts.mask] Mask to use for modal overlays
+			@param {glow.ui.Mask} [opts.mask] Mask to use for modal overlays
 				used to indicate to the user that the overlay is modal. If provided then the modal property is set to true.
 			@param {Boolean} [opts.closeOnMaskClick="true"] if true then listens for a click event on the mask and hides when it fires
-			@param {String|Function} [opts.anim="null"] A transition for showing / hiding the panel
+			@param {string|function} [opts.anim="null"] A transition for showing / hiding the panel
 				Can be "fade" or "slide", or a function which returns a glow.anim.Anim or glow.anim.Timeline.
 				The function is passed the overlay as the first parameter, and 'true' if the overlay is showing, 'false' if it's hiding.
 			@param {Number} [opts.zIndex="9991"] The z-index to set on the overlay
@@ -31,7 +31,7 @@
 				If the unit is a percentage	then 0% is aligned to the left of
 				the viewport, 100% is aligned to the right of viewport and 50%
 				is centered.
-			@param {selector|Element|NodeList} [opts.returnTo] Element to give focus to when the overlay closes
+			@param {selector|NodeList} [opts.returnTo] Element to give focus to when the overlay closes
 				For accessibility purposes you may want to set an element to give focus to when the overlay closes.
 				This meanss devices which present data to the user by the cursor position (such as screen readers)
 				will be sent somewhere useful.
@@ -42,19 +42,17 @@
 			@param {selector|Element|NodeList} [opts.hideWhileShown] Elements to hide while the overlay is shown
 				This is useful for hiding page elements which always appear on top of other page elements.
 				Flash movies can be handled easier using the hideWindowedFlash option.
-			@param {Function} [opts.hideFilter] Exclude elements from hiding
+			@param {function} [opts.hideFilter] Exclude elements from hiding
 				When provided this function is run for every element that may be hidden. This includes windowed
 				Flash movies if 'hideWindowedFlash' is true, and any matches for 'hideWhileShown'. In the function,
 				'this' refers to the element. Return false to prevent this element being hidden.
 			@param {Boolean} [opts.focusOnShow=false] Give the overlay keyboard focus when it appears?
-				Use 'returnTo' to specify where to send focus when the overlay closes
-			@param {String} [opts.id] Value for the Overlay container's ID attribute
-			@param {String} [opts.className] Values for the Overlay container's class attribute.
+				Use 'returnTo' to specify where to send focus when the overlay closes.
 			@param {Boolean} [opts.closeOnEsc=false] Close the overlay when the ESC key is pressed
 				The overlay needs to have focus for the ESC key to close.
 
 		@example
-			var overlay = new glow.widgets.Overlay(
+			var overlay = new glow.ui.Overlay(
 				glow(
 					'<div>' +
 					'  <p>Your Story has been saved.</p>' +
@@ -68,7 +66,7 @@
 		
 
 	/**
-		@name glow.widgets.Overlay#event:show
+		@name glow.ui.Overlay#event:show
 		@event
 		@description Fired when the overlay is about to appear on the screen, before any animation.
 
@@ -81,7 +79,7 @@
 	*/
 	
 	/**
-		@name glow.widgets.Overlay#event:afterShow
+		@name glow.ui.Overlay#event:afterShow
 		@event
 		@description Fired when the overlay is visible to the user and any 'show' animation is complete
 
@@ -93,7 +91,7 @@
 	*/
 	
 	/**
-		@name glow.widgets.Overlay#event:hide
+		@name glow.ui.Overlay#event:hide
 		@event
 		@description Fired when the overlay is about to hide
 
@@ -104,7 +102,7 @@
 	*/
 		
 	/**
-		@name glow.widgets.Overlay#event:afterHide
+		@name glow.ui.Overlay#event:afterHide
 		@event
 		@description Fired when the overlay has fully hidden, after any hiding animation has completed
 		@param {glow.events.Event} event Event Object
@@ -112,13 +110,13 @@
 		
 		
 	/**
-		@name glow.widgets.Overlay#content
+		@name glow.ui.Overlay#content
 		@description The content of the overlay
 		@type NodeList
 	*/
 		
 	/**
-		@name glow.widgets.Overlay#container
+		@name glow.ui.Overlay#container
 		@description The overlay's container.
 			Use this to alter the width of the overlay. You can also
 			manually position the overlay using this node when autoPosition is false.
@@ -126,20 +124,20 @@
 	*/
 		
 	/**
-		@name glow.widgets.Overlay#position
+		@name glow.ui.Overlay#position
 		@description Position the overlay relative to the viewport
 			If left as default, will display centrally to the viewpoint, else set an x and y co-ordinate (x, y).
 		@type Boolean
 	*/
 		
 	/**
-		@name glow.widgets.Overlay#isShown
+		@name glow.ui.Overlay#isShown
 		@description True if the overlay is showing
 		@type Boolean
 	*/
 		
 	/**
-		@name glow.widgets.Overlay#returnTo
+		@name glow.ui.Overlay#returnTo
 		@description Element to give focus to when the overlay closes
 			 For accessibility purposes you may want to set an element to give focus to when the overlay closes.
 			 This meanss devices which present data to the user by the cursor position (such as screen readers)
@@ -151,7 +149,7 @@
 	
 	
 	/**
-		@name glow.widgets.Overlay#setPosition
+		@name glow.ui.Overlay#setPosition
 		@function
 		@description Change or recalculate the position of the overlay
 			Call with parameters to
@@ -171,7 +169,7 @@
 	
 	
 	/**
-		@name glow.widgets.Overlay#show
+		@name glow.ui.Overlay#show
 		@function
 		@description Displays the overlay
 
@@ -179,7 +177,7 @@
 	*/
 	
 	/**
-		@name glow.widgets.Overlay#hide
+		@name glow.ui.Overlay#hide
 		@function
 		@description Hides the overlay
 

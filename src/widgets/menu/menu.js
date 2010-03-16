@@ -1,5 +1,5 @@
 	/**
-		@name glow.widgets.Menu
+		@name glow.ui.Menu
 		@class
 		@description A list of keyboard navigatable options.
 		@param {String|NodeList|Selector} [container] Container element to be used for menu.
@@ -9,49 +9,29 @@
 					Default of 400px gives a content width of 360px in the default template
 				@param {Number|String} [opts.height=auto] Height of the menu
 					Default of auto, content larger than this will cause scrollable behaviour
-				@param [String] [opts.class] Class name of the menu
-				@param {String} [opts.id] ID name of the menu
 				@param {Boolean} [opts.activeOnShow=true] Should the first suggestion automatically be active when the suggestion list appears?
 				@param {String|NodeList|Selector} [opts.menuItems] Location or selector of elements to be used as manu items.  If unset, the child elements of the container element will be used.
+				@param {function} [opts.keyBehaviour] Use to change the default behaviour of keyboard controls.  To change, provide current item & key that was pressed. // WIP, this may become a FocusManager
 	**/
 
 	/**
-		@name glow.widgets.Menu#addItems
+		@name glow.ui.Menu#addItems
 		@function
-		@description Adds additional items to the menu from the specified origin.
+		@description Adds additional items to the menu from a specified origin.
 		@type {glow.widgets.Menu}
+		@param {String|NodeList} Nodes to add to menu.
 		@returns The instance of the widget.
 		@example
 			//add the list items found within an unordered list
-			var myMenu = new glow.widgets.Menu("#menu");
+			var myMenu = new glow.ui.Menu("#menu");
 			myMenu.addItems("ul#secondary-menu li");
 	*/
 	
-	/**
-		@name glow.widgets.Menu#removeItems
-		@function
-		@description Removes items from the menu
-		@type {glow.widgets.Menu}
-		@returns The instance of the widget.
-		@example
-			// not sure
-			
-	*/
-	
-	/**
-		@name glow.widgets.Menu#highlightItems
-		@function
-		@description Highlights specific items
-		@type {glow.widgets.Menu}
-		@returns The instance of the widget.
-		@example
-			// not sure
-			
-	*/
+
 	
 
 	/**
-		@name glow.widgets.Menu#event:show
+		@name glow.ui.Menu#event:show
 		@event
 		@description Fired when the menu is about to appear on the screen, before any animation.
 
@@ -64,7 +44,7 @@
 	*/
 		
 	/**
-		@name glow.widgets.Menu#event:afterShow
+		@name glow.ui.Menu#event:afterShow
 		@event
 		@description Fired when the menu is visible to the user and any 'show' animation is complete
 
@@ -76,7 +56,7 @@
 	*/
 		
 	/**
-		@name glow.widgets.Menu#event:hide
+		@name glow.ui.Menu#event:hide
 		@event
 		@description Fired when the menu is about to hide
 
@@ -87,21 +67,20 @@
 	*/
 	
 	/**
-		@name glow.widgets.Menu#event:afterHide
+		@name glow.ui.Menu#event:afterHide
 		@event
 		@description Fired when the menu has fully hidden, after any hiding animation has completed
 		@param {glow.events.Event} event Event Object
 	*/
 		
 	/**
-		@name glow.widgets.Menu#event:itemSelect
+		@name glow.ui.Menu#event:itemSelect
 		@event
 		@description Fired whenever an item is selected.
 	*/
 	
 	/**
-		@name glow.widgets.AutoSuggest#event:inputChange
+		@name glow.ui.Menu#event:highlight
 		@event
-		@description Fired whenever new suggestion appears based on changed input.
-		@param {glow.events.Event} event Event Object
+		@description Fired whenever an item is hovered over
 	*/
