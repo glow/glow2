@@ -4,8 +4,7 @@
 		@augments glow.ui
 		@description A container element displayed on top of the other page content
 		@param {selector|NodeList|String} content
-			the element that contains the contents of the overlay. If this is
-			in the document it will be moved to document.body.
+			the element that contains the contents of the overlay. If not in the document, you must append it to the document before calling show().
 
 		@param {object} opts
 			Zero or more of the following as properties of an object:
