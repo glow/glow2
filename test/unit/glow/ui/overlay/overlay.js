@@ -4,7 +4,7 @@ module('glow.ui.Overlay');
 	test('Basic overlay creation', function() {			
         expect(2);	
 				
-		var myOverlay = new glow.widgets.Overlay('<div>Hello world!</div>');
+		var myOverlay = new glow.ui.Overlay('<div>Hello world!</div>');
 							
 		ok( (myOverlay), 'myOverlay exists' );
 
@@ -16,7 +16,7 @@ module('glow.ui.Overlay');
 	test('Check inherited base methods', function() {			
         expect(1);	
 				
-		var myOverlay = new glow.widgets.Overlay('<div>Hello world!</div>');
+		var myOverlay = new glow.ui.Overlay('<div>Hello world!</div>');
 							
 		ok( (myOverlay), 'myOverlay exists' );
 
