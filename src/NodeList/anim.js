@@ -63,7 +63,8 @@ Glow.provide(function(glow) {
 			from: from,
 			to: to,
 			round: true,
-			allowNegative: false
+			min: 0,
+			max: 255
 		});
 	}
 	
@@ -126,7 +127,7 @@ Glow.provide(function(glow) {
 			round = [],
 			template = '',
 			requiresUnits = requiresUnitsRe.test(stylePropName),
-			allowNegative = !noNegativeValsRe.test(stylePropName);
+			minZero = noNegativeValsRe.test(stylePropName);
 		
 		from = String(from).split(' ');
 		to = String(to).split(' ');
@@ -158,7 +159,7 @@ Glow.provide(function(glow) {
 			from: from,
 			to: to,
 			round: round,
-			allowNegative: allowNegative
+			min: minZero ? 0 : undefined
 		});
 	}
 	
@@ -168,7 +169,7 @@ Glow.provide(function(glow) {
 		@description Makes an animtion adjust CSS values over time
 	*/
 	function addCssAnim(nodeList, anim, properties) {
-		var to, from,
+		var to, from, i,
 			property,
 			propertyIsArray,
 			stylePropName;
@@ -290,6 +291,21 @@ Glow.provide(function(glow) {
 
 	*/
 	NodeListProto.anim = function(duration, properties, opts) {
+		/*!debug*/
+			if (arguments.length < 2 || arguments.length > 3) {
+				glow.debug.warn('[wrong count] glow.NodeList#anim expects 2 or 3 arguments, not ' + arguments.length + '.');
+			}
+			if (typeof duration !== 'number') {
+				glow.debug.warn('[wrong type] glow.NodeList#anim expects number as "duration" argument, not ' + typeof duration + '.');
+			}
+			if (typeof properties !== 'object') {
+				glow.debug.warn('[wrong type] glow.NodeList#anim expects object as "properties" argument, not ' + typeof properties + '.');
+			}
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.NodeList#anim expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+		/*gubed!*/
+		
 		opts = opts || {};
 		
 		var anim = new glow.anim.Anim(duration, opts);
@@ -384,13 +400,28 @@ Glow.provide(function(glow) {
 
 	*/
 	NodeListProto.queueAnim = function(duration, properties, opts) {
+		/*!debug*/
+			if (arguments.length < 2 || arguments.length > 3) {
+				glow.debug.warn('[wrong count] glow.NodeList#queueAnim expects 2 or 3 arguments, not ' + arguments.length + '.');
+			}
+			if (typeof duration !== 'number') {
+				glow.debug.warn('[wrong type] glow.NodeList#queueAnim expects number as "duration" argument, not ' + typeof duration + '.');
+			}
+			if (typeof properties !== 'object') {
+				glow.debug.warn('[wrong type] glow.NodeList#queueAnim expects object as "properties" argument, not ' + typeof properties + '.');
+			}
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.NodeList#queueAnim expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+		/*gubed!*/
+		
 		opts = opts || {};
 		
 		var i = this.length,
 			item,
 			lastQueuedAnim,
 			anim,
-			startNewAnim;
+			startNextAnim;
 		
 		// we don't want animations starting now
 		opts.startNow = false;
@@ -447,6 +478,11 @@ Glow.provide(function(glow) {
 			glow('#elementToAnimate').curentAnim().playing; // true/false
 	*/
 	NodeListProto.currentAnim = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.NodeList#currentAnim expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		return this.data('glow_currentAnim') || glow.anim.Anim(0);
 	}
 	
@@ -463,6 +499,11 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	NodeListProto.lastQueuedAnim = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.NodeList#lastQueuedAnim expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		return this.data('glow_lastQueuedAnim') || glow.anim.Anim(0);
 	}
 	
@@ -473,6 +514,18 @@ Glow.provide(function(glow) {
 	*/
 	function animShortcut(animName, animReverseName, animPropsFunc, defaultTween, onComplete) {
 		return function(duration, opts) {
+			/*!debug*/
+				if (arguments.length > 2) {
+					glow.debug.warn('[wrong count] glow.NodeList animation shortcuts expect 0, 1 or 2 arguments, not ' + arguments.length + '.');
+				}
+				if (duration !== undefined && typeof duration !== 'number') {
+					glow.debug.warn('[wrong type] glow.NodeList animation shortcuts expect number as "duration" argument, not ' + typeof duration + '.');
+				}
+				if (opts !== undefined && typeof opts !== 'object') {
+					glow.debug.warn('[wrong type] glow.NodeList animation shortcuts expect object as "opts" argument, not ' + typeof opts + '.');
+				}
+			/*gubed!*/
+			
 			opts = opts || {};
 			
 			var item,

@@ -36,6 +36,14 @@ Glow.provide(function(glow) {
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.target = function(newTarget) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#target expects 1 argument, not ' + arguments.length + '.');
+			}
+			if (typeof newTarget !== 'object') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#target expects object as "newTarget" argument, not ' + typeof newTarget + '.');
+			}
+		/*gubed!*/
 		this._targets[ this._targets.length ] = newTarget;
 		return this;
 	};
@@ -54,13 +62,16 @@ Glow.provide(function(glow) {
 		@private
 		@description Returns a string that calculates the current value for a property
 	*/
-	function buildValueCalculator(from, to, allowNegative, round) {
+	function buildValueCalculator(from, to, max, min, round) {
 		// start with (from + (from - to) * this.value)
 		var str = '(' + Number(from) + '+' + (to - from) + '*this.value)';
 		
-		// wrap in functions to stop negative / fraction values if needed
-		if (!allowNegative) {
-			str = 'Math.max(' + str + ', 0)';
+		// wrap in functions to keep values within range / round values if needed
+		if (min !== undefined) {
+			str = 'Math.max(' + str + ', ' + min + ')';
+		}
+		if (max !== undefined) {
+			str = 'Math.min(' + str + ', ' + max + ')';
 		}
 		if (round) {
 			str = 'Math.round(' + str + ')';
@@ -73,10 +84,10 @@ Glow.provide(function(glow) {
 		@private
 		@description Turn a template into a script that outputs values in place of ?
 	*/
-	function compileTemplate(template, from, to, allowNegative, round) {
+	function compileTemplate(template, from, to, max, min, round) {
 		// no template? That's easy.
 		if (!template) {
-			return buildValueCalculator(from, to, allowNegative, round);
+			return buildValueCalculator(from, to, max, min, round);
 		}
 		
 		var templateParts = template.split('?'),
@@ -86,7 +97,8 @@ Glow.provide(function(glow) {
 			Array = window.Array,
 			fromIsArray = from.constructor === Array,
 			toIsArray = to.constructor === Array,
-			allowNegativeIsArray = allowNegative.constructor === Array,
+			maxIsArray = max !== undefined && max.constructor === Array,
+			minIsArray = min !== undefined && min.constructor === Array,
 			roundIsArray = round.constructor === Array,
 			iMinusOne = 0;
 		
@@ -106,7 +118,8 @@ Glow.provide(function(glow) {
 					buildValueCalculator(
 						fromIsArray ? from[iMinusOne] : from,
 						toIsArray ? to[iMinusOne] : to,
-						allowNegativeIsArray ? allowNegative[iMinusOne] : allowNegative,
+						maxIsArray ? max[iMinusOne] : max,
+						minIsArray ? min[iMinusOne] : min,
 						roundIsArray ? round[iMinusOne] : round
 					) +
 					'+"' + templatePart.replace(/"/g, '\\"') + '"';
@@ -128,7 +141,7 @@ Glow.provide(function(glow) {
 		
 		functionStr += 'var target=targets[' + targetIndex + '];' +
 			'target["' + propName.replace(/"/g, '\\"') + '"]=' +
-			compileTemplate(opts.template, opts.from, opts.to, opts.allowNegative, opts.round) +
+			compileTemplate(opts.template, opts.from, opts.to, opts.max, opts.min, opts.round) +
 			';'; 
 		
 		// retain new function string
@@ -217,22 +230,54 @@ Glow.provide(function(glow) {
 			where the rgb values need to be whole numbers, but the alpha value is
 			between 0-1.
 		
-		@param {boolean|boolean[]} [opts.allowNegative=true] Allow values to be negative?
-			If false, negative values will become zero.
+		@param {number|number[]} [opts.min] Minimum value(s)
+			Use this to stop values animating beneath certain values.
 			
-			This can be a single boolean, or an array of booleans; one for each
-			question-mark in the template.
+			Eg, some tweens go beyond their end position, but heights cannot
+			be negative.
+			
+			This can be a single number, or an array of numbers; one for each
+			question-mark in the template. 'undefined' means no restriction.
+			
+		@param {number|number[]} [opts.max] Maximum value(s)
+			Use this to stop values animating beyond certain values.
+			
+			Eg, some tweens go beyond their end position, but colour values cannot
+			be greater than 255.
+			
+			This can be a single number, or an array of numbers; one for each
+			question-mark in the template. 'undefined' means no restriction.
 			
 		@returns {glow.anim.Anim}
 	*/
 	AnimProto.prop = function(propName, opts) {
+		/*!debug*/
+			if (arguments.length !== 2) {
+				glow.debug.warn('[wrong count] glow.anim.Anim#prop expects 2 arguments, not ' + arguments.length + '.');
+			}
+			if (typeof propName !== 'string') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects string as "propName" argument, not ' + typeof propName + '.');
+			}
+			if (typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+			if (opts.to === undefined) {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects number/array as "opts.to" argument, not ' + typeof opts.to + '.');
+			}
+			if (opts.template !== undefined && typeof opts.template !== 'string') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects string as "opts.template" argument, not ' + typeof opts.template + '.');
+			}
+			if (this._targets.length === 0) {
+				glow.debug.warn('[unmet prerequisite] glow.anim.Anim#target must be called before glow.anim.Anim#prop');
+			}
+		/*gubed!*/
+		
 		var targetIndex = this._targets.length - 1,
 			target = this._targets[targetIndex];
 		
 		// default opts
 		opts = glow.util.apply({
 			from: getFromVals(target[propName], opts),
-			allowNegative: true,
 			round: false
 		}, opts);
 		

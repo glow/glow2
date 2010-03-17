@@ -105,7 +105,7 @@ test('Single val anim 2 targets', 6, function() {
 	anim.start();
 });
 
-test('Single val prop anim (no template) allowNegative=false & round=true', 2, function() {
+test('Single val prop anim (no template) range & round=true', 3, function() {
 	stop();
 	
 	// elasticOut will try and go below zero
@@ -117,7 +117,8 @@ test('Single val prop anim (no template) allowNegative=false & round=true', 2, f
 		from: 50,
 		to: 0,
 		round: true,
-		allowNegative: false
+		min: 0,
+		max: 40
 	});
 	
 	anim.on('frame', function() {
@@ -125,6 +126,7 @@ test('Single val prop anim (no template) allowNegative=false & round=true', 2, f
 	}).on('complete', function() {
 		ok(testPropLog.join('').indexOf('.') === -1, 'No fractional values');
 		equal(Math.min.apply(null, testPropLog), 0, 'Lowest value');
+		equal(Math.max.apply(null, testPropLog), 40, 'Highest value');
 		start();
 	});
 	
@@ -220,7 +222,7 @@ test('Multiple ?, multiple values', 2, function() {
 	anim.start();
 });
 
-test('Multiple ?, allowNegative & round', 3, function() {
+test('Multiple ?, range & round', 3, function() {
 	stop();
 	
 	// elasticOut will try and go below zero
@@ -234,7 +236,7 @@ test('Multiple ?, allowNegative & round', 3, function() {
 		from: 100,
 		to: 0,
 		round: true,
-		allowNegative: [true, false]
+		min: [undefined, 0]
 	});
 	
 	anim.on('frame', function() {
