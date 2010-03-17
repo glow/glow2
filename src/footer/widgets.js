@@ -1,1 +1,0 @@
-Glow.complete('widgets', '@SRC@');

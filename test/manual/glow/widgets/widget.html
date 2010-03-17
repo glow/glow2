@@ -103,7 +103,7 @@
 	}
 
 	
-	glow.load('widgets').ready(function() {
+	glow.load('ui').ready(function() {
 	
 		// first example: keeping widget values in sync
 		function MyWidget() {
@@ -142,7 +142,7 @@
 		
 		a.setValue(1); // a, b, and c all have a value of 1 now
 		
-		console.log(a.value + ', ' + b.value + ', ' + c.value);
+		if (window.console && console.log) console.log(a.value + ', ' + b.value + ', ' + c.value);
 	
 
 		

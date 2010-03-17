@@ -40,8 +40,8 @@
 		glowMap = {
 			versions: ['2.0.0', '@'+'SRC@'],
 			'2.0.0': {
-				'core':    ['core'+debug+'.js'],
-				'widgets': ['core', 'widgets'+debug+'.js', 'widgets'+debug+'.css']
+				'core': ['core'+debug+'.js'],
+				'ui':   ['core', 'ui'+debug+'.js', 'ui'+debug+'.css']
 			}
 		};
 		

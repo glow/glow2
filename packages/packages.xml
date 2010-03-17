@@ -42,11 +42,11 @@
 			<file>src/header/license.txt</file>
 			<file>src/ui/ui.js</file>
 			<file>src/ui/Widget/Widget.js</file>
-			<file>src/footer/widgets.js</file>
+			<file>src/footer/ui.js</file>
 		</js>
 		<css>
 			<file>src/header/license.txt</file>
-			<file>src/ui/widgets.css</file>
+			<file>src/ui/ui.css</file>
 		</css>
 	</ui>
 </packages>
