@@ -22,13 +22,19 @@
 	</script>
 	
 	<style type="text/css" media="screen">
-		.glow-label-container {
-			background-color: #ccc;
+		.glow-label-content {
+			background-color: #90B281;
+			color: #223E2B;
+			zoom: 1;
 			padding: 2px;
 			font-family: verdana, sans-serif;
+			padding: 4px;
+			margin: 0;
 		}
-		.glow-label-container .disabled {
+		
+		.disabled .glow-label-content {
 			color: #fff;
+			background-color: #ccc;
 		}
 		
 		.glow-counter-container {
@@ -36,16 +42,18 @@
 			width: 180px;
 			padding: 1px;
 		}
-		.glow-counter-container .display {
+		
+		.glow-counter-content .display
+		{
 			padding: 4px;
-			height: 24px;
-			font-size: 18px;
-			font-weight: bold;
+			height: 30px;
+			font-size: 28px;
+			font-weight: bolder;
 			text-align: middle;
-			color: #933;
+			color: #000;
 		}
 		
-		.glow-counter-container .disabled .display {
+		.disabled .glow-counter-content .display {
 			color: #ccc;
 		}
 		
@@ -136,11 +144,7 @@
 		
 		console.log(a.value + ', ' + b.value + ', ' + c.value);
 	
-	
-	
-	
-	
-	
+
 		
 	/**
 		@constructor

@@ -350,6 +350,7 @@ Glow.provide(function(glow) {
 			}
 		/*gubed!*/
 		
+		this.content.addClass('glow-' + this.name + '-content');
 		this.content.wrap('<div class="glow-' + this.name + '-container"><div class="glow-' + this.name + '-theme"><div class="glow-' + this.name + '-state"></div></div></div>');
 		this.container = this.content.parent('.' + 'glow-' + this.name + '-container'); // NodeList#wrap should return the wrapper?
 		
