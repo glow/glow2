@@ -37,16 +37,16 @@
 		<js></js>
 		<css></css>
 	</more>
-	<widgets>
+	<ui>
 		<js>
 			<file>src/header/license.txt</file>
-			<file>src/ui/widgets.js</file>
-			<file>src/ui/base.js</file>
+			<file>src/ui/ui.js</file>
+			<file>src/ui/Widget/Widget.js</file>
 			<file>src/footer/widgets.js</file>
 		</js>
 		<css>
 			<file>src/header/license.txt</file>
 			<file>src/ui/widgets.css</file>
 		</css>
-	</widgets>
+	</ui>
 </packages>
