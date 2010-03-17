@@ -176,7 +176,7 @@
 					ok( (typeof glow !== 'undefined'), 'glow is defined.' );
 					equals(typeof glow, 'function', 'glow is a function');
 					ok( (typeof glow.util !== 'undefined'), 'glow.util is defined.' );
-					ok( (typeof glow.widgets !== 'undefined'), 'glow.widgets is defined.' );
+					ok( (typeof glow.ui !== 'undefined'), 'glow.ui is defined.' );
 				}
 				start();
 			}
@@ -212,7 +212,7 @@
 						ok( true, 'second loaded callback is invoked.' );
 						ok( g, 'loaded callback receives a glow argument.' );
 						ok( g.util, 'loaded callback receives a glow argument which has been populated by provide.' );
-						ok( g.widgets, 'loaded callback receives a glow with widgets package provided.' );
+						ok( g.ui, 'loaded callback receives a glow with ui package provided.' );
 					
 						g
 						.load('core')
@@ -234,7 +234,7 @@
 			
 			function checkLoaded(frame) {
 				ok(frame.env, 'core package is available in loaded callback.');
-				ok(frame.widgets, 'loaded widgets package is available in loaded callback.');
+				ok(frame.ui, 'loaded ui package is available in loaded callback.');
 				equals( frame.loadedRan[0], 'one', 'loaded callback is invoked once.' );
 				equals( frame.loadedRan[1], 'two', 'loaded callback is invoked twice.' );
 				start();

@@ -41,7 +41,7 @@
 				window.readyRan.push('two');
 				
 				// setting a ready callback after the document is already ready...
-				glow.load('widgets')
+				glow.load('ui')
 				.loaded(function(){ /*debug*///log.info('~ pushed three');
 					window.readyRan.push('three');
 				})
