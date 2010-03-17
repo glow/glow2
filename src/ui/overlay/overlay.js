@@ -3,54 +3,17 @@
 		@class
 		@augments glow.ui
 		@description A container element displayed on top of the other page content
-		@param {selector|Element|NodeList} content
-			the element that contains the contents of the overlay. If this is
-			in the document it will be moved to document.body.
+		@param {selector|NodeList|String} content
+			the element that contains the contents of the overlay. If not in the document, you must append it to the document before calling show().
 
 		@param {object} opts
 			Zero or more of the following as properties of an object:
-			@param {Boolean} [opts.modal="false"] Is the overlay modal?
-				If true then a default Mask will be created if one is not provided.
-			@param {glow.ui.Mask} [opts.mask] Mask to use for modal overlays
-				used to indicate to the user that the overlay is modal. If provided then the modal property is set to true.
-			@param {Boolean} [opts.closeOnMaskClick="true"] if true then listens for a click event on the mask and hides when it fires
-			@param {string|function} [opts.anim="null"] A transition for showing / hiding the panel
-				Can be "fade" or "slide", or a function which returns a glow.anim.Anim or glow.anim.Timeline.
-				The function is passed the overlay as the first parameter, and 'true' if the overlay is showing, 'false' if it's hiding.
+			@param {Boolean} [opts.closeOnMaskClick=true] if true then listens for a click event on the mask and hides when it fires
 			@param {Number} [opts.zIndex="9991"] The z-index to set on the overlay
 				If the overlay is modal, the zIndex of the mask will be set to one less than the value of this attribute.
-			@param {Boolean} [opts.autoPosition="true"] Position the overlay relative to the viewport
-				If true, the overlay will be positioned to the viewport according to the x & y
-				options. If false, you will have to set the position manually by setting the left / top css styles of the
-				container property.
-			@param {Number|String} [opts.x="50%"] Distance of overlay from the left of the viewport
-				If the unit is a percentage	then 0% is aligned to the left of
-				the viewport, 100% is aligned to the right of viewport and 50%
-				is centered.
-			@param {Number|String} [opts.y="50%"] Distance of overlay from the top of the viewport
-				If the unit is a percentage	then 0% is aligned to the left of
-				the viewport, 100% is aligned to the right of viewport and 50%
-				is centered.
-			@param {selector|NodeList} [opts.returnTo] Element to give focus to when the overlay closes
-				For accessibility purposes you may want to set an element to give focus to when the overlay closes.
-				This meanss devices which present data to the user by the cursor position (such as screen readers)
-				will be sent somewhere useful.
-			@param {Boolean} [opts.hideWindowedFlash=true] Hide windowed Flash movies?
-				When set to true, any Flash movie without wmode "transparent" or "opaque" will be hidden when
-				the overlay shows. This is because they always appear on top of other elements on the page. Flash
-				movies inside the overlay are excluded from hiding.
-			@param {selector|Element|NodeList} [opts.hideWhileShown] Elements to hide while the overlay is shown
-				This is useful for hiding page elements which always appear on top of other page elements.
-				Flash movies can be handled easier using the hideWindowedFlash option.
-			@param {function} [opts.hideFilter] Exclude elements from hiding
+			@param {function|selector|NodeList} [opts.hideFilter] Exclude elements from hiding
 				When provided this function is run for every element that may be hidden. This includes windowed
-				Flash movies if 'hideWindowedFlash' is true, and any matches for 'hideWhileShown'. In the function,
-				'this' refers to the element. Return false to prevent this element being hidden.
-			@param {Boolean} [opts.focusOnShow=false] Give the overlay keyboard focus when it appears?
-				Use 'returnTo' to specify where to send focus when the overlay closes.
-			@param {Boolean} [opts.closeOnEsc=false] Close the overlay when the ESC key is pressed
-				The overlay needs to have focus for the ESC key to close.
-
+				Flash movies if an intersection with the overlay is found.
 		@example
 			var overlay = new glow.ui.Overlay(
 				glow(
@@ -61,7 +24,6 @@
 			);
 			overlay.show();
 		*/
-		
 		
 		
 
@@ -81,7 +43,7 @@
 	/**
 		@name glow.ui.Overlay#event:afterShow
 		@event
-		@description Fired when the overlay is visible to the user and any 'show' animation is complete
+		@description Fired when the overlay is visible to the user and any delay or 'show' animation is complete
 
 			This event is ideal to assign focus to a particular part of	the overlay.
 			If you want to change content of the overlay before it appears, see the 
@@ -104,49 +66,19 @@
 	/**
 		@name glow.ui.Overlay#event:afterHide
 		@event
-		@description Fired when the overlay has fully hidden, after any hiding animation has completed
+		@description Fired when the overlay has fully hidden, after any delay or hiding animation has completed
 		@param {glow.events.Event} event Event Object
 	*/
 		
 		
-	/**
-		@name glow.ui.Overlay#content
-		@description The content of the overlay
-		@type NodeList
-	*/
 		
 	/**
-		@name glow.ui.Overlay#container
-		@description The overlay's container.
-			Use this to alter the width of the overlay. You can also
-			manually position the overlay using this node when autoPosition is false.
-		@type NodeList
-	*/
-		
-	/**
-		@name glow.ui.Overlay#position
-		@description Position the overlay relative to the viewport
-			If left as default, will display centrally to the viewpoint, else set an x and y co-ordinate (x, y).
+		@name glow.ui.Overlay#visible
+		@description True if the overlay is showing.
+			This is a read-only property to check the state of the overlay.
 		@type Boolean
 	*/
 		
-	/**
-		@name glow.ui.Overlay#isShown
-		@description True if the overlay is showing
-		@type Boolean
-	*/
-		
-	/**
-		@name glow.ui.Overlay#returnTo
-		@description Element to give focus to when the overlay closes
-			 For accessibility purposes you may want to set an element to give focus to when the overlay closes.
-			 This meanss devices which present data to the user by the cursor position (such as screen readers)
-			 will be sent somewhere useful.
-		@type selector|Element|NodeList
-	*/
-		
-
-	
 	
 	/**
 		@name glow.ui.Overlay#setPosition
@@ -171,7 +103,13 @@
 	/**
 		@name glow.ui.Overlay#show
 		@function
-		@description Displays the overlay
+		@param {object} opts
+			Zero or more of the following as properties of an object:
+			@param {Number} [opts.delay=0] The delay before the overlay is shown
+				By default, the overlay will show immediately. Specify a number value of seconds to delay showing. The event "afterShow" will be called after any delay and animation.
+			@param {Object} [opts.anim] The animation to use when the overlay is shown
+				Bu default, no animation will be used. Provide an animation object to show the overlay with an effect. The event "afterShow" will be called after any animation and delay.
+		@description Displays the overlay after an optional delay period and animation
 
 		@returns this
 	*/
@@ -179,7 +117,13 @@
 	/**
 		@name glow.ui.Overlay#hide
 		@function
-		@description Hides the overlay
+		@param {object} opts
+			Zero or more of the following as properties of an object:
+			@param {Number} [opts.delay=0] The delay before the overlay is hidden
+				By default, the overlay will hide immediately. Specify a number value of seconds to delay hiding.  The event "afterHide" will be called after any delay and animation.
+			@param {Object} [opts.anim] The animation to use when the overlay is shown
+				Bu default, no animation will be used. Provide an animation object to show the overlay with an effect. The event "afterHide" will be called after any animation and delay.
+		@description Hides the overlay after an optional delay period and animation
 
 		@returns this
 	*/
