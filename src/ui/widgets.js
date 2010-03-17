@@ -1,19 +1,12 @@
-// start-source: widgets.js
+// start-source: ui.js
 
 /**
-	@name glow.widgets
+	@name glow.ui
 	@namespace
  */
 		 
 Glow.provide(function(glow) {
-	glow.widgets = glow.widgets || {};
-	
-	/**
-		@name glow.widgets.Panel
-		@constructor
-	 */
-	glow.widgets.Panel = function() {
-	};
+	glow.ui = glow.ui || {};
 });
 
-// end-source: widgets.js
+// end-source: ui.js
