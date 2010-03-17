@@ -46,7 +46,8 @@ Glow.provide(function(glow) {
 		this.disabled = false;
 		this.localeName = (this.localeName || 'en'); // todo: default should come from i18n module
 		
-		if (this.constructor.base) { return this.constructor.base.prototype; }
+		// constructor called from subclass? return reference back to the superclasses prototype
+		if (this.constructor !== Widget) { return this.constructor.base.prototype; }
 	}
 	glow.util.extend(Widget, glow.events.Target); // Widget is a Target
 
@@ -194,10 +195,18 @@ Glow.provide(function(glow) {
 	}
 	
 	function applyDisable(disabledState) {
-		if (disabledState) { 
-			this.container.get('.glow-' + this.name + '-theme').addClass('disabled');
+		/*!debug*/
+			if (!this.attached) {
+				glow.debug.warn('[error] Widget must be attached before it can be disabled.');
+			}
+		/*gubed!*/
+		
+		if (this.container) {
+			if (disabledState) { 
+				this.container.get('.glow-' + this.name + '-theme').addClass('disabled');
+			}
+			else { this.container.get('.glow-' + this.name + '-theme').removeClass('disabled'); }
 		}
-		else { this.container.get('.glow-' + this.name + '-theme').removeClass('disabled'); }
 		
 		this.disabled = disabledState;
 	}
