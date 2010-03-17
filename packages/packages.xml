@@ -40,13 +40,13 @@
 	<widgets>
 		<js>
 			<file>src/header/license.txt</file>
-			<file>src/widgets/widgets.js</file>
-			<file>src/widgets/base.js</file>
+			<file>src/ui/widgets.js</file>
+			<file>src/ui/base.js</file>
 			<file>src/footer/widgets.js</file>
 		</js>
 		<css>
 			<file>src/header/license.txt</file>
-			<file>src/widgets/widgets.css</file>
+			<file>src/ui/widgets.css</file>
 		</css>
 	</widgets>
 </packages>
