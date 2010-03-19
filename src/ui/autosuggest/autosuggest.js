@@ -17,15 +17,15 @@ Glow.provide(function(glow) {
 				scroll to get to further results.
 				
 				By default, no maximum is imposed.
+			@param {number} [opts.width] Apply a width to the results list
+				By default, the AutoSuggest is the full width of its containing element,
+				or the with of the input it's linked to.
 			@param {number} [opts.maxResults] Limit the number of results to display
 			@param {number} [opts.minLength=3] Minimum number of chars before search is executed
 				This prevents searching being performed until a specified amount of chars
 				have been entered.
 			@param {function} [opts.formatItem] Given the matched data item, return HTML or NodeList.
-				The first param to your function will be the matched item from your data list. Use
-				this to create an HTML output (either a {@link glow.NodeList NodeList} or string of HTML).
-				
-				By default, the matched item (or its 'name' property) will be displayed.
+				This is a shortcut to setting {@link glow.ui.AutoSuggest#formatItem AutoSuggest#formatItem}
 			@param {boolean} [opts.caseSensitive=false] Whether case is important when matching suggestions.
 			@param {function} [opts.filter] Provide a custom function to filter the dataset for results
 				This is a shortcut to setting {@link glow.ui.AutoSuggest#filter AutoSuggest#filter}.
@@ -60,40 +60,37 @@ Glow.provide(function(glow) {
 			myAutoSuggest.container.appendTo('#results');
 			
 		@example
-			// Getting the data from another domain, via JSONP
-			glow.ui.AutoSuggest().linkToInput('#flickrSearch')
-				.data(function(val, callback) {
-					// TODO, change this once glow.net.* is complete
-					getDataFromOtherDomain(url).on('load', function(data) {
-						callback(data);
-					});
-				});
-			
-		@example
 			// Make an input suggest from an array of program names, where the
 			// whole string is searched rather than just the start
+			// When the item is clicked, we go to a url
 			glow.ui.AutoSuggest({
 				filter: function(item, val) {
-					return item.indexOf(val) !== -1;
+					return item.name.indexOf(val) !== -1;
 				}
-			}).data(
-				['Doctor Who', 'Eastenders', 'The Thick of it', 'etc etc']
-			).linkToInput('#programSearch');
+			}).data([
+				{name: 'Doctor Who', url: '...'},
+				{name: 'Eastenders', url: '...'},
+				{name: 'The Thick Of It', url: '...'},
+				// ...
+			]).linkToInput('#programSearch').on('select', function(event) {
+				location.href = event.selected.url;
+			});
 	*/
 	function AutoSuggest(opts) {};
 	
-	glow.util.extend(AutoSuggest, glow.widgets.Widget);
+	glow.util.extend(AutoSuggest, glow.ui.Widget);
 	AutoSuggestProto = AutoSuggest.prototype;
 		
 	/**
-		@name glow.widgets.AutoSuggest#input
+		@name glow.ui.AutoSuggest#input
 		@type glow.NodeList
 		@description Refers to the input element to which this is linked to, or an empty NodeList.
+			Link an input to an AutoSuggest using {@link glow.ui.AutoSuggest#linkInput linkInput}
 	*/
 	AutoSuggestProto.input = glow();
 	
 	/**
-		@name glow.widgets.AutoSuggest#filter
+		@name glow.ui.AutoSuggest#filter
 		@type function
 		@description The function used to filter the dataset for results
 			Overwrite this to change the filtering behaviour.
@@ -118,9 +115,31 @@ Glow.provide(function(glow) {
 			};
 	*/
 	AutoSuggestProto.filter = function(item, val) {};
+	
+	/**
+		@name glow.ui.AutoSuggest#formatItem
+		@type function
+		@description Given the matched data item, returns HTML or NodeList.
+			The first param to your function will be the matched item from your data list.
+			The second param is the search value.
+			
+			Use this to create an HTML output (either a {@link glow.NodeList NodeList} or string of HTML).
+			
+			By default, the matched item (or its 'name' property) will be displayed with the matching
+			portion underlined.
+	*/
+	AutoSuggestProto.formatItem = function(item, val) {};
+	
+	/**
+		@name glow.ui.AutoSuggest#overlay
+		@type glow.ui.Overlay
+		@description The overlay linked to this autosuggest
+			The Overlay is created when {@link glow.ui.AutoSuggest#linkInput linkInput} is
+			called.
+	*/
 		
 	/**
-		@name glow.widgets.AutoSuggest#data
+		@name glow.ui.AutoSuggest#data
 		@function
 		@description Set the data or datasource to search
 			This give the AutoSuggest the data to search, or the means to fetch
@@ -139,7 +158,7 @@ Glow.provide(function(glow) {
 			An Array of strings can be provided, where each string is an object that can be matched.
 			
 			An Array of Objects can be provided, each object is an object that can be matched. By default
-			the 'name' property of these objects is searched to determine a match, but {@link glow.widgets.AutoSuggest#filter filter} can
+			the 'name' property of these objects is searched to determine a match, but {@link glow.ui.AutoSuggest#filter filter} can
 			be used to change this.
 			
 			<p><strong>Function</strong></p>
@@ -184,6 +203,155 @@ Glow.provide(function(glow) {
 						callback(data);
 					})
 			});
+			
+		@returns this
 	*/
 	AutoSuggestProto.data = function(data) {};
+	
+	/**
+		@name glow.ui.AutoSuggest#linkInput
+		@function
+		@description Link this autosuggest to a text input
+			This triggers {@link glow.ui.AutoSuggest#find} when the value in
+			the input changes.
+			
+			The AutoSuggest is placed in an Overlay beneath the input and displayed
+			when results are found.
+			
+			If an element other than the input is focused, or esc is pressed,
+			the Overlay will be hidden and results cleared.
+			
+		@param {selector|glow.NodeList|HTMLElement} input Test input element
+		
+		@param {Object} [opts] Options
+		@param {boolean} [opts.useOverlay=true] Add the AutoSuggest to an {@link glow.ui.Overlay Overlay}
+			If true, the AutoSuggest will be wrapped in an {@link glow.ui.Overlay Overlay} and
+			appended to the document's body.
+		
+			If false, you need to add the {@link glow.ui.AutoSuggest#container AutoSuggest's container}
+			to the document manually.
+		@param {boolean} [opts.autoPosition=true] Place the overlay beneath the input
+			If false, you need to position the overlay's container manually. It's
+			recommended to do this as part of the Overlay's show event, so the
+			position is updated each time it appears.
+		@param {boolean} [opts.completeOnSelect=true] Update the input when an item is selected.
+			This will complete the typed text with the result matched.
+			
+			You can create custom select actions by listening for the
+			{@link glow.ui.AutoSuggest#event:select 'select' event}
+		@param {string} [opts.delim] Delimiting char for selections
+			When defined, the input text will be treated as multiple values,
+			separated by this string (with surrounding spaces ignored).
+			
+		@returns this
+	*/
+	AutoSuggestProto.linkInput = function(input, opts) {};
+	
+	/**
+		@name glow.ui.AutoSuggest#find
+		@function
+		@description Search the datasource for a given string
+			This fetches results from the datasource and displays them. This
+			may be an asyncrounous action if data needs to be fetched from
+			the server.
+		
+		@param {string} str String to search for
+			{@link glow.ui.AutoSuggest#filter AutoSuggest#filter} is used
+			to determine whether results match or not.
+			
+		@returns this
+	*/
+	AutoSuggestProto.find = function(str) {};
+	
+	/**
+		@name glow.ui.AutoSuggest#hide
+		@function
+		@description Clear the results so the AutoSuggest is no longer visible
+			
+		@returns this
+	*/
+	AutoSuggestProto.hide = function() {};
+	
+	/**
+		@name glow.ui.AutoSuggest#event:data
+		@event
+		@description Fired when the dataset changes
+			This can be the result of calling {@link glow.ui.AutoSuggest#data data} or
+			new data has been fetched from the server.
+			
+			You can use this event to intercept and transform data into the
+			correct JSON format.
+		
+		@param {glow.events.Event} event Event Object
+		@param {*} dataset The new dataset
+			You can modify / overwrite this property to alter the dataset
+			
+		@example
+			myAutoSuggest.data('data.xml?search={val}').on('data', function(event) {
+				// the data we get back is XML, we transform it to JSON
+				// Note: xmlToJson is not a function defined by Glow
+				event.data = xmlToJson( event.data );
+			});
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#event:results
+		@event
+		@description Fired when the dataset has been filtered but before HTML is output
+			You can use this event to sort the dataset and/or add additional items
+		
+		@param {glow.events.Event} event Event Object
+		@param {string[]|Object[]} results The filtered dataset
+			You can modify / overwrite this property to alter the results
+			
+		@example
+			myAutoSuggest.on('results', function(event) {
+				// sort results by an 'author' property
+				event.results = event.results.sort(function(a, b) {
+					return a.author > b.author ? 1 : -1;
+				});
+				
+				// Add a 'More...' item to the data set
+				event.results.push( {name:'More...'} );
+				
+				// Behaviour will be added into the 'select' listener to handle what
+				// happens when 'More...' is selected
+			});
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#event:select
+		@event
+		@description Fired when an item in the AutoSuggest is selected
+			You can use this event to react to the user interacting with
+			the AutoSuggest
+		
+		@param {glow.events.Event} event Event Object
+		@param {string|Object} selected The item in the dataset that was selected
+			
+		@example
+			myAutoSuggest.on('select', function(event) {
+				// this assumes our data objects have a 'url' property
+				loaction.href = event.selected.url;
+			});
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#event:find
+		@event
+		@description Fired when a search starts
+			Cancell this event to prevent the search
+		
+		@param {glow.events.Event} event Event Object
+		@param {string} val The search string
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#event:populate
+		@event
+		@description Fired when the HTML is updated
+		
+		@param {glow.events.Event} event Event Object
+		@param {string} val The search string
+	*/
 });
