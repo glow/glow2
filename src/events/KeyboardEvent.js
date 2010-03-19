@@ -27,16 +27,16 @@ Glow.provide(function(glow) {
 		@constructor
 		@extends glow.events.DomEvent
 		
-		@param {Event} nativeEvent A native browser event read properties from
-		
-		@param {Object} [properties] Properties to add to the Event instance.
-		   Each key-value pair in the object will be added to the Event as
-		   properties
-		
-		@description Describes a keyboard event that occurred
+		@description Describes a keyboard event.
 		   You don't need to create instances of this class if you're simply
 		   listening to events. One will be provided as the first argument
 		   in your callback.
+		   
+		@param {Event} nativeEvent A native browser event read properties from.
+		
+		@param {Object} [properties] Properties to add to the Event instance.
+		   Each key-value pair in the object will be added to the Event as
+		   properties.
 	*/
 	function KeyboardEvent(nativeEvent) {
 		if (activeKey) {
@@ -55,7 +55,7 @@ Glow.provide(function(glow) {
             @description The key pressed
 				This is a string representing the key pressed.
 				
-				Alphanumeric keys are represented by 0-9 and A-Z uppercase. Other safe cross-browser values are:
+				Alphanumeric keys are represented by 0-9 and a-z (always lowercase). Other safe cross-browser values are:
 				
 				<ul>
 					<li>backspace</li>
@@ -127,8 +127,10 @@ Glow.provide(function(glow) {
                 will be "!".
                 
             @example
-                // only allow numbers to be entered into the ageInput field
+				// only allow numbers to be entered into the ageInput field
 				glow('#ageInput').on('keypress', function(event) {
+					// Convert keyChar to a number and see if we get
+					// a valid number back
 					return !isNaN( Number(event.keyChar) );
 				});
         */
@@ -173,7 +175,7 @@ Glow.provide(function(glow) {
 		@private
 		@description Do we expect the browser to fire a keypress after a given keydown?
 		
-		@param {number} keyCode keyCode from a keydown listener
+		@param {number} keyCode The keyCode from a keydown listener.
 		@param {boolean} defaultPrevented Was the keydown prevented?
 	*/
 	function expectKeypress(keyCode, defaultPrevented) {
@@ -199,14 +201,18 @@ Glow.provide(function(glow) {
 		@private
 		@description Add the key listeners for firing glow's normalised key events.
 		
-		@param {HTMLElement} attachTo Element to attach listeners to
+		@param {HTMLElement} attachTo Element to attach listeners to.
 		
-		@returns {Object[]} an entry for eventKeysRegistered
+		@returns {Object[]} An entry for eventKeysRegistered.
 	*/
 	function addDomKeyListeners(attachTo) {
-		var keydownHandler, keypressHandler, keyupHandler,
-			// Even though the user may only be interested in one key event, we need all 3 listeners to normalise any of them
-			// hash of which keys are down, keyed by keyCode
+		var keydownHandler,
+			keypressHandler,
+			keyupHandler,
+			// Even though the user may only be interested in one key event,
+			// we need all 3 listeners to normalise any of them.
+			// Hash of which keys are down, keyed by keyCode
+			// Like: {123: true, 124: false}
 			keysDown = {};
 		
 		keydownHandler = function(nativeEvent) {
@@ -244,7 +250,8 @@ Glow.provide(function(glow) {
 		keyupHandler = function(nativeEvent) {
 			var keyCode = nativeEvent.keyCode,
 				preventDefault;
-				
+			
+			// set the active key so KeyboardEvent picks it up
 			activeKey = keyCode;
 			activeChar = undefined;
 			preventDefault = _callDomListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
@@ -265,10 +272,10 @@ Glow.provide(function(glow) {
 		@name glow.events._addKeyListener
 		@private
 		@function
-		@description Add DOM listeners for key events fired by the browser
-			Avoids adding more than one.
+		@description Add DOM listeners for key events fired by the browser.
+			Won't add more than one.
 		
-		@param {glow.NodeList} nodeList Elements to add listeners to
+		@param {glow.NodeList} nodeList Elements to add listeners to.
 		
 		@see glow.NodeList#on
 	*/
@@ -285,6 +292,9 @@ Glow.provide(function(glow) {
 			
 			// if we've already attached DOM listeners for this, don't add them again
 			if ( eventKeysRegistered[eventKey] ) {
+				// increment the number of things listening to this
+				// This lets us remove these DOM listeners from the node when
+				// the glow listeners reaches zero
 				eventKeysRegistered[eventKey][0]++;
 				continue;
 			}
@@ -348,10 +358,10 @@ Glow.provide(function(glow) {
 	}
 	
 	// keyCode to key name translation
-	var keyCodeA = 'A'.charCodeAt(0),
-		keyCodeZ = 'Z'.charCodeAt(0),
-		keyCode0 = '0'.charCodeAt(0),
-		keyCode9 = '9'.charCodeAt(0),
+	var keyCodeA = 65,
+		keyCodeZ = 90,
+		keyCode0 = 48,
+		keyCode9 = 57,
 		// key codes for non-alphanumeric keys
 		keyIds = {
 			8: 'backspace',
