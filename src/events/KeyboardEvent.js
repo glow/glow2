@@ -2,7 +2,7 @@ Glow.provide(function(glow) {
 	var document = window.document,
 		undefined,
         keyboardEventProto,
-		$env = glow.env,
+		env = glow.env,
 		// the keyCode for the last keydown (returned to undefined on keyup)
 		activeKey,
 		// the charCode for the last keypress (returned to undefined on keyup & keydown)
@@ -182,7 +182,7 @@ Glow.provide(function(glow) {
 		var keyName;
 		
 		// for browsers that fire keypress for the majority of keys
-		if ($env.gecko || $env.opera) {
+		if (env.gecko || env.opera) {
 			return !noKeyPress[keyCode];
 		}
 		
@@ -190,9 +190,9 @@ Glow.provide(function(glow) {
 		keyName = keyCodeToId(keyCode);
 		
 		// is this a printable char?
-		if (keyName.length === 1 && !noKeyPress[keyCode]) {
+		if (keyName.length === 1 || keyName === 'tab' || keyName === 'space') {
 			// webkit doesn't fire keypress if the keydown has been prevented
-			return !($env.webkit && defaultPrevented);
+			return !(env.webkit && defaultPrevented);
 		}
 		return false;
 	}
@@ -381,13 +381,13 @@ Glow.provide(function(glow) {
 			38: 'up',
 			39: 'right',
 			40: 'down',
-			44: 'printscreen', // Only fires keyup in firefox, IE. Doesn't fire in webkit, opera.
+			//44: 'printscreen', // Only fires keyup in firefox, IE. Doesn't fire in webkit, opera.
 			45: 'insert',
 			46: 'delete',
 			59: ';',
 			61: '=',
-			91: 'meta',
-			93: 'menu', // no keycode in opera, doesn't fire in Chrome
+			//91: 'meta',
+			//93: 'menu', // no keycode in opera, doesn't fire in Chrome
 			
 			// these are number pad numbers, but Opera doesn't distinguish them from normal number keys so we normalise on that
 				96: '0', 
@@ -400,10 +400,10 @@ Glow.provide(function(glow) {
 				103: '7',
 				104: '8',
 				105: '9',
-				106: '*', // opera fires 2 keypress events
-				107: '+', // opera fires 2 keypress events
-				109: '-', // opera sees - as insert
-				110: '.', // opera sees this as n
+				//106: '*', // opera fires 2 keypress events
+				//107: '+', // opera fires 2 keypress events
+				//109: '-', // opera sees - as insert
+				//110: '.', // opera sees this as n
 				111: '/',
 			// end of numpad
 			
@@ -431,13 +431,13 @@ Glow.provide(function(glow) {
 			221: ']',
 			222: '#', // opera sees # key as 3. Pah.
 			223: '`',
-			224: 'meta', // same as [ in opera
+			//224: 'meta', // same as [ in opera
 			226: '\\' // this key appears on a US layout in webkit windows
 		},
 		noKeyPress = {};
 	
 	// corrections for particular browsers :(
-	if ($env.gecko) {
+	if (env.gecko) {
 		keyIds[107] = '=';
 		
 		noKeyPress = {
@@ -448,7 +448,7 @@ Glow.provide(function(glow) {
 			145: 1  // scrolllock
 		};
 	}
-	else if ($env.opera) {
+	else if (env.opera) {
 		keyIds[42] = '*';
 		keyIds[43] = '+';
 		keyIds[47] = '/';
@@ -461,7 +461,7 @@ Glow.provide(function(glow) {
 			18: 1   // alt
 		};
 	}
-	else if ($env.webkit || $env.ie) {
+	else if (env.webkit || env.ie) {
 		keyIds[186] = ';';
 		keyIds[187] = '=';
 	}
