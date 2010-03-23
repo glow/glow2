@@ -15,7 +15,7 @@ Glow.provide(function(glow) {
 			this.disabled = false;
 			
 			//call the base class's constructor
-			this.base = arguments.callee.base.apply(this, 'mywidget');
+			this.base = arguments.callee.base.call(this, 'mywidget');
 		}
 		glow.util.extend(MyWidget, glow.ui.Widget);
 	
@@ -195,19 +195,15 @@ Glow.provide(function(glow) {
 	}
 	
 	function applyDisable(disabledState) {
-		/*!debug*/
-			if (!this.attached) {
-				glow.debug.warn('[error] Widget must be attached before it can be disabled.');
-			}
-		/*gubed!*/
-		
-		if (this.container) {
+		if (this.attached && this.container) {
 			if (disabledState) { 
-				this.container.get('.glow-' + this.name + '-theme').addClass('disabled');
+				this.container.get('.glowCSSVERSION-' + this.name + '-state').addClass('disabled');
 			}
-			else { this.container.get('.glow-' + this.name + '-theme').removeClass('disabled'); }
+			else {
+				this.container.get('.glowCSSVERSION-' + this.name + '-state').removeClass('disabled');
+			}
 		}
-		
+
 		this.disabled = disabledState;
 	}
 
@@ -359,18 +355,27 @@ Glow.provide(function(glow) {
 			}
 		/*gubed!*/
 		
-		this.content.addClass('glow-' + this.name + '-content');
-		this.content.wrap('<div class="glow-' + this.name + '-container"><div class="glow-' + this.name + '-theme"><div class="glow-' + this.name + '-state"></div></div></div>');
-		this.container = this.content.parent('.' + 'glow-' + this.name + '-container'); // NodeList#wrap should return the wrapper?
-		
 		e = new glow.events.Event();
 		this.fire('attach', e);
 		
 		if (!e.defaultPrevented()) {
-			this.bound = true;
+			this.content.addClass('glowCSSVERSION-' + this.name + '-content');
+			this.content.wrap('<div class="glowCSSVERSION-' + this.name + '-container"><div class="glowCSSVERSION-' + this.name + '-theme"><div class="glowCSSVERSION-' + this.name + '-state"></div></div></div>');
+			this.container = this.content.parent('.' + 'glowCSSVERSION-' + this.name + '-container'); // NodeList#wrap should return the wrapper?
+			
+			this.container.state = this.container.get('.glowCSSVERSION-' + this.name + '-state').item(0);
+			this.container.theme = this.container.get('.glowCSSVERSION-' + this.name + '-theme').item(0);
+			
+			// in case we were disabled before we were attached
+			if (this.disabled) { this.disabled(true); }
+			
+			this.attached = true;
 			
 			if (opts.addClass !== undefined) { this.container.addClass(opts.addClass); }
 			if (opts.addId !== undefined) { this.container[0].id = opts.addId; }
+		}
+		else {
+			delete this.content;
 		}
 		
 		return this;
@@ -434,9 +439,10 @@ Glow.provide(function(glow) {
 	@name glow.ui.Widget#destroy
 	@function
 	@description Cause any functionality that deals with removing and deleting this widget to run.
+	By default the container and all it's contents are removed.
 	@fires glow.ui.Widget#event:destroy
  */
-	Widget.prototype.destroy = function() {
+	Widget.prototype.destroy = function(opts) {
 		/*!debug*/
 			if (arguments.length !== 0) {
 				glow.debug.warn('[wrong count] glow.ui.Widget#destroy expects 0 arguments, not '+arguments.length+'.');
@@ -444,11 +450,15 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		var e;
+		opts = opts || {};
 		
 		e = new glow.events.Event();
 		this.fire('destroy', e);
 		
-		if (!e.defaultPrevented()) { this.destroyed = true; }
+		if (!e.defaultPrevented()) {
+			this.container.destroy()
+			this.destroyed = true;
+		}
 		
 		return this;
 	}

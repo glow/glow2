@@ -42,6 +42,7 @@
 			<file>src/header/license.txt</file>
 			<file>src/ui/ui.js</file>
 			<file>src/ui/Widget/Widget.js</file>
+			<file>src/ui/Overlay/Overlay.js</file>
 			<file>src/footer/ui.js</file>
 		</js>
 		<css>
