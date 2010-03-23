@@ -13,8 +13,14 @@ Glow.provide(function(glow) {
 	function Behaviour() {}
 	
 	/**
+		@name glow.ui.Behaviour#container
+		@type glow.NodeList
+		@description The element the behaviour is acting on
+	*/
+	
+	/**
 		@name glow.ui.Behaviour#disable
-		@method
+		@function
 		@description Sets the disabled property of this behaviour to true and fires the disable event
 		
 		@param {boolean} [state=true] 
