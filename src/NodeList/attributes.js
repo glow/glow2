@@ -650,25 +650,20 @@ Glow.provide(function(glow) {
 	@name glow.NodeList#val
 	@function
 	@description Gets or sets form values for the first node.
-
-		<p><em>This method is not applicable to XML NodeLists.</em></p>
-
-		<p><em>Getting values from form elements</em></p>
-
 		The returned value depends on the type of element, see below:
 
 		<dl>
 		<dt>Radio button or checkbox</dt>
-		<dd>If checked, then the contents of the value attribute, otherwise an empty string.</dd>
+		<dd>If checked, then the contents of the value property, otherwise an empty string.</dd>
 		<dt>Select</dt>
-		<dd>The contents of value attribute of the selected option</dd>
+		<dd>The contents of value property of the selected option</dd>
 		<dt>Select (multiple)</dt>
 		<dd>An array of selected option values.</dd>
-		<dt>Other form element</dt>
+		<dt>Other form elements</dt>
 		<dd>The value of the input.</dd>
 		</dl>
 
-		<p><em>Getting values from a form</em></p>
+		Getting values from a form:
 
 		If the first element in the NodeList is a form, then an
 		object is returned containing the form data. Each item
@@ -676,7 +671,7 @@ Glow.provide(function(glow) {
 		multiple elements of the same name exist, in which case the
 		it will contain an array of values.
 
-		<p><em>Setting values for form elements</em></p>
+		Setting values for form elements:
 
 		If a value is passed and the first element of the NodeList
 		is a form element, then the form element is given that value.
@@ -686,51 +681,43 @@ Glow.provide(function(glow) {
 		exists in the array of values/match the value will be
 		selected and others will be deselected.
 
-		Currently checkboxes and radio buttons are not checked or
-		unchecked, just their value is changed. This does mean that
-		this does not do exactly the reverse of getting the value
-		from the element (see above) and as such may be subject to
-		change
+		Checkboxes and radio buttons will be checked only if the value is the same
+		as the one you provide.
 
-		<p><em>Setting values for forms</em></p>
+		Setting values for forms:
 
 		If the first element in the NodeList is a form and the
 		value is an object, then each element of the form has its
 		value set to the corresponding property of the object, using
 		the method described above.
 
-	@param {String | Object} [value] The value to set the form element/elements to.
+	@param {string | Object} [value] The value to set the form element/elements to.
 
-	@returns {glow.dom.NodeList | String | Object}
+	@returns {glow.NodeList | string | Object}
 
 		When used to set a value it returns the NodeList, otherwise
 		returns the value as described above.
 
 	@example
-		// get a value
-		var username = glow.dom.get("input#username").val();
+		// get a value from an input with the id 'username'
+		var username = glow("#username").val();
 
 	@example			
-		/ get values from a form
-		var userDetails = glow.dom.get("form").val();
+		// get values from a form
+		var userDetails = glow("form").val();
 
 	@example
 		// set a value
-		glow.dom.get("input#username").val("example username");
+		glow("#username").val("example username");
 
 	@example
 		// set values in a form
-		glow.dom.get("form").val({
+		glow("form").val({
 			username : "another",
 			name     : "A N Other"
 		});
 	*/
 	NodeListProto.val = function(){
-		/*
-			PrivateFunction: elementValue
-			Get a value for a form element.
-		*/
-
 		function elementValue (el) {
 			var elType = el.type,
 				elChecked = el.checked,
@@ -740,19 +727,27 @@ Glow.provide(function(glow) {
 
 			if (elType == "radio") {
 				return elChecked ? elValue : "";
-			} else if (elType == "checkbox") {
+			}
+			
+			else if (elType == "checkbox") {
 				return elChecked ? elValue : "";
-			} else if (elType == "select-one") {
+			}
+			
+			else if (elType == "select-one") {
 				return el.selectedIndex > -1 ?
 					el.options[el.selectedIndex].value : "";
-				} else if (elType == "select-multiple") {
+				}
+			
+			else if (elType == "select-multiple") {
 				for (var length = el.options.length; i < length; i++) {
 					if (el.options[i].selected) {
 						vals[vals.length] = el.options[i].value;
 					}
 				}
 				return vals;
-			} else {
+			}
+			
+			else {
 				return elValue;
 			}
 		}

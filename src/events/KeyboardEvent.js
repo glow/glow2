@@ -2,7 +2,7 @@ Glow.provide(function(glow) {
 	var document = window.document,
 		undefined,
         keyboardEventProto,
-		$env = glow.env,
+		env = glow.env,
 		// the keyCode for the last keydown (returned to undefined on keyup)
 		activeKey,
 		// the charCode for the last keypress (returned to undefined on keyup & keydown)
@@ -27,16 +27,16 @@ Glow.provide(function(glow) {
 		@constructor
 		@extends glow.events.DomEvent
 		
-		@param {Event} nativeEvent A native browser event read properties from
-		
-		@param {Object} [properties] Properties to add to the Event instance.
-		   Each key-value pair in the object will be added to the Event as
-		   properties
-		
-		@description Describes a keyboard event that occurred
+		@description Describes a keyboard event.
 		   You don't need to create instances of this class if you're simply
 		   listening to events. One will be provided as the first argument
 		   in your callback.
+		   
+		@param {Event} nativeEvent A native browser event read properties from.
+		
+		@param {Object} [properties] Properties to add to the Event instance.
+		   Each key-value pair in the object will be added to the Event as
+		   properties.
 	*/
 	function KeyboardEvent(nativeEvent) {
 		if (activeKey) {
@@ -55,7 +55,7 @@ Glow.provide(function(glow) {
             @description The key pressed
 				This is a string representing the key pressed.
 				
-				Alphanumeric keys are represented by 0-9 and A-Z uppercase. Other safe cross-browser values are:
+				Alphanumeric keys are represented by 0-9 and a-z (always lowercase). Other safe cross-browser values are:
 				
 				<ul>
 					<li>backspace</li>
@@ -127,8 +127,10 @@ Glow.provide(function(glow) {
                 will be "!".
                 
             @example
-                // only allow numbers to be entered into the ageInput field
+				// only allow numbers to be entered into the ageInput field
 				glow('#ageInput').on('keypress', function(event) {
+					// Convert keyChar to a number and see if we get
+					// a valid number back
 					return !isNaN( Number(event.keyChar) );
 				});
         */
@@ -173,14 +175,14 @@ Glow.provide(function(glow) {
 		@private
 		@description Do we expect the browser to fire a keypress after a given keydown?
 		
-		@param {number} keyCode keyCode from a keydown listener
+		@param {number} keyCode The keyCode from a keydown listener.
 		@param {boolean} defaultPrevented Was the keydown prevented?
 	*/
 	function expectKeypress(keyCode, defaultPrevented) {
 		var keyName;
 		
 		// for browsers that fire keypress for the majority of keys
-		if ($env.gecko || $env.opera) {
+		if (env.gecko || env.opera) {
 			return !noKeyPress[keyCode];
 		}
 		
@@ -188,9 +190,9 @@ Glow.provide(function(glow) {
 		keyName = keyCodeToId(keyCode);
 		
 		// is this a printable char?
-		if (keyName.length === 1 && !noKeyPress[keyCode]) {
+		if (keyName.length === 1 || keyName === 'tab' || keyName === 'space') {
 			// webkit doesn't fire keypress if the keydown has been prevented
-			return !($env.webkit && defaultPrevented);
+			return !(env.webkit && defaultPrevented);
 		}
 		return false;
 	}
@@ -199,14 +201,18 @@ Glow.provide(function(glow) {
 		@private
 		@description Add the key listeners for firing glow's normalised key events.
 		
-		@param {HTMLElement} attachTo Element to attach listeners to
+		@param {HTMLElement} attachTo Element to attach listeners to.
 		
-		@returns {Object[]} an entry for eventKeysRegistered
+		@returns {Object[]} An entry for eventKeysRegistered.
 	*/
 	function addDomKeyListeners(attachTo) {
-		var keydownHandler, keypressHandler, keyupHandler,
-			// Even though the user may only be interested in one key event, we need all 3 listeners to normalise any of them
-			// hash of which keys are down, keyed by keyCode
+		var keydownHandler,
+			keypressHandler,
+			keyupHandler,
+			// Even though the user may only be interested in one key event,
+			// we need all 3 listeners to normalise any of them.
+			// Hash of which keys are down, keyed by keyCode
+			// Like: {123: true, 124: false}
 			keysDown = {};
 		
 		keydownHandler = function(nativeEvent) {
@@ -233,8 +239,8 @@ Glow.provide(function(glow) {
 			// some browsers store the charCode in .charCode, some in .keyCode
 			activeChar = nativeEvent.charCode || nativeEvent.keyCode;
 			// some browsers fire this event for non-printable chars, look at the previous keydown and see if we're expecting a printable char
-			if ( keyCodeToId(activeKey).length > 1 ) {
-				// non-printable chars have an ID length greater than 1
+			if ( keyCodeToId(activeKey).length > 1 && keyName !== 'tab' && keyName !== 'space' ) {
+				// non-printable chars usually have an ID length greater than 1
 				activeChar = undefined;
 			}
 			var preventDefault = _callDomListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
@@ -244,7 +250,8 @@ Glow.provide(function(glow) {
 		keyupHandler = function(nativeEvent) {
 			var keyCode = nativeEvent.keyCode,
 				preventDefault;
-				
+			
+			// set the active key so KeyboardEvent picks it up
 			activeKey = keyCode;
 			activeChar = undefined;
 			preventDefault = _callDomListeners( attachTo, 'keyup', new KeyboardEvent(nativeEvent) ).defaultPrevented();
@@ -265,10 +272,10 @@ Glow.provide(function(glow) {
 		@name glow.events._addKeyListener
 		@private
 		@function
-		@description Add DOM listeners for key events fired by the browser
-			Avoids adding more than one.
+		@description Add DOM listeners for key events fired by the browser.
+			Won't add more than one.
 		
-		@param {glow.NodeList} nodeList Elements to add listeners to
+		@param {glow.NodeList} nodeList Elements to add listeners to.
 		
 		@see glow.NodeList#on
 	*/
@@ -285,6 +292,9 @@ Glow.provide(function(glow) {
 			
 			// if we've already attached DOM listeners for this, don't add them again
 			if ( eventKeysRegistered[eventKey] ) {
+				// increment the number of things listening to this
+				// This lets us remove these DOM listeners from the node when
+				// the glow listeners reaches zero
 				eventKeysRegistered[eventKey][0]++;
 				continue;
 			}
@@ -348,10 +358,10 @@ Glow.provide(function(glow) {
 	}
 	
 	// keyCode to key name translation
-	var keyCodeA = 'A'.charCodeAt(0),
-		keyCodeZ = 'Z'.charCodeAt(0),
-		keyCode0 = '0'.charCodeAt(0),
-		keyCode9 = '9'.charCodeAt(0),
+	var keyCodeA = 65,
+		keyCodeZ = 90,
+		keyCode0 = 48,
+		keyCode9 = 57,
 		// key codes for non-alphanumeric keys
 		keyIds = {
 			8: 'backspace',
@@ -371,13 +381,13 @@ Glow.provide(function(glow) {
 			38: 'up',
 			39: 'right',
 			40: 'down',
-			44: 'printscreen', // Only fires keyup in firefox, IE. Doesn't fire in webkit, opera.
+			//44: 'printscreen', // Only fires keyup in firefox, IE. Doesn't fire in webkit, opera.
 			45: 'insert',
 			46: 'delete',
 			59: ';',
 			61: '=',
-			91: 'meta',
-			93: 'menu', // no keycode in opera, doesn't fire in Chrome
+			//91: 'meta',
+			//93: 'menu', // no keycode in opera, doesn't fire in Chrome
 			
 			// these are number pad numbers, but Opera doesn't distinguish them from normal number keys so we normalise on that
 				96: '0', 
@@ -390,10 +400,10 @@ Glow.provide(function(glow) {
 				103: '7',
 				104: '8',
 				105: '9',
-				106: '*', // opera fires 2 keypress events
-				107: '+', // opera fires 2 keypress events
-				109: '-', // opera sees - as insert
-				110: '.', // opera sees this as n
+				//106: '*', // opera fires 2 keypress events
+				//107: '+', // opera fires 2 keypress events
+				//109: '-', // opera sees - as insert
+				//110: '.', // opera sees this as n
 				111: '/',
 			// end of numpad
 			
@@ -421,13 +431,13 @@ Glow.provide(function(glow) {
 			221: ']',
 			222: '#', // opera sees # key as 3. Pah.
 			223: '`',
-			224: 'meta', // same as [ in opera
+			//224: 'meta', // same as [ in opera
 			226: '\\' // this key appears on a US layout in webkit windows
 		},
 		noKeyPress = {};
 	
 	// corrections for particular browsers :(
-	if ($env.gecko) {
+	if (env.gecko) {
 		keyIds[107] = '=';
 		
 		noKeyPress = {
@@ -438,7 +448,7 @@ Glow.provide(function(glow) {
 			145: 1  // scrolllock
 		};
 	}
-	else if ($env.opera) {
+	else if (env.opera) {
 		keyIds[42] = '*';
 		keyIds[43] = '+';
 		keyIds[47] = '/';
@@ -451,7 +461,7 @@ Glow.provide(function(glow) {
 			18: 1   // alt
 		};
 	}
-	else if ($env.webkit || $env.ie) {
+	else if (env.webkit || env.ie) {
 		keyIds[186] = ';';
 		keyIds[187] = '=';
 	}
