@@ -32,6 +32,10 @@ Glow.provide(function(glow) {
 				This prevents searching being performed until a specified amount of chars
 				have been entered.
 			@param {boolean} [opts.caseSensitive=false] Whether case is important when matching suggestions.
+			@param {boolean} [opts.activateFirst=true] Activate the first item when results appear?
+				If false, results with be shown with no active item.
+			@param {function|string} [opts.keyboardNav='updown'] Alter the default keyboard behaviour.
+				This is the same as keyboardNav in {@link glow.ui.Focusable}.
 		
 		@example
 			// Make an input auto-complete from an array of tags for a recipe database
@@ -75,7 +79,7 @@ Glow.provide(function(glow) {
 		@name glow.ui.AutoSuggest#input
 		@type glow.NodeList
 		@description Refers to the input element to which this is linked to, or an empty NodeList.
-			Link an input to an AutoSuggest using {@link glow.ui.AutoSuggest#linkInput linkInput}
+			Link an input to an AutoSuggest using {@link glow.ui.AutoSuggest#bindInput bindInput}
 	*/
 	AutoSuggestProto.input = glow();
 	
@@ -83,7 +87,7 @@ Glow.provide(function(glow) {
 		@name glow.ui.AutoSuggest#overlay
 		@type glow.ui.Overlay
 		@description The overlay linked to this autosuggest
-			The Overlay is created when {@link glow.ui.AutoSuggest#linkInput linkInput} is
+			The Overlay is created when {@link glow.ui.AutoSuggest#bindInput bindInput} is
 			called.
 	*/
 	
@@ -213,7 +217,7 @@ Glow.provide(function(glow) {
 	AutoSuggestProto.data = function(data) {};
 	
 	/**
-		@name glow.ui.AutoSuggest#linkInput
+		@name glow.ui.AutoSuggest#bindInput
 		@function
 		@description Link this autosuggest to a text input
 			This triggers {@link glow.ui.AutoSuggest#find} when the value in
@@ -249,10 +253,12 @@ Glow.provide(function(glow) {
 		@param {number} [opts.delay=1.5] How many seconds to delay before searching.
 			This prevents searches being made on each key press, instead it
 			waits for the input to be idle for a given number of seconds.
+		@param {string} [opts.anim] Animate the Overlay when it shows/hides.
+			This can be either 'fade' or 'slide'.
 			
 		@returns this
 	*/
-	AutoSuggestProto.linkInput = function(input, opts) {};
+	AutoSuggestProto.bindInput = function(input, opts) {};
 	
 	/**
 		@name glow.ui.AutoSuggest#find
