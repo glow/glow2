@@ -80,7 +80,7 @@ Glow.provide(function(glow) {
 			});
 	*/
 	function Focusable(container, opts) {};
-	glow.util.extend(Focusable, glow.events.Target);
+	glow.util.extend(Focusable, glow.ui.Behaviour);
 	FocusableProto = Focusable.prototype;
 	
 	// NOTE: https://developer.mozilla.org/En/DOM/Element.scrollIntoView may be useful
