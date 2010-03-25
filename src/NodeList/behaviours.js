@@ -29,5 +29,15 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.ui.Focusable}
 	*/
-	NodeListProto.focusable = function(opts) {};
+	NodeListProto.focusable = function(opts) {
+		/*!debug*/
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.NodeList#focusable expects 0 or 1 argument, not ' + arguments.length + '.');
+			}
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.NodeList#focusable expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+		/*gubed!*/
+		return new glow.ui.Focusable(this, opts);
+	};
 });

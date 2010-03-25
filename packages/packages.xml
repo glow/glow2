@@ -40,6 +40,7 @@
 	<ui>
 		<js>
 			<file>src/header/license.txt</file>
+			<file>src/NodeList/behaviours.js</file>
 			<file>src/ui/ui.js</file>
 			<file>src/ui/Behaviour/Behaviour.js</file>
 			<file>src/ui/Focusable/Focusable.js</file>

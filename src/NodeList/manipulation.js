@@ -279,7 +279,7 @@ Glow.provide(function(glow) {
 			
 			Detroyed elements may not be reused in some browsers.
 			
-		@returns {glow.NodeList} An empty NodeList
+		@returns undefined
 		
 		@example
 			// destroy all links in the document
@@ -291,7 +291,6 @@ Glow.provide(function(glow) {
 		glow.NodeList._destroyData(this);
 		this.appendTo(tmpDiv);
 		tmpDiv.innerHTML = '';
-		return new glow.NodeList();
 	};
 	
 	/**
