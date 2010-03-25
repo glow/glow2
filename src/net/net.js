@@ -38,11 +38,10 @@ Glow.provide(function(glow) {
 		request object is returned
  
 	@example
-		glow.net.get("myFile.html").on("load", {
+		glow.net.get("myFile.html").on("load", 
 				function(response){
 					alert("Got file:" +response.text());
-				}
-			});
+				});
 		
 	*/
 	net.get = function() { };
@@ -69,11 +68,10 @@ Glow.provide(function(glow) {
 		request object is returned
  
 	@example
-		glow.net.post("myFile.html", {key:"value", otherkey:["value1", "value2"]}).on("load", {
+		glow.net.post("myFile.html", {key:"value", otherkey:["value1", "value2"]}).on("load", 
 				function(response){
 					alert("Got file:" +response.text());
-				}
-			});
+				});
 		*/
 	net.post = function() { };
 	
@@ -102,11 +100,10 @@ Glow.provide(function(glow) {
 			request object is returned
  
 		@example
-			glow.net.send('HEAD', 'myFile.html', null).on('load'), {
-				function(response{
+			glow.net.send('HEAD', 'myFile.html', null).on('load'), 
+				function(response){
 					// continue
-				})
-			}
+				});
 		*/
 	
 	net.send = function() { };
@@ -130,11 +127,10 @@ Glow.provide(function(glow) {
 			request object is returned
  
 		@example
-			glow.net.put("myFile.html", {key:"value", otherkey:["value1", "value2"]}.on('load'), {
-				function(response{
+			glow.net.put("myFile.html", {key:"value", otherkey:["value1", "value2"]}.on('load'), 
+				function(response){
 					// continue
-				})
-			}
+				});
 		*/
 	
 	net.put = function() { };
@@ -156,10 +152,10 @@ Glow.provide(function(glow) {
 			request object is returned
  
 		@example
-			glow.net.del("myFile.html").on('load'), {
+			glow.net.del("myFile.html").on('load'), 
 				function(response){
 					// continue
-				})
+				});
 		*/
 	
 	net.del = function() { };
@@ -189,10 +185,10 @@ Glow.provide(function(glow) {
  
 		@example
 			// load script with a callback specified
-			glow.net.loadScript("http://www.server.com/json/tvshows.php?jsoncallback={callback}").on('load'), {
+			glow.net.loadScript("http://www.server.com/json/tvshows.php?jsoncallback={callback}").on('load'), 
 				function(data){
 					// use data
-				})
+				});
 		*/
 	net.loadScript = function() { };
 	

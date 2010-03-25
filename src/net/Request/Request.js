@@ -68,7 +68,7 @@ Glow.provide(function(glow) {
 			 * @example
 				// request.complete with an asynchronous call
 				var request = glow.net.get(
-					"myFile.html").on('load', {
+					"myFile.html").on('load', 
 					function(response){
 						alert(request.complete); // returns true
 					}) 
@@ -83,7 +83,7 @@ Glow.provide(function(glow) {
 				 *   Also, this will be undefined if the request originated from loadScript.
 				 * @example
 				var request = glow.net.get(
-					"myFile.html").on('load', {
+					"myFile.html").on('load', 
 					function(response){
 						alert(request.NativeObject); // returns Object()
 					});
@@ -98,7 +98,7 @@ Glow.provide(function(glow) {
 				This is done automatically unless the defer option is set
 			@example
 				var request = glow.net.get(
-					"myFile.html").on('load', {
+					"myFile.html").on('load', 
 					function(response){
 						defer: true
 					}); 
@@ -117,11 +117,11 @@ Glow.provide(function(glow) {
 			 *		may still be loaded but	the callback will not be fired.
 			 * @example
 				var request = glow.net.get(
-					"myFile.html").on('load', {
+					"myFile.html").on('load', 
 					function(response){
 						async: true,
 						defer: true
-					}).on('abort',{
+					}).on('abort',
 						function() {
 							alert("Something bad happened.  The request was aborted.");
 						}
