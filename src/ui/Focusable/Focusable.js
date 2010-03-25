@@ -43,6 +43,8 @@ Glow.provide(function(glow) {
 				{@link glow.ui.Focusable#prev Focusable#prev} or
 				{@link glow.ui.Focusable#activate Focusable#activate} to react to the
 				key event.
+				
+				'this' inside this function refers to the Focusable.
 			@param {boolean} [opts.setFocus=true] Sets whether focus is given to the active element.
 				You need to set this to false if you want focus to remain in another
 				element.

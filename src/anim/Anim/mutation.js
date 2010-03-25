@@ -23,6 +23,19 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
+		@name glow.anim.Anim#reversed
+		@private
+		@type boolean
+		@description Is the animation in a reversed state?
+			This starts off as false, and is true if {@link glow.anim.Anim#reverse reverse}
+			is called. If reverse is called again, this is false.
+			
+			This is useful in 'complete' listeners to determine where the animation
+			ended.
+	*/
+	AnimProto.reversed = false;
+	
+	/**
 		@name glow.anim.Anim#reverse
 		@function
 		@description Reverses this animation
@@ -79,6 +92,9 @@ Glow.provide(function(glow) {
 		var newPosition = this.position && (1 - this.position / this.duration) * this.duration,
 			oldTween = this.tween;
 		
+		// set reversed property
+		this.reversed = !this.reversed;
+		
 		// reverse the tween
 		this.tween = this._preReverseTween || mirrorTween(this.tween);
 		this._preReverseTween = oldTween;
@@ -115,6 +131,8 @@ Glow.provide(function(glow) {
 		}
 		// invalidate the stored reversed tween
 		this._preReverseTween = undefined;
+		this.reversed = false;
+		
 		return this.goTo(this.position / 2);
 	}
 });

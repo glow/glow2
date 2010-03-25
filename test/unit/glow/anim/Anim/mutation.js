@@ -1,20 +1,27 @@
 module('reverse');
 
-test('reverse', 3, function() {
+test('reverse', 6, function() {
 	stop(2000);
 	
 	var anim = glow.anim.Anim(0.5),
 		valueLog = [];
 	
 	equal(typeof anim.reverse, 'function', 'Reverse is function');
+	strictEqual(anim.reversed, false, 'reversed is false');
 	
 	anim.reverse().on('frame', function() {
 		valueLog.push(this.value);
 	}).on('complete', function() {
 		equal(valueLog[0], 1, 'first value correct');
 		equal(valueLog.slice(-1)[0], 0, 'last value correct');
+		
+		anim.reverse();
+		strictEqual(anim.reversed, false, 'reversed is false again');
+		
 		start();
 	});
+	
+	strictEqual(anim.reversed, true, 'reversed is true');
 	
 	anim.start();
 });
