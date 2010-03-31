@@ -114,12 +114,12 @@
 			<filelist files="${packages.core.js.file}" />
 		</concat>
 		
-		<concat destfile="${BUILDSRC_DIR}/widgets.js" fixlastline="yes" eol="lf">
-			<filelist files="${packages.widgets.js.file}" />
+		<concat destfile="${BUILDSRC_DIR}/ui.js" fixlastline="yes" eol="lf">
+			<filelist files="${packages.ui.js.file}" />
 		</concat>
 		
-		<concat destfile="${BUILDSRC_DIR}/widgets.css" fixlastline="yes" eol="lf">
-			<filelist files="${packages.widgets.css.file}" />
+		<concat destfile="${BUILDSRC_DIR}/ui.css" fixlastline="yes" eol="lf">
+			<filelist files="${packages.ui.css.file}" />
 		</concat>
 	</target>
 	
