@@ -4,27 +4,8 @@
 <head>
 	<title>Manual Test: Glow load</title>
 	
-	<script type="text/javascript" src="../lib/showSrc.js"></script>
-	
 	<script type="text/javascript" src="../lib/log4javascript.js"></script>
-	<script type="text/javascript">
-		// set up logging...
-		(function () {
-			var log4jsLog,
-				logOutputElementId = "log-messages";
-			
-			if (logOutputElementId) { // in-page log
-				log4jsLog = log4javascript.getLogger("main");
-				log4jsLog.addAppender(new log4javascript.InPageAppender(logOutputElementId));
-			}
-			else { // use pop-up window
-				log4jsLog = log4javascript.getDefaultLogger();
-			}
-			
-			// exports
-			window.log = log4jsLog;
-		})();
-	</script>
+	<script type="text/javascript" src="../lib/log.js"></script>
 	
 	<script type="text/javascript">
 		// configure the manual test...
@@ -34,19 +15,9 @@
 		};
 	</script>
 	
-	<script type="text/javascript">
-		// include glow.js in the page...
-		(function() {
-			var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
-			
-			log.info('Writing script tag for Glow at ' + glowSrc + '.');
-			
-			document.write(
-				'<script type="text/javascript" src="' + glowSrc + '"> \
-				<' + '/script>'
-			);
-		})();
-	</script>
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
+
 </head>
 
 <body>
@@ -59,27 +30,44 @@
 	</p>
 	
 	<script type="text/javascript" class="showSrc">
-		try {
-			glow = new Glow(conf.version, {base: conf.base});
-		}
-		catch(e) {}
 		
-		if (glow) {
-			log.info('The glow instance is created '+glow+'.');
-		}
-		else {
-			log.error('The glow instance is not defined.');
-		}
+		module('Load Events');
 		
-		glow.load('widgets')
-		.loaded(function(glow) {
-			log.info('The loaded callback ran.');
-		})
-		.ready(function(glow) {
-			var last = document.getElementById('last-element');
-			if (!last) { log.error('The ready callback ran before last page element available.'); }
-			else { log.info('The ready callback ran.'); }
+		test('Glow is instantiated', function(result) {
+			try {
+				glow = new Glow(conf.version, {base: conf.base});
+			}
+			catch(e) {}
+			
+			if (glow) {
+				result.ok(true, 'glow is: ' + typeof glow);
+			}
+			else {
+				log.error('The glow instance is not defined.');
+			}
 		});
+		
+		
+		test('Loaded callback runs when "ui" package is loaded', function(result) {
+			glow.load('ui')
+			.loaded(function(glow) {
+				log.info('loaded callback');
+				
+				result.ok(true, 'The loaded callback ran.');
+				window.loadedRan = true;
+			})
+			.ready(function(glow) {
+				log.info('ready callback');
+				
+				result.ok(true, 'The ready callback ran.');
+				result.ok(!window.readyRan && window.loadedRan, 'The loaded callback ran before the ready callback.');
+				window.readyRan = true;
+				
+				var last = document.getElementById('last-element');
+				result.ok(last, 'The ready callback ran after last page element available.');
+			});
+		});
+
 	</script>
 	
 	<ul>

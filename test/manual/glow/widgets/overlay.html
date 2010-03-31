@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Glow UI Overlay Widget</title>
+	
+	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
+	<script type="text/javascript" src="../../lib/log.js"></script>
+	
+	
+	<script type="text/javascript">
+		// configure the manual test...
+		window.conf = {
+			base: '../../../../packages/',
+			version: '@SRC@'
+		};
+	</script>
+	
+	<script type="text/javascript" src="../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+	
+	<script type="text/javascript">
+		// start glow loading
+		window.glow = Glow(conf.version, {base: conf.base, debug: true})
+		.load('ui');
+		
+		log.info('Loading ui package.');
+	</script>
+	
+	
+	<style type="text/css" media="screen">
+		/*container*/
+		#myOverlay1
+		{
+			position: absolute;
+			width: 60px;
+			overflow: hidden;
+		}
+		/*content*/
+		#myOverlay1 .animate-test-content {
+			border: 1px solid black;
+			background-color: #CAEEC8;
+			zoom: 1;
+		}
+		
+		
+		#testForm {
+			position: relative;
+			left: 350px;
+			width: 100px;
+			top: -10px;
+		}
+		
+		#testFlash {
+			position: relative;
+			left: 350px;
+			width: 70px;
+			padding: 4px;
+			border: 1px solid red;
+		}
+		
+		
+		#myOverlay2
+		{
+			position: absolute;
+			width: 60px;
+			overflow: hidden;
+		}
+		
+		#myOverlay2 .animate-test-content
+		{
+			border: 1px solid black;
+			background-color: #EEDC9F;
+			zoom: 1;
+		}
+		
+		#myOverlay3
+		{
+			position: absolute;
+			width: 60px;
+			overflow: hidden;
+		}
+		
+		#myOverlay3 .animate-test-content
+		{
+				border: 1px solid black;
+				background-color: #EEC6D8;
+				zoom: 1;
+		}
+		
+	</style>
+</head>
+<body>
+	<h1>Glow UI Overlay Widget</h1>
+	
+	<h2>Animated Show and Hide</h2>
+	
+	<p>
+		Use an animation definition to show and hide an overlay. The show animation 
+		should reverse to hide. This also demonstrates a delay
+		when showing (2 seconds) and hiding (1 second). The select input element
+		should appear below the overlay.
+	</p>
+	
+	<div class="testarea" id="animate-test1">
+		Click the button to show the overlay.<br>
+		Click the button to hide the overlay.<br>
+		Try clicking the show and hide buttons while it is still animating.<br>
+		<button type="button" class="show-button" name="show-button" value="show">show</button>
+		<button type="button" class="hide-button" name="hide-button" value="hide">hide</button>
+		<div class="animate-test-content">Hello world</div>
+		<div>
+			<form method="get" id="testForm"><select><option>apple</option><option>banana</option></select></form>
+		</div>
+	</div>
+	<script type="text/javascript">
+		module('Animated Show and Hide');
+		
+		test('Animation definition used to show and hide.', function(result) {
+			glow.ready(function() {
+
+				var myOverlay1 = new glow.ui.Overlay(
+						'#animate-test1 .animate-test-content',
+						{addId: 'myOverlay1'}
+					)
+					.setAnim( [2, {left: 330}, {tween: 'bounceOut'}] );
+	
+				myOverlay1.container.css('left', -55);
+				
+				glow('#animate-test1 .show-button').on('click', function() {
+					myOverlay1.show(2);
+				});
+				
+				glow('#animate-test1 .hide-button').on('click', function() {
+					myOverlay1.hide(1);
+				});
+				
+			});
+		});
+	</script>
+	
+	<h2>Animate with a function.</h2>
+	
+	<p>Animations for showing and hiding are different.</p>
+	
+	<div class="testarea" id="animate-test2">
+		Click the button to show the overlay.<br>
+		Click the button to hide the overlay.<br>
+		Try clicking the show and hide buttons while it is still animating.<br>
+		<button type="button" class="show-button" name="show-button" value="show">show</button>
+		<button type="button" class="hide-button" name="hide-button" value="hide">hide</button>
+		<div class="animate-test-content">Hello again.</div>
+	</div>
+	<script type="text/javascript">
+		module('Animated Show and Hide');
+		
+		test('Animation function used to show and hide.', function(result) {
+			glow.ready(function() {
+				var animator = function(/*this: Overlay*/ showing, callback) {
+					var that = this.container;
+					
+					if (showing) {
+						that.anim(2, {left: [-55, 350]}, {tween: 'bounceOut'})
+						.on('complete', callback);
+					}
+					else {
+						that.anim(2, {left: 700}, {tween: 'bounceOut'})
+						.on('complete', function(e) {
+							that.css('left', -55);
+						})
+						.on('complete', callback);
+					}
+				}
+
+				var myOverlay2 = new glow.ui.Overlay(
+					'#animate-test2 .animate-test-content',
+					{addId: 'myOverlay2'}
+				)
+				.setAnim(animator);
+		
+				myOverlay2.container.css('left', -55);
+				
+				glow('#animate-test2 .show-button').on('click', function() {
+					myOverlay2.content.html('Hello again');
+					myOverlay2.show();
+				});
+				
+				glow('#animate-test2 .hide-button').on('click', function() {
+					myOverlay2.content.html('Bye');
+					myOverlay2.hide();
+				});
+				
+			});
+		});
+	</script>
+	
+	
+	<h2>hideFlash</h2>
+	
+	<p>Overlap intersects with a Flash element.</p>
+	
+	<div class="testarea" id="animate-test3">
+		Click the button to show the overlay.<br>
+		Click the button to hide the overlay.<br>
+		Try clicking the show and hide buttons while it is still animating.<br>
+		<button type="button" class="show-button" name="show-button" value="show">show</button>
+		<button type="button" class="hide-button" name="hide-button" value="hide">hide</button>
+		<div class="animate-test-content">Hello flash.</div>
+		<div>
+			<div id="testFlash"><embed width="32" height="32" quality="high" allowfullscreen="true" allowscriptaccess="always" id="glow84420596FlashEmbed1" src="data/smile.swf" type="application/x-shockwave-flash"></div>
+		</div>
+	</div>
+	<script type="text/javascript" class="showSrc">
+ 		module('hideFlash');
+		
+ 		test('Animation function used to show and hide.', function(result) {
+			glow.ready(function() {
+				var myOverlay3 = new glow.ui.Overlay(
+					'#animate-test3 .animate-test-content',
+					{addId: 'myOverlay3'}
+				)
+				.setAnim([2, {left: 325}, {tween: 'bounceOut'}]);
+		
+				myOverlay3.container.css('left', -55);
+			
+				myOverlay3.on('afterShow', function() {
+					myOverlay3.hideFlash();
+				});
+			
+				myOverlay3.on('afterHide', function() {
+					myOverlay3.showFlash();
+				});
+			
+				glow('#animate-test3 .show-button').on('click', function() {
+					myOverlay3.show();
+				});
+			
+				glow('#animate-test3 .hide-button').on('click', function() {
+					myOverlay3.hide();
+				});
+			});
+		});
+	</script>
+	
+	
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+	<div id="log-messages"></div>
+</body>
+</html>

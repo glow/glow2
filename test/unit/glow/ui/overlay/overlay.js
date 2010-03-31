@@ -1,7 +1,6 @@
 (function() {
 	module('glow.ui.Overlay');
 	
-      
 	test('Basic overlay creation', function() {			
         expect(4);	
 		
@@ -51,8 +50,10 @@
  		myOverlay.container.replaceWith(myOverlay.content);
  	});
  	
- 	test('show and hide', function() {			
-         expect(10);	
+ 	test('show and hide', function() {
+ 		var rval;
+ 		
+        expect(12);	
  		
  		// set up
  		var myOverlay = new glow.ui.Overlay('#div2', {addId: 'testOverlay'});
@@ -62,13 +63,15 @@
  		equal(myOverlay.visible, false, 'An unshown overlay has a false `visible` property.');
  		
  		// show
- 		myOverlay.show();
+ 		rval = myOverlay.show();
+ 		equal(myOverlay, rval, 'The show method returns a reference to `this`.');
  		
  		equal(myOverlay.container.state.hasClass('visible'), true, 'A shown overlay has a visible class.');
 		equal(myOverlay.visible, true, 'An shown overlay has a true `visible` property.');
 		
  		// hide
- 		myOverlay.hide();
+ 		rval = myOverlay.hide();
+ 		equal(myOverlay, rval, 'The hide method returns a reference to `this`.');
  		
  		equal(myOverlay.container.state.hasClass('visible'), false, 'An hidden overlay does not have a visible class.');
  		equal(myOverlay.visible, false, 'An hidden overlay has a false `visible` property.');
@@ -96,6 +99,5 @@
  		myOverlay.content.removeClass('glowCSSVERSION-overlay-content');
  		myOverlay.container.replaceWith(myOverlay.content);
  	});
- 	
  	
  })();
