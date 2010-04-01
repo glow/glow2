@@ -209,11 +209,11 @@
 })();
 
 // include glow on the page
-(function() {
-	var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
-	
-	document.write(
-		'<'+'script type="text/javascript" src="' + glowSrc + '"> \
-		<' + '/script>'
-	);
-})();
+// (function() {
+// 	var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
+// 	
+// 	document.write(
+// 		'<'+'script type="text/javascript" src="' + glowSrc + '"> \
+// 		<' + '/script>'
+// 	);
+// })();

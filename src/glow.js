@@ -38,7 +38,7 @@
 			base = opts.base || defaultBase;
 
 		glowMap = {
-			versions: ['2.0.0', '@'+'SRC@'],
+			versions: ['2.0.0', 'src'],
 			'2.0.0': {
 				'core': ['core'+debug+'.js'],
 				'ui':   ['core', 'ui'+debug+'.js', 'ui'+debug+'.css']
@@ -180,7 +180,8 @@
 		var glow,
 			loading,
 			builders;
-
+		
+		if (version === '@'+'SRC@') { version = 'src'}
 		// now that we have the name and version we can move the builders out of provided cache
 		glow = Glow._build.instances[version];
 		if (!glow) { /*debug*///log.info('Cannot complete, unknown version of glow: '+version);

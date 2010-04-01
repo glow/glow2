@@ -23,7 +23,7 @@
 	<title>t Ready</title>
 	
 	<script type="text/javascript">
-		parent.testHelper.addPackage('glow.js', window);
+		parent.testHelper.addScript('glow.js', window);
 	</script>
 	
 	<script type="text/javascript">
