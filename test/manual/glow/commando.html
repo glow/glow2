@@ -4,41 +4,24 @@
 <head>
 	<title>Manual Test: Glow commando</title>
 	
-	<script type="text/javascript" src="../lib/showSrc.js"></script>
-	
 	<script type="text/javascript" src="../lib/log4javascript.js"></script>
-	<script type="text/javascript">
-		// set up logging...
-		(function () {
-			var log4jsLog,
-				logOutputElementId = "log-messages";
-			
-			if (logOutputElementId) { // in-page log
-				log4jsLog = log4javascript.getLogger("main");
-				log4jsLog.addAppender(new log4javascript.InPageAppender(logOutputElementId));
-			}
-			else { // use pop-up window
-				log4jsLog = log4javascript.getDefaultLogger();
-			}
-			
-			// exports
-			window.log = log4jsLog;
-		})();
-	</script>
+	<script type="text/javascript" src="../lib/log.js"></script>
+	
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
 	
 	<script type="text/javascript">
 		// configure the manual test...
 		window.conf = {
 			base: '../../../packages/',
-			version: '@SRC@'
+			version: 'src'
 		};
 	</script>
 	
 	<script type="text/javascript">
 		// include glow.js in the page...
 		(function() {
-			var coreSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/core.js';
-			var widgetsSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/widgets.js';
+			var coreSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/core.js';
+			var uiSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/ui.js';
 			
 			log.info('Writing script tag for core at ' + coreSrc + '.');
 			
@@ -47,10 +30,10 @@
 				<' + '/script>'
 			);
 			
-			log.info('Writing script tag for widgets at ' + widgetsSrc + '.');
+			log.info('Writing script tag for ui at ' + uiSrc + '.');
 			
 			document.write(
-				'<script type="text/javascript" src="' + widgetsSrc + '"> \
+				'<script type="text/javascript" src="' + uiSrc + '"> \
 				<' + '/script>'
 			);
 		})();
@@ -74,11 +57,11 @@
 			log.error('The glow instance is not defined.');
 		}
 		
-		if (glow.widgets) {
-			log.info('The widgets package is created '+glow.widgets+'.');
+		if (glow.ui) {
+			log.info('The ui package is created '+glow.ui+'.');
 		}
 		else {
-			log.error('The widgets package is not defined.');
+			log.error('The ui package is not defined.');
 		}
 	</script>
 	

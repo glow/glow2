@@ -4,40 +4,23 @@
 <head>
 	<title>Manual Test: Glow load</title>
 	
-	<script type="text/javascript" src="../lib/showSrc.js"></script>
-	
 	<script type="text/javascript" src="../lib/log4javascript.js"></script>
-	<script type="text/javascript">
-		// set up logging...
-		(function () {
-			var log4jsLog,
-				logOutputElementId = "log-messages";
-			
-			if (logOutputElementId) { // in-page log
-				log4jsLog = log4javascript.getLogger("main");
-				log4jsLog.addAppender(new log4javascript.InPageAppender(logOutputElementId));
-			}
-			else { // use pop-up window
-				log4jsLog = log4javascript.getDefaultLogger();
-			}
-			
-			// exports
-			window.log = log4jsLog;
-		})();
-	</script>
+	<script type="text/javascript" src="../lib/log.js"></script>
+	
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
 	
 	<script type="text/javascript">
 		// configure the manual test...
 		window.conf = {
 			base: '../../../packages/',
-			version: '@SRC@'
+			version: 'src'
 		};
 	</script>
 	
 	<script type="text/javascript">
 		// include glow.js in the page...
 		(function() {
-			var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
+			var glowSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/glow.js';
 			
 			log.info('Writing script tag for Glow at ' + glowSrc + '.');
 			
@@ -60,7 +43,7 @@
 	
 	<script type="text/javascript" class="showSrc">
 		var mockMap = {
-			versions: ['2.0.0', '2.1.0', '2.1.1', '@'+'SRC@'],
+			versions: ['2.0.0', '2.1.0', '2.1.1', 'src'],
 			'2.0.0': {
 				'core':    ['core.js'],
 				'base':    ['core', 'base.js'],
@@ -75,8 +58,8 @@
 			}
 		};
 		
-		var glow200 = Glow('2.0.0', {map: mockMap, base: './mock/'});
-		var glow211 = Glow('2', {map: mockMap, base: './mock/'});
+		var glow200 = Glow('2.0.0', {_map: mockMap, base: './mock/', _noload: true});
+		var glow211 = Glow('2', {_map: mockMap, base: './mock/', _noload: true});
 		
 		glow200.load('dom', 'widgets', 'base');
 		

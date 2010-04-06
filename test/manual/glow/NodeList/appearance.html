@@ -4,27 +4,28 @@
 <head>
 	<title>Manual Test: Glow Appearance</title>
 	
+	<script src="../../../unit/lib/testhelper.js?base=../../../../" type="text/javascript"></script>
+	
 	<script type="text/javascript">
-		// configure the manual test...
-		window.conf = {
-			base: '../../../../packages/',
-			version: '@SRC@'
-		};
+		testHelper.addScript('glow.js');
 	</script>
 	
 	<script type="text/javascript" src="../../lib/manualtest.js"></script>
 	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+
 	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
 	
 	
 	
 	<script type="text/javascript">
 		// start glow loading
-		window.glow = Glow(conf.version, {base: conf.base, debug: true});
+		window.glow = Glow( testHelper.getVersion(), {base: testHelper.getBase() });
 	</script>
 </head>
 
 <body>
+	<div id="glow-version"></div>
+	
 	<h1>Appearance methods</h1>
 	
 	<h2>Zooming / Position set to absolute</h2>

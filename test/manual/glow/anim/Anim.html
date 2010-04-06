@@ -4,27 +4,14 @@
 <head>
 	<title>Manual Test: Glow Animations</title>
 	
+	<script src="../../../unit/lib/testhelper.js?base=../../../../" type="text/javascript"></script>
+	
 	<script type="text/javascript">
-		// configure the manual test...
-		window.conf = {
-			base: '../../../../packages/',
-			version: '@SRC@'
-		};
+		testHelper.addScript('core.js');
 	</script>
 	
 	<script type="text/javascript" src="../../lib/manualtest.js"></script>
 	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
-	<script type="text/javascript" src="../../lib/log4javascript.js"></script>
-	
-	<script type="text/javascript">
-		// set up logging...
-		window.log = log4javascript.getDefaultLogger();
-	</script>
-	
-	<script type="text/javascript">
-		// start glow loading
-		window.glow = Glow(conf.version, {base: conf.base, debug: true});
-	</script>
 	
 	<style type="text/css">
 		body {
@@ -103,14 +90,12 @@
 	</ol>
 	
 	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
-			glow('#simpleAnimGo').on('click', function() {
-				glow('#simpleAnimDiv').anim(2, {
-					left: 700,
-					'background-color': 'green'
-				});
-				return false;
+		glow('#simpleAnimGo').on('click', function() {
+			glow('#simpleAnimDiv').anim(2, {
+				left: 700,
+				'background-color': 'green'
 			});
+			return false;
 		});
 	</script>
 	
@@ -145,11 +130,9 @@
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
-			glow('#slideButtons').children().on('click', function() {
-				glow( glow(this).attr('href') ).slideToggle();
-				return false;
-			});
+		glow('#slideButtons').children().on('click', function() {
+			glow( glow(this).attr('href') ).slideToggle();
+			return false;
 		});
 	</script>
 	
@@ -172,37 +155,35 @@
 	<p><a href="#" id="mexStart">Start</a> | <a href="#" id="mexStop">Stop</a></p>
 	
 	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
-			glow('#mexWave').html( new Array(101).join('<div></div>') );
-			
-			var animTimeline = glow.anim.Timeline({
-				loop: true
-			});
-			
-			//create a wave up & wave down anim for each div
-			var wavingDivs = glow("#mexWave div").each(function(i) {
-				var div = glow(this).css('left', i * 8);
-			
-				animTimeline.track(
-					// add a pause to the start of the anim, this creates the wave effect
-					(i / 100),
-					// move up & down
-					div.anim(1, {
-						top: 0,
-						'background-color': '#fa0'
-					}).pingPong()
-				);
-			});
-			
-			glow('#mexStart').on('click', function() {
-				animTimeline.start();
-				return false;
-			});
-			
-			glow('#mexStop').on('click', function() {
-				animTimeline.stop();
-				return false;
-			});
+		glow('#mexWave').html( new Array(101).join('<div></div>') );
+		
+		var animTimeline = glow.anim.Timeline({
+			loop: true
+		});
+		
+		//create a wave up & wave down anim for each div
+		var wavingDivs = glow("#mexWave div").each(function(i) {
+			var div = glow(this).css('left', i * 8);
+		
+			animTimeline.track(
+				// add a pause to the start of the anim, this creates the wave effect
+				(i / 100),
+				// move up & down
+				div.anim(1, {
+					top: 0,
+					'background-color': '#fa0'
+				}).pingPong()
+			);
+		});
+		
+		glow('#mexStart').on('click', function() {
+			animTimeline.start();
+			return false;
+		});
+		
+		glow('#mexStop').on('click', function() {
+			animTimeline.stop();
+			return false;
 		});
 	</script>
 	
@@ -218,13 +199,11 @@
 	</ol>
 	
 	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
-			glow('#scrollToTop').on('click', function() {
-				glow(window).anim(2, {
-					scrollTop: 0
-				}, {tween: 'bounceOut'});
-				return false;
-			});
+		glow('#scrollToTop').on('click', function() {
+			glow(window).anim(2, {
+				scrollTop: 0
+			}, {tween: 'bounceOut'});
+			return false;
 		});
 	</script>
 	
@@ -242,7 +221,7 @@
 	</p>
 	
 	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
+		(function() {
 			var propName;
 			
 			if (glow.env.webkit) {
@@ -278,7 +257,7 @@
 			glow('#glowLinks').delegate('mouseleave', 'a', function() {
 				glow(this).data('glowAnim').reverse().start();
 			});
-		});
+		})();
 	</script>
 	
 	<h2>Rounded Corners</h2>
@@ -286,7 +265,7 @@
 	<div id="roundedCorners"></div>
 	
 	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
+		(function() {
 			var propName, propName2;
 			
 			glow('#roundedCorners').html( new Array(201).join('<div class="rc"></div>') )
@@ -337,7 +316,7 @@
 					}).start();
 				}
 			});
-		});
+		})();
 	</script>
 	
 	<h2>ASCII Progress Bar</h2>
@@ -347,7 +326,7 @@
 	<pre id="asciiProgress" style="font-size:2em;font-weight:bold">[--------------------------------------------------] 0%</pre>
 	
 	<script type="text/javascript" class="showSrc">
-		Glow('@SRC@').ready(function(glow) {
+		(function() {
 			var progressBar = glow('#asciiProgress'),
 				barSize = 50;
 			
@@ -362,7 +341,7 @@
 				}).start();
 				return false;
 			});
-		});
+		})();
 	</script>
 	
 	<script type="text/javascript">

@@ -7,16 +7,29 @@
 	<script type="text/javascript" src="../lib/log4javascript.js"></script>
 	<script type="text/javascript" src="../lib/log.js"></script>
 	
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	
 	<script type="text/javascript">
 		// configure the manual test...
 		window.conf = {
 			base: '../../../packages/',
-			version: '@SRC@'
+			version: 'src'
 		};
 	</script>
 	
-	<script type="text/javascript" src="../lib/manualtest.js"></script>
-	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
+	<script type="text/javascript">
+		// include glow.js in the page...
+		(function() {
+			var glowSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/glow.js';
+			
+			log.info('Writing script tag for Glow at ' + glowSrc + '.');
+			
+			document.write(
+				'<script type="text/javascript" src="' + glowSrc + '"> \
+				<' + '/script>'
+			);
+		})();
+	</script>
 
 </head>
 
