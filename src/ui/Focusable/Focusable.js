@@ -341,7 +341,7 @@ Glow.provide(function(glow) {
 			When a Focusable is modal it cannot be deactivated, focus cannot
 			be given to elements outside of it until modal set to false.
 			
-		@param {boolean} val New modal value
+		@param {boolean} setModal New modal value
 		
 		@returns this when setting, true/false when getting
 	*/
@@ -367,7 +367,7 @@ Glow.provide(function(glow) {
 				this.active(true);
 			}
 			// switch modal off, if this focusable is modal
-			else if (this._modal) {
+			else if (!setModal && this._modal) {
 				modalFocusable = undefined;
 			}
 			
