@@ -49,10 +49,10 @@ Glow.provide(function(glow) {
 				<li> element, and {@link glow.DomEvent#attachedTo attachedTo} would be
 				the <ol>.
 		*/
-		this.source = e.target || e.srcElement;
+		this.source = e.target || e.srcElement || undefined;
 		
 		// some rare cases crop up in Firefox where the source is a text node
-		if (this.source && this.source.nodeType !== 1) {
+		if (this.source && this.source.nodeType === 3) {
 			this.source = this.source.parentNode;
 		}
 		
