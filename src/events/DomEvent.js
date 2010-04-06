@@ -269,12 +269,12 @@ Glow.provide(function(glow) {
 			
 			// skip if there is no bridge for this kind of event attached
 			id = _getPrivateEventKey(attachTo);
-			if (!domEventHandlers[id] && !domEventHandlers[id][eventName]) { continue; }
+			if (!domEventHandlers[id] || !domEventHandlers[id][eventName]) { continue; }
 
 			bridge = domEventHandlers[id][eventName];
 			
 			// one less listener associated with this event
-			if ( --bridge.count === 0) {
+			if ( !--bridge.count ) {
 				// no more listeners associated with this event
 				handler = bridge.callback;
 				
