@@ -139,3 +139,37 @@ test('encodeUrl', 2, function() {
 		glow.util.encodeUrl({foo: "Foo", bar: ["Bar 1", "Bar2"]}), "foo=Foo&bar=Bar%201&bar=Bar2"
 	);
 });
+
+test('interpolate', 2, function() {
+	equal(typeof glow.util.interpolate, 'function', 'interpolate is function.');
+	
+	var data = {
+		name: 'Haxors!!1 <script src="hackhackhack.js"></script>'
+	}
+	var template = '<p>Hello, my name is {name}</p>';
+	var result = glow.util.interpolate(template, data, {
+		escapeHtml: true
+	});
+	
+	equal(result, '<p>Hello, my name is Haxors!!1 &lt;script src="hackhackhack.js"&gt;&lt;/script&gt;</p>');
+});
+
+test('cookie', 6, function() {
+	equal(typeof glow.util.cookie, 'function', 'cookie is function.');
+	
+	glow.util.cookie('tea', 'milky');
+	
+	var offset = document.cookie.indexOf('tea=milky');
+	notEqual(offset, -1, 'Set cookie appears in document.cookie.');
+	
+	equal(glow.util.cookie('tea'), 'milky', 'Can set and get cookie.');
+	
+	var allCookies = glow.util.cookie();
+	equal(allCookies['tea'], 'milky', 'Can get all cookies.');
+	
+	glow.util.cookie({'tea': 'milky', 'sugar': '2', 'biscuit': 'yes'});
+	same(glow.util.cookie(), {'tea': 'milky', 'sugar': '2', 'biscuit': 'yes'}, 'Setting and getting multiple cookies.');
+	
+	glow.util.removeCookie('sugar');
+	equal(glow.util.cookie('sugar'), undefined, 'Can remove a cookie.');
+});
