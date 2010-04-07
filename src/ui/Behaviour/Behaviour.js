@@ -1,6 +1,4 @@
 Glow.provide(function(glow) {
-	var BehaviourProto, undefined;
-	
 	/**
 		@name glow.ui.Behaviour
 		@class
@@ -11,27 +9,30 @@ Glow.provide(function(glow) {
 		
 	*/
 	function Behaviour() {}
+	glow.util.extend(Behaviour, glow.events.Target);
 	
-	/**
-		@name glow.ui.Behaviour#container
-		@type glow.NodeList
-		@description The element the behaviour is acting on
-	*/
-	
-	/**
-		@name glow.ui.Behaviour#disable
-		@function
-		@description Sets the disabled property of this behaviour to true and fires the disable event
+	/*!debug*/
+		/**
+			@name glow.ui.Behaviour#enabled
+			@function
+			@description Get/set the enabled state
+				
+			@param {boolean} [state=true] 
+		*/
+		Behaviour.prototype.enabled = function() {
+			throw new Error('#enabled not implemented on behaviour');
+		}
 		
-		@param {boolean} [state=true] 
-		@see glow.ui.Widget#enable
-	*/
-	
-	/**
-		@name glow.ui.Behaviour#destroy
-		@function
-		@description Removes the behaviour & event listeners
-	*/
+		/**
+			@name glow.ui.Behaviour#destroy
+			@function
+			@description Removes the behaviour & event listeners
+		*/
+		Behaviour.prototype.destroy = function() {
+			throw new Error('#destroy not implemented on behaviour');
+		}
+		
+	/*gubed!*/
 	
 	// EXPORT
 	glow.ui.Behaviour = Behaviour;

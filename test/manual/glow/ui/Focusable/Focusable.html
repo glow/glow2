@@ -1,0 +1,326 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: glow.ui.Focusable</title>
+	
+	<script type="text/javascript" src="../../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../../lib/style.css" />
+	<script src="../../../../unit/lib/testhelper.js?base=../../../../../" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+		testHelper.addScript('core.js');
+		testHelper.addScript('ui.js');
+	</script>
+	
+	<script type="text/javascript">
+		// start glow loading
+		window.glow = Glow(conf.version, {base: conf.base, debug: true}).load('ui');
+	</script>
+	
+	<style type="text/css">
+		.active {
+			background: yellow;
+		}
+		.testTable {
+			table-layout: fixed;
+			border-collapse: separate;
+		}
+		.testTable td {
+			border: 1px solid #ccc;
+			width: 200px;
+		}
+		
+		.testTable thead td {
+			background: #ccc;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>glow.ui.Focusable</h1>
+	
+	<h2>Plain focusable</h2>
+	
+	<ol>
+		<li>Check the line below can get focus via tabbing & clicking</li>
+	</ol>
+	
+	<div class="testarea">
+		<p id="myFocusable1">This is focusable</p>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			glow('#myFocusable1').focusable();
+		});
+	</script>
+	
+	<h2>Modal focusable</h2>
+	
+	<ol>
+		<li>Check the 'This is a focusable' line below can get focus via tabbing & clicking</li>
+		<li>Turn modal on</li>
+		<li>No other element should be able to gain focus, either by tabbing or clicking</li>
+		<li>Turn modal off</li>
+		<li>Other elements should be able to gain focus</li>
+	</ol>
+	
+	<div class="testarea">
+		<p tabindex="0">This element can have focus</p>
+		<p id="myFocusable2">This is a focusable</p>
+		<p tabindex="0">This element can have focus</p>
+		<p>Modal: <a href="#" id="modalOn">On</a> | <a href="#" id="modalOff">Off</a></p>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var focusable = glow('#myFocusable2').focusable();
+			glow('#modalOn').on('click', function() {
+				focusable.modal(true);
+				return false;
+			});
+			glow('#modalOff').on('click', function() {
+				focusable.modal(false);
+				return false;
+			});
+		});
+	</script>
+	
+	<h2>Focusable with children</h2>
+	
+	<ol>
+		<li>Click the first 'This element can have focus' paragraph to give it focus</li>
+		<li>Press tab, this should highlight (in yellow) the first non-heading row in the first table</li>
+		<li>The arrow keys can now be used to cycle through the rows</li>
+		<li>Pressing down on the last item should cause the first to become active</li>
+		<li>Pressing up on the first item should cause the last to become active</li>
+		<li>Highlight the third row and press tab again, this should highlight the 1st row on the 2nd table</li>
+		<li>The arrow keys can now be used to cycle through the rows, but you cannot loop from start to finish as with the first table</li>
+		<li>Pressing shift + tab should highlight the third row on the first table - the last row you had highlighted</li>
+		<li>You should be able to highlight rows on the 2nd table by hovering over them with the mouse</li>
+		<li>You should be able to highlight rows on the 1st table by clicking them with the mouse</li>
+	</ol>
+	
+	<div class="testarea">
+		<p tabindex="0">This element can have focus</p>
+		<table id="testTable1" class="testTable" cellspacing="10" style="float:left;border-right:4px solid blue">
+			<thead>
+				<tr>
+					<td>1</td>
+					<td>2</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>3</td>
+					<td>4</td>
+				</tr>
+				<tr>
+					<td>5</td>
+					<td>6</td>
+				</tr>
+				<tr>
+					<td>7</td>
+					<td>8</td>
+				</tr>
+				<tr>
+					<td>9</td>
+					<td>10</td>
+				</tr>
+				<tr>
+					<td>11</td>
+					<td>12</td>
+				</tr>
+			</tbody>
+		</table>
+		<table id="testTable2" class="testTable" cellspacing="10">
+			<thead>
+				<tr>
+					<td>1</td>
+					<td>2</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>3</td>
+					<td>4</td>
+				</tr>
+				<tr>
+					<td>5</td>
+					<td>6</td>
+				</tr>
+				<tr>
+					<td>7</td>
+					<td>8</td>
+				</tr>
+				<tr>
+					<td>9</td>
+					<td>10</td>
+				</tr>
+				<tr>
+					<td>11</td>
+					<td>12</td>
+				</tr>
+			</tbody>
+		</table>
+		<p tabindex="0">This element can have focus</p>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			glow('#testTable1').focusable({
+				children: ' > tbody > tr',
+				loop: true
+			});
+			
+			glow('#testTable2').focusable({
+				children: ' > tbody > tr',
+				activateOnHover: true
+			});
+		});
+	</script>
+	
+	<h2>Autosuggest style</h2>
+	
+	<ol>
+		<li>Click the text input, this should highlight the first non-heading row of the table</li>
+		<li>You should now be able to use the up and down arrow keys to move highlight between the rows</li>
+		<li>While doing this, the text input should remain focused</li>
+		<li>You should be able to type into the input freely and use the left & right arrow keys</li>
+	</ol>
+	
+	<div class="testarea">
+		<table id="testTable3" class="testTable" cellspacing="10">
+			<thead>
+				<tr>
+					<td>1</td>
+					<td>2</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>3</td>
+					<td>4</td>
+				</tr>
+				<tr>
+					<td>5</td>
+					<td>6</td>
+				</tr>
+				<tr>
+					<td>7</td>
+					<td>8</td>
+				</tr>
+				<tr>
+					<td>9</td>
+					<td>10</td>
+				</tr>
+				<tr>
+					<td>11</td>
+					<td>12</td>
+				</tr>
+			</tbody>
+		</table>
+		<p tabindex="0">This element can have focus</p>
+		<p>Text input: <input id="testInput" autocomplete="off" /></p>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var focusable = glow('#testTable3').focusable({
+				children: ' > tbody > tr',
+				keyboardNav: 'arrows-y',
+				activateOnHover: true,
+				setFocus: false
+			});
+			
+			glow('#testInput').on('focus', function() {
+				focusable.active(true);
+			})
+		});
+	</script>
+	
+	<h2>Reacting to changes</h2>
+	
+	<ol>
+		<li>Using the tab &amp; arrow keys, highlight the third item in the list</li>
+		<li>Tab onto 'Random list order' and press enter to move "Three" out of position</li>
+		<li>Use shift & tab to re-focus the list, "Three" should be reactivated, despite moving</li>
+	</ol>
+	
+	<div class="testarea">
+		<p tabindex="0">This element can have focus</p>
+		<ul id="testList">
+			<li>One</li>
+			<li>Two</li>
+			<li>Three</li>
+			<li>Four</li>
+			<li>Five</li>
+			<li>Six</li>
+		</ul>
+		<p><a href="#" id="random">Random list order</a></p>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var focusable = glow('#testList').focusable({
+				children: ' > li'
+			});
+			
+			glow('#random').on('click', function() {
+				glow('#testList li').sort(function() {
+					return Math.floor( Math.random() * 2 ) ? -1 : 1;
+				}).appendTo('#testList');
+				return false;
+			})
+		});
+	</script>
+	
+	<h2>Reacting to changes 2</h2>
+	
+	<ol>
+		<li>Using the tab &amp; arrow keys, highlight the third item in the list</li>
+		<li>Tab onto 'Create random list' and press enter</li>
+		<li>Use shift & tab to re-focus the list, the first item should be activated</li>
+	</ol>
+	
+	<div class="testarea">
+		<p tabindex="0">This element can have focus</p>
+		<ul id="testList2">
+			<li>1</li>
+			<li>2</li>
+			<li>3</li>
+			<li>4</li>
+			<li>5</li>
+			<li>6</li>
+		</ul>
+		<p tabindex="0">This element can have focus</p>
+		<p><a href="#" id="random2">Create random list</a></p>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var focusable = glow('#testList2').focusable({
+				children: ' > li'
+			});
+			
+			glow('#random2').on('click', function() {
+				var i = 6,
+					str = '';
+				
+				while (i--) {
+					str += '<li>' + Math.floor( Math.random() * 1000 ) + '</li>';
+				}
+				glow('#testList2').html(str);
+				return false;
+			})
+		});
+	</script>
+
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>

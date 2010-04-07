@@ -236,10 +236,13 @@ Glow.provide(function(glow) {
 		};
 		
 		keypressHandler = function(nativeEvent) {
+			var keyName;
 			// some browsers store the charCode in .charCode, some in .keyCode
 			activeChar = nativeEvent.charCode || nativeEvent.keyCode;
+			keyName = keyCodeToId(activeKey);
+			
 			// some browsers fire this event for non-printable chars, look at the previous keydown and see if we're expecting a printable char
-			if ( keyCodeToId(activeKey).length > 1 && keyName !== 'tab' && keyName !== 'space' ) {
+			if ( keyName.length > 1 && keyName !== 'tab' && keyName !== 'space' ) {
 				// non-printable chars usually have an ID length greater than 1
 				activeChar = undefined;
 			}

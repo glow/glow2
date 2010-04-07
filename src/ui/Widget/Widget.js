@@ -513,6 +513,5 @@ Glow.provide(function(glow) {
  */
 
 	// export
-	glow.ui = {} || glow.ui;
 	glow.ui.Widget = Widget;
 });

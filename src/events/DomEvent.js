@@ -5,7 +5,9 @@ Glow.provide(function(glow) {
 		// shortcuts to aim compression
 		events = glow.events,
 		_callListeners = events._callListeners,
-		_getPrivateEventKey = events._getPrivateEventKey;
+		_getPrivateEventKey = events._getPrivateEventKey,
+		// used for feature detection
+		supportsActivateDeactivate = (document.createElement('div').onactivate !== undefined);
 	
 	/** 
 		@name glow.events.DomEvent
@@ -47,10 +49,10 @@ Glow.provide(function(glow) {
 				<li> element, and {@link glow.DomEvent#attachedTo attachedTo} would be
 				the <ol>.
 		*/
-		this.source = e.target || e.srcElement;
+		this.source = e.target || e.srcElement || undefined;
 		
 		// some rare cases crop up in Firefox where the source is a text node
-		if (this.source && this.source.nodeType !== 1) {
+		if (this.source && this.source.nodeType === 3) {
 			this.source = this.source.parentNode;
 		}
 		
@@ -220,26 +222,28 @@ Glow.provide(function(glow) {
 			
 			handler.domName = (eventName === 'mouseenter') ? 'mouseover' : 'mouseout';
 		}
+		// handle blur & focus differently for IE so it bubbles
+		else if ( supportsActivateDeactivate && (eventName === 'focus' || eventName === 'blur') ) {
+			// activate and deactivate are like focus and blur but bubble
+			// However, <body> and <html> also activate so we need to fix that
+			handler = function(nativeEvent) {
+				var nodeName = nativeEvent.srcElement.nodeName;
+				if (nodeName !== 'HTML' && nodeName !== 'BODY') {
+					_callDomListeners( attachTo, eventName, new DomEvent(nativeEvent) );
+				}
+			}
+			
+			handler.domName = (eventName === 'focus') ? 'activate' : 'deactivate';
+		}
 		else {
 			handler = function(nativeEvent) {
 				var domEvent = new DomEvent(nativeEvent);
-				events._callDomListeners(attachTo, eventName, domEvent); // fire() returns result of callback
+				_callDomListeners(attachTo, eventName, domEvent); // fire() returns result of callback
 				
 				return !domEvent.defaultPrevented();
 			};
 			
-			if (glow.env.ie) { // see: http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-				if (eventName === 'focus') {
-					handler.domName = 'focusin';
-				}
-				else if (eventName === 'blur') {
-					handler.domName = 'focusout';
-				}
-				handler.domName = eventName;
-			}
-			else {
-				handler.domName = eventName;
-			}
+			handler.domName = eventName;
 		}
 		
 		return handler;
@@ -265,12 +269,12 @@ Glow.provide(function(glow) {
 			
 			// skip if there is no bridge for this kind of event attached
 			id = _getPrivateEventKey(attachTo);
-			if (!domEventHandlers[id] && !domEventHandlers[id][eventName]) { continue; }
+			if (!domEventHandlers[id] || !domEventHandlers[id][eventName]) { continue; }
 
 			bridge = domEventHandlers[id][eventName];
 			
 			// one less listener associated with this event
-			if ( --bridge.count === 0) {
+			if ( !--bridge.count ) {
 				// no more listeners associated with this event
 				handler = bridge.callback;
 				
@@ -430,7 +434,7 @@ Glow.provide(function(glow) {
 			
 		@returns {glow.events.DomEvent} Original event passed in
 	*/
-	events._callDomListeners = function(element, eventName, event) {
+	var _callDomListeners = events._callDomListeners = function(element, eventName, event) {
 		var delegateMatches = _getDelegateMatches(element, eventName, event);
 		
 		// call delegated listeners
