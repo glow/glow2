@@ -4,36 +4,14 @@
 <head>
 	<title>Manual Test: glow.ui.Focusable</title>
 	
-	<script type="text/javascript">
-		// configure the manual test...
-		window.conf = {
-			base: '../../../../../packages/',
-			version: '@SRC@'
-		};
-	</script>
-	
 	<script type="text/javascript" src="../../../lib/manualtest.js"></script>
 	<link type="text/css" rel="stylesheet" media="screen" href="../../../lib/style.css" />
-	<!--script type="text/javascript" src="../../lib/log4javascript.js"></script-->
+	<script src="../../../../unit/lib/testhelper.js?base=../../../../../" type="text/javascript"></script>
 	
-	<!--script type="text/javascript">
-		// set up logging...
-		(function () {
-			var log4jsLog,
-				logOutputElementId = "log-messages";
-			
-			if (logOutputElementId) { // in-page log
-				log4jsLog = log4javascript.getLogger("main");
-				log4jsLog.addAppender(new log4javascript.InPageAppender(logOutputElementId));
-			}
-			else { // use pop-up window
-				log4jsLog = log4javascript.getDefaultLogger();
-			}
-			
-			// exports
-			window.log = log4jsLog;
-		})();
-	</script-->
+	<script type="text/javascript">
+		testHelper.addScript('core.js');
+		testHelper.addScript('ui.js');
+	</script>
 	
 	<script type="text/javascript">
 		// start glow loading
