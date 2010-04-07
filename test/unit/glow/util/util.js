@@ -87,3 +87,47 @@ test('escapeRegex', 2, function() {
 		'Basic escaping test'
 	);
 });
+
+test('trim', 7, function() {
+	equal(typeof glow.util.trim, 'function', 'trim is function.');
+	
+	equal(
+		glow.util.trim('  Hello World'), 'Hello World', 'Leading spaces.'
+	);
+	
+	equal(
+		glow.util.trim('Hello World  '), 'Hello World', 'Trailing spaces.'
+	);
+	
+	equal(
+		glow.util.trim('  Hello World  '), 'Hello World', 'Leading and trailing spaces.'
+	);
+	
+	equal(
+		glow.util.trim(' 	 Hello World'), 'Hello World', 'Leading spaces and tabs.'
+	);
+	
+	equal(
+		glow.util.trim('Hello World 	 '), 'Hello World', 'Trailing spaces and tabs.'
+	);
+	
+	equal(
+		glow.util.trim(' 	 Hello World 	 '), 'Hello World', 'Leading and trailing spaces and tabs.'
+	);
+});
+
+test('decodeUrl', 2, function() {
+	equal(typeof glow.util.decodeUrl, 'function', 'decodeUrl is function.');
+	
+	same(
+		glow.util.decodeUrl("foo=Foo&bar=Bar%201&bar=Bar2"), {foo: "Foo", bar: ["Bar 1", "Bar2"]}
+	);
+});
+
+test('encodeUrl', 2, function() {
+	equal(typeof glow.util.decodeUrl, 'function', 'decodeUrl is function.');
+	
+	same(
+		glow.util.encodeUrl({foo: "Foo", bar: ["Bar 1", "Bar2"]}), "foo=Foo&bar=Bar%201&bar=Bar2"
+	);
+});

@@ -6,6 +6,24 @@
 Glow.provide(function(glow) {
 	var util = {},
 		undefined;
+		
+	/**
+		@private
+		@name glow.util-_getType
+		@param {Object} object The object to be tested.
+		@returns {string} The data type of the object.
+	*/
+	function _getType(object) {
+		if (typeof object === 'object') {
+			if (object === null) { return 'null'; }
+			if (Object.prototype.toString.call(object) === '[object Array]') { // see: http://perfectionkills.com/instanceof-considered-harmful-or-how-to-write-a-robust-isarray/
+				return 'array';
+			}
+		}
+		
+		return typeof object;
+	}
+
 	
 	/**
 		@name glow.util.apply
@@ -123,7 +141,144 @@ Glow.provide(function(glow) {
 			}
 		/*gubed!*/
 		return String(str).replace(/[.*+?^${}()|[\]\/\\]/g, '\\$&');
-	}
+	};
+	
+	/**
+		@name glow.util.encodeUrl
+		@function
+		@description Encodes an object for use as a query string.
+		
+			Returns a string representing the object suitable for use 
+			as a query string, with all values suitably escaped.
+			It does not include the initial question mark. Where the 
+			input field was an array, the key is repeated in the output.
+		
+		@param {Object} object The object to be encoded.
+		
+			This must be a hash whose values can only be primitives or 
+			arrays of primitives.
+		
+		@returns {String}
+		
+		@example
+			var getRef = glow.util.encodeUrl({foo: "Foo", bar: ["Bar 1", "Bar2"]});
+			// will return "foo=Foo&bar=Bar%201&bar=Bar2"
+	*/
+	util.encodeUrl = function (object) {
+		var objectType = _getType(object);
+		var paramsList = [];
+		var listLength = 0;
+
+		if (objectType !== 'object') {
+			throw new Error('glow.util.encodeUrl: cannot encode item');
+		}
+		else {
+			for (var key in object) {
+				switch(_getType(object[key])) {
+					case 'function':
+					case 'object':
+						throw new Error('glow.util.encodeUrl: cannot encode item');
+						break;
+					case 'array':
+						for(var i = 0, l = object[key].length; i < l; i++) {
+							switch(_getType(object[key])[i]) {
+								case 'function':
+								case 'object':
+								case 'array':
+									throw new Error('glow.util.encodeUrl: cannot encode item');
+									break;
+								default:
+									paramsList[listLength++] = key + '=' + encodeURIComponent(object[key][i]);
+							}
+						}
+						break;
+					default:
+						paramsList[listLength++] = key + '=' + encodeURIComponent(object[key]);
+				}
+			}
+
+			return paramsList.join('&');
+		}
+	};
+	
+	/**
+		@name glow.util.decodeUrl
+		@function
+		@description Decodes a query string into an object.
+		
+			Returns an object representing the data given by the query 
+			string, with all values suitably unescaped. All keys in the 
+			query string are keys of the object. Repeated keys result 
+			in an array.
+		
+		@param {String} string The query string to be decoded.
+		
+			It should not include the initial question mark.
+		
+		@returns {Object}
+		
+		@example
+			var getRef = glow.util.decodeUrl("foo=Foo&bar=Bar%201&bar=Bar2");
+			// will return the object {foo: "Foo", bar: ["Bar 1", "Bar2"]}
+	*/
+	util.decodeUrl = function(text) {
+		if(_getType(text) !== 'string') {
+			throw new Error('glow.util.decodeUrl: cannot decode item');
+		}
+		else if (text === '') {
+			return {};
+		}
+
+		var result = {};
+		var keyValues = text.split(/[&;]/);
+
+		var thisPair, key, value;
+
+		for(var i = 0, l = keyValues.length; i < l; i++) {
+			thisPair = keyValues[i].split('=');
+			
+			if (thisPair.length < 2) {
+				thisPair[0] = thisPair;
+				thisPair[1] = '';
+			}
+			else {
+				key   = glow.util.trim( decodeURIComponent(thisPair[0]) );
+				value = glow.util.trim( decodeURIComponent(thisPair[1]) );
+
+				switch (_getType(result[key])) {
+					case 'array':
+						result[key][result[key].length] = value;
+						break;
+					case 'undefined':
+						result[key] = value;
+						break;
+					default:
+						result[key] = [result[key], value];
+				}
+			}
+		}
+
+		return result;
+	};
+	
+	/**
+		@name glow.util.trim
+		@function
+		@description Removes leading and trailing whitespace from a string
+	
+		@param {string} str String to trim
+	
+		@returns {String}
+	
+			String without leading and trailing whitespace
+	
+		@example
+			glow.util.trim("  Hello World  "); // "Hello World"
+	*/
+	util.trim = function(str) {
+		//this optimisation from http://blog.stevenlevithan.com/archives/faster-trim-javascript
+		return str.replace(/^\s*((?:[\S\s]*\S)?)\s*$/, '$1');
+	};
 	
 	// export
 	glow.util = util;
