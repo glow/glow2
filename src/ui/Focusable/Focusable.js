@@ -288,11 +288,11 @@ Glow.provide(function(glow) {
 	*/
 	FocusableProto._modal = false;
 	/**
-		@name glow.ui.Focusable#_enabled
+		@name glow.ui.Focusable#_disabled
 		@type boolean
 		@description True/false to indicate if the Focusable is enabled
 	*/
-	FocusableProto._enabled = true;
+	FocusableProto._disabled = false;
 	/**
 		@name glow.ui.Focusable#_lastActiveChild
 		@type HTMLElement
@@ -356,7 +356,7 @@ Glow.provide(function(glow) {
 			return this._modal;
 		}
 		
-		if (this._enabled) {
+		if (!this._disabled) {
 			// Activate the modal if it isn't modal already
 			if (setModal && !this._modal) {
 				// Ensure we're not going to get a deadlock with another focusable
@@ -577,7 +577,7 @@ Glow.provide(function(glow) {
 		}
 		
 		// setting
-		if (this._enabled) {
+		if (!this._disabled) {
 			// deactivating
 			if (toActivate === false) {
 				if (!this._modal && _active) {
@@ -631,42 +631,42 @@ Glow.provide(function(glow) {
 	FocusableProto.prev = nextPrev(-1);
 	
 	/**
-		@name glow.ui.Focusable#enabled
+		@name glow.ui.Focusable#disabled
 		@function
-		@description Enable/disable the Focusable, or get the enabled state
+		@description Enable/disable the Focusable, or get the disabled state
 			When the Focusable is disabled, it (and its child items) cannot
 			be activated or receive focus.
 			
-		@param {boolean} [newState] New state for the Focusable.
-			Setting enabled to false disables the Focusable.
+		@param {boolean} [newState] Disable the focusable?
+			'false' will enable a disabled focusable.
 		
 		@returns {glow.ui.Focusable|boolean}
 			Returns boolean when getting, Focusable when setting
 	*/
-	FocusableProto.enabled = function(newState) {
+	FocusableProto.disabled = function(newState) {
 		/*!debug*/
 			if (arguments.length > 1) {
-				glow.debug.warn('[wrong count] glow.ui.Focusable#enabled expects 0 or 1 argument, not ' + arguments.length + '.');
+				glow.debug.warn('[wrong count] glow.ui.Focusable#disabled expects 0 or 1 argument, not ' + arguments.length + '.');
 			}
 		/*gubed!*/
 		
 		// geting
 		if (newState === undefined) {
-			return this._enabled;
+			return this._disabled;
 		}
 		
 		// setting
 		if (newState) {
-			this._enabled = true;
+			this.active(false);
+			this._disabled = !!newState;
+		}
+		else {
+			this._disabled = !!newState;
 			
 			// reactivate it if it were modal
 			if (this._modal) {
 				this.active(true);
 			}
-		}
-		else {
-			this.active(false);
-			this._enabled = false;
 		}
 		return this;
 	}
