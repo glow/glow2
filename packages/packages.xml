@@ -19,6 +19,7 @@
 			<file>src/net/net.js</file>
 			<file>src/net/Request/Request.js</file>
 			<file>src/net/Response/Response.js</file>
+			<file>src/net/JsonpRequest/JsonpRequest.js</file>
 			<file>src/NodeList/NodeList.js</file>
 			<file>src/NodeList/attributes.js</file>
 			<file>src/NodeList/_sizzle/sizzle/sizzle.js</file>

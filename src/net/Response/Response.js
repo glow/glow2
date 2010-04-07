@@ -133,7 +133,7 @@ Glow.provide(function(glow) {
 		*/
 		
 		ResponseProto.json = function(safe) {
-			return glow.data.decodeJson(this.text(), {safeMode:safe});
+			return glow.util.decodeJson(this.text(), {safeMode:safe});
 		};
 
 		/**

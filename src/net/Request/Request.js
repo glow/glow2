@@ -3,7 +3,6 @@ Glow.provide(function(glow) {
 		RequestProto,
 		net = glow.net,
 		events = glow.events;
-	//Request = glow.net.Request;
 		
 	/**
 		@name glow.net.Request
@@ -11,10 +10,7 @@ Glow.provide(function(glow) {
 		@description Returned by {@link glow.net.post post}, {@link glow.net.get get} async requests and {@link glow.net.loadScript loadScript}
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.post post} and {@link glow.net.get get} create the instances.
 	*/
-	 
-	 
-	 // make event shortcuts available (on)
-	
+
 	
 	function Request(requestObj, opts) {
 			/**

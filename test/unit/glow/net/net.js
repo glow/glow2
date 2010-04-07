@@ -109,12 +109,13 @@ module('glow.net');
 		
 	});
 
-
-	test("glow.net.get async json", function() {
+	// need decodeJson method
+	/*test("glow.net.get async json", function() {
 		expect(4);
 		stop(5000);
 		
-		glow.net.get("xhr/json.txt").on("load", 
+		glow.net.get("xhr/requestheaderdump.php", 
+		{some:"postData", blah:["something", "somethingElse"]}).on("load", 
 				function(response){
 					ok(true, "correct callback used");
 					var json = response.json();
@@ -157,17 +158,18 @@ module('glow.net');
 		
 		
 	});
-	}
+	}*/
 	
 	
 	test("glow.net.post async string", function() {
 	expect(3);
 	stop(5000);
-	var request = glow.net.get("xhr/large.txt").on("load",
+	var request = glow.net.post("xhr/requestheaderdump.php",
+					{some:"postData", blah:["something", "somethingElse"]}).on("load",
 				  function(response){
 					if ( response.text().slice(0, 2) == '<?' ) {
-						t.start();
-						t.skip("This test requires a web server running PHP5");
+						start();
+						skip("This test requires a web server running PHP5");
 						return;
 					}
 					ok(true, "correct callback used");
@@ -187,7 +189,7 @@ module('glow.net');
 	expect(3);
 	stop(5000);
 	
-	var request = glow.net.get("xhr/large.txt").on("load",
+	var request = glow.net.post("xhr/large.txt").on("load",
 					function(response){
 						if ( response.text().slice(0, 2) == '<?' ) {
 						start();
@@ -206,76 +208,6 @@ module('glow.net');
 	
 	
 	});
-
-	test("glow.net.get defering and multiple load events", function() {
-	expect(2);
-	stop(5000);
-	var loadCallbacks = 0;
-	
-	var request = glow.net.get("xhr/large.txt").on("load",
-				function(response){
-						ok(true, "Option load event fired");
-					if (++loadCallbacks == 2) {
-						start();
-					}
-							
-				}).on("error",
-				function(response){
-					ok(false, "Request failed");
-				});
-	
-	
-	
-	//wait a moment, let's see if the request has really defered
-	window.setTimeout(function() {
-		glow.events.addListener(request, "load", function() {
-			ok(true, "addListener load event fired");
-			if (++loadCallbacks == 2) {
-				start();
-			}
-		});
-		request.send();
-	}, 3000);
-});
-
-test("glow.net.get defering and multiple error events", function() {
-	expect(2);
-	
-	if (isLocal) {
-		skip('Requires web server');
-		return;
-	}
-	
-	stop(5000);
-	var errorCallbacks = 0;
-	
-	var request = glow.net.get("xhr/large.txt").on("load",
-				function(response){
-					ok(false, "Option load event fired");
-							
-				}).on("error",
-				function(response){
-					ok(true, "Option error event fired");
-					if (++errorCallbacks == 2) {
-					start();
-					}
-				});
-	
-	
-	
-	
-	//wait a moment, let's see if the request has really defered
-	window.setTimeout(function() {
-		glow.events.addListener(request, "error", function() {
-			ok(true, "addListener error event fired");
-			if (++errorCallbacks == 2) {
-				start();
-			}
-		});
-		request.send();
-	}, 3000);
-});
-
 
 
 //timeouts
@@ -300,4 +232,105 @@ test("glow.net.get timeout cancelling", function() {
 		ok(noError, "onError not called")
 		start();
 	}, 3000);
+});
+
+test("glow.net.getJsonp general", function() {
+	expect(3);
+	stop(5000);
+	var timeoutCancelled = true;
+	
+	var request = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
+					   {timeout: 2}).on('load',
+		function(data) {
+			ok(true, "Callback called");
+			equal(data.hello, "world", "Data passed");
+			start();
+		}).on('error',
+			function() {
+				timeoutCancelled = false;
+			});
+	
+	
+	console.log(request.element());
+	
+	window.setTimeout(function () {
+		ok(timeoutCancelled, "onError not called")
+		
+		start();
+	}, 3000);
+	
+	
+});
+
+test("glow.net.getResources general", function() {
+	expect(3);
+	stop(5000);
+	var timeoutCancelled = true;
+	
+	var request = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
+					   {timeout: 2}).on('load',
+		function(data) {
+			ok(true, "Callback called");
+			equal(data.hello, "world", "Data passed");
+			start();
+		}).on('error',
+			function() {
+				timeoutCancelled = false;
+			});
+	
+	
+	console.log(request.element());
+	
+	window.setTimeout(function () {
+		ok(timeoutCancelled, "onError not called")
+		
+		start();
+	}, 3000);
+	
+	
+});
+
+test("glow.net.put json", function() {
+	expect(2);
+	stop(5000);
+	var request = glow.net.put("testdata/xhr/put.php",
+		{some:"putData", blah:["something", "somethingElse"]}).on('load',
+			function(response) {
+				if ( response.text().slice(0, 2) == '<?' ) {
+					t.start();
+					t.skip("This test requires a web server running PHP5");
+					return;
+				}
+				ok(true, "correct callback used");
+				equal( response.text(), "PUT: putData", "Using put method" );
+				start();
+			}).on('error',
+			function() {
+				ok(false, "correct callback used");
+				start();
+			});
+
+});
+
+
+test("glow.net.del", function() {
+	expect(2);
+	stop();
+	var request = glow.net.del("xhr/delete.php").on('load', 
+			function(response) {
+				if ( response.text().slice(0, 2) == '<?' ) {
+					start();
+					skip("This test requires a web server running PHP5");
+					return;
+				}
+				ok(true, "correct callback used");
+				equals( response.text(), "DELETE request", "Using delete method" );
+				start();
+			}).on('error', 
+			function() {
+				ok(false, "correct callback used");
+				start();
+			});
+		
+	
 });

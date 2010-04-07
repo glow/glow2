@@ -1,5 +1,8 @@
 Glow.provide(function(glow) {
-	Request = glow.net.Request;
+	var undefined,
+		JsonpRequestProto,
+		net = glow.net,
+		events = glow.events;;
 		
 	/**
 		@name glow.net.JsonpRequest
@@ -8,10 +11,82 @@ Glow.provide(function(glow) {
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	 
-	 
-	 // make event shortcuts available (on)
-	//glow.util.extend(Request, glow.events.Target);
-	
+	function JsonpRequest(requestObj, opts, script) {
+	/**
+			 * @name glow.net.Request#_timeout
+			 * @private
+			 * @description timeout ID. This is set by makeXhrRequest or loadScript
+			 * @type Number
+			 */
+			this._timeout = null;
+			
+			/*
+			 @name glow.net.Request#_forceXml
+			 @private
+			 @type Boolean
+			 @description Force the response to be treated as xml
+			*/
+			this._forceXml = opts.forceXml;
+			
+			// force the reponse to be treated as xml
+			// IE doesn't support overrideMineType, we need to deal with that in {@link glow.net.Response#xml}
+			if (opts.forceXml && requestObj.overrideMimeType) {
+				requestObj.overrideMimeType('application/xml');
+			}
+			
+			/**
+			 * @name glow.net.Request#complete
+			 * @description Boolean indicating whether the request has completed
+			 * @example
+				// request.complete with an asynchronous call
+				var request = glow.net.get(
+					"myFile.html", 
+					{
+						async: true,
+						onload: function(response) {
+							alert(request.complete); // returns true
+						}
+					}
+				);
+				alert(request.complete); // returns boolean depending on timing of asynchronous call
+
+				// request.complete with a synchronous call
+				var request = glow.net.get("myFile.html", {async: false;});
+				alert(request.complete); // returns true
+			 * @type Boolean
+			 */
+			this.complete = false;
+
+			if (typeof requestObj == "number") {
+				/**
+				 * @name glow.net.Request#_callbackIndex
+				 * @private
+				 * @description Index of the callback in glow.net._jsonCbs
+				 *   This is only relavent for requests made via loadscript using the
+				 *   {callback} placeholder
+				 * @type Number
+				 */
+				this._callbackIndex = requestObj;
+			} else {
+				/**
+				 * @name glow.net.Request#nativeRequest
+				 * @description The request object from the browser.
+				 *   This may not have the same properties and methods across user agents.
+				 *   Also, this will be undefined if the request originated from loadScript.
+				 * @example
+				var request = glow.net.get(
+					"myFile.html", 
+					{
+						async: true,
+						onload: function(response) {
+							alert(request.NativeObject); // returns Object()
+						}
+					}
+				);
+				 * @type Object
+				 */
+				this.nativeRequest = requestObj;
+			}
 	 
 	/**
 		@name glow.net.JsonpRequest#event:load
@@ -43,8 +118,9 @@ Glow.provide(function(glow) {
 			with an HTTP code which isn't 2xx or the request times out. loadScript
 			calls will fire 'error' only if the request times out.
 	*/
-
-
+	}
+	glow.util.extend(JsonpRequest, glow.events.Target);
+	JsonpRequestProto = JsonpRequest.prototype;
 	
 	/**
 		@name glow.net.JsonpRequest#element
@@ -52,5 +128,10 @@ Glow.provide(function(glow) {
 		@type {glow.NodeList}
 	
 	*/
-		
+	JsonpRequestProto.element = function() {
+		return this.script;
+	};
+	
+	
+	glow.net.JsonpRequest = JsonpRequest;
 });

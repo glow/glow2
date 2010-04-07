@@ -8,7 +8,7 @@ Glow.provide(function(glow) {
 		undefined;
 	
 	var STR = {
-				XML_ERR:"Cannot get response as XML, check the mime type of the data",
+				XML_ERR:'Cannot get response as XML, check the mime type of the data',
 				POST_DEFAULT_CONTENT_TYPE:'application/x-www-form-urlencoded;'
 			},
 			endsPlusXml = /\+xml$/,
@@ -25,14 +25,14 @@ Glow.provide(function(glow) {
 			 * @description Callbacks in _jsonCbs will be named this + a number
 			 * @type String
 			 */
-			callbackPrefix = "c",
+			callbackPrefix = 'c',
 			/**
 			 * @name glow.net.globalObjectName
 			 * @private
 			 * @description Name of the global object used to store loadScript callbacks
 			 * @type String
 			 */
-			globalObjectName = "_" + glow.UID + "loadScriptCbs",
+			globalObjectName = '_' + glow.UID + 'loadScriptCbs',
 			events = glow.events,
 			emptyFunc = function(){},
 			idCount = 1;
@@ -47,7 +47,7 @@ Glow.provide(function(glow) {
 		function xmlHTTPRequest() {
 			//try IE first. IE7's xmlhttprequest and XMLHTTP6 are broken. Avoid avoid avoid!
 			if (window.ActiveXObject) {
-				return (xmlHTTPRequest = function() { return new ActiveXObject("Microsoft.XMLHTTP"); })();
+				return (xmlHTTPRequest = function() { return new ActiveXObject('Microsoft.XMLHTTP'); })();
 			} else {
 				return (xmlHTTPRequest = function() { return new XMLHttpRequest(); })();
 			}
@@ -63,14 +63,10 @@ Glow.provide(function(glow) {
 		 */
 		function populateOptions(opts) {
 			var newOpts = glow.util.apply({
-				onLoad: emptyFunc,
-				onError: emptyFunc,
-				onAbort: emptyFunc,
 				headers: {},
 				async: true,
-				useCache: false,
+				cacheBust: true,
 				data: null,
-				defer: false,
 				forceXml: false
 			}, opts || {} );
  
@@ -106,12 +102,12 @@ Glow.provide(function(glow) {
 		 */
 		function makeXhrRequest(method, url, opts) {
 			var req = xmlHTTPRequest(), //request object
-				data = opts.data && (typeof opts.data == "string" ? opts.data : glow.data.encodeUrl(opts.data)),
+				data = opts.data && (typeof opts.data == "string" ? opts.data : glow.util.encodeUrl(opts.data)),
 				i,
 				request = new glow.net.Request(req, opts);
 			
  
-			if (!opts.useCache) {
+			if (!opts.cacheBust) {
 				url = noCacheUrl(url);
 			}
  
@@ -349,7 +345,7 @@ Glow.provide(function(glow) {
 			Url of the script. An optional "{callback}" value may be added to the the querystring if the data source supports it.
 		@param {Object} [opts]
 			An object of options to use if "{callback}" is specified in the url.
-			@param {Boolean} [opts.useCache=false] Allow a cached response
+			@param {Boolean} [opts.cacheBust=true] Allow a cached response
 			@param {Number} [opts.timeout] Time to allow for the request in seconds
 			@param {String} [opts.charset] Charset attribute value for the script
 			
@@ -363,7 +359,76 @@ Glow.provide(function(glow) {
 					// use data
 				});
 		*/
-	net.getJsonp = function() { };
+	net.getJsonp = function(url, opts) {
+		
+		//id of the request
+		var newIndex = scriptElements.length,
+		//script element that gets inserted on the page
+		script,
+		//generated name of the callback, may not be used
+		callbackName = callbackPrefix + newIndex,
+		
+		opts = populateOptions(opts),
+		
+		
+		
+		request = new glow.net.JsonpRequest(newIndex, opts, script),
+		
+		url = opts.useCache ? url : noCacheUrl(url),
+		
+		//the global property used to hide callbacks
+		globalObject = window[globalObjectName] || (window[globalObjectName] = {});
+
+			//assign onload
+			if (opts.onLoad != emptyFunc) {
+				globalObject[callbackName] = function() {
+					//clear the timeout
+					request._timeout && clearTimeout(request._timeout);
+					//set as completed
+					request.completed = true;
+					// call the user's callback
+					opts.onLoad.apply(this, arguments);
+					// cleanup references to prevent leaks
+					request.destroy();
+					script = globalObject[callbackName] = undefined;
+					delete globalObject[callbackName];
+				};
+				url = glow.util.interpolate(url, {callback: globalObjectName + '.' + callbackName});
+			}
+
+			
+
+			script = scriptElements[newIndex] = document.createElement('script');
+		if (opts.charset) {
+				script.charset = opts.charset;
+			}
+
+
+			glow.ready(function() {
+				//sort out the timeout
+				if (opts.timeout) {
+					request._timeout = setTimeout(function() {
+						abortRequest(request);
+						opts.onError();
+					}, opts.timeout * 1000);
+				}
+				//using setTimeout to stop Opera 9.0 - 9.26 from running the loaded script before other code
+				//in the current script block
+				if (glow.env.opera) {
+					setTimeout(function() {
+						if (script) { //script may have been removed already
+							script.src = url;
+						}
+					}, 0);
+				} else {
+					script.src = url;
+				}
+				//add script to page
+				document.body.appendChild(script);
+			});
+
+			return request;
+		};
 	
 	
 	/**
@@ -391,7 +456,315 @@ Glow.provide(function(glow) {
 					// use data
 				});
 		*/
-	net.getResources = function() { };
+	net.getResources = function(url, opts) {
+		
+		//id of the request
+		var newIndex = scriptElements.length,
+		//script element that gets inserted on the page
+		script,
+		//generated name of the callback, may not be used
+		callbackName = callbackPrefix + newIndex,
+		
+		opts = populateOptions(opts),
+		
+		
+		
+		request = new glow.net.ResourceRequest(newIndex, opts, script),
+		
+		url = opts.useCache ? url : noCacheUrl(url),
+		
+		//the global property used to hide callbacks
+		globalObject = window[globalObjectName] || (window[globalObjectName] = {});
+
+			//assign onload
+			if (opts.onLoad != emptyFunc) {
+				globalObject[callbackName] = function() {
+					//clear the timeout
+					request._timeout && clearTimeout(request._timeout);
+					//set as completed
+					request.completed = true;
+					// call the user's callback
+					opts.onLoad.apply(this, arguments);
+					// cleanup references to prevent leaks
+					request.destroy();
+					script = globalObject[callbackName] = undefined;
+					delete globalObject[callbackName];
+				};
+				url = glow.util.interpolate(url, {callback: globalObjectName + '.' + callbackName});
+			}
+
+			
+
+			script = scriptElements[newIndex] = document.createElement('script');
+		if (opts.charset) {
+				script.charset = opts.charset;
+			}
+
+
+			glow.ready(function() {
+				//sort out the timeout
+				if (opts.timeout) {
+					request._timeout = setTimeout(function() {
+						abortRequest(request);
+						opts.onError();
+					}, opts.timeout * 1000);
+				}
+				//using setTimeout to stop Opera 9.0 - 9.26 from running the loaded script before other code
+				//in the current script block
+				if (glow.env.opera) {
+					setTimeout(function() {
+						if (script) { //script may have been removed already
+							script.src = url;
+						}
+					}, 0);
+				} else {
+					script.src = url;
+				}
+				//add script to page
+				document.body.appendChild(script);
+			});
+
+			return request;};
+	
+	
+	
+	// Private (x-domain request)
+
+		/**
+		@name _XDomainRequest
+		@private
+		@class
+		@description A request made via a form submission in a hidden iframe, with the result being communicated
+					 via the name attribute of the iframe's window.
+
+		@param {String} url
+				the URL to post the data to.
+		@param {Object} data
+				the data to post. This should be keys with String values (or values that will be converted to
+				strings) or Array values where more than one value should be sent for a single key.
+		@param {Object} opts
+				an Object containing the same options as passed to glow.net.xDomainPost.
+		*/
+		var _XDomainRequest = function (url, data, isGet, opts) {
+			this.url  = url;
+			this.data = data;
+			this.isGet = isGet;
+			this.opts = opts;
+		};
+
+
+		_XDomainRequest.prototype = {
+			/**
+			@name _XDomainRequest#_send
+			@private
+			@function
+			@description Send the request
+			*/
+			_send: function () {
+				this._addIframe();
+				this._addForm();
+				this._addTimeout();
+				this.onLoad = this._handleResponse;
+				this._submitForm();
+			},
+
+			/**
+			@name _XDomainRequest#_addIframe
+			@private
+			@function
+			@description Add a hidden iframe for posting the request
+			*/
+			_addIframe: function () {
+				this.iframe = glow.dom.create(
+					'<iframe style="visibility: hidden; position: absolute; height: 0;"></iframe>'
+				);
+				var iframe   = this.iframe[0],
+					request  = this,
+					callback = function () {
+						if (request.onLoad) request.onLoad();
+					};
+
+				if (iframe.attachEvent) {
+					iframe.attachEvent('onload', callback);
+				} else {
+					iframe.onload = callback;
+				}
+				$('body').append(this.iframe);
+			},
+		
+			/**
+			@name _XDomainRequest#_addForm
+			@private
+			@function
+			@description Add the form to the iframe for posting the request
+			*/
+			_addForm: function () {
+				var doc = this._window().document;
+
+				// IE needs an empty document to be written to written to the iframe
+				if (glow.env.ie) {
+					doc.open();
+					doc.write('<html><body></body></html>');
+					doc.close();
+				}
+
+				var form = this.form = doc.createElement('form');
+				form.setAttribute('action', this.url);
+				form.setAttribute('method', this.isGet ? 'GET' : 'POST');
+
+				var body = doc.getElementsByTagName('body')[0];
+				body.appendChild(form);
+				this._addFormData();
+			},
+
+			/**
+			@name _XDomainRequest#_addFormData
+			@private
+			@function
+			@description Add the data to the form
+			*/
+			_addFormData: function () {
+				for (var i in this.data) {
+					if (! this.data.hasOwnProperty(i)) continue;
+					if (this.data[i] instanceof Array) {
+						var l = this.data[i].length;
+						for (var j = 0; j < l; j++) {
+							this._addHiddenInput(i, this.data[i][j]);
+						 }
+					}
+					else {
+						this._addHiddenInput(i, this.data[i]);
+					}
+				}
+			},
+
+			/**
+			@name _XDomainRequest#_addHiddenInput
+			@private
+			@function
+			@description Add a hidden input to the form for a piece of data
+			*/
+			_addHiddenInput: function (name, value) {
+				var input = this._window().document.createElement('input');
+				input.type = 'hidden';
+				input.name = name;
+				input.value = value;
+				this.form.appendChild(input);
+			},
+
+			/**
+			@name _XDomainRequest#window
+			@private
+			@function
+			@description Get the window for the hidden iframe
+			*/
+			_window: function () {
+				var iframe = this.iframe[0];
+				if (iframe.contentWindow)
+					return iframe.contentWindow;
+				throw new Error('could not get contentWindow from iframe');
+
+				// this code was here to work around a browser quirk, but I don't know which for...
+				// I have tested in recent Safari, Chrome, Firefox, Opera and IE 6, 7, 8
+				// If the above error shows up, then this is the thing to try
+
+				// if (iframe.contentDocument && iframe.contentDocument.parentWindow)
+				//	return iframe.contentDocument.parentWindow;
+			},
+
+			/**
+			@name _XDomainRequest#_addTimeout
+			@private
+			@function
+			@description Add a timeout to cancel the request if it takes too long
+			*/
+			_addTimeout: function () {
+				var request = this;
+				this.timeout = setTimeout(function () {
+					var err;
+					if (request.opts.hasOwnProperty('onTimeout')) {
+						try {
+							request.opts.onTimeout();
+						}
+						catch (e) {
+							err = e;
+						}
+					}
+					request._cleanup();
+					if (err) throw new Error('error in xDomainPost onTimeout callback: ' + err);
+				}, (this.opts.timeout || 10) * 1000); /* 10 second default */
+			},
+
+			/**
+			@name _XDomainRequest#_handleResponse
+			@private
+			@function
+			@description Callback for load event in the hidden iframe
+			*/
+			_handleResponse: function () {
+				var err, href, win = this._window();
+				try {
+					href = win.location.href;
+				}
+				catch (e) {
+					err  = e;
+				}
+				if (href != 'about:blank' || err) {
+					clearTimeout(this.timeout);
+					this.onLoad = this._readHandler;
+					// this is just here for the tests, normally always want it to be in the same origin
+					if ('_fullBlankUrl' in this.opts) {
+						win.location = this.opts._fullBlankUrl;
+					}
+					else {
+						win.location = window.location.protocol + '//' + window.location.host + (this.opts.blankUrl || '/favicon.ico');
+					}
+				}
+			},
+
+			/**
+			@name _XDomainRequest#_readHandler
+			@private
+			@function
+			@description Callback for load event of blank page in same origin
+			*/
+			_readHandler: function () {
+				var err;
+				if (this.opts.hasOwnProperty('onLoad')) {
+					try {
+						this.opts.onLoad(this._window().name);
+					}
+					catch (e) {
+						err = e;
+					}
+				}
+				this._cleanup();
+				if (err)
+					throw new Error('error in xDomainPost onLoad callback: ' + err);
+			},
+
+			/**
+			@name _XDomainRequest#_cleanup
+			@private
+			@function
+			@description Removes the iframe and any event listeners
+			*/
+			_cleanup: function () {
+				this.iframe.remove();
+			},
+
+			/**
+			@name _XDomainRequest#_submitForm
+			@private
+			@function
+			@description Submit the form to make the post request
+			*/
+			_submitForm : function () {
+				var request = this;
+				// the set timeout is here to make the form submit in the context of the iframe
+				this._window().setTimeout(function () { request.form.submit() }, 0);
+			}
+		};
 	
 	/**
 		@name glow.net.crossDomainPost
@@ -420,7 +793,10 @@ Glow.provide(function(glow) {
 				The path of a blank URL on the same domain as the caller (default '/includes/blank/')	   
 		*/
 	
-	net.xDomainPost = function() { };
+	net.crossDomainPost = function(url, data, opts) {
+		var request = new _XDomainRequest(url, data, false, opts);
+			request._send();
+		};
 	
 	
 	/**
@@ -444,7 +820,10 @@ Glow.provide(function(glow) {
 			@param {String} blankUrl The path of a blank URL on the same domain as the caller (default '/includes/blank/')	   
 		*/
 	
-	net.xDomainGet = function() {} ;
+	net.crossDomainGet = function(url, opts) {		
+		var request = new _XDomainRequest(url, {}, true, opts);
+			request._send();
+		} ;
 		
 	
 
