@@ -116,11 +116,19 @@ test('trim', 7, function() {
 	);
 });
 
-test('decodeUrl', 2, function() {
+test('decodeUrl', 4, function() {
 	equal(typeof glow.util.decodeUrl, 'function', 'decodeUrl is function.');
 	
 	same(
-		glow.util.decodeUrl("foo=Foo&bar=Bar%201&bar=Bar2"), {foo: "Foo", bar: ["Bar 1", "Bar2"]}
+		glow.util.decodeUrl('foo=Foo&bar=Bar%201&bar=Bar2'), {foo: 'Foo', bar: ['Bar 1', 'Bar2']}
+	);
+	
+	same(
+		glow.util.decodeUrl('foo&bar&bar'), {foo: '', bar: ['', '']}
+	);
+	
+	same(
+		glow.util.decodeUrl('foo=&bar&bar=2&foo=1'), {foo: ['', '1'], bar: ['', '2']}
 	);
 });
 

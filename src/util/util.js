@@ -238,23 +238,23 @@ Glow.provide(function(glow) {
 			thisPair = keyValues[i].split('=');
 			
 			if (thisPair.length < 2) {
-				thisPair[0] = thisPair;
-				thisPair[1] = '';
+				key = keyValues[i];
+				value = '';
 			}
 			else {
 				key   = glow.util.trim( decodeURIComponent(thisPair[0]) );
 				value = glow.util.trim( decodeURIComponent(thisPair[1]) );
-
-				switch (_getType(result[key])) {
-					case 'array':
-						result[key][result[key].length] = value;
-						break;
-					case 'undefined':
-						result[key] = value;
-						break;
-					default:
-						result[key] = [result[key], value];
-				}
+			}
+			
+			switch (_getType(result[key])) {
+				case 'array':
+					result[key].push(value);
+					break;
+				case 'undefined':
+					result[key] = value;
+					break;
+				default:
+					result[key] = [result[key], value];
 			}
 		}
 
