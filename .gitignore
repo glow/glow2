@@ -9,3 +9,4 @@ build/?.?.?
 build/meta.js
 build/lib/jsdoc-toolkit
 build/lib/yuicompressor
+.DS_Store
