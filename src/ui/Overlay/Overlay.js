@@ -1,5 +1,6 @@
 Glow.provide(function(glow) {
 	var OverlayProto,
+		WidgetProto = glow.ui.Widget.prototype,
 		idCounter = 0,
 		undefined,
 		instances = {}; // like {uid: overlayInstance}
@@ -31,7 +32,7 @@ Glow.provide(function(glow) {
 	
 	function Overlay(content, opts) {
 		//call the base class's constructor
-		this.base = Overlay.base.call(this, 'overlay');
+		Overlay.base.call(this, 'overlay');
 		
 		this.uid = 'overlayId_' + glow.UID + '_' + (++idCounter);
 		instances[this.uid] = this;
@@ -39,15 +40,16 @@ Glow.provide(function(glow) {
 		this.lastState = -1; // enforce that states always alternate, -1 for hidden, +1 for shown
 		
 		opts = opts || {};
-		this.init(opts);
-		this.attach(content, this.opts);
+		this._init(opts);
+		this._build(content, this.opts);
+		this._bind();
 	}
 	glow.util.extend(Overlay, glow.ui.Widget);
 	
 	OverlayProto = Overlay.prototype;
 	
-	OverlayProto.init = function(opts) {
-		this.base.init.call(this, opts);
+	OverlayProto._init = function(opts) {
+		WidgetProto._init.call(this, opts);
 		
 		var defaults = {
 			zIndex: 9991
@@ -56,27 +58,27 @@ Glow.provide(function(glow) {
 		this.opts = glow.util.apply(defaults, opts);
 		
 		/**
-			@name glow.ui.Overlay#showing
-			@description True if the overlay is showing.
+			@name glow.ui.Overlay#shown
+			@description True if the overlay is shown.
 				This is a read-only property to check the state of the overlay.
 			@type boolean
 		*/
-		this.showing = false;
+		this.shown = false;
 		
 		return this;
 	}
 	
 	OverlayProto.destroy = function() {
-		this.base.destroy.call(this);
+		WidgetProto.destroy.call(this);
 		
 		delete instances[this.uid];
 	}
 	
-	OverlayProto.attach = function(content, opts) {
-		this.base.attach.call(this, content, opts);
+	OverlayProto._build = function(content, opts) {
+		WidgetProto._build.call(this, content, opts);
 		
 		this.container.css('z-index', this.opts.zIndex);
-// TODO: should the iframe always be added? would make styling more consistent across browsers
+		// TODO: should the iframe always be added? would make styling more consistent across browsers
 		//add IE iframe hack if needed, wrap content in an iFrame to prevent certain elements below from showing through
 		if (glow.env.ie < 7) { /*debug*///console.log('created iframe');
 			this._iframe = glow('<iframe src="javascript:\'\'" style="display:block;width:100%;height:1000px;margin:0;padding:0;border:none;position:absolute;top:0;left:0;filter:alpha(opacity=0);"></iframe>')
@@ -261,27 +263,25 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	OverlayProto.show = function(delay) {
-		if (this.showing) { /*debug*///console.log('show ignored');
-			return;
+		if (this.shown) { /*debug*///console.log('show ignored');
+			return this;
 		}
 		
-		delay = (delay || 0) * 1000;
-
-		var e = new glow.events.Event(),
-			that = this;
-			
-		this.fire('show', e);
+		var that = this;
 		
-		if (!e.defaultPrevented()) {
+		if ( !this.fire('show').defaultPrevented() ) {
 			if (this._timer) {
 				clearTimeout(this._timer);
 			}
 			
-			this._timer = setTimeout(
-				function() { show.call(that); }
-				,
-				delay
-			);
+			if (delay) {
+				this._timer = setTimeout(function() {
+					show.call(that);
+				}, delay * 1000);
+			}
+			else {
+				show.call(that);
+			}
 		}
 		
 		return this;
@@ -290,8 +290,8 @@ Glow.provide(function(glow) {
 	function show() {
 		var that = this;
 		
-		this.showing = true;
-		this.container.state.addClass('showing');
+		this.shown = true;
+		this._stateElm.addClass('shown');
 		
 		if (this._animator) {
 			this._animator.call(this, true, function() { afterShow.call(that); });
@@ -330,8 +330,8 @@ Glow.provide(function(glow) {
 	}
 	
 	function hide() {
-		this.showing = false;
-		this.container.state.removeClass('showing');
+		this.shown = false;
+		this._stateElm.removeClass('shown');
 		
 		if (this._animator) {
 			this._animator.call(this, false, function() { afterHide.call(that); });
@@ -360,35 +360,29 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	OverlayProto.hide = function(delay) {
-		if (!this.showing) { /*debug*///console.log('hide ignored');
-			return;
+		if (!this.shown) { /*debug*///console.log('hide ignored');
+			return this;
 		}
 		
-		delay = (delay || 0) * 1000;
+		var that = this;
 		
-		var e = new glow.events.Event()
-			that = this;
-			
-		this.fire('hide', e);
-		
-		if (!e.defaultPrevented()) {
+		if ( !this.fire('hide').defaultPrevented() ) {
 			if (this._timer) {
 				clearTimeout(this._timer);
 			}
 			
-			this._timer = setTimeout(
-				function() { hide.call(that); }
-				,
-				delay
-			);
+			if (delay) {
+				this._timer = setTimeout(function() {
+					hide.call(that);
+				}, delay * 1000);
+			}
+			else {
+				hide.call(that);
+			}
 		}
 		
 		return this;
 	}
-	
-//	function intersects(nodeList) {
-//		var i = nodeList.length;		
-//	}
 
 	// export
 	glow.ui = glow.ui || {};

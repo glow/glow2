@@ -272,7 +272,7 @@ Glow.provide(function(glow) {
 				// set properties here
 				
 				// call base _init
-				glow.ui.Widget._init.call(this);
+				glow.ui.Widget.prototype._init.call(this);
 				// call _build
 				this._build();
 			}
@@ -306,7 +306,7 @@ Glow.provide(function(glow) {
 				// create some content
 				var content = glow('<p>Hello!</p>');
 				// call the base build
-				glow.ui.Widget._build.call(this, content);
+				glow.ui.Widget.prototype._build.call(this, content);
 				// call _bind
 				this._bind();
 			}
@@ -368,7 +368,7 @@ Glow.provide(function(glow) {
 					alert('Hello!');
 				});
 				// call base _bind
-				glow.ui.Widget._bind.call(this);
+				glow.ui.Widget.prototype._bind.call(this);
 			}
 	 */
 	WidgetProto._bind = function() {

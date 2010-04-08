@@ -109,10 +109,9 @@
 		
 		test('Animation definition used to show and hide.', function(result) {
 			glow.ready(function() {
-
 				var myOverlay1 = new glow.ui.Overlay(
 						'#animate-test1 .animate-test-content',
-						{addId: 'myOverlay1'}
+						{id: 'myOverlay1'}
 					)
 					.setAnim( [2, {left: 330}, {tween: 'bounceOut'}] );
 	
@@ -147,10 +146,10 @@
 		
 		test('Animation function used to show and hide.', function(result) {
 			glow.ready(function() {
-				var animator = function(/*this: Overlay*/ showing, callback) {
+				var animator = function(/*this: Overlay*/ shown, callback) {
 					var that = this.container;
 					
-					if (showing) {
+					if (shown) {
 						that.anim(2, {left: [-55, 350]}, {tween: 'bounceOut'})
 						.on('complete', callback);
 					}
@@ -165,7 +164,7 @@
 
 				var myOverlay2 = new glow.ui.Overlay(
 					'#animate-test2 .animate-test-content',
-					{addId: 'myOverlay2'}
+					{id: 'myOverlay2'}
 				)
 				.setAnim(animator);
 		
@@ -208,7 +207,7 @@
 			glow.ready(function() {
 				var myOverlay3 = new glow.ui.Overlay(
 					'#animate-test3 .animate-test-content',
-					{addId: 'myOverlay3'}
+					{id: 'myOverlay3'}
 				)
 				.setAnim([2, {left: 325}, {tween: 'bounceOut'}]);
 		
