@@ -285,7 +285,7 @@ Glow.provide(function(glow) {
 	};
 	
 	/**
-		@name glow.lang.interpolate
+		@name glow.util.interpolate
 		@function
 		@description Replaces placeholders in a string with data from an object
 		
@@ -313,7 +313,7 @@ Glow.provide(function(glow) {
 				}
 			};
 			var template = "My cat's name is {name}. His colours are {colours.0} & {colours.1}. His mum is {family.mum}, his dad is {family.dad} and he has {family.siblings.length} brothers or sisters.";
-			var result = glow.lang.interpolate(template, data);
+			var result = glow.util.interpolate(template, data);
 			// result == "My cat's name is Domino. His colours are black & white. His mum is Spot, his dad is Patch and he has 0 brothers or sisters."
 		
 		@example
@@ -321,7 +321,7 @@ Glow.provide(function(glow) {
 				name: 'Haxors!!1 <script src="hackhackhack.js"></script>'
 			}
 			var template = '<p>Hello, my name is {name}</p>';
-			var result = glow.lang.interpolate(template, data, {
+			var result = glow.util.interpolate(template, data, {
 				escapeHtml: true
 			});
 			// result == '<p>Hello, my name is Haxors!!1 &lt;script src="hackhackhack.js"&gt;&lt;/script&gt;</p>'
