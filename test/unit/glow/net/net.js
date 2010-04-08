@@ -165,7 +165,7 @@ module('glow.net');
 	expect(3);
 	stop(5000);
 	var request = glow.net.post("xhr/requestheaderdump.php",
-					{some:"postData", blah:["something", "somethingElse"]}).on("load",
+					"some=postData&blah=hurrah").on("load",
 				  function(response){
 					if ( response.text().slice(0, 2) == '<?' ) {
 						start();
@@ -189,7 +189,8 @@ module('glow.net');
 	expect(3);
 	stop(5000);
 	
-	var request = glow.net.post("xhr/large.txt").on("load",
+	var request = glow.net.post("xhr/requestheaderdump.php",
+								{some:"postData", blah:["something", "somethingElse"]}).on("load",
 					function(response){
 						if ( response.text().slice(0, 2) == '<?' ) {
 						start();
@@ -251,7 +252,7 @@ test("glow.net.getJsonp general", function() {
 			});
 	
 	
-	console.log(request.element());
+	//console.log(request.element());
 	
 	window.setTimeout(function () {
 		ok(timeoutCancelled, "onError not called")
@@ -261,6 +262,72 @@ test("glow.net.getJsonp general", function() {
 	
 	
 });
+
+test("glow.net.getJsonp timeout and charset", function() {
+	expect(3);
+	stop(5000);
+	
+	var onLoadCalled = false;
+	
+	//this script doesn't actually callback, so it'll timeout
+	glow.net.getJsonp("xhr/loadscriptfail.js?callback={callback}",
+					  {timeout: 2,
+						charset: "utf-8"}).on('load', 
+		function(data) {
+			console.log("1")
+			onLoadCalled = true;
+			start();
+		}).on('error',
+		function() {
+			console.log("2")
+			ok(!onLoadCalled, "load not called");
+			ok(true, "error (timeout) called");
+			start();
+		});
+		
+
+	console.log("3")
+	equals(glow(document.body.lastChild).attr("charset"), "utf-8", "Charset set");
+});
+
+test("glow.net.getJsonp aborting", function() {
+	expect(3);
+	stop(5000);
+	var onLoadCalled = false;
+	var onErrorCalled = false;
+	var onAbortCalled = false;
+	
+	var request = glow.net.getJsonp("testdata/xhr/jsoncallback.js?callback={callback}",
+									{timeout: 2}).on('load', 
+		function(data) {
+			onLoadCalled = true;
+			start();
+		}).on('error',
+		function() {
+			onErrorCalled = true;
+			start();
+		}).on('abort',
+		function() {
+			onAbortCalled = true;
+			start();
+		});
+		
+	
+	if (request.completed) {
+		t.skip("Request complete, too late to abort");
+		return;
+	}
+	request.abort();
+	
+	window.setTimeout(function () {
+		ok(!onLoadCalled, "onLoad not called");
+		ok(!onErrorCalled, "onError not called");
+		ok(onAbortCalled, "onAbort called");
+		start();
+	}, 3000);
+});
+
+
 
 test("glow.net.getResources general", function() {
 	expect(3);
@@ -279,7 +346,7 @@ test("glow.net.getResources general", function() {
 			});
 	
 	
-	console.log(request.element());
+	//console.log(request.element());
 	
 	window.setTimeout(function () {
 		ok(timeoutCancelled, "onError not called")
@@ -293,7 +360,7 @@ test("glow.net.getResources general", function() {
 test("glow.net.put json", function() {
 	expect(2);
 	stop(5000);
-	var request = glow.net.put("testdata/xhr/put.php",
+	var request = glow.net.put("xhr/put.php",
 		{some:"putData", blah:["something", "somethingElse"]}).on('load',
 			function(response) {
 				if ( response.text().slice(0, 2) == '<?' ) {

@@ -64,6 +64,9 @@ Glow.provide(function(glow) {
 		function populateOptions(opts) {
 			var newOpts = glow.util.apply({
 				headers: {},
+				onLoad: emptyFunc,
+				onError: emptyFunc,
+				onAbort: emptyFunc,
 				async: true,
 				cacheBust: true,
 				data: null,
@@ -156,7 +159,35 @@ Glow.provide(function(glow) {
 			request.send = send;
 			return opts.defer ? request : send();
 		}
-	
+		/**
+		@name glow.net.abortRequest
+		@private
+		@function
+		@description Aborts the request
+			Doesn't trigger any events
+		
+		@param {glow.net.Request} req Request Object
+		@returns this
+		*/
+		function abortRequest(req) {
+			var nativeReq = req.nativeRequest,
+				callbackIndex = req._callbackIndex;
+
+			//clear timeout
+			req._timeout && clearTimeout(req._timeout);
+			//different if request came from loadScript
+			if (nativeReq) {
+				//clear listeners
+				// prevent parent scopes leaking (cross-page) in IE
+				nativeReq.onreadystatechange = new Function();
+				nativeReq.abort();
+			} else if (callbackIndex) {
+				//clear callback
+				window[globalObjectName][callbackPrefix + callbackIndex] = emptyFunc;
+				//remove script element
+				glow(scriptElements[callbackIndex]).destroy();
+			}
+		}
 	/**
 	@name glow.net.get
 	@function
@@ -409,7 +440,7 @@ Glow.provide(function(glow) {
 				if (opts.timeout) {
 					request._timeout = setTimeout(function() {
 						abortRequest(request);
-						opts.onError();
+						request.fire("error");
 					}, opts.timeout * 1000);
 				}
 				//using setTimeout to stop Opera 9.0 - 9.26 from running the loaded script before other code
@@ -575,7 +606,7 @@ Glow.provide(function(glow) {
 			@description Add a hidden iframe for posting the request
 			*/
 			_addIframe: function () {
-				this.iframe = glow.dom.create(
+				this.iframe = glow(
 					'<iframe style="visibility: hidden; position: absolute; height: 0;"></iframe>'
 				);
 				var iframe   = this.iframe[0],
