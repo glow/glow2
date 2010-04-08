@@ -29,8 +29,8 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.anim.Anim#target
 		@function
-		@description Set the target object for subsequent calls to {@link glow.anim.Anim#prop prop}
-		@param {Object} newTarget New target object
+		@description Set the object for subsequent calls to {@link glow.anim.Anim#prop prop} to act on.
+		@param {Object} newTarget The target object
 			
 		@returns this
 		
@@ -202,7 +202,7 @@ Glow.provide(function(glow) {
 		@function
 		@description Animate a property of an object.
 			This shortcut adds a listener onto the animation's 'frame' event
-			and changes an specific property from one value to another.
+			and changes a specific property from one value to another.
 			
 			Values can be simple, such as '42', or more complex, such as 'rgba(255, 255, 0, 0.8)'
 			
@@ -227,19 +227,19 @@ Glow.provide(function(glow) {
 			A literal question-mark can be placed in a template by preceeding it
 			with a backslash.
 			
-		@param {number|number[]} [conf.from] Value(s) to animate from
+		@param {number|number[]} [conf.from] Value(s) to animate from.
 			This can be a single number, or an array of numbers; one for each
 			question-mark in the template.
 			
-			If ommited, the from value(s) will be taken from the object. This
+			If omitted, the from value(s) will be taken from the object. This
 			will fail if the current value is undefined or is in a format
 			different to the template.
 			
-		@param {number|number[]} conf.to Value(s) to animate to
+		@param {number|number[]} conf.to Value(s) to animate to.
 			This can be a single number, or an array of numbers; one for each
 			question-mark in the template.
 			
-		@param {boolean|boolean[]} [conf.round=false] Round values to the nearest whole number?
+		@param {boolean|boolean[]} [conf.round=false] Round values to the nearest whole number.
 			Use this to prevent the property being set to a fractional value.
 			
 			This can be a single boolean, or an array of booleans; one for each

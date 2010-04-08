@@ -52,6 +52,8 @@
 			<file>src/ui/Focusable/Focusable.js</file>
 			<file>src/ui/Widget/Widget.js</file>
 			<file>src/ui/Overlay/Overlay.js</file>
+			<file>src/ui/AutoSuggest/AutoSuggest.js</file>
+			<file>src/ui/AutoSuggest/bindInput.js</file>
 			<file>src/ui/CarouselPane/CarouselPane.js</file>
 			<file>src/ui/Carousel/Carousel.js</file>
 			<file>src/footer/ui.js</file>
@@ -60,6 +62,7 @@
 			<file>src/header/license.txt</file>
 			<file>src/ui/ui.css</file>
 			<file>src/ui/Overlay/Overlay.css</file>
+			<file>src/ui/AutoSuggest/AutoSuggest.css</file>
 		</css>
 	</ui>
 </packages>

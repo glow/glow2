@@ -171,7 +171,7 @@ Glow.provide(function(glow) {
 			};
 			function MyOtherClass(arg) {
 				//call the base class's constructor
-				arguments.callee.base.apply(this, arguments);
+				MyOtherClass.base.apply(this, arguments);
 			}
 			glow.util.extend(MyOtherClass, MyClass, {
 				setProp: function(newProp) {

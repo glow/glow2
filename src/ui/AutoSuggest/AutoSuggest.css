@@ -1,0 +1,10 @@
+.glowCSSVERSION-AutoSuggest {
+	overflow: hidden;
+}
+
+.glowCSSVERSION-AutoSuggest .AutoSuggest-content {
+	overflow: auto;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}

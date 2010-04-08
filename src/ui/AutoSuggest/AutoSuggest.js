@@ -1,5 +1,7 @@
 Glow.provide(function(glow) {
-	var undefined, AutoSuggestProto;
+	var undefined, AutoSuggestProto,
+		Widget = glow.ui.Widget,
+		WidgetProto = Widget.prototype;
 	
 	/**
 		@name glow.ui.AutoSuggest
@@ -26,15 +28,17 @@ Glow.provide(function(glow) {
 				By default, no maximum is imposed.
 			@param {number} [opts.width] Apply a width to the results list
 				By default, the AutoSuggest is the full width of its containing element,
-				or the with of the input it's linked to.
+				or the width of the input it's linked to.
 			@param {number} [opts.maxResults] Limit the number of results to display
 			@param {number} [opts.minLength=3] Minimum number of chars before search is executed
 				This prevents searching being performed until a specified amount of chars
 				have been entered.
 			@param {boolean} [opts.caseSensitive=false] Whether case is important when matching suggestions.
+				If false, the value passed to the filter will be made lowercase, a custom filter
+				must also lowercase the property it checks.
 			@param {boolean} [opts.activateFirst=true] Activate the first item when results appear?
 				If false, results with be shown with no active item.
-			@param {function|string} [opts.keyboardNav='updown'] Alter the default keyboard behaviour.
+			@param {function|string} [opts.keyboardNav='arrow-y'] Alter the default keyboard behaviour.
 				This is the same as keyboardNav in {@link glow.ui.Focusable}.
 		
 		@example
@@ -70,11 +74,81 @@ Glow.provide(function(glow) {
 				location.href = event.selected.url;
 			});
 	*/
-	function AutoSuggest(opts) {};
-	
-	glow.util.extend(AutoSuggest, glow.ui.Widget);
-	AutoSuggestProto = AutoSuggest.prototype;
+	function AutoSuggest(opts) {
+		// catch if the user hasn't used 'new'
+		if (this === glow.ui) {
+			return new AutoSuggest(opts);
+		}
 		
+		this._opts = opts = glow.util.apply({
+			minLength: 3,
+			keyboardNav: 'arrows-y',
+			activateFirst: true
+		}, opts || {});
+
+		Widget.call(this, 'AutoSuggest');
+		this._init();
+	};
+	
+	glow.util.extend(AutoSuggest, Widget);
+	AutoSuggestProto = AutoSuggest.prototype;
+	
+	/**
+		@name glow.ui.AutoSuggest#_opts
+		@type Object
+		@description Options provided to the constructor with defaults added
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#_loading
+		@type boolean
+		@description True if the autosuggest is waiting for data.
+			This happens when getting data is async, has been requested but not returned.
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#_pendingFind
+		@type string
+		@description Pending search string.
+			This is populated if find is called while the autoSuggest is _loading
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#_data
+		@type Object[]
+		@description Array of objects, the current datasource for this AutoSuggest
+	*/
+	AutoSuggestProto._data = [];
+	
+	/**
+		@name glow.ui.AutoSuggest#_dataFunc
+		@type function
+		@description Function used for fetching data (potentially) async
+	*/
+	
+	/**
+		@name glow.ui.AutoSuggest#_filter
+		@type function
+		@description The current filter function
+	*/
+	AutoSuggestProto._filter = function(val, caseSensitive) {
+		var nameStart = this.name.slice(0, val.length);
+		nameStart = caseSensitive ? nameStart : nameStart.toLowerCase();
+		
+		return nameStart === val;
+	};
+	
+	/**
+		@name glow.ui.AutoSuggest#_format
+		@type function
+		@description The current format function
+	*/
+	var tmpDiv = glow('<div></div>');
+	
+	AutoSuggestProto._format = function(result, val) {
+		return tmpDiv.text(result.name).html().replace(val, '<strong>' + val + '</strong>');
+	};
+	
 	/**
 		@name glow.ui.AutoSuggest#input
 		@type glow.NodeList
@@ -92,34 +166,98 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
+		@name glow.ui.AutoSuggest#focusable
+		@type glow.ui.Focusable
+		@description The focusable linked to this autosuggest.
+	*/
+	
+	// Widget lifecycle phases
+	AutoSuggestProto._init = function() {
+		WidgetProto._init.call(this);
+		// call _build
+		this._build();
+	}
+	
+	AutoSuggestProto._build = function() {
+		WidgetProto._build.call(this, '<ul></ul>', this._opts);
+		
+		var opts = this._opts,
+			width = opts.width,
+			maxHeight = opts.maxHeight,
+			content = this.content;
+		
+		this.focusable = content.focusable({
+			children: '> li',
+			keyboardNav: this._opts.keyboardNav,
+			setFocus: false,
+			activateOnHover: true
+		});
+		
+		width && this.container.width(width);
+		//maxHeight && content.css('max-height', maxHeight);
+		
+		// call _build
+		this._bind();
+	}
+	
+	/**
+		@private
+		@function
+		@description Choose listener for the focusable.
+			'this' is the AutoSuggest
+	*/
+	function focusableChooseListener(e) {
+		this.fire('choose', {
+			li: e.item,
+			item: e.item.data('as_data')
+		})
+	}
+	
+	AutoSuggestProto._bind = function() {
+		var focusable = this.focusable.on('choose', focusableChooseListener, this);
+		this._tie(focusable);
+		WidgetProto._bind.call(this);
+	}
+	
+	/**
 		@name glow.ui.AutoSuggest#setFilter
 		@function
 		@description Set the function used to filter the dataset for results
 			Overwrite this to change the filtering behaviour.
 		
 		@param {function} filter Filter function.
-			Your function will be passed 2 arguments, an item from the dataset and the term entered by the user, return
-			true to confirm a match.
+			Your function will be passed 2 arguments, the term entered by the user,
+			and if the search should be case sensitive. Return true to confirm a match.
+			
+			'this' will be the item in the dataset to check.
+			
+			If the search is case-insensitive, the term entered by the user is automatically
+			lowercased.
 		  
 			The default filter will return items where the search term matches the start of their 'name'
 			property. If the dataset is simply an array of strings, that string will be used instead of the 'name' property
 		
 		@example
 			// Search the name property for strings that contain val
-			myAutoSuggest.setFilter(function(item, val) {
-				return item.name.indexOf(val) !== -1;
+			myAutoSuggest.setFilter(function(val, caseSensitive) {
+				var name = caseSensitive ? this.name : this.name.toLowerCase();
+				return name.indexOf(val) !== -1;
 			});
 			
 		@example
 			// Search the tags property for strings that contain val surrounded by pipe chars
-			// item.tags is like: |hello|world|foo|bar|
-			myAutoSuggest.setFilter(function(item, val) {
-				return item.tags.indexOf('|' + val + '|') !== -1;
+			// this.tags is like: |hello|world|foo|bar|
+			myAutoSuggest.setFilter(function(val, caseSensitive) {
+				var tags = caseSensitive ? this.tags : this.tags.toLowerCase();
+				return tags.indexOf('|' + val + '|') !== -1;
 			});
 			
 		@return this
 	*/
-	AutoSuggestProto.setFilter = function(filter) {};
+	AutoSuggestProto.setFilter = function(filter) {
+		this._filter = filter;
+		return this;
+	};
 	
 	/**
 		@name glow.ui.AutoSuggest#setFormat
@@ -131,7 +269,7 @@ Glow.provide(function(glow) {
 			The second param is the search value.
 			
 			Return an HTML string or glow.NodeList to display this item in the results
-			list.
+			list. Ensure you escape any content you don't want treated as HTML.
 			
 		@returns this
 		
@@ -144,8 +282,65 @@ Glow.provide(function(glow) {
 				return '<img src="' + data.photo + '" alt=""> ' + data.fullName + ' (' + data.name + ')';
 			}).data('userSearch.php?usernamePartial={val}').linkToInput('#username');
 	*/
-	AutoSuggestProto.setFormat = function(formatter) {};
-		
+	AutoSuggestProto.setFormat = function(formatter) {
+		this._format = formatter;
+		return this;
+	};
+	
+	/**
+		@private
+		@function
+		@description Process the data into an acceptable format for #_data
+	*/
+	function populateData(autoSuggest, data) {
+		var i,
+			tmpData,
+			event = autoSuggest.fire('data', {data:data});
+
+		if ( !event.defaultPrevented() ) {
+			// a listener may have altered the data
+			data = event.data;
+			if (typeof data[0] === 'string') {
+				tmpData = [];
+				i = data.length;
+				while (i--) {
+					tmpData[i] = { name: data[i] };
+				}
+				data = tmpData;
+			}
+			autoSuggest._data = data;
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Create _dataFunc based on a custom function.
+		@param {glow.ui.AutoSuggest} autoSuggest Instance
+		@param {function} func Data fetching function provided by the user via #data
+	*/
+	function setDataFunction(autoSuggest, func) {
+		// create a new function for fetching data
+		autoSuggest._dataFunc = function(val) {
+			// create a callback to pass into the user's data function
+			
+			// put us in the loading state and call the user's function
+			autoSuggest._loading = true;
+			
+			// call the user's function, providing a callback
+			func.call(this, val, function(data) {
+				var pendingFind = autoSuggest._pendingFind;
+				autoSuggest._loading = false;
+				// populate data if we've been given some
+				data && populateData(autoSuggest, data);
+				if (pendingFind) {
+					performFind(autoSuggest, pendingFind);
+					autoSuggest._pendingFind = undefined;
+				}
+			});
+		}
+	}
+	
 	/**
 		@name glow.ui.AutoSuggest#data
 		@function
@@ -163,7 +358,8 @@ Glow.provide(function(glow) {
 			
 			<p><strong>string[] or Object[] dataset</strong></p>
 			
-			An Array of strings can be provided, where each string is an object that can be matched.
+			An Array of strings can be provided. Each string will be converted to {name: theString}, leaving
+			you with an array of objects.
 			
 			An Array of Objects can be provided, each object is an object that can be matched. By default
 			the 'name' property of these objects is searched to determine a match, but {@link glow.ui.AutoSuggest#filter filter} can
@@ -173,6 +369,8 @@ Glow.provide(function(glow) {
 			
 			A function can be provided, this is passed two arguments, the first is the search string, the 2nd is
 			a callback.
+			
+			'this' inside the function refers to the AutoSuggest instance.
 			
 			Once your data has arrived, call the callback passing in your data as the first
 			param, or call the callback with no params to continue with the previous dataset. Until the
@@ -214,7 +412,21 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	AutoSuggestProto.data = function(data) {};
+	AutoSuggestProto.data = function(data) {
+		if (typeof data === 'string') {
+			// TODO - url
+		}
+		else if (typeof data === 'function') {
+			setDataFunction(this, data);
+		}
+		else if (data.push) {
+			// clear any data functions set
+			this._dataFunc = undefined;
+			populateData(this, data);
+		}
+		
+		return this;
+	};
 	
 	/**
 		@name glow.ui.AutoSuggest#bindInput
@@ -261,6 +473,110 @@ Glow.provide(function(glow) {
 	AutoSuggestProto.bindInput = function(input, opts) {};
 	
 	/**
+		@private
+		@function
+		@description Generate the output of a find
+			
+		@param {glow.ui.AutoSuggest} autoSuggest
+		@param {Object[]} results Array of filtered results
+		@param {string} val The search string
+	*/
+	function generateOutput(autoSuggest, results, val) {
+		var content = autoSuggest.content,
+			resultsLen = results.length,
+			i = resultsLen,
+			listItem,
+			itemContent,
+			focusable = autoSuggest.focusable,
+			maxHeight = autoSuggest._opts.maxHeight
+		
+		focusable.active(false);
+		
+		// remove any current results
+		content.children().destroy();
+		
+		while (i--) {
+			itemContent = autoSuggest._format( results[i], val );
+			listItem = glow('<li></li>');
+			
+			(typeof itemContent === 'string') ?
+				listItem.html(itemContent) :
+				listItem.append(itemContent);
+
+			content.prepend(
+				// add new list item, with result data attached.
+				// Result data is used again when the item is chosen
+				glow('<li></li>').data( 'as_data', results[i] ).append(
+					autoSuggest._format( results[i], val )
+				)
+			);
+		}
+		
+		// fake maxHeight for IE6
+		if (glow.env.ie < 7 && maxHeight) {
+			content.height('auto');
+			
+			if (content.height() > maxHeight) {
+				content.height(maxHeight);
+			}
+		}
+		
+		// Activate the focusable if we have results
+		resultsLen && focusable.active(true);
+	}
+	
+	/**
+		@private
+		@function
+		@description Performs the find operation without calling _dataFunc.
+			Or checking _loading or string length. These are done in #find.
+			
+		@param {glow.ui.AutoSuggest} autoSuggest
+		@param {string} str The search string
+	*/
+	function performFind(autoSuggest, str) {
+		var filteredResults = [],
+			filteredResultsLen = 0,
+			data = autoSuggest._data,
+			findEvent = autoSuggest.fire('find', {val: str}),
+			resultsEvent,
+			caseSensitive = autoSuggest._opts.caseSensitive;
+		
+		if ( !findEvent.defaultPrevented() ) {
+			// pick up any changes a listener has made to the find string
+			str = findEvent.val;
+			
+			str = caseSensitive ? str : str.toLowerCase();
+			
+			// start filtering the data
+			for (var i = 0, len = data.length; i < len; i++) {
+				if ( autoSuggest._filter.call(data[i], str, caseSensitive) ) {
+					filteredResults[ filteredResultsLen++ ] = data[i];
+					
+					// break if we have enough results now
+					if (filteredResultsLen === autoSuggest._opts.maxResults) {
+						break;
+					}
+				}
+			}
+			
+			// fire result event
+			resultsEvent = autoSuggest.fire('results', {results: filteredResults});
+			
+			if ( resultsEvent.defaultPrevented() ) {
+				filteredResults = [];
+			}
+			else {
+				// pick up any changes a listener has made to the results
+				filteredResults = resultsEvent.results
+			}
+			
+			// output results
+			generateOutput(autoSuggest, filteredResults, str);
+		}
+	}
+	
+	/**
 		@name glow.ui.AutoSuggest#find
 		@function
 		@description Search the datasource for a given string
@@ -274,7 +590,22 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	AutoSuggestProto.find = function(str) {};
+	AutoSuggestProto.find = function(str) {
+		if (str.length >= this._opts.minLength) {
+			// refresh/load data if there's a function
+			this._dataFunc && this._dataFunc(str);
+			
+			// can't find if we're loading...
+			if (this._loading) {
+				// leave it here, _dataFunc will pick it up and call performFind later
+				this._pendingFind = str;
+			}
+			else {
+				performFind(this, str);
+			}
+		}
+		return this;
+	};
 	
 	/**
 		@name glow.ui.AutoSuggest#hide
@@ -284,6 +615,31 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	AutoSuggestProto.hide = function() {};
+	
+	/**
+		@name glow.ui.AutoSuggest#destroy
+		@function
+		@description Destroy the AutoSuggest.
+			Removes all events that cause the AutoSuggest to run. The input
+			element will remain on the page.
+	*/
+	AutoSuggestProto.destroy = function() {
+		this._data = undefined;
+		WidgetProto.destroy.call(this);
+	};
+	
+	/**
+		@name glow.ui.AutoSuggest#disabled
+		@function
+		@description Enable/disable the AutoSuggest, or get the disabled state
+			When the AutoSuggest is disabled it is not shown.
+			
+		@param {boolean} [newState] Disable the AutoSuggest?
+			'false' will enable a disabled AutoSuggest.
+		
+		@returns {glow.ui.AutoSuggest|boolean}
+			Returns boolean when getting, AutoSuggest when setting
+	*/
 	
 	/**
 		@name glow.ui.AutoSuggest#event:data
@@ -298,7 +654,7 @@ Glow.provide(function(glow) {
 			Cancel this event to ignore the new dataset, and continue
 			with the current one.
 		@param {glow.events.Event} event Event Object
-		@param {*} event.dataset The new dataset
+		@param {*} event.data The new dataset
 			You can modify / overwrite this property to alter the dataset
 			
 		@example
@@ -346,7 +702,7 @@ Glow.provide(function(glow) {
 			Cancel this event to prevent the default click action.
 		@param {glow.events.Event} event Event Object
 		@param {string|Object} event.item The item in the dataset that was selected
-		@param {glow.NodeList} event.element The element in the AutoSuggest that was selected
+		@param {glow.NodeList} event.li The list item in the AutoSuggest that was selected
 			
 		@example
 			myAutoSuggest.on('choose', function(event) {
@@ -361,7 +717,11 @@ Glow.provide(function(glow) {
 		@description Fired when a search starts
 			Cancel this event to prevent the search
 		
-		@param {glow.events.Event} event Event Object
-		@param {string} event.val The search string
+		@param {glow.events.Event} event Event Object.
+		@param {string} event.val The search string.
+			You can set this to another value if you wish.
 	*/
+	
+	// EXPORT
+	glow.ui.AutoSuggest = AutoSuggest;
 });
