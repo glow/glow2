@@ -154,7 +154,7 @@ test('interpolate', 2, function() {
 	equal(result, '<p>Hello, my name is Haxors!!1 &lt;script src="hackhackhack.js"&gt;&lt;/script&gt;</p>');
 });
 
-test('cookie', 6, function() {
+test('cookie', 8, function() {
 	equal(typeof glow.util.cookie, 'function', 'cookie is function.');
 	
 	glow.util.cookie('tea', 'milky');
@@ -168,7 +168,12 @@ test('cookie', 6, function() {
 	equal(allCookies['tea'], 'milky', 'Can get all cookies.');
 	
 	glow.util.cookie({'tea': 'milky', 'sugar': '2', 'biscuit': 'yes'});
-	same(glow.util.cookie(), {'tea': 'milky', 'sugar': '2', 'biscuit': 'yes'}, 'Setting and getting multiple cookies.');
+	// note that order is not guaranteed to be preserved when setting then getting multiple cookies
+	allCookies = glow.util.cookie();
+	
+	equal(allCookies['tea'], 'milky');
+	equal(allCookies['sugar'], '2');
+	equal(allCookies['biscuit'], 'yes');
 	
 	glow.util.removeCookie('sugar');
 	equal(glow.util.cookie('sugar'), undefined, 'Can remove a cookie.');
