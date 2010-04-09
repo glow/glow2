@@ -6,97 +6,121 @@
 	<title>test: run all</title>
 	
 	<style type="text/css" media="screen">
-	
+		ol#runall-tests
+		{
+			font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
+			margin: 0;
+			padding: 0;
+			list-style-position: inside;
+			s font-size: smaller;
+		}
 		
-		ol#runall-tests{
-			font-family:"Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
-			margin:0;
-			padding:0;
-			list-style-position:inside;s    
-
-			font-size: smaller;
-		}
 		a, a:hover, a:visited { color: #000; }
-		ol#runall-tests li{
-			padding:0.4em 0.5em 0.4em 2.5em;
-			border-bottom:1px solid #fff;
-			font-size:small;
-			list-style-position:inside;
+		
+		ol#runall-tests li
+		{
+			padding: 0.4em 0.5em 0.4em 2.5em;
+			border-bottom: 1px solid #fff;
+			font-size: small;
+			list-style-position: inside;
 		}
-		ol#runall-tests li div{
-			display:inline;
-		}
-		ol#runall-tests li ol{
+		
+		ol#runall-tests li div { display: inline; }
+		
+		ol#runall-tests li ol
+		{
 			box-shadow: inset 0px 2px 13px #999;
 			-moz-box-shadow: inset 0px 2px 13px #999;
 			-webkit-box-shadow: inset 0px 2px 13px #999;
-			margin-top:0.5em;
-			margin-left:0;
-			padding:0.5em;
-			background-color:#fff;
-			border-radius:15px;
+			margin-top: 0.5em;
+			margin-left: 0;
+			padding: 0.5em;
+			background-color: #fff;
+			border-radius: 15px;
 			-moz-border-radius: 15px;
 			-webkit-border-radius: 15px;
-		}    
-		ol#runall-tests li.pass{
-			background-color:#D2E0E6;
-			color:#528CE0;
-		}
-		ol#runall-tests li.fail{
-			background-color:#EE5757;
-			color:#000;
 		}
 		
-		h1{
-			background-color:#0d3349;
-			margin:0;
-			padding:0.5em 0 0.5em 1em;
-			color:#fff;
-			font-family:"Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
-			border-top-right-radius:15px;
-			border-top-left-radius:15px;
-			-moz-border-radius-topright:15px;
-			-moz-border-radius-topleft:15px;
-			-webkit-border-top-right-radius:15px;
-			-webkit-border-top-left-radius:15px;
+		ol#runall-tests li.pass
+		{
+			background-color: #D2E0E6;
+			color: #528CE0;
+		}
+		
+		ol#runall-tests li.fail
+		{
+			background-color: #EE5757;
+			color: #000;
+		}
+		
+		h1
+		{
+			background-color: #0d3349;
+			margin: 0;
+			padding: 0.5em 0 0.5em 1em;
+			color: #fff;
+			font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
+			border-top-right-radius: 15px;
+			border-top-left-radius: 15px;
+			-moz-border-radius-topright: 15px;
+			-moz-border-radius-topleft: 15px;
+			-webkit-border-top-right-radius: 15px;
+			-webkit-border-top-left-radius: 15px;
 			text-shadow: rgba(0, 0, 0, 0.5) 4px 4px 1px;
-			border-bottom:4px solid #2b81af;
+			/*border-bottom: 4px solid #2b81af;*/
 		}
 		
-		#qunit-testrunner-toolbar {
-			font-family:"Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
-			padding:0;
+		#qunit-testrunner-toolbar
+		{
+			font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
 			/*width:80%;*/
-			padding:0em 0 0.5em 2em;
+			padding: 0em 0 0.5em 2em;
 			font-size: small;
 		}
 		
-		#runall-status{
-			font-family:"Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
-			margin:0;
+		#runall-status
+		{
+			font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
+			margin: 0;
 			font-size: small;
-			color:#2b81af;
-			border-bottom-right-radius:15px;
-			border-bottom-left-radius:15px;
-			-moz-border-radius-bottomright:15px;
-			-moz-border-radius-bottomleft:15px;
-			-webkit-border-bottom-right-radius:15px;
-			-webkit-border-bottom-left-radius:15px;
-			background-color:#D2E0E6;
-			padding:0.5em 0.5em 0.5em 2.5em;
+			color: #2b81af;
+			border-bottom-right-radius: 15px;
+			border-bottom-left-radius: 15px;
+			-moz-border-radius-bottomright: 15px;
+			-moz-border-radius-bottomleft: 15px;
+			-webkit-border-bottom-right-radius: 15px;
+			-webkit-border-bottom-left-radius: 15px;
+			background-color: #D2E0E6;
+			padding: 0.5em 0.5em 0.5em 2.5em;
 		}
-		strong b.fail{
-			color:#710909;
+		
+		strong b.fail { color: #710909; }
+		strong b.pass { color: #5E740B; }
+		
+		h2#runall-banner {
+			font-family: "Helvetica Neue Light","HelveticaNeue-Light","Helvetica Neue",Calibri,Helvetica,Arial;
+			height: 5px;
+			margin: 0;
+			padding: 0;
+			background-color: #2b81af;
 		}
-		strong b.pass{
-			color:#5E740B;
+		
+		h2#runall-banner.qunit-fail {
+			background-color: #EE5757;
 		}
-		iframe{
+		
+		h2#runall-banner.qunit-pass {
+			background-color: #C6E746;
+		}
+		
+		iframe
+		{
 			position: absolute;
-    left: -9999em;
+			left: -9999em;
 		}
 	</style>
 	
+	<!-- pass configuration values in on the query string, like runall.html?from=build&debug=true -->
 	<script type="text/javascript">
 		var testpages = {
 			glow: 'glow.html',
@@ -117,103 +141,132 @@
 			ui: 'ui/Widget/Widget.html',
 			focusable: 'ui/Focusable/Focusable.html'
 		};
-		
-		var conf = {
-			//debug: 'debug=true&'
-		}
+
+		// modify testpages urls, based on configurations in GET params
+		(function() {
+			var query = (window.location.search || '?').substring(1);
+			
+			query = '?' + query + (query? '&':'') + 'nocache=' + new Date().getTime(); // prevent iframes from caching between reloads
+			
+			for (var name in testpages) {
+				testpages[name] += query;
+			}
+		})();
 		
 		function init() {
-			window.harness = new Harness(testpages, conf);
-			harness.openAll();
+			window.harness = new Harness(testpages, window.conf);
+			harness.nextTest();
 		}
 		
 		window.onload = init;
 		
-		
 		function Harness(testpages, opts) {
 			this.testpages = testpages;
-			this.opts = opts || {};
+			this.opts = opts || {maxwait: 20000};
 			
 			this.results = {};
 			this.output = {};
+			this.fails = 0;
 			
-			this.running = 0;
+			this.currentTest = -1;
 			this.timer = null;
+			
+			this.testNames = [];
+			for (var name in testpages) { this.testNames.push(name); }
 		}
 		
-		Harness.prototype.openAll = function() {
-			var location;
-				
-			for (var name in this.testpages) {
-				src = this.testpages[name];
-				
-				var ol = document.getElementById('runall-tests');
-				if (ol) {
-					var li = document.createElement('LI');
-					li.innerHTML = name + ':';
-					ol.appendChild(li);
-				}
-				this.output[name] = li;
-				
-				this.running++;
-				Harness.addFrame(name, src, this.opts);
+		Harness.prototype.nextTest = function() {
+			this.currentTest++;
+			
+			if (this.currentTest >= this.testNames.length) { // run out of test pages
+				this.conclude();
+				return;
 			}
 			
+			var location,
+				name = this.testNames[this.currentTest];
+				
+			src = this.testpages[name];
+				
+			var ol = document.getElementById('runall-tests');
+			if (ol) {
+				var li = document.createElement('LI');
+				li.innerHTML = name + ':';
+				ol.appendChild(li);
+			}
+			this.output[name] = li;
+			
+			Harness.addFrame(name, src, this.opts);
+			
 			var that = this;
-			this.timer = setTimeout(function() { that.timesUp(); }, 30000);
+			this.timer = setTimeout(function() { that.timesUp(); }, this.opts.maxwait);
+		}
+		
+		Harness.prototype.conclude = function() {/*debug*///console.log('conclude()');
+			var banner;
+			if (statusElm = document.getElementById('runall-status')) {
+				statusElm.innerHTML= 'Tests completed.<br>'+(this.currentTest - this.fails)+' tests of '+this.currentTest+' passed, '+this.fails+' failed.';
+			}
+			
+			if (bannerElm = document.getElementById('runall-banner')) {
+				bannerElm.className = (this.fails === 0)? 'qunit-pass' : 'qunit-fail';
+			}
 		}
 		
 		Harness.prototype.result = function(name, failures, total) {
-			this.running--;
 			this.results[name] = { failures: failures, total: total };
 			
 			var status = '<a href="'+this.testpages[name]+'" target="_blank">'+this.testpages[name]+'<'+'/a>: <strong>(<b class="fail">'+failures+'<'+'/b>, <b class="pass">'+(total-failures)+'<'+'/b>, '+total+')<'+'/strong>';
 			var className = (failures === 0)? 'pass' : 'fail';
 			this.status(name, status, className);
-				
-			if (this.running === 0) {
-				clearTimeout(this.timer);
-				this.closeAll();
-			}
+			
+			if (failures !== 0) { this.fails++; }
+			
+			clearTimeout(this.timer);
+
+			this.close(name);
 		}
 		
-		Harness.prototype.status = function(name, message, className) {
+		Harness.prototype.status = function(name, message, className) {/*debug*///console.log('status('+name+')');
+			var statusElm;
+			
 			if (className) {
 				this.output[name].className = className;
 			}
 			this.output[name].innerHTML = name + ': ' + message;
+			
+			if (statusElm = document.getElementById('runall-status')) {
+				statusElm.innerHTML= 'Waiting for result from "'+name+'" ('+(this.currentTest+1)+' of '+(this.testNames.length)+')';
+			}
 		}
 		
-		Harness.prototype.closeAll = function() {
-			for (var name in this.testpages) {
-				Harness.removeFrame(name);
-			}
+		Harness.prototype.close = function(name) {
+			Harness.removeFrame(name);
 		}
 		
 		Harness.prototype.timesUp = function() {
-			for (var name in this.testpages) {
-				if (!this.results[name]) {
-					this.results[name] = { failures: -1, total: -1 };
-					var status = '<a href="'+this.testpages[name]+'" target="_blank">'+this.testpages[name]+'<'+'/a>: <strong>(<b class="fail">timed out<'+'/b>)<'+'/strong>';
-					this.status(name, status, 'fail');
-				}
-			}
+			var name = this.testNames[this.currentTest];
+
+			this.close(name); // bye bye tests
 			
-			this.closeAll();
+			if (!this.results[name]) {
+				this.results[name] = { failures: -1, total: -1 };
+				var status = '<a href="'+this.testpages[name]+'" target="_blank">'+this.testpages[name]+'<'+'/a>: <strong>(<b class="fail">timed out<'+'/b>) gave up waiting for result after '+this.opts.maxwait+'ms <'+'/strong>';
+				this.status(name, status, 'fail');
+			}
+			this.nextTest();
 		}
-		
-		/////////////
 		
 		Harness.addFrame = function(name, src, opts) {
 			var iframe = document.createElement('IFRAME'),
-				debug = opts? (opts.debug || '') : '';
+				params = {}, // GET params to add to the src URL
+				query = (window.location.search || '?').substring(1);
 			
 			iframe.width = '200px';
 			iframe.height = '200px';
 			iframe.style.border = 'none';
 			iframe.id = name;
-			iframe.src = src + '?'+debug+'nocache='+new Date().getTime();
-			
+			iframe.src = src + (query? '?':'') + query; /*debug*///console.info('Harness.addFrame: src is '+iframe.src);			
 			document.body.appendChild(iframe);
 			
 			frames[frames.length-1].name = name;
@@ -225,8 +278,11 @@
 		}
 		
 		Harness.attach = function(name, unitTester) {
-			unitTester.done = function (failures, total) {
+			unitTester.done = function (failures, total) {/*debug*///console.log('unitTester.done');
 				window.harness.result(name, failures, total);
+			//}
+			//unitTester.testDone = function(name, failures, total) {
+				window.harness.nextTest();
 			}
 			unitTester.moduleStart = function(moduleName) {
 				window.harness.status(name, 'module: '+moduleName);
@@ -241,7 +297,8 @@
 </head>
 <body>
 	<h1 id="runall-header">Run All Tests: Glow 2</h1>
+	<h2 id="runall-banner"></h2>
 	<ol id="runall-tests"></ol>
-	<ol id="runall-status"></ol>
+	<p id="runall-status" class="result"></p>
 </body>
 </html>

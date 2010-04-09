@@ -99,7 +99,7 @@
 		@param {string} version Resolved identifier, like '2.0.0'.
 		@returns {object} A map of package names to files list.
 	 */
-	var getMap = function(version, debug) { /*debug*///log.info('getMap("'+version+'")');
+	var getMap = function(version) { /*debug*///log.info('getMap("'+version+'")');
 		var versions = glowMap.versions,
 			map = null,
 			versionFound = false;

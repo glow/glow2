@@ -14,12 +14,22 @@ testHelper = {
 		return from;
 	}
 	,
+	getDebug: function() {
+		var debug = testHelper.conf.debug;
+		return debug;
+	}
+	,
 	addScript: function(scriptName, w) { /*debug*///console.log('addScript('+scriptName+')');
 		var version = testHelper.getVersion(),
 			base = testHelper.getBase();
 		
 		if (typeof w == 'undefined') { w = window; };
-
+		
+		// when adding script files commando, switch debug on and off via the querystring, like ?debug=true
+		if (testHelper.getDebug() === 'true') { ///\bdebug=true\b/.test(window.location.search) && scriptName.indexOf('debug.js') === -1) {
+			scriptName = scriptName.replace('.js', '.debug.js');
+		}
+		
 		w.document.write('<script src="' + base + version + '/' + scriptName + '" type="text/javascript"><'+'/script>')
 	}
 	,
@@ -37,13 +47,15 @@ testHelper = {
 	,
 	addFrame: function(src, callback) {
 		var iframe = document.createElement('IFRAME'),
-			name = "iframe_" +(new Date()).getTime();
+			name = 'iframe_' +(new Date()).getTime();
 			
-		iframe.width = "1px";
-		iframe.height = "1px";
+		iframe.width = '1px';
+		iframe.height = '1px';
 		iframe.style.border = 'none';
 		iframe.id = name; // prevent Safari from caching iframe data.
-		iframe.src= src+'?nocache='+new Date().getTime();
+		
+		src += ((src.indexOf('?') > -1)? '&' : '?') + 'nocache='+new Date().getTime()
+		iframe.src = src // +'?nocache='+new Date().getTime();
 		
 		document.body.appendChild(iframe);
 		
@@ -64,13 +76,13 @@ testHelper = {
 	}
 };
 
-// base can be augmented from the get params. Like: ?from=build or ?from=packages
+// base can be augmented from the get params. Like: ?from=build or ?from=packages&debug=true
 testHelper.configure = function(opts) { /*debug*///console.log('testHelper.configure('+opts.toSource()+')');
 	var pair,
 		name,
 		value,
-		params = (window.location || { search: '', protocol: 'file:' }).search.slice(1).split('&');
-	
+		params = window.location.search.slice(1).split('&');
+
 	if (testHelper.confDefaults) {
 		for (var key in testHelper.confDefaults) {
 			if (testHelper.confDefaults.hasOwnProperty(key)) {
@@ -87,14 +99,13 @@ testHelper.configure = function(opts) { /*debug*///console.log('testHelper.confi
 		}
 	}
 	
-	for (var i = 0; i < params.length; i++) {
-		params[i] = decodeURIComponent(params[i]);
-		
+	for (var i = 0, leni = params.length; i < leni; i++) {
 		pair = params[i].split('=', 2);
+
 		name = decodeURIComponent(pair[0]);
 		value = (pair.length==2)
 			? decodeURIComponent(pair[1])
-			: name;
+			: '';
 		
 		testHelper.conf[name] = value;
 	}
@@ -111,7 +122,6 @@ testHelper.conf = window.testConf || {};
 (function() {
 	var scripts = document.getElementsByTagName('script');
 	for (var i = scripts.length-1; i >= 0; i--) {
-		// does this script tag look like it is pointing to gloader?
 		var src = scripts[i].getAttribute('src');
 		
 		if (/testhelper\.js\?base=(.+)/.test(src)) {
