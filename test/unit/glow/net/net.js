@@ -218,7 +218,8 @@ test("glow.net.get timeout cancelling", function() {
 	
 	var noError = true;
 	
-	var request = glow.net.get("xhr/basictext.txt", {timeout: 2}).on("load",
+	var request = glow.net.get("xhr/basictext.txt",
+					{timeout: 2}).on("load",
 				function(response){
 					ok(true, "load called");
 							
@@ -235,20 +236,25 @@ test("glow.net.get timeout cancelling", function() {
 	}, 3000);
 });
 
+/**** HERE ****/
 test("glow.net.getJsonp general", function() {
-	expect(3);
+	expect(2);
 	stop(5000);
 	var timeoutCancelled = true;
 	
 	var request = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
 					   {timeout: 2}).on('load',
 		function(data) {
+			console.log("1");
 			ok(true, "Callback called");
-			equal(data.hello, "world", "Data passed");
+			console.log(data);
+			equal(data.hello, "world", "Data returned");
 			start();
 		}).on('error',
 			function() {
+				console.log("2");
 				timeoutCancelled = false;
+				
 			});
 	
 	
@@ -274,19 +280,15 @@ test("glow.net.getJsonp timeout and charset", function() {
 					  {timeout: 2,
 						charset: "utf-8"}).on('load', 
 		function(data) {
-			console.log("1")
 			onLoadCalled = true;
 			start();
 		}).on('error',
 		function() {
-			console.log("2")
 			ok(!onLoadCalled, "load not called");
 			ok(true, "error (timeout) called");
 			start();
 		});
-		
 
-	console.log("3")
 	equals(glow(document.body.lastChild).attr("charset"), "utf-8", "Charset set");
 });
 
@@ -391,7 +393,7 @@ test("glow.net.del", function() {
 					return;
 				}
 				ok(true, "correct callback used");
-				equals( response.text(), "DELETE request", "Using delete method" );
+				equal( response.text(), "DELETE request", "Using delete method" );
 				start();
 			}).on('error', 
 			function() {
@@ -400,4 +402,17 @@ test("glow.net.del", function() {
 			});
 		
 	
+});
+
+test("glow.net.crossDomainRequest", function () {
+    expect(1);
+	stop(5000);
+
+    glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search', {_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
+       function (res) {
+            equal(res, 'test response', 'get xDomainResponse');
+            start();
+	   });
+
+
 });

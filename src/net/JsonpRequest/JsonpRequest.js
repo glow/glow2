@@ -11,7 +11,7 @@ Glow.provide(function(glow) {
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	 
-	function JsonpRequest(requestObj, opts, script) {
+	function JsonpRequest(requestObj, opts) {
 	/**
 			 * @name glow.net.Request#_timeout
 			 * @private
@@ -120,17 +120,7 @@ Glow.provide(function(glow) {
 	*/
 	}
 	glow.util.extend(JsonpRequest, glow.events.Target);
-	JsonpRequestProto = JsonpRequest.prototype;
-	
-	/**
-		@name glow.net.JsonpRequest#element
-		@description A reference to the script node
-		@type {glow.NodeList}
-	
-	*/
-	JsonpRequestProto.element = function() {
-		return this.script;
-	};
+
 	
 	
 	glow.net.JsonpRequest = JsonpRequest;

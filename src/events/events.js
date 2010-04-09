@@ -8,7 +8,7 @@ Glow.provide(function(glow) {
 		
 	/* storage variables */
 	
-	var eventListeners = {}, // eventName[callback][thisVal] 
+	var eventListeners = {}, // eventName: [ [callback, thisVal], ... ] 
 		eventId = 1,
 		objIdCounter = 1, 
 		eventKey = '__eventId' + glow.UID; 
@@ -244,32 +244,27 @@ Glow.provide(function(glow) {
 		}
 		
 	}
-	///**
-	//@name glow.events.getListeners
-	//@function
-	//@param {Object[]} item Item to find events for
-	//@decription Returns a list of listeners attached for the given item.
-	//
-	//*/	
-	//glow.events.getListeners = function(item){
-	//	var objIdent; 
-	//	for (var i = 0, len = item.length; i < len; i++) {
-	//		
-	//		objIdent = item[i][eventKey];
-	//		
-	//		if (!objIdent) {
-	//			return false;
-	//		}
-	//		else {
-	//			// todo: need to return listeners in a sensible format
-	//			return eventListeners[objIdent];
-	//		}
-	//	}
-	//
-	//
-	//	return false;
-	//};
-	//
+	/**
+	@name glow.events._getListeners
+	@private
+	@function
+	@param {Object} item Item to find events for
+	@decription Returns a list of listeners attached for the given item.
+	
+	*/	
+	events._getListeners = function(item){
+		var objIdent = item[eventKey];
+			
+		if (!objIdent) {
+			return {};
+		}
+		else {
+			// todo: need to return listeners in a sensible format
+			return eventListeners[objIdent];
+		}
+			
+	};
+	
 	///**
 	//@name glow.events.hasListener
 	//@function

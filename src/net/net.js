@@ -394,43 +394,56 @@ Glow.provide(function(glow) {
 		
 		//id of the request
 		var newIndex = scriptElements.length,
-		//script element that gets inserted on the page
-		script,
-		//generated name of the callback, may not be used
-		callbackName = callbackPrefix + newIndex,
-		
-		opts = populateOptions(opts),
-		
-		
-		
-		request = new glow.net.JsonpRequest(newIndex, opts, script),
-		
-		url = opts.useCache ? url : noCacheUrl(url),
-		
-		//the global property used to hide callbacks
-		globalObject = window[globalObjectName] || (window[globalObjectName] = {});
+			//script element that gets inserted on the page
+			script,
+			//generated name of the callback, may not be used
+			callbackName = callbackPrefix + newIndex,
+			
+			opts = populateOptions(opts),		
+			
+			request = new glow.net.JsonpRequest(newIndex, opts),
+			
+			url = opts.cacheBust ? url : noCacheUrl(url),
+			
+			//the global property used to hide callbacks
+			globalObject = window[globalObjectName] || (window[globalObjectName] = {});
 
-			//assign onload
-			if (opts.onLoad != emptyFunc) {
+			
+			
 				globalObject[callbackName] = function() {
+			
 					//clear the timeout
 					request._timeout && clearTimeout(request._timeout);
 					//set as completed
 					request.completed = true;
-					// call the user's callback
-					opts.onLoad.apply(this, arguments);
-					// cleanup references to prevent leaks
-					request.destroy();
+					
+					
+					request.data = arguments;
+				
 					script = globalObject[callbackName] = undefined;
 					delete globalObject[callbackName];
+			
+					var loadListeners = glow.events._getListeners(request).load;
+				
+					if(loadListeners){
+						loadListeners = loadListeners.slice(0);
+						var i = loadListeners.length;
+						while(i--){
+							loadListeners[i][0].apply(loadListeners[i][1], arguments);
+						}
+						
+					}
+					
+				
+					
 				};
 				url = glow.util.interpolate(url, {callback: globalObjectName + '.' + callbackName});
-			}
+			
 
 			
 
 			script = scriptElements[newIndex] = document.createElement('script');
-		if (opts.charset) {
+			if (opts.charset) {
 				script.charset = opts.charset;
 			}
 
@@ -440,7 +453,7 @@ Glow.provide(function(glow) {
 				if (opts.timeout) {
 					request._timeout = setTimeout(function() {
 						abortRequest(request);
-						request.fire("error");
+						request.fire('error');
 					}, opts.timeout * 1000);
 				}
 				//using setTimeout to stop Opera 9.0 - 9.26 from running the loaded script before other code
@@ -456,6 +469,8 @@ Glow.provide(function(glow) {
 				}
 				//add script to page
 				document.body.appendChild(script);
+				
+				
 			});
 
 			return request;
@@ -489,73 +504,10 @@ Glow.provide(function(glow) {
 		*/
 	net.getResources = function(url, opts) {
 		
-		//id of the request
-		var newIndex = scriptElements.length,
-		//script element that gets inserted on the page
-		script,
-		//generated name of the callback, may not be used
-		callbackName = callbackPrefix + newIndex,
 		
-		opts = populateOptions(opts),
+		return request;
 		
-		
-		
-		request = new glow.net.ResourceRequest(newIndex, opts, script),
-		
-		url = opts.useCache ? url : noCacheUrl(url),
-		
-		//the global property used to hide callbacks
-		globalObject = window[globalObjectName] || (window[globalObjectName] = {});
-
-			//assign onload
-			if (opts.onLoad != emptyFunc) {
-				globalObject[callbackName] = function() {
-					//clear the timeout
-					request._timeout && clearTimeout(request._timeout);
-					//set as completed
-					request.completed = true;
-					// call the user's callback
-					opts.onLoad.apply(this, arguments);
-					// cleanup references to prevent leaks
-					request.destroy();
-					script = globalObject[callbackName] = undefined;
-					delete globalObject[callbackName];
-				};
-				url = glow.util.interpolate(url, {callback: globalObjectName + '.' + callbackName});
-			}
-
-			
-
-			script = scriptElements[newIndex] = document.createElement('script');
-		if (opts.charset) {
-				script.charset = opts.charset;
-			}
-
-
-			glow.ready(function() {
-				//sort out the timeout
-				if (opts.timeout) {
-					request._timeout = setTimeout(function() {
-						abortRequest(request);
-						opts.onError();
-					}, opts.timeout * 1000);
-				}
-				//using setTimeout to stop Opera 9.0 - 9.26 from running the loaded script before other code
-				//in the current script block
-				if (glow.env.opera) {
-					setTimeout(function() {
-						if (script) { //script may have been removed already
-							script.src = url;
-						}
-					}, 0);
-				} else {
-					script.src = url;
-				}
-				//add script to page
-				document.body.appendChild(script);
-			});
-
-			return request;};
+	};
 	
 	
 	
@@ -620,7 +572,7 @@ Glow.provide(function(glow) {
 				} else {
 					iframe.onload = callback;
 				}
-				$('body').append(this.iframe);
+				glow('body').append(this.iframe);
 			},
 		
 			/**
