@@ -335,11 +335,11 @@ test("glow.net.getResources general // TO DO", function() {
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var request = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
+	var request = glow.net.getResources("http://www.bbc.co.uk/glow/styles/default.css",
 					   {timeout: 2}).on('load',
 		function(data) {
-			ok(true, "Callback called");
-			equal(data.hello, "world", "Data passed");
+			ok(true, "Load fired");
+			//equal(data.hello, "world", "Data passed");
 			start();
 		}).on('error',
 			function() {
