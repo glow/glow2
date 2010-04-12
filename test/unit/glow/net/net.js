@@ -285,7 +285,7 @@ test("glow.net.getJsonp timeout and charset", function() {
 
 	equals(glow(document.body.lastChild).attr("charset"), "utf-8", "Charset set");
 });
-
+/*
 test("glow.net.getJsonp aborting", function() {
 	expect(3);
 	stop(5000);
@@ -318,7 +318,7 @@ test("glow.net.getJsonp aborting", function() {
 		
 		return;
 	}
-	request.abort();
+	//request.abort();
 	
 	window.setTimeout(function () {
 		ok(!onLoadCalled, "load not called");
@@ -328,18 +328,53 @@ test("glow.net.getJsonp aborting", function() {
 	}, 3000);
 });
 
+*/
 
-
-test("glow.net.getResources general // TO DO", function() {
+test("glow.net.getResources single CSS", function() {
 	expect(3);
 	stop(5000);
 	var timeoutCancelled = true;
 	
 	var request = glow.net.getResources("http://www.bbc.co.uk/glow/styles/default.css",
-					   {timeout: 2}).on('load',
+					   {timeout: 2}).on('progress',
+		function(url){
+			ok(true, "Progress fired");
+			console.log("url completed: "+url);
+			console.log(url);
+			}).on('load',
 		function(data) {
 			ok(true, "Load fired");
 			//equal(data.hello, "world", "Data passed");
+			start();
+		}).on('error',
+			function() {
+				timeoutCancelled = false;
+			});
+
+	
+	window.setTimeout(function () {
+		ok(timeoutCancelled, "error (timeout) not called");
+		
+		start();
+	}, 3000);
+	
+	
+});
+
+test("glow.net.getResources single image", function() {
+	expect(3);
+	stop(5000);
+	var timeoutCancelled = true;
+	
+	var request = glow.net.getResources("http://www.bbc.co.uk/glow/styles/images/banner.png",
+					   {timeout: 2}).on('progress',
+		function(url){
+			ok(true, "Progress fired");
+			console.log("url completed: "+url);
+			console.log(url);
+			}).on('load',
+		function(data) {
+			ok(true, "Load fired");
 			start();
 		}).on('error',
 			function() {
@@ -365,8 +400,8 @@ test("glow.net.put json", function() {
 		{some:"putData", blah:["something", "somethingElse"]}).on('load',
 			function(response) {
 				if ( response.text().slice(0, 2) == '<?' ) {
-					t.start();
-					t.skip("This test requires a web server running PHP5");
+					start();
+					skip("This test requires a web server running PHP5");
 					return;
 				}
 				ok(true, "correct callback used");
@@ -407,9 +442,11 @@ test("glow.net.crossDomainRequest", function () {
     expect(1);
 	stop(5000);
 
-    glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search', {_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
-       function (res) {
-            equal(res, 'test response', 'get xDomainResponse');
+    glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search',
+							{_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
+       function (response) {
+			console.log(response);
+            equal(response, 'test response', 'get xDomainResponse');
             start();
 	   });
 

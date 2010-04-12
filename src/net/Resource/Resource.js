@@ -1,18 +1,168 @@
 Glow.provide(function(glow) {
-	Request = glow.net.Request;
+	var undefined,
+		ResourceRequestProto,
+		net = glow.net,
+		emptyFunc = function(){};
 		
+	/**
+		@name glow.net.getResources
+		@function
+		@description Loads an image or CSS file from the same or another domain.
+ 
+		@param {String} url
+			Url of the script. 
+		@param {Object} [opts]
+			@param {Boolean} [opts.useCache=false] Allow a cached response
+			@param {Number} [opts.timeout] Time to allow for the request in seconds
+			
+ 
+		@returns {glow.net.Request}
+ 
+		@example
+			// load script with a callback specified
+			glow.net.getResources("http://www.server.com/custom.css").on('load'), 
+				function(data){
+					// use data
+				});
+		*/
+	net.getResources = function(url, opts) {
+		var request,
+			opts = glow.net.populateOptions(opts),
+			type,
+			extension = (/[.]/.exec(url)) ? /[^.]+$/.exec(url) : undefined;
+
+		
+		switch(String(extension)){
+			case 'jpg':
+			case 'jpeg':
+			case 'tiff':
+			case 'png':				
+				type = "image";
+				break;
+			case 'css':
+				type = "css";
+				break;
+			default: alert("can't work with that filetype");			
+		}
+	
+		request = new glow.net.ResourceRequest(url, opts, type);
+		
+		console.log(request);
+		return request;
+		
+	};
+	
 	/**
 		@name glow.net.ResourceRequest
 		@class
 		@description Returned by {@link glow.net.getResources }
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
-	 
-	 
-	 // make event shortcuts available (on)
-	//glow.util.extend(Request, glow.events.Target);
+	function ResourceRequest(url, opts, type) {
+		console.log(url);
+		console.log(opts);
+		console.log(type);
+		
+		
+		if(type == "image"){
+			var request = loadImages([url], this)
+		}
+		else{
+			var request = loadCss([url], this)
+		}
+		
+		console.log(request);
+		
+				
+		
+	}
+	function loadImages(images, request)
+		{
+		   // store the call-back
+		  // this.callback = callback;
+		 
+		   // initialize internal state.
+		   this.numberLoaded = 0;
+		   this.numberProcessed = 0;
+		   this.allImages = new Array;
+		 
+		   // record the number of images.
+		   this.totalImages = images.length;
+			console.log(this.totalImages);
+		   // for each image, call preload()
+		   for ( var i = 0; i < totalImages; i++ ){
+			 var oImage = new Image;
+					this.allImages.push(oImage);
+				   
+					// set up event handlers for the Image object
+					oImage.onload = function() { ResourceRequest._progress(request) };
+
+					oImage.onerror = function() { ResourceRequest._error(request) };
+					
+					//oImage.onabort = request.fire('abort', request);
 	
-	 
+					oImage.src = images[i];
+					
+		   }
+			
+			return(allImages);
+		}
+	
+	function loadCss(source, request){
+		var onLoad = ResourceRequest._progress;
+		
+		var totalFiles = source.length;
+		
+		for (var i = 0; i < totalFiles; i++){
+
+			
+			var link = glow('<link />').attr({
+					rel: "stylesheet",
+					media: "screen",
+					type: 'text/css',
+					href: source
+			  });
+			 if (("onload" in link) && !Browser.Engines.webkit()) {
+				if (onLoad) link.onload = ResourceRequest._progress(request);
+			  } else {
+				(function() {
+				  try {
+					link.sheet.cssRules;
+				  } catch (e) {
+					setTimeout(arguments.callee, 100);
+					return;
+				  };
+				  if (onLoad) ResourceRequest._progress(request);
+				})();
+			  }
+			
+		
+			
+			ResourceRequest._loaded(request);
+		}
+		
+		return link;
+	}
+	
+	glow.util.extend(ResourceRequest, glow.events.Target);
+	ResourceRequestProto = ResourceRequest.prototype;
+	
+	
+	glow.net.ResourceRequest = ResourceRequest;
+	
+	ResourceRequest._loaded = function(){
+		console.log('loaded')
+	}
+	
+	ResourceRequest._progress = function(request){
+		request.fire('progress');
+		console.log('progress');
+		
+	
+	}
+	ResourceRequest._error = function(){
+		request.fire('error');
+	}
 	/**
 		@name glow.net.ResourceRequest#event:load
 		@event
