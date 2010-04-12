@@ -8,7 +8,7 @@ Glow.provide(function(glow) {
 		// Private (x-domain request)
 
 		/**
-		@name _XDomainRequest
+		@name CrossDomainRequest
 		@private
 		@class
 		@description A request made via a form submission in a hidden iframe, with the result being communicated
@@ -92,15 +92,14 @@ Glow.provide(function(glow) {
 		
 	glow.util.extend(CrossDomainRequest, glow.events.Target);
 	CrossDomainRequestProto = CrossDomainRequest.prototype;
-		
-		CrossDomainRequestProto.prototype = {
+
 			/**
-			@name _XDomainRequest#_send
+			@name CrossDomainRequest#_send
 			@private
 			@function
 			@description Send the request
 			*/
-			_send: function () {
+			CrossDomainRequestProto._send = function () {
 				this._addIframe();
 				this._addForm();
 				this._addTimeout();
@@ -109,12 +108,12 @@ Glow.provide(function(glow) {
 			},
 
 			/**
-			@name _XDomainRequest#_addIframe
+			@name CrossDomainRequest#_addIframe
 			@private
 			@function
 			@description Add a hidden iframe for posting the request
 			*/
-			_addIframe: function () {
+			CrossDomainRequestProto._addIframe = function () {
 				this.iframe = glow(
 					'<iframe style="visibility: hidden; position: absolute; height: 0;"></iframe>'
 				);
@@ -136,12 +135,12 @@ Glow.provide(function(glow) {
 			},
 		
 			/**
-			@name _XDomainRequest#_addForm
+			@name CrossDomainRequest#_addForm
 			@private
 			@function
 			@description Add the form to the iframe for posting the request
 			*/
-			_addForm: function () {
+			CrossDomainRequestProto._addForm = function () {
 				var doc = this._window().document;
 
 				// IE needs an empty document to be written to written to the iframe
@@ -161,38 +160,34 @@ Glow.provide(function(glow) {
 			},
 
 			/**
-			@name _XDomainRequest#_addFormData
+			@name CrossDomainRequest#_addFormData
 			@private
 			@function
 			@description Add the data to the form
 			*/
-			_addFormData: function () {
+			CrossDomainRequestProto._addFormData = function () {
 				
 				for (var i in this.data) {
-					console.log('5')
 					if (! this.data.hasOwnProperty(i)) continue;
-					console.log('4')
 					if (this.data[i] instanceof Array) {
 						var l = this.data[i].length;
 						for (var j = 0; j < l; j++) {
-							console.log('2')
 							this._addHiddenInput(i, this.data[i][j]);
 						 }
 					}
 					else {
-						console.log('3')
 						this._addHiddenInput(i, this.data[i]);
 					}
 				}
 			},
 
 			/**
-			@name _XDomainRequest#_addHiddenInput
+			@name CrossDomainRequest#_addHiddenInput
 			@private
 			@function
 			@description Add a hidden input to the form for a piece of data
 			*/
-			_addHiddenInput: function (name, value) {
+			CrossDomainRequestProto._addHiddenInput = function (name, value) {
 				var input = this._window().document.createElement('input');
 				input.type = 'hidden';
 				input.name = name;
@@ -201,12 +196,12 @@ Glow.provide(function(glow) {
 			},
 
 			/**
-			@name _XDomainRequest#window
+			@name CrossDomainRequest#window
 			@private
 			@function
 			@description Get the window for the hidden iframe
 			*/
-			_window: function () {
+			CrossDomainRequestProto._window = function () {
 				var iframe = this.iframe[0];
 				if (iframe.contentWindow)
 					return iframe.contentWindow;
@@ -221,12 +216,12 @@ Glow.provide(function(glow) {
 			},
 
 			/**
-			@name _XDomainRequest#_addTimeout
+			@name CrossDomainRequest#_addTimeout
 			@private
 			@function
 			@description Add a timeout to cancel the request if it takes too long
 			*/
-			_addTimeout: function () {
+			CrossDomainRequestProto._addTimeout = function () {
 				var request = this;
 				this.timeout = setTimeout(function () {
 					var err;
@@ -244,12 +239,12 @@ Glow.provide(function(glow) {
 			},
 
 			/**
-			@name _XDomainRequest#_handleResponse
+			@name CrossDomainRequest#_handleResponse
 			@private
 			@function
 			@description Callback for load event in the hidden iframe
 			*/
-			_handleResponse: function () {
+			CrossDomainRequestProto._handleResponse = function () {
 				var err, href, win = this._window();
 				try {
 					href = win.location.href;
@@ -271,48 +266,53 @@ Glow.provide(function(glow) {
 			},
 
 			/**
-			@name _XDomainRequest#_readHandler
+			@name CrossDomainRequest#_readHandler
 			@private
 			@function
 			@description Callback for load event of blank page in same origin
 			*/
-			_readHandler: function () {
+			CrossDomainRequestProto._readHandler = function () {
 				var err;
+				console.log(this.opts.hasOwnProperty('onLoad'));
 				if (this.opts.hasOwnProperty('onLoad')) {
+					
 					try {
-						this.opts.onLoad(this._window().name);
+						//this.opts.onLoad(this._window().name);
+						
+						this.fire('load', this._window().name);
 					}
 					catch (e) {
 						err = e;
 					}
 				}
+				console.log('here')
 				this._cleanup();
 				if (err)
 					throw new Error('error in xDomainPost onLoad callback: ' + err);
 			},
 
 			/**
-			@name _XDomainRequest#_cleanup
+			@name CrossDomainRequest#_cleanup
 			@private
 			@function
 			@description Removes the iframe and any event listeners
 			*/
-			_cleanup: function () {
+			CrossDomainRequestProto._cleanup = function () {
 				this.iframe.remove();
 			},
 
 			/**
-			@name _XDomainRequest#_submitForm
+			@name CrossDomainRequest#_submitForm
 			@private
 			@function
 			@description Submit the form to make the post request
 			*/
-			_submitForm : function () {
+			CrossDomainRequestProto._submitForm = function () {
 				var request = this;
 				// the set timeout is here to make the form submit in the context of the iframe
 				this._window().setTimeout(function () { request.form.submit() }, 0);
 			}
-		};
+		
 	
 	
 		

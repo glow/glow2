@@ -264,7 +264,7 @@ test("glow.net.getJsonp general", function() {
 });
 
 test("glow.net.getJsonp timeout and charset", function() {
-	expect(2);
+	expect(3);
 	stop(5000);
 	
 	var onLoadCalled = false;
