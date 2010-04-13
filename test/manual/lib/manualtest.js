@@ -190,6 +190,8 @@
 			This callback is passed an instance of ManualTestResult as the first param.
 			Use this to set the result of the test.
 			
+			If glow is on the page, the callback will be called after glow.ready.
+			
 		@returns {ManualTestResult} result Use this to set the result of the test (an instance is also passed into the callback).
 	*/
 	function test(name, callback) {
@@ -198,7 +200,17 @@
 		
 		li.innerHTML = name;
 		currentList.appendChild(li);
-		callback && callback(result);
+		
+		if (callback) {
+			if (glow) {
+				glow.ready(function() {
+					callback(result);
+				})
+			}
+			else {
+				callback(result);
+			}
+		}
 		
 		return result;
 	}
