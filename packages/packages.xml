@@ -51,6 +51,7 @@
 		<css>
 			<file>src/header/license.txt</file>
 			<file>src/ui/ui.css</file>
+			<file>src/ui/Overlay/Overlay.css</file>
 		</css>
 	</ui>
 </packages>

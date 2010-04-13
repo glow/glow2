@@ -1,0 +1,14 @@
+.glowCSSVERSION-overlay {
+	position: absolute;
+	overflow: hidden;
+}
+
+.glowCSSVERSION-overlay .overlay-content {
+	display: none;
+	visibility: hidden;
+}
+
+.glowCSSVERSION-overlay .shown .overlay-content {
+	display: block;
+	visibility: visible;
+}
