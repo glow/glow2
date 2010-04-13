@@ -1,7 +1,9 @@
 Glow.provide(function(glow) {
 	var undefined,
 		ResourceRequestProto,
+		ResourceResponseProto,
 		net = glow.net,
+		totalRequests = 0,
 		emptyFunc = function(){};
 		
 	/**
@@ -36,7 +38,8 @@ Glow.provide(function(glow) {
 			case 'jpg':
 			case 'jpeg':
 			case 'tiff':
-			case 'png':				
+			case 'png':
+			case 'gif':
 				type = "image";
 				break;
 			case 'css':
@@ -44,10 +47,11 @@ Glow.provide(function(glow) {
 				break;
 			default: alert("can't work with that filetype");			
 		}
-	
+		if(url != Array){
+			url = new Array(url);
+		}
 		request = new glow.net.ResourceRequest(url, opts, type);
 		
-		console.log(request);
 		return request;
 		
 	};
@@ -59,19 +63,17 @@ Glow.provide(function(glow) {
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	function ResourceRequest(url, opts, type) {
-		console.log(url);
-		console.log(opts);
-		console.log(type);
+	
 		
 		
 		if(type == "image"){
-			var request = loadImages([url], this)
+			var request = loadImages(url, this)
 		}
 		else{
-			var request = loadCss([url], this)
+			var request = loadCss(url, this)
 		}
 		
-		console.log(request);
+
 		
 				
 		
@@ -88,18 +90,25 @@ Glow.provide(function(glow) {
 		 
 		   // record the number of images.
 		   this.totalImages = images.length;
-			console.log(this.totalImages);
+	
 		   // for each image, call preload()
 		   for ( var i = 0; i < totalImages; i++ ){
 			 var oImage = new Image;
 					this.allImages.push(oImage);
 				   
 					// set up event handlers for the Image object
-					oImage.onload = function() {  request.fire('progress'); };
-
-					oImage.onerror = function() { request.fire('error'); };
+					oImage.onload = function() {
+						request.fire('progress', oImage.src);
+						totalRequests++
+					if(totalRequests == totalImages){
+						var response = new glow.net.ResourceResponse(this.allImages);
+						request.fire('load', response);
+					};
 					
-					oImage.onabort = function() { request.fire('abort'); };
+					}
+					oImage.onerror = function() { request.fire('error') };
+					
+					oImage.onabort = function() { request.fire('abort') };
 	
 					oImage.src = images[i];
 					
@@ -123,7 +132,7 @@ Glow.provide(function(glow) {
 					href: source
 			  });
 			 if (("onload" in link) && !Browser.Engines.webkit()) {
-				if (onLoad) link.onload = ResourceRequest._progress(request);
+				if (onLoad) link.onload = request.fire('progress');
 			  } else {
 				(function() {
 				  try {
@@ -132,13 +141,13 @@ Glow.provide(function(glow) {
 					setTimeout(arguments.callee, 100);
 					return;
 				  };
-				  if (onLoad) ResourceRequest._progress(request);
+				  if (onLoad) request.fire('progress');
 				})();
 			  }
 			
 		
 			
-			ResourceRequest._loaded(request);
+			request.fire('load');
 		}
 		
 		return link;
@@ -150,19 +159,7 @@ Glow.provide(function(glow) {
 	
 	glow.net.ResourceRequest = ResourceRequest;
 	
-	ResourceRequest._loaded = function(){
-		console.log('loaded')
-	}
 	
-	ResourceRequest._progress = function(request){
-		request.fire('progress');
-		console.log('progress');
-		
-	
-	}
-	ResourceRequest._error = function(){
-		request.fire('error');
-	}
 	/**
 		@name glow.net.ResourceRequest#event:load
 		@event
@@ -203,6 +200,24 @@ Glow.provide(function(glow) {
 		@description Fired when a single resource completes.
 	*/
 	
+	
+	
+	
+	function ResourceResponse(image) { this._text = image; }
+			
+	glow.util.extend(ResourceResponse, glow.events.Target);
+			
+	ResourceResponseProto = ResourceResponse.prototype;
+			
+
+	/**
+		@name glow.net.ResourceRequest#element
+		@description Provides a nodelist of completed items.
+		@type {glow.NodeList}
+	
+	*/
+	ResourceResponseProto.element = function() { return this._text; }
+	
 	/**
 		@name glow.net.ResourceRequest#complete
 		@description Reports total number of items completed
@@ -210,12 +225,9 @@ Glow.provide(function(glow) {
 					
 		@type Array
 	*/
+	ResourceResponseProto.completed = function() {
+		return glow(this._text).length;
+	}
 	
-	/**
-		@name glow.net.ResourceRequest#nodes
-		@description
-		@type {glow.NodeList}
-	
-	*/
-		
+	glow.net.ResourceResponse = ResourceResponse;
 });

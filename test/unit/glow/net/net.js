@@ -362,16 +362,46 @@ test("glow.net.getResources single CSS", function() {
 });
 
 test("glow.net.getResources single image", function() {
-	expect(3);
+	expect(5);
 	stop(5000);
 	var timeoutCancelled = true;
 	
 	var request = glow.net.getResources("http://www.bbc.co.uk/glow/styles/images/banner.png",
 					   {timeout: 2}).on('progress',
-		function(url){
+		function(response){
 			ok(true, "Progress fired");
-			console.log("url completed: "+url);
-			console.log(url);
+			equal( response, "http://www.bbc.co.uk/glow/styles/images/banner.png", "Got uri of the item that just completed (progress)" );
+			
+			}).on('load',
+		function(response) {
+			ok(true, "Load fired");
+			equal( response.completed(), 1, "1 item completed" );
+		}).on('error',
+			function() {
+				timeoutCancelled = false;
+			});
+	
+	
+	//console.log(request.element());
+	
+	window.setTimeout(function () {
+		ok(timeoutCancelled, "error (timeout) not called")
+		
+		start();
+	}, 3000);
+	
+	
+});
+
+test("glow.net.getResources multiple images", function() {
+	expect(3);
+	stop(5000);
+	var timeoutCancelled = true;
+	
+	var request = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif"],
+					   {timeout: 2}).on('progress',
+		function(response){
+			ok(true, "Progress fired");
 			}).on('load',
 		function(data) {
 			ok(true, "Load fired");
@@ -445,10 +475,13 @@ test("glow.net.crossDomainRequest", function () {
     glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search',
 							{_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
        function (response) {
-			console.log(response);
-            equal(response, 'test response', 'get xDomainResponse');
+		
+            equal(response.text(), 'test response', 'get xDomainResponse');
             start();
-	   });
+	   }).on('error',
+		function(response){
+			console.log("error")
+		});
 
 
 });
