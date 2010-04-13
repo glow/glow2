@@ -8,3 +8,11 @@
 	padding: 0;
 	list-style: none;
 }
+
+.glowCSSVERSION-AutoSuggest .AutoSuggest-item:focus {
+	outline: none;
+}
+
+.glowCSSVERSION-AutoSuggest-loading {
+	background: #fcc;
+}

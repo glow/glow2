@@ -1,6 +1,6 @@
 module('glow.ui.AutoSuggest');
 
-test('construction & basic destruction', 5, function() {
+test('construction & basic destruction', 4, function() {
 	equal(typeof glow.ui.AutoSuggest, 'function', 'glow.ui.AutoSuggest exists');
 	
 	var autoSuggest = new glow.ui.AutoSuggest();
@@ -10,14 +10,10 @@ test('construction & basic destruction', 5, function() {
 	
 	equal(typeof autoSuggest.destroy, 'function', '#destroy exists');
 	autoSuggest.destroy();
-	
-	autoSuggest = glow.ui.AutoSuggest();
-	equal(autoSuggest.constructor, glow.ui.AutoSuggest, 'Has correct constructor without new');
-	autoSuggest.destroy();
 });
 
 test('Simple string[] data source find', 6, function() {
-	var autoSuggest = glow.ui.AutoSuggest();
+	var autoSuggest = new glow.ui.AutoSuggest();
 	
 	autoSuggest.on('data', function(e) {
 		equal(e.data, glow1Aliases, 'data fired with correct data source');
@@ -40,7 +36,7 @@ test('Simple string[] data source find', 6, function() {
 });
 
 test('object[] data source find', 3, function() {
-	var autoSuggest = glow.ui.AutoSuggest();
+	var autoSuggest = new glow.ui.AutoSuggest();
 	
 	autoSuggest.on('data', function(e) {
 		equal(e.data, glow1Api, 'data fired with correct data source');
@@ -60,7 +56,7 @@ test('object[] data source find', 3, function() {
 });
 
 test('maxResults', 1, function() {
-	var autoSuggest = glow.ui.AutoSuggest({
+	var autoSuggest = new glow.ui.AutoSuggest({
 		maxResults: 2
 	}).on('results', function(e) {
 		same(e.results, [
@@ -74,7 +70,7 @@ test('maxResults', 1, function() {
 
 test('minLength', 6, function() {
 	var findFired, resultsFired,
-		autoSuggest = glow.ui.AutoSuggest().on('find', function() {
+		autoSuggest = new glow.ui.AutoSuggest().on('find', function() {
 			findFired = true;
 		}).on('results', function(e) {
 			resultsFired = true;
@@ -87,7 +83,7 @@ test('minLength', 6, function() {
 	
 	findFired = resultsFired = false;
 	
-	autoSuggest = glow.ui.AutoSuggest().on('find', function() {
+	autoSuggest = new glow.ui.AutoSuggest().on('find', function() {
 		findFired = true;
 	}).on('results', function(e) {
 		resultsFired = true;
@@ -100,7 +96,7 @@ test('minLength', 6, function() {
 	
 	findFired = resultsFired = false;
 	
-	autoSuggest = glow.ui.AutoSuggest({
+	autoSuggest = new glow.ui.AutoSuggest({
 		minLength: 4
 	}).on('find', function() {
 		findFired = true;
@@ -115,7 +111,7 @@ test('minLength', 6, function() {
 });
 
 test('caseSensitive', 3, function() {
-	var autoSuggest = glow.ui.AutoSuggest().on('results', function(e) {
+	var autoSuggest = new glow.ui.AutoSuggest().on('results', function(e) {
 		same(e.results, [
 			{name:"addClass",alias:"glow.dom.NodeList#addClass",memberOf:"glow.dom.NodeList",type:"Method",href:"glow.dom.nodelist.shtml#method:addclass"},
 		], 'Correct results found - case insensitive');
@@ -123,7 +119,7 @@ test('caseSensitive', 3, function() {
 		.find('addclass')
 		.destroy();
 		
-	autoSuggest = glow.ui.AutoSuggest({
+	autoSuggest = new glow.ui.AutoSuggest({
 		caseSensitive: true
 	}).on('results', function(e) {
 		same(e.results, [], 'Correct results found - case sensitive');
@@ -131,7 +127,7 @@ test('caseSensitive', 3, function() {
 		.find('addclass')
 		.destroy();
 		
-	autoSuggest = glow.ui.AutoSuggest({
+	autoSuggest = new glow.ui.AutoSuggest({
 		caseSensitive: true
 	}).on('results', function(e) {
 		same(e.results, [
@@ -143,7 +139,7 @@ test('caseSensitive', 3, function() {
 });
 
 test('no data', 2, function() {
-	var autoSuggest = glow.ui.AutoSuggest().on('find', function(e) {
+	var autoSuggest = new glow.ui.AutoSuggest().on('find', function(e) {
 		ok(true, 'find fired');
 	}).on('results', function(e) {
 		same(e.results, [], 'Empty results returned');
@@ -152,7 +148,7 @@ test('no data', 2, function() {
 });
 
 test('Altering events', 2, function() {
-	var autoSuggest = glow.ui.AutoSuggest().on('data', function(e) {
+	var autoSuggest = new glow.ui.AutoSuggest().on('data', function(e) {
 		//overwrite data
 		e.data = ['hello', 'world', 'foo', 'bar'];
 	}).on('results', function(e) {
@@ -163,7 +159,7 @@ test('Altering events', 2, function() {
 		.find('world')
 		.destroy();
 		
-	autoSuggest = glow.ui.AutoSuggest().on('find', function(e) {
+	autoSuggest = new glow.ui.AutoSuggest().on('find', function(e) {
 		e.val = 'ajax';
 	}).on('results', function(e) {
 		same(e.results, [
@@ -175,7 +171,7 @@ test('Altering events', 2, function() {
 });
 
 test('Cancelling events', 2, function() {
-	var autoSuggest = glow.ui.AutoSuggest().on('data', function(e) {
+	var autoSuggest = new glow.ui.AutoSuggest().on('data', function(e) {
 		return false;
 	}).on('results', function(e) {
 		same(e.results, [], 'Expected results - data cancelled');
@@ -185,7 +181,7 @@ test('Cancelling events', 2, function() {
 	
 	var resultsFired = false;
 	
-	autoSuggest = glow.ui.AutoSuggest().on('find', function(e) {
+	autoSuggest = new glow.ui.AutoSuggest().on('find', function(e) {
 		return false;
 	}).on('results', function(e) {
 		resultsFired = true;
@@ -197,7 +193,7 @@ test('Cancelling events', 2, function() {
 });
 
 test('Custom filters', 1, function() {
-	var autoSuggest = glow.ui.AutoSuggest().on('results', function(e) {
+	var autoSuggest = new glow.ui.AutoSuggest().on('results', function(e) {
 		same(e.results, [
 			{name:"addScrollbar",alias:"glow.widgets.Timetable#addScrollbar",memberOf:"glow.widgets.Timetable",type:"Method",href:"glow.widgets.timetable.shtml#method:addscrollbar"},
 		], 'Expected results');
@@ -215,7 +211,7 @@ test('Function data source', 2, function() {
 	var log = [],
 		dataLoaded = false,
 		loadTimeout,
-		autoSuggest = glow.ui.AutoSuggest().on('data', function(e) {
+		autoSuggest = new glow.ui.AutoSuggest().on('data', function(e) {
 			log.push('data');
 		}).on('find', function(e) {
 			log.push('find: ' + e.val);
@@ -270,7 +266,7 @@ test('Function data source sync', 2, function() {
 	
 	var log = [],
 		dataLoaded = false,
-		autoSuggest = glow.ui.AutoSuggest().on('data', function(e) {
+		autoSuggest = new glow.ui.AutoSuggest().on('data', function(e) {
 			log.push('data');
 		}).on('find', function(e) {
 			log.push('find: ' + e.val);

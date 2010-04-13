@@ -38,7 +38,9 @@
 	
 	<script type="text/javascript">
 		(function() {
-			var autoSuggest;
+			var autoSuggest,
+				part = 1;
+			
 			glow.ready(function() {
 				autoSuggest = new glow.ui.AutoSuggest().data(glow1Api);
 				
@@ -54,21 +56,281 @@
 			
 			test('Type "add" into the text input and click the "Find" button, should display results', function(results) {
 				autoSuggest.on('find', function(e) {
-					results.ok(e.val === 'add');
+					part === 1 && results.ok(e.val === 'add');
 				});
 			});
 			
 			test('Use the mouse to click addListener', function(results) {
 				autoSuggest.on('choose', function(e) {
-					results.ok(
-						e.item.alias === 'glow.events.addListener' &&
-						e.li.text() === 'addListener'
-					);
+					if (part === 1) {
+						results.ok(
+							e.item.alias === 'glow.events.addListener' &&
+							e.li.text() === 'addListener'
+						);
+						setTimeout(function() {
+							part = 2;
+						}, 0);
+					}
+				});
+			});
+			
+			test('Type "eve" into the text input and click the "Find" button, should display results', function(results) {
+				autoSuggest.on('find', function(e) {
+					part === 2 && results.ok(e.val === 'eve');
+				});
+			});
+			
+			test('Use the mouse to click events', function(results) {
+				autoSuggest.on('choose', function(e) {
+					if (part === 2) {
+						results.ok(
+							e.item.alias === 'glow.events' &&
+							e.li.text() === 'events' &&
+							this.focusable.container.children().length === 3
+						);
+					}
 				});
 			});
 		})();
 	</script>
 	
+	<h2>Glow API AutoSuggest - bindInput</h2>
+	
+	<div class="testarea">
+		<input type="text" id="autoSuggest2Input" />
+		<div id="autoSuggest2"></div>
+	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			var autoSuggest,
+				firstSearch = true,
+				part = 1;
+			
+			glow.ready(function() {
+				autoSuggest = new glow.ui.AutoSuggest().data(glow1Api)
+					.bindInput('#autoSuggest2Input', {
+						appendTo: '#autoSuggest2'
+					})
+			});
+			
+			module('bindInput');
+			
+			test('Type "elastic" into the text input quickly, wait a moment, should display results', function(results) {
+				autoSuggest.on('find', function(e) {
+					if (firstSearch) {
+						part === 1 && results.ok(e.val === 'elastic');
+					}
+					firstSearch = false;
+				});
+			});
+			
+			test('Use the up & down arrow keys to highlight elasticOut and press enter to select, focus should remain in the text input, the left & right arrow keys should move the caret in the text box', function(results) {
+				autoSuggest.on('choose', function(e) {
+					if (part === 1) {
+						results.ok(
+							e.item.alias === 'glow.tweens.elasticOut'
+						);
+					}
+				});
+			});
+			
+			test('Selecting elasticOut alters the input text and clears results', function(results) {
+				autoSuggest.on('choose', function(e) {
+					if (part === 1) {
+						results.ok(
+							this.content.children().length === 0 &&
+							this.input.val() === 'elasticOut'
+						);
+						setTimeout(function() {
+							part = 2;
+						}, 0);
+					}
+				});
+			});
+		})();
+	</script>
+	
+	<h2>Glow API AutoSuggest - delimiting</h2>
+	
+	<div class="testarea">
+		<input type="text" id="autoSuggest3Input" />
+		<div id="autoSuggest3"></div>
+	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			var autoSuggest,
+				part = 1;
+			
+			glow.ready(function() {
+				autoSuggest = new glow.ui.AutoSuggest().data(glow1Api)
+					.bindInput('#autoSuggest3Input', {
+						appendTo: '#autoSuggest3',
+						delim: ','
+					})
+			});
+			
+			module('delimiting');
+			
+			test('Type "elastic" into the text input and select "elasticOut"', function(results) {
+				autoSuggest.on('choose', function(e) {
+					if (part === 1) {
+						results.ok(
+							this.input.val() === 'elasticOut, '
+						);
+					}
+					setTimeout(function() {
+						part = 2;
+					}, 0);
+				});
+			});
+			
+			test('Now type "add" and choose "addClass"', function(results) {
+				autoSuggest.on('choose', function(e) {
+					if (part === 2) {
+						results.ok(
+							this.input.val() === 'elasticOut, addClass, '
+						);
+					}
+					setTimeout(function() {
+						part = 3;
+					}, 0);
+				});
+			});
+		})();
+	</script>
+	
+	<h2>Glow API AutoSuggest - overlay</h2>
+	
+	<div class="testarea" style="height:500px">
+		<input type="text" id="autoSuggest4Input" />
+	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			var autoSuggest,
+				part = 1;
+			
+			glow.ready(function() {
+				window.autoSuggest = new glow.ui.AutoSuggest().data(glow1Api)
+					.bindInput('#autoSuggest4Input', {
+						anim: 'slide'
+					});
+			});
+		})();
+	</script>
+	
+	<h2>Glow API AutoSuggest - alternative slide anim</h2>
+	
+	<div class="testarea" style="height:500px">
+		<input type="text" id="autoSuggest5Input" />
+	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			var autoSuggest,
+				part = 1;
+			
+			glow.ready(function() {
+				window.autoSuggest = new glow.ui.AutoSuggest().data(glow1Api)
+					.bindInput('#autoSuggest5Input', {
+						anim: function(isShow, callback) {
+							var anim,
+								container = this.container,
+								fullHeight = container.height('auto').height();
+								
+							function frame() {
+								container.scrollTop( fullHeight - container.height() );
+							}
+							
+							if (isShow) {
+								container.height(0);
+								anim = container.slideOpen(0.5).data('glow_slideOpen')
+							}
+							else {
+								anim = container.slideShut(0.5).data('glow_slideShut');
+							}
+							
+							anim.on('frame', frame).on('complete', callback);
+						}
+					});
+			});
+		})();
+	</script>
+	
+	<h2>Glow API AutoSuggest - async (+ fading anim + activateFirst off + choose behaviour)</h2>
+	
+	<div class="testarea" style="height:500px">
+		<input type="text" id="autoSuggest6Input" />
+	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			var autoSuggest,
+				timer;
+			
+			glow.ready(function() {
+				window.autoSuggest = new glow.ui.AutoSuggest({
+					activateFirst: false
+				}).data(function(val, callback) {
+					clearTimeout(timer);
+					
+					timer = setTimeout(function() {
+						callback(glow1Api);
+					}, 500)
+				}).bindInput('#autoSuggest6Input', {
+					anim: 'fade'
+				}).on('choose', function(e) {
+					window.location = 'http://www.bbc.co.uk/glow/docs/1.7/api/' + e.item.href;
+				})
+			});
+		})();
+	</script>
+	
+	<h2>Loading data via XHR, single request</h2>
+	
+	<div class="testarea" style="height:500px">
+		<input type="text" id="autoSuggest7Input" />
+	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			var autoSuggest;
+			
+			glow.ready(function() {
+				autoSuggest = new glow.ui.AutoSuggest()
+					.data('data.json').bindInput('#autoSuggest7Input')
+			});
+		})();
+	</script>
+	
+	<h2>Loading data via XHR, multiple requests</h2>
+	
+	<div class="testarea" style="height:500px">
+		<input type="text" id="autoSuggest8Input" />
+	</div>
+	
+	<script type="text/javascript">
+		(function() {
+			var autoSuggest;
+			
+			glow.ready(function() {
+				autoSuggest = new glow.ui.AutoSuggest()
+					.data('data.php?search={val}').bindInput('#autoSuggest8Input')
+			});
+		})();
+	</script>
+	
+	<!--
+		To test:
+			keyboardNav
+			// activateFirst
+			// overlay animations
+			maxHeight (with scrolling)
+			// destroying (tie the overlay)
+			// pressing escape to close overlay
+	-->
 	<script type="text/javascript">
 		// Some static data sources
 		var glow1Api = [

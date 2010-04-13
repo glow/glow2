@@ -374,12 +374,10 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
-		@description Focus the active child or container if focusing is enabled
+		@description Focus the active child or container if focusing is enabled.
 	*/
 	function focusActive(focusable) {
-		if (focusable._opts.setFocus) {
-			( focusable.activeChild[0] || focusable.container[0] ).focus();
-		}
+		focusable._opts.setFocus && ( focusable.activeChild[0] || focusable.container[0] ).focus();
 	}
 	
 	/**
@@ -548,7 +546,7 @@ Glow.provide(function(glow) {
 			A Focusable will be activated automatically when it receieves focus.
 		
 		@param {number|glow.NodeList|boolean} [toActivate] Item to activate.
-			Numbers will be treated as an index of {@link glow.ui.FocusManager#children children}
+			Numbers will be treated as an index of {@link glow.ui.FocusManager#children children}.
 			
 			'true' will activate the container, but none of the children.
 			

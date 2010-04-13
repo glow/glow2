@@ -1,7 +1,10 @@
 Glow.provide(function(glow) {
 	var undefined, AutoSuggestProto,
 		Widget = glow.ui.Widget,
-		WidgetProto = Widget.prototype;
+		WidgetProto = Widget.prototype,
+		// this is used for HTML escaping in _format and checking max-height
+		tmpDiv = glow('<div></div>'),
+		supportsMaxHeight;
 	
 	/**
 		@name glow.ui.AutoSuggest
@@ -28,7 +31,7 @@ Glow.provide(function(glow) {
 				By default, no maximum is imposed.
 			@param {number} [opts.width] Apply a width to the results list
 				By default, the AutoSuggest is the full width of its containing element,
-				or the width of the input it's linked to.
+				or the width of the input it's linked to if autoPositioning.
 			@param {number} [opts.maxResults] Limit the number of results to display
 			@param {number} [opts.minLength=3] Minimum number of chars before search is executed
 				This prevents searching being performed until a specified amount of chars
@@ -63,7 +66,7 @@ Glow.provide(function(glow) {
 			// Make an input suggest from an array of program names, where the
 			// whole string is searched rather than just the start
 			// When the item is clicked, we go to a url
-			glow.ui.AutoSuggest().setFilter(function(item, val) {
+			new glow.ui.AutoSuggest().setFilter(function(item, val) {
 				return item.name.indexOf(val) !== -1;
 			}).data([
 				{name: 'Doctor Who', url: '...'},
@@ -74,19 +77,14 @@ Glow.provide(function(glow) {
 				location.href = event.selected.url;
 			});
 	*/
-	function AutoSuggest(opts) {
-		// catch if the user hasn't used 'new'
-		if (this === glow.ui) {
-			return new AutoSuggest(opts);
-		}
-		
+	function AutoSuggest(opts) {		
 		this._opts = opts = glow.util.apply({
 			minLength: 3,
 			keyboardNav: 'arrows-y',
 			activateFirst: true
 		}, opts || {});
 
-		Widget.call(this, 'AutoSuggest');
+		Widget.call(this, 'AutoSuggest', opts);
 		this._init();
 	};
 	
@@ -143,27 +141,19 @@ Glow.provide(function(glow) {
 		@type function
 		@description The current format function
 	*/
-	var tmpDiv = glow('<div></div>');
-	
 	AutoSuggestProto._format = function(result, val) {
-		return tmpDiv.text(result.name).html().replace(val, '<strong>' + val + '</strong>');
+		var text = tmpDiv.text(result.name).html(),
+			valStart = text.toLowerCase().indexOf( val.toLowerCase() ),
+			valEnd = valStart + val.length;
+		
+		// wrap the selected portion in <strong>
+		// This would be so much easier if it weren't for case sensitivity
+		if (valStart !== -1) {
+			text = text.slice(0, valStart) + '<strong>' + text.slice(valStart, valEnd) + '</strong>' + text.slice(valEnd)
+		}
+		
+		return text;
 	};
-	
-	/**
-		@name glow.ui.AutoSuggest#input
-		@type glow.NodeList
-		@description Refers to the input element to which this is linked to, or an empty NodeList.
-			Link an input to an AutoSuggest using {@link glow.ui.AutoSuggest#bindInput bindInput}
-	*/
-	AutoSuggestProto.input = glow();
-	
-	/**
-		@name glow.ui.AutoSuggest#overlay
-		@type glow.ui.Overlay
-		@description The overlay linked to this autosuggest
-			The Overlay is created when {@link glow.ui.AutoSuggest#bindInput bindInput} is
-			called.
-	*/
 	
 	/**
 		@name glow.ui.AutoSuggest#focusable
@@ -194,7 +184,7 @@ Glow.provide(function(glow) {
 		});
 		
 		width && this.container.width(width);
-		//maxHeight && content.css('max-height', maxHeight);
+		maxHeight && content.css('max-height', maxHeight);
 		
 		// call _build
 		this._bind();
@@ -207,15 +197,21 @@ Glow.provide(function(glow) {
 			'this' is the AutoSuggest
 	*/
 	function focusableChooseListener(e) {
-		this.fire('choose', {
+		return !this.fire('choose', {
 			li: e.item,
 			item: e.item.data('as_data')
-		})
+		}).defaultPrevented();
 	}
+	
+	function returnFalse() { return false; }
 	
 	AutoSuggestProto._bind = function() {
 		var focusable = this.focusable.on('choose', focusableChooseListener, this);
 		this._tie(focusable);
+		
+		// prevent 
+		this.container.on('mousedown', returnFalse);
+		
 		WidgetProto._bind.call(this);
 	}
 	
@@ -300,6 +296,12 @@ Glow.provide(function(glow) {
 		if ( !event.defaultPrevented() ) {
 			// a listener may have altered the data
 			data = event.data;
+			
+			// if it's an XHR response, convert it to json
+			if (data instanceof glow.net.Response) {
+				data = data.json();
+			}
+			
 			if (typeof data[0] === 'string') {
 				tmpData = [];
 				i = data.length;
@@ -312,6 +314,9 @@ Glow.provide(function(glow) {
 		}
 	}
 	
+	// class to use when loading data, used in setDataFunction
+	var loadingClass = 'glowCSSVERSION-AutoSuggest-loading';
+	
 	/**
 		@private
 		@function
@@ -322,15 +327,17 @@ Glow.provide(function(glow) {
 	function setDataFunction(autoSuggest, func) {
 		// create a new function for fetching data
 		autoSuggest._dataFunc = function(val) {
-			// create a callback to pass into the user's data function
+			var input = autoSuggest.input;
 			
 			// put us in the loading state and call the user's function
 			autoSuggest._loading = true;
+			input.addClass(loadingClass);
 			
 			// call the user's function, providing a callback
 			func.call(this, val, function(data) {
 				var pendingFind = autoSuggest._pendingFind;
 				autoSuggest._loading = false;
+				input.removeClass(loadingClass);
 				// populate data if we've been given some
 				data && populateData(autoSuggest, data);
 				if (pendingFind) {
@@ -342,19 +349,71 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
+		@private
+		@function
+		@description Creates a data function to load a single url once.
+	*/
+	function singleLoadUrl(url) {
+		var dataFetched,
+			currentRequest;
+		
+		return function(val, callback) {
+			// if we've already fetched the data, just call back & return
+			if (dataFetched) {
+				return callback();
+			}
+			
+			// if we've already sent a request off, just let that one continue
+			if ( !currentRequest ) {				
+				currentRequest = glow.net.get(url).on('load', function(response) {
+					// set data for quick retrieval later
+					dataFetched = 1;
+					callback(response);
+				});
+			}
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Creates a data function to load from a url each time a search is made.
+	*/
+	function multiLoadUrl(url) {
+		var currentRequest;
+		
+		return function(val, callback) {
+			var processedUrl = glow.util.interpolate(url, {val:val});
+			
+			// abort any current request
+			currentRequest && currentRequest.abort();
+			currentRequest = glow.net.get(processedUrl).on('load', function(response) {
+				callback(response);
+			});
+		}
+	}
+	
+	/**
 		@name glow.ui.AutoSuggest#data
 		@function
 		@description Set the data or datasource to search
 			This give the AutoSuggest the data to search, or the means to fetch
 			the data to search.
 			
-		@param {string|string[]|Object[]|function} data Data or datasource
+		@param {string|string[]|Object[]|glow.net.Response|function} data Data or datasource
 		
-			<p><strong>URL</strong></p>
+			<p><strong>String URL</strong></p>
 			
 			A URL on the same domain can be provided, eg 'results.json?search={val}', where {val} is replaced
 			with the search term. If {val} is used, the URL if fetched on each search, otherwide it is only fetched
-			once on the first search. The URL must return a JSON object in the following string[] or Object[] formats.
+			once on the first search.
+			
+			The result is a {@link glow.net.Response}, by default this is decoded as json. Use
+			the 'data' event to convert your incomming data from other types (such as XML).
+			
+			<p><strong>glow.net.Response</strong></p>
+			
+			This will be treated as a json response and decoded to string[] or Object[], see below.
 			
 			<p><strong>string[] or Object[] dataset</strong></p>
 			
@@ -414,9 +473,19 @@ Glow.provide(function(glow) {
 	*/
 	AutoSuggestProto.data = function(data) {
 		if (typeof data === 'string') {
-			// TODO - url
+			// look for urls without {val}, they get their data once & once only
+			if (data.indexOf('{val}') == -1) {
+				// replace data with function
+				data = singleLoadUrl(data);
+			}
+			// look for urls with {val}, they get their data on each search
+			else {
+				// replace data with function
+				data = multiLoadUrl(data);
+			}
 		}
-		else if (typeof data === 'function') {
+		
+		if (typeof data === 'function') {
 			setDataFunction(this, data);
 		}
 		else if (data.push) {
@@ -427,50 +496,6 @@ Glow.provide(function(glow) {
 		
 		return this;
 	};
-	
-	/**
-		@name glow.ui.AutoSuggest#bindInput
-		@function
-		@description Link this autosuggest to a text input
-			This triggers {@link glow.ui.AutoSuggest#find} when the value in
-			the input changes.
-			
-			The AutoSuggest is placed in an Overlay beneath the input and displayed
-			when results are found.
-			
-			If the input loses focus, or esc is pressed,
-			the Overlay will be hidden and results cleared.
-			
-		@param {selector|glow.NodeList|HTMLElement} input Test input element
-		
-		@param {Object} [opts] Options
-		@param {selector|glow.NodeList} [opts.appendTo] Add the AutoSuggest somewhere in the document rather than an {@link glow.ui.Overlay Overlay}
-			If true, the AutoSuggest will be wrapped in an {@link glow.ui.Overlay Overlay} and
-			appended to the document's body.
-		
-			If false, you need to add the {@link glow.ui.AutoSuggest#container AutoSuggest's container}
-			to the document manually.
-		@param {boolean} [opts.autoPosition=true] Place the overlay beneath the input
-			If false, you need to position the overlay's container manually. It's
-			recommended to do this as part of the Overlay's show event, so the
-			position is updated each time it appears.
-		@param {boolean} [opts.completeOnChoose=true] Update the input when an item is selected.
-			This will complete the typed text with the result matched.
-			
-			You can create custom actions by listening for the
-			{@link glow.ui.AutoSuggest#event:choose 'choose' event}
-		@param {string} [opts.delim] Delimiting char for selections.
-			When defined, the input text will be treated as multiple values,
-			separated by this string (with surrounding spaces ignored).
-		@param {number} [opts.delay=1.5] How many seconds to delay before searching.
-			This prevents searches being made on each key press, instead it
-			waits for the input to be idle for a given number of seconds.
-		@param {string} [opts.anim] Animate the Overlay when it shows/hides.
-			This can be either 'fade' or 'slide'.
-			
-		@returns this
-	*/
-	AutoSuggestProto.bindInput = function(input, opts) {};
 	
 	/**
 		@private
@@ -487,33 +512,39 @@ Glow.provide(function(glow) {
 			i = resultsLen,
 			listItem,
 			itemContent,
+			opts = autoSuggest._opts,
 			focusable = autoSuggest.focusable,
-			maxHeight = autoSuggest._opts.maxHeight
+			maxHeight = opts.maxHeight
 		
 		focusable.active(false);
+		
+		// if we've got an overlay, we don't bother clearing the list,
+		// just hide the overlay to let it animate away nicely
+		if ( !resultsLen && autoSuggest.overlay ) {
+			autoSuggest._hideOverlay();
+			return;
+		}
 		
 		// remove any current results
 		content.children().destroy();
 		
 		while (i--) {
 			itemContent = autoSuggest._format( results[i], val );
-			listItem = glow('<li></li>');
+			listItem = glow('<li class="AutoSuggest-item"></li>')
+				.data( 'as_data', results[i] )
+				.prependTo(content);
 			
+			// append HTML or nodes
 			(typeof itemContent === 'string') ?
 				listItem.html(itemContent) :
 				listItem.append(itemContent);
-
-			content.prepend(
-				// add new list item, with result data attached.
-				// Result data is used again when the item is chosen
-				glow('<li></li>').data( 'as_data', results[i] ).append(
-					autoSuggest._format( results[i], val )
-				)
-			);
 		}
 		
 		// fake maxHeight for IE6
-		if (glow.env.ie < 7 && maxHeight) {
+		if ( supportsMaxHeight === undefined ) {
+			supportsMaxHeight = (tmpDiv[0].style.maxHeight !== undefined);
+		}
+		if ( !supportsMaxHeight ) {
 			content.height('auto');
 			
 			if (content.height() > maxHeight) {
@@ -522,7 +553,14 @@ Glow.provide(function(glow) {
 		}
 		
 		// Activate the focusable if we have results
-		resultsLen && focusable.active(true);
+		if (resultsLen) {
+			resultsLen && opts.activateFirst && focusable.active(true);
+			// show & position our overlay
+			autoSuggest._showOverlay();
+		}
+		else {
+			autoSuggest._hideOverlay();
+		}
 	}
 	
 	/**
@@ -572,7 +610,7 @@ Glow.provide(function(glow) {
 			}
 			
 			// output results
-			generateOutput(autoSuggest, filteredResults, str);
+			generateOutput(autoSuggest, filteredResults, findEvent.val);
 		}
 	}
 	
@@ -604,6 +642,9 @@ Glow.provide(function(glow) {
 				performFind(this, str);
 			}
 		}
+		else {
+			this.hide();
+		}
 		return this;
 	};
 	
@@ -614,7 +655,11 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	AutoSuggestProto.hide = function() {};
+	AutoSuggestProto.hide = function() {
+		// generating empty output does the trick
+		generateOutput(this, [], '');
+		return this;
+	};
 	
 	/**
 		@name glow.ui.AutoSuggest#destroy
@@ -625,6 +670,12 @@ Glow.provide(function(glow) {
 	*/
 	AutoSuggestProto.destroy = function() {
 		this._data = undefined;
+		
+		// remove events from the input
+		this.input.detach('keypress', this._inputPress)
+			.detach('blur', this._inputBlur)
+			.detach('onbeforedeactivate', this._inputDeact);
+		
 		WidgetProto.destroy.call(this);
 	};
 	
@@ -655,13 +706,16 @@ Glow.provide(function(glow) {
 			with the current one.
 		@param {glow.events.Event} event Event Object
 		@param {*} event.data The new dataset
-			You can modify / overwrite this property to alter the dataset
+			You can modify / overwrite this property to alter the dataset.
+			
+			The type of this object depends on the data source and other listeners
+			which may have overwritten / changed the original data.
 			
 		@example
 			myAutoSuggest.data('data.xml?search={val}').on('data', function(event) {
-				// the data we get back is XML, we transform it to JSON
+				// When providing a url to .data(), event.data is a glow.net.response object 
 				// Note: xmlToJson is not a function defined by Glow
-				event.data = xmlToJson( event.data );
+				event.data = xmlToJson( event.data.xml() );
 			});
 	*/
 	
@@ -714,8 +768,8 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.AutoSuggest#event:find
 		@event
-		@description Fired when a search starts
-			Cancel this event to prevent the search
+		@description Fired when a search starts.
+			Cancel this event to prevent the search.
 		
 		@param {glow.events.Event} event Event Object.
 		@param {string} event.val The search string.

@@ -503,7 +503,7 @@ Glow.provide(function(glow) {
 	*/
 	util.trim = function(str) {
 		//this optimisation from http://blog.stevenlevithan.com/archives/faster-trim-javascript
-		return str.replace(/^\s*((?:[\S\s]*\S)?)\s*$/, '$1');
+		return str.trim ? str.trim() : str.replace(/^\s*((?:[\S\s]*\S)?)\s*$/, '$1');
 	};
 	
 	/**
