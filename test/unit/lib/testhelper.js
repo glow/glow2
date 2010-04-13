@@ -33,6 +33,15 @@ testHelper = {
 		w.document.write('<script src="' + base + version + '/' + scriptName + '" type="text/javascript"><'+'/script>')
 	}
 	,
+	addCss: function(cssName, w) { /*debug*///console.log('addCss('+cssName+')');
+		var version = testHelper.getVersion(),
+			base = testHelper.getBase();
+		
+		if (typeof w == 'undefined') { w = window; };
+
+		w.document.write('<link rel="stylesheet" type="text/css" href="' + base + version + '/' + cssName + '" />');
+	}
+	,
 	getScriptTagsBySrc: function(src, w) {
 		if (!w) { w = window; }
 		var scriptTags = w.document.getElementsByTagName('script');
