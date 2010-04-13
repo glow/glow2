@@ -61,6 +61,7 @@ Glow.provide(function(glow) {
 	net.crossDomainPost = function(url, data, opts) {
 		var request = new CrossDomainRequest(url, data, false, opts);
 			request._send();
+			return request;
 		};
 	
 	

@@ -95,11 +95,11 @@ Glow.provide(function(glow) {
 					this.allImages.push(oImage);
 				   
 					// set up event handlers for the Image object
-					oImage.onload = function() { ResourceRequest._progress(request) };
+					oImage.onload = function() {  request.fire('progress'); };
 
-					oImage.onerror = function() { ResourceRequest._error(request) };
+					oImage.onerror = function() { request.fire('error'); };
 					
-					//oImage.onabort = request.fire('abort', request);
+					oImage.onabort = function() { request.fire('abort'); };
 	
 					oImage.src = images[i];
 					
