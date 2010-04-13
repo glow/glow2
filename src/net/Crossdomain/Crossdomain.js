@@ -1,6 +1,7 @@
 Glow.provide(function(glow) {
 	var undefined,
 		CrossdomainRequestProto,
+		CrossdomainResponseProto,
 		net = glow.net,
 		emptyFunc = function(){},
 		events = glow.events,
@@ -290,12 +291,17 @@ Glow.provide(function(glow) {
 				this._window().setTimeout(function () { request.form.submit() }, 0);
 			}
 		
-	
+			
 			function CrossDomainResponse(textResponse) { this._text = textResponse; }
-			CrossDomainResponse.prototype.text = function() { return this._text; }
-			 CrossDomainResponse.prototype.json = function() { return makeItJson(this._text); }
+			
+			CrossdomainResponseProto = CrossdomainResponseProto.prototype;
+			glow.util.extend(CrossdomainResponseProto, glow.events.Target);
+			
+			CrossdomainResponseProto.text = function() { return this._text; }
+			CrossdomainResponseProto.json = function() { return glow.util.encodeJson(this._text); }
 
 	
 	glow.net.CrossDomainRequest = CrossDomainRequest;
-	glow.net.CrossDomainResponse = CrossDomainResponse
+	
+	glow.net.CrossDomainResponse = CrossDomainResponse;
 });
