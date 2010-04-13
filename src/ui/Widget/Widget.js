@@ -332,7 +332,7 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		container = this.container = glow('' +
-			'<div class="glowCSSVERSION-' + name + '-container">' +
+			'<div class="glowCSSVERSION-' + name + '">' +
 				'<div class="' + name + '-theme">' +
 					'<div class="' + name + '-state"></div>' +
 				'</div>' +

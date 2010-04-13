@@ -8,7 +8,7 @@
 		var myOverlay = new glow.ui.Overlay('#div2', {addId: 'myOverlay'});
 		
 		equal(typeof myOverlay, 'object', 'myOverlay exists' );
-		equal(glow(".glowCSSVERSION-overlay-container").length, 1, 'A container element has been created for the overlay.');
+		equal(glow(".glowCSSVERSION-overlay").length, 1, 'A container element has been created for the overlay.');
 		equal(glow(".overlay-content").length, 1, 'A content element has been created for the overlay.');
 		equal(glow(".overlay-content")[0].id, 'div2', 'A container element has been created for the overlay.');
 		
