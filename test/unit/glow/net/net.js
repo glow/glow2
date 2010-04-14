@@ -110,7 +110,7 @@ module('glow.net');
 	});
 
 	// need decodeJson method
-	/*test("glow.net.get async json", function() {
+	test("glow.net.get async json", function() {
 		expect(4);
 		stop(5000);
 		
@@ -158,7 +158,7 @@ module('glow.net');
 		
 		
 	});
-	}*/
+	}
 	
 	
 	test("glow.net.post async string", function() {
@@ -399,6 +399,35 @@ test("glow.net.getResources multiple images", function() {
 	var timeoutCancelled = true;
 	
 	var request = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif"],
+					   {timeout: 2}).on('progress',
+		function(response){
+			ok(true, "Progress fired");
+			}).on('load',
+		function(data) {
+			ok(true, "Load fired");
+			start();
+		}).on('error',
+			function() {
+				timeoutCancelled = false;
+			});
+	
+	
+	//console.log(request.element());
+	
+	window.setTimeout(function () {
+		ok(timeoutCancelled, "error (timeout) not called")
+		
+		start();
+	}, 3000);
+	
+	
+});
+test("glow.net.getResources mixed images and css", function() {
+	expect(3);
+	stop(5000);
+	var timeoutCancelled = true;
+	
+	var request = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif", "http://www.bbc.co.uk/glow/styles/default.css"],
 					   {timeout: 2}).on('progress',
 		function(response){
 			ok(true, "Progress fired");

@@ -5,8 +5,57 @@
 */
 Glow.provide(function(glow) {
 	var util = {},
-		undefined;
-		
+		undefined,
+		TYPES = {
+			UNDEFINED : "undefined",
+			OBJECT    : "object",
+			NUMBER    : "number",
+			BOOLEAN   : "boolean",
+			STRING    : "string",
+			ARRAY     : "array",
+			FUNCTION  : "function",
+			NULL      : "null"
+		},
+		/*
+		PrivateProperty: TEXT
+			hash of strings used in encoding/decoding
+		*/
+		TEXT = {
+			AT    : "@",
+			EQ    : "=",
+			DOT   : ".",
+			EMPTY : "",
+			AND   : "&",
+			OPEN  : "(",
+			CLOSE : ")"
+		},
+		/*
+		PrivateProperty: JSON
+			nested hash of strings and regular expressions used in encoding/decoding Json
+		*/
+		JSON = {
+			HASH : {
+				START     : "{",
+				END       : "}",
+				SHOW_KEYS : true
+			},
+
+			ARRAY : {
+				START     : "[",
+				END       : "]",
+				SHOW_KEYS : false
+			},
+
+			DATA_SEPARATOR   : ",",
+			KEY_SEPARATOR    : ":",
+			KEY_DELIMITER    : "\"",
+			STRING_DELIMITER : "\"",
+
+			SAFE_PT1 : /^[\],:{}\s]*$/,
+			SAFE_PT2 : /\\./g,
+			SAFE_PT3 : /\"[^\"\\\n\r]*\"|true|false|null|-?\d+(?:\.\d*)?(:?[eE][+\-]?\d+)?/g,
+			SAFE_PT4 : /(?:^|:|,)(?:\s*\[)+/g
+		};
 	/**
 		@private
 		@name glow.util-_getType
@@ -265,6 +314,142 @@ Glow.provide(function(glow) {
 		return result;
 	};
 	
+	/**
+			@name glow.util.encodeJson
+			@function
+			@description Encodes an object into a string JSON representation.
+			
+				Returns a string representing the object as JSON.
+			
+			@param {Object} object The object to be encoded.
+			 
+				This can be arbitrarily nested, but must not contain 
+				functions or cyclical structures.
+			
+			@returns {Object}
+			
+			@example
+				var myObj = {foo: "Foo", bar: ["Bar 1", "Bar2"]};
+				var getRef = glow.util.encodeJson(myObj);
+				// will return '{"foo": "Foo", "bar": ["Bar 1", "Bar2"]}'
+			*/
+	util.encodeJson = function(object, options){
+		function _encode(object, options)
+				{
+					if(_getType(object) == TYPES.ARRAY) {
+						var type = JSON.ARRAY;
+					} else {
+						var type = JSON.HASH;
+					}
+
+					var serial = [type.START];
+					var len = 1;
+					var dataType;
+					var notFirst = false;
+
+					for(var key in object) {
+						dataType = _getType(object[key]);
+
+						if(dataType != TYPES.UNDEFINED) { /* ignore undefined data */
+							if(notFirst) {
+								serial[len++] = JSON.DATA_SEPARATOR;
+							}
+							notFirst = true;
+
+							if(type.SHOW_KEYS) {
+								serial[len++] = JSON.KEY_DELIMITER;
+								serial[len++] = key;
+								serial[len++] = JSON.KEY_DELIMITER;
+								serial[len++] = JSON.KEY_SEPARATOR;
+							}
+
+							switch(dataType) {
+								case TYPES.FUNCTION:
+									throw new Error("glow.data.encodeJson: cannot encode item");
+									break;
+								case TYPES.STRING:
+								default:
+									serial[len++] = JSON.STRING_DELIMITER;
+									serial[len++] = glow.lang.replace(object[key], SLASHES.TEST, _replaceSlashes);
+									serial[len++] = JSON.STRING_DELIMITER;
+									break;
+								case TYPES.NUMBER:
+								case TYPES.BOOLEAN:
+									serial[len++] = object[key];
+									break;
+								case TYPES.OBJECT:
+								case TYPES.ARRAY:
+									serial[len++] = _encode(object[key], options);
+									break;
+								case TYPES.NULL:
+									serial[len++] = TYPES.NULL;
+									break;
+							}
+						}
+					}
+					serial[len++] = type.END;
+
+					return serial.join(TEXT.EMPTY);
+				}
+
+				options = options || {};
+				var type = _getType(object);
+
+				if((type == TYPES.OBJECT) || (type == TYPES.ARRAY)) {
+					return _encode(object, options);
+				} else {
+					throw new Error("glow.data.encodeJson: cannot encode item");
+				}
+		
+	};
+	/**
+			@name glow.util.decodeJson
+			@function
+			@description Decodes a string JSON representation into an object.
+				
+				Returns a JavaScript object that mirrors the data given.
+			
+			@param {String} string The string to be decoded.
+				Must be valid JSON. 
+			
+			@param {Object} opts
+			
+					Zero or more of the following as properties of an object:
+					@param {Boolean} [opts.safeMode=false] Whether the string should only be decoded if it is  deemed "safe". 
+					The json.org regular expression checks are used. 
+			
+			@returns {Object}
+			
+			@example
+				var getRef = glow.util.decodeJson('{foo: "Foo", bar: ["Bar 1", "Bar2"]}');
+				// will return {foo: "Foo", bar: ["Bar 1", "Bar2"]}
+			
+				var getRef = glow.util.decodeJson('foobar', {safeMode: true});
+				// will throw an error
+			*/
+	util.decodeJson = function(text, options){
+		if(_getType(text) != TYPES.STRING) {
+					throw new Error("glow.data.decodeJson: cannot decode item");
+				}
+
+				options = options || {};
+				options.safeMode = options.safeMode || false;
+
+				var canEval = true;
+
+				if(options.safeMode) {
+					canEval = (JSON.SAFE_PT1.test(text.replace(JSON.SAFE_PT2, TEXT.AT).replace(JSON.SAFE_PT3, JSON.ARRAY.END).replace(JSON.SAFE_PT4, TEXT.EMPTY)));
+				}
+
+				if(canEval) {
+					try {
+						return eval(TEXT.OPEN + text + TEXT.CLOSE);
+					}
+					catch(e) {/* continue to error */}
+				}
+
+				throw new Error("glow.data.decodeJson: cannot decode item");
+	};
 	/**
 		@name glow.util.trim
 		@function

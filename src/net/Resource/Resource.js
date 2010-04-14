@@ -27,32 +27,11 @@ Glow.provide(function(glow) {
 					// use data
 				});
 		*/
-	net.getResources = function(url, opts) {
+	net.getResources = function(urls, opts) {
 		var request,
-			opts = glow.net.populateOptions(opts),
-			type,
-			extension = (/[.]/.exec(url)) ? /[^.]+$/.exec(url) : undefined;
-
+			opts = glow.net.populateOptions(opts);
 		
-		switch(String(extension)){
-			case 'jpg':
-			case 'jpeg':
-			case 'tiff':
-			case 'png':
-			case 'gif':
-				type = "image";
-				break;
-			case 'css':
-				type = "css";
-				break;
-			default: alert("can't work with that filetype");			
-		}
-		if(url != Array){
-			url = new Array(url);
-		}
-		request = new glow.net.ResourceRequest(url, opts, type);
-		
-		return request;
+		return new glow.net.ResourceRequest(urls, opts);
 		
 	};
 	
@@ -62,26 +41,27 @@ Glow.provide(function(glow) {
 		@description Returned by {@link glow.net.getResources }
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
-	function ResourceRequest(url, opts, type) {
+	function ResourceRequest(urls, opts) {
+		var type,
+			extension = (/[.]/.exec(urls)) ? /[^.]+$/.exec(urls) : undefined,
+			totalImages = urls.length;
+			
+		
+		for(var i = 0; i < totalResources; i++){	
+			if(extension == 'css'){
+				var request = loadCss([urls], this)
+			}
+			else{
+				var request = loadImages([urls], this)
+			}
+		}
+		
+		
 	
 		
-		
-		if(type == "image"){
-			var request = loadImages(url, this)
-		}
-		else{
-			var request = loadCss(url, this)
-		}
-		
-
-		
-				
-		
 	}
-	function loadImages(images, request)
-		{
-		   // store the call-back
-		  // this.callback = callback;
+	function loadImages(images, request){
+
 		 
 		   // initialize internal state.
 		   this.numberLoaded = 0;
@@ -92,18 +72,20 @@ Glow.provide(function(glow) {
 		   this.totalImages = images.length;
 	
 		   // for each image, call preload()
-		   for ( var i = 0; i < totalImages; i++ ){
-			 var oImage = new Image;
-					this.allImages.push(oImage);
+		for ( var i = 0; i < totalImages; i++ ){
+			var oImage = new Image;
+			this.allImages.push(oImage.src);
 				   
 					// set up event handlers for the Image object
 					oImage.onload = function() {
 						request.fire('progress', oImage.src);
 						totalRequests++
-					if(totalRequests == totalImages){
-						var response = new glow.net.ResourceResponse(this.allImages);
-						request.fire('load', response);
-					};
+						console.log(totalImages);
+						if(totalRequests == totalImages){
+							var response = new glow.net.ResourceResponse(this.allImages);
+							console.log(allImages);
+							request.fire('load', response);
+						};
 					
 					}
 					oImage.onerror = function() { request.fire('error') };
