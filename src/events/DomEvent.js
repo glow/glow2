@@ -146,6 +146,28 @@ Glow.provide(function(glow) {
 			}
 			// call the original method
 			events.Event.prototype.preventDefault.call(this);
+			return this;
+		},
+		/**
+			@name glow.events.DomEvent#stopPropagation
+			@function
+			@description Stop an event bubbling any further.
+				For instance, if you had 2 click listeners, one on a link and
+				one on a parent element, if you stopped the event propogating in the
+				link listener, the event will never be fired on the parent element.
+			
+			@returns this
+		*/
+		stopPropagation: function() {
+			var nativeEvent = this.nativeEvent;
+			
+			if (nativeEvent) {
+				// the ie way
+				nativeEvent.cancelBubble = true;
+				// the proper way
+				nativeEvent.stopPropagation && nativeEvent.stopPropagation();
+			}
+			return this;
 		}
 	});
 	
