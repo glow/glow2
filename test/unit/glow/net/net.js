@@ -335,14 +335,17 @@ test("glow.net.getResources single CSS", function() {
 	var cssRequest = glow.net.getResources("http://www.bbc.co.uk/glow/styles/default.css",
 					   {timeout: 2}).on('progress',
 		function(response){
+			console.log('progress event');
 			ok(true, "Progress fired");
 			equal( response, "http://www.bbc.co.uk/glow/styles/default.css", "Got uri of the item that just completed (progress)" );
 			}).on('load',
 		function(data) {
+			console.log('load event');
 			ok(true, "Load fired");
 			start();
 		}).on('error',
 			function() {
+				console.log('error event');
 				timeoutCancelled = false;
 			});
 
@@ -417,6 +420,8 @@ test("glow.net.getResources multiple images", function() {
 	
 	
 });
+
+
 test("glow.net.getResources mixed images and css", function() {
 	expect(5);
 	stop(5000);
@@ -436,8 +441,7 @@ test("glow.net.getResources mixed images and css", function() {
 				timeoutCancelled = false;
 			});
 	
-	
-	//console.log(request.element());
+
 	
 	window.setTimeout(function () {
 		ok(timeoutCancelled, "error (timeout) not called")
@@ -453,12 +457,7 @@ test("glow.net.put json", function() {
 	stop(5000);
 	var putRequest = glow.net.put("xhr/put.php",
 		{some:"putData", blah:["something", "somethingElse"]}).on('load',
-			function(response) {
-				if ( response.text().slice(0, 2) == '<?' ) {
-					start();
-					skip("This test requires a web server running PHP5");
-					return;
-				}
+			function(response) {				
 				ok(true, "correct callback used");
 				equal( response.text(), "PUT: putData", "Using put method" );
 				start();
@@ -499,14 +498,10 @@ test("glow.net.crossDomainRequest", function () {
 
     var crossdomainrequest = glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search',
 							{_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
-       function (response) {
-		
+       function (response) {		
             equal(response.text(), 'test response', 'get xDomainResponse');
             start();
-	   }).on('error',
-		function(response){
-			console.log("error")
-		});
+	   });
 
 
 });

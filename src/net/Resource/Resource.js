@@ -4,6 +4,7 @@ Glow.provide(function(glow) {
 		ResourceResponseProto,
 		net = glow.net,
 		totalRequests = 0,
+		totalResources = 0,
 		emptyFunc = function(){};
 		
 	/**
@@ -34,7 +35,6 @@ Glow.provide(function(glow) {
 		if(!urls.push){
 			urls = [urls];
 		}
-		
 		return new glow.net.ResourceRequest(urls, opts);
 		
 	};
@@ -46,22 +46,24 @@ Glow.provide(function(glow) {
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	function ResourceRequest(urls, opts) {
-		var totalResources = urls.length;
-			console.log(totalResources);
+		totalResources = urls.length,
+		totalRequests;
 		
 		for(var i = 0; i < totalResources; i++){
-			var extension = (/[.]/.exec(urls[i])) ? /[^.]+$/.exec(urls[i]) : undefined;
+			var extension = (/[.]/.exec(urls[i])) ? /[^.]+$/.exec(urls[i]) : undefined,
+				request;
 			if(extension == 'css'){
-				console.log(urls[i])
 				var request = loadCss(urls[i], this)
 			}
 			else{
-				console.log(urls[i])
 				var request = loadImages(urls[i], this)
 			}
 		}
 		
-		
+		//var response = new glow.net.ResourceResponse(urls);
+		//t//his.fire('load', response);
+		//console.log(response)
+		//return response;
 	
 		
 	}
@@ -69,30 +71,25 @@ Glow.provide(function(glow) {
 
 		 console.log("loadimage");
 		   // initialize internal state.
-		   this.numberLoaded = 0;
-		   this.numberProcessed = 0;
-		   this.allImages = new Array;
+		  
 		 
 		   // record the number of images.
-		   this.totalImages = images.length;
+		  // this.totalImages = images.length;
 	
 		   // for each image, call preload()
 	
 			var oImage = new Image;
-			console.log(oImage);
-			this.allImages.push(oImage.src);
+		
+			
 				   
-					// set up event handlers for the Image object
+				// set up event handlers for the Image object
 					oImage.onload = function() {
 						request.fire('progress', oImage.src);
 						totalRequests++
-						console.log(totalImages);
-						if(totalRequests == totalImages){
-							var response = new glow.net.ResourceResponse(this.allImages);
-							console.log(allImages);
+						if(totalRequests == totalResources){
+							var response = new glow.net.ResourceResponse(oImage.src)
 							request.fire('load', response);
-						};
-					
+						}
 					}
 					oImage.onerror = function() { request.fire('error') };
 					
@@ -102,41 +99,60 @@ Glow.provide(function(glow) {
 					
 		   
 			
-			return(allImages);
+			return(oImage);
 		}
-	
-	function loadCss(source, request){
-		var onLoad = ResourceRequest._progress;
-		
-		var totalFiles = source.length;
-		
-		for (var i = 0; i < totalFiles; i++){
-
+	function checkProgress(){
+		if(totalResources == totalRequests){
 			
-			var link = glow('<link />').attr({
+			cleanup();
+		}
+	}
+	function cleanup(){
+		totalRequests, totalRespones = 0;
+	}
+	
+	function loadCss(source, request){		
+		var onLoad = ResourceRequest._progress,
+			link = glow('<link />').attr({
 					rel: "stylesheet",
 					media: "screen",
 					type: 'text/css',
 					href: source
 			  });
-			 if (("onload" in link) && !Browser.Engines.webkit()) {
-				if (onLoad) link.onload = request.fire('progress');
-			  } else {
-				(function() {
-				  try {
-					link.sheet.cssRules;
-				  } catch (e) {
-					setTimeout(arguments.callee, 100);
-					return;
-				  };
-				  if (onLoad) request.fire('progress');
-				})();
+			
+			// some browsers offer an onload method, so for those we let it use that
+			if (("onload" in link) && !Browser.Engines.webkit()) {
+				if (onLoad){
+					link.onload = function(){
+						request.fire('progress', source);
+						totalRequests++
+						if(totalRequests == totalResources){
+							var response = new glow.net.ResourceResponse(source)
+							request.fire('load', response);
+						}
+					}
+				}
 			  }
+			// for browser that don't (that's most of them) we load after a timeout of 3s
+			else {
+				setTimeout(function () {
+					request.fire('progress', source);
+					totalRequests++
+					if(totalRequests == totalResources){
+						var response = new glow.net.ResourceResponse(source)
+						request.fire('load', response);
+					}
+				}, 3000);
+			}
 			
+			
+			
+			if(totalResources == totalRequests){
+				var response = new glow.net.ResourceResponse(this.allImages);
+				request.fire('load', response);
+				cleanup();
+			};
 		
-			
-			request.fire('load');
-		}
 		
 		return link;
 	}
@@ -191,7 +207,7 @@ Glow.provide(function(glow) {
 	
 	
 	
-	function ResourceResponse(image) { this._text = image; }
+	function ResourceResponse(resources) { this._text = resources; }
 			
 	glow.util.extend(ResourceResponse, glow.events.Target);
 			
