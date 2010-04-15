@@ -61,8 +61,6 @@ module('glow.ui.Widget base class');
 		equal(typeof myWidget.container, 'object', 'MyWidget container is defined.');
 		equal(typeof myWidget.content, 'object', 'MyWidget content is defined.');
 		
-		console.log(myWidget.container);
-		
 		equal(myWidget.container.hasClass('glowCSSVERSION-mywidget-container'), true, 'MyWidget container has class glow-mywidget-container.');
 		
 		equal(myWidget.container.hasClass('addedClass'), true, 'MyWidget container has added class.');
