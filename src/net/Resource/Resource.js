@@ -53,65 +53,43 @@ Glow.provide(function(glow) {
 			var extension = (/[.]/.exec(urls[i])) ? /[^.]+$/.exec(urls[i]) : undefined,
 				request;
 			if(extension == 'css'){
-				var request = loadCss(urls[i], this)
+				var request = _loadCss(urls[i], this)
 			}
 			else{
-				var request = loadImages(urls[i], this)
+				var request = _loadImages(urls[i], this)
 			}
 		}
 		
-		//var response = new glow.net.ResourceResponse(urls);
-		//t//his.fire('load', response);
-		//console.log(response)
-		//return response;
+	}
 	
+	function _loadImages(images, request){
+		var oImage = new Image;
+		
+		oImage.onload = function() {
+			request.fire('progress', oImage.src);
+			totalRequests++
+			if(totalRequests == totalResources){
+				var response = new glow.net.ResourceResponse(oImage.src, totalRequests)
+				request.fire('load', response);
+				}
+		}
+		oImage.onerror = function() {
+			request.fire('error')
+		};
+					
+		oImage.onabort = function() {
+			request.fire('abort')
+		};
+	
+		oImage.src = images;
+					
+		return(oImage);
 		
 	}
-	function loadImages(images, request){
-
-		 console.log("loadimage");
-		   // initialize internal state.
-		  
-		 
-		   // record the number of images.
-		  // this.totalImages = images.length;
 	
-		   // for each image, call preload()
 	
-			var oImage = new Image;
-		
-			
-				   
-				// set up event handlers for the Image object
-					oImage.onload = function() {
-						request.fire('progress', oImage.src);
-						totalRequests++
-						if(totalRequests == totalResources){
-							var response = new glow.net.ResourceResponse(oImage.src)
-							request.fire('load', response);
-						}
-					}
-					oImage.onerror = function() { request.fire('error') };
-					
-					oImage.onabort = function() { request.fire('abort') };
 	
-					oImage.src = images;
-					
-		   
-			
-			return(oImage);
-		}
-	function checkProgress(){
-		if(totalResources == totalRequests){
-			
-			cleanup();
-		}
-	}
-	function cleanup(){
-		totalRequests, totalRespones = 0;
-	}
-	
-	function loadCss(source, request){		
+	function _loadCss(source, request){		
 		var onLoad = ResourceRequest._progress,
 			link = glow('<link />').attr({
 					rel: "stylesheet",
@@ -127,7 +105,7 @@ Glow.provide(function(glow) {
 						request.fire('progress', source);
 						totalRequests++
 						if(totalRequests == totalResources){
-							var response = new glow.net.ResourceResponse(source)
+							var response = new glow.net.ResourceResponse(link, totalRequests);
 							request.fire('load', response);
 						}
 					}
@@ -139,7 +117,7 @@ Glow.provide(function(glow) {
 					request.fire('progress', source);
 					totalRequests++
 					if(totalRequests == totalResources){
-						var response = new glow.net.ResourceResponse(source)
+						var response = new glow.net.ResourceResponse(link, totalRequests)
 						request.fire('load', response);
 					}
 				}, 3000);
@@ -147,11 +125,7 @@ Glow.provide(function(glow) {
 			
 			
 			
-			if(totalResources == totalRequests){
-				var response = new glow.net.ResourceResponse(this.allImages);
-				request.fire('load', response);
-				cleanup();
-			};
+		
 		
 		
 		return link;
@@ -207,7 +181,10 @@ Glow.provide(function(glow) {
 	
 	
 	
-	function ResourceResponse(resources) { this._text = resources; }
+	function ResourceResponse(resources, completed) {
+		this._text = resources,
+		this.completed = completed;
+	}
 			
 	glow.util.extend(ResourceResponse, glow.events.Target);
 			
@@ -230,7 +207,7 @@ Glow.provide(function(glow) {
 		@type Array
 	*/
 	ResourceResponseProto.completed = function() {
-		return glow(this._text).length;
+		return this._text;
 	}
 	
 	glow.net.ResourceResponse = ResourceResponse;

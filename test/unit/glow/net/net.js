@@ -287,7 +287,7 @@ test("glow.net.getJsonp timeout and charset", function() {
 });
 
 test("glow.net.getJsonp aborting", function() {	
-	stop(5000);
+	stop();
 	var onLoadCalled = false;
 	var onErrorCalled = false;
 	var onAbortCalled = false;
@@ -310,39 +310,38 @@ test("glow.net.getJsonp aborting", function() {
 	jsonpRequest.abort();
 	
 	window.setTimeout(function () {
-		if (!request.completed) {
+		//if (!request.completed) {
 			expect(3);
 			ok(!onLoadCalled, "load not called");
 			ok(!onErrorCalled, "error (timeout) not called");
 			ok(onAbortCalled, "abort called");
 			start();
-		}
-		else{
-			expect(1);
-			ok(request.completed, "The request completed to quickly to abort it");
-			start();
-		}
-	}, 3000);
+	//	}
+	//	else{
+	//		expect(1);
+	//		ok(request.completed, "The request completed to quickly to abort it");
+	//		start();
+	//	}
+	}, 8000);
 });
 
 
 
 test("glow.net.getResources single CSS", function() {
-	expect(4);
-	stop(5000);
+	expect(5);
+	stop();
 	var timeoutCancelled = true;
 	
 	var cssRequest = glow.net.getResources("http://www.bbc.co.uk/glow/styles/default.css",
 					   {timeout: 2}).on('progress',
 		function(response){
-			console.log('progress event');
 			ok(true, "Progress fired");
 			equal( response, "http://www.bbc.co.uk/glow/styles/default.css", "Got uri of the item that just completed (progress)" );
 			}).on('load',
-		function(data) {
-			console.log('load event');
+		function(response) {
 			ok(true, "Load fired");
-			start();
+			console.log(response.element());
+			equal( response.element().length, 1, "Load returned 1 item" );
 		}).on('error',
 			function() {
 				console.log('error event');
@@ -354,14 +353,14 @@ test("glow.net.getResources single CSS", function() {
 		ok(timeoutCancelled, "error (timeout) not called");
 		
 		start();
-	}, 3000);
+	}, 10000);
 	
 	
 });
 
 test("glow.net.getResources single image", function() {
 	expect(5);
-	stop(5000);
+	stop();
 	var timeoutCancelled = true;
 	
 	var image = glow.net.getResources("http://www.bbc.co.uk/glow/styles/images/banner.png",
@@ -373,7 +372,7 @@ test("glow.net.getResources single image", function() {
 			}).on('load',
 		function(response) {
 			ok(true, "Load fired");
-			equal( response.completed(), 1, "1 item completed" );
+			equal( response.completed, 1, "1 item completed" );
 		}).on('error',
 			function() {
 				timeoutCancelled = false;
@@ -386,14 +385,14 @@ test("glow.net.getResources single image", function() {
 		ok(timeoutCancelled, "error (timeout) not called")
 		
 		start();
-	}, 3000);
+	}, 10000);
 	
 	
 });
 
 test("glow.net.getResources multiple images", function() {
-	expect(4);
-	stop(5000);
+	expect(5);
+	stop();
 	var timeoutCancelled = true;
 	
 	var images = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif"],
@@ -401,9 +400,9 @@ test("glow.net.getResources multiple images", function() {
 		function(response){
 			ok(true, "Progress fired (this should appear 2 times)");
 			}).on('load',
-		function(data) {
+		function(response) {
 			ok(true, "Load fired");
-			start();
+			equal( response.completed, 2, "2 items completed" );
 		}).on('error',
 			function() {
 				timeoutCancelled = false;
@@ -416,26 +415,25 @@ test("glow.net.getResources multiple images", function() {
 		ok(timeoutCancelled, "error (timeout) not called")
 		
 		start();
-	}, 3000);
+	}, 10000);
 	
 	
 });
 
 
 test("glow.net.getResources mixed images and css", function() {
-	expect(5);
-	stop(5000);
+	expect(6);
+	stop();
 	var timeoutCancelled = true;
 	
 	var imagesAndCss = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif", "http://www.bbc.co.uk/glow/styles/default.css"],
 					   {timeout: 2}).on('progress',
 		function(response){
 			ok(true, "Progress fired (this should appear 3 times)");
-			console.log("progress response:"+ response);
 			}).on('load',
-		function(data) {
+		function(response) {
 			ok(true, "Load fired");
-			start();
+			equal( response.completed, 3, "3 items completed" );
 		}).on('error',
 			function() {
 				timeoutCancelled = false;
@@ -447,14 +445,14 @@ test("glow.net.getResources mixed images and css", function() {
 		ok(timeoutCancelled, "error (timeout) not called")
 		
 		start();
-	}, 3000);
+	}, 10000);
 	
 	
 });
 
 test("glow.net.put json", function() {
 	expect(2);
-	stop(5000);
+	stop();
 	var putRequest = glow.net.put("xhr/put.php",
 		{some:"putData", blah:["something", "somethingElse"]}).on('load',
 			function(response) {				
@@ -475,11 +473,6 @@ test("glow.net.del", function() {
 	stop();
 	var doomedRequest = glow.net.del("xhr/delete.php").on('load', 
 			function(response) {
-				if ( response.text().slice(0, 2) == '<?' ) {
-					start();
-					skip("This test requires a web server running PHP5");
-					return;
-				}
 				ok(true, "correct callback used");
 				equal( response.text(), "DELETE request", "Using delete method" );
 				start();
@@ -494,7 +487,7 @@ test("glow.net.del", function() {
 
 test("glow.net.crossDomainRequest", function () {
     expect(1);
-	stop(5000);
+	stop();
 
     var crossdomainrequest = glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search',
 							{_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
