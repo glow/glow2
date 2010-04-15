@@ -223,17 +223,24 @@ Glow.provide(function(glow) {
 		@name glow.ui.Overlay#setAnim
 		@function
 		@description Set the animation to use when showing and hiding this overlay.
-		@param {Array|Function|null} anim If this value is an animation definition, in the form of an array of arguments to pass to 
-		the {@link glow.Anim} constructor, those values will be used to create the show animation. The hide animation will then be the 
-		reverse of the show. This is the easiest option if you intend your show and hide animations to simply reverse one another.
+		@param {Array|Function|null} anim Anim to use.
+			If this value is an animation definition, in the form of an array of
+			arguments to pass to the {@link glow.Anim} constructor, those values
+			will be used to create the show animation. The hide animation will
+			then be the reverse of the show. This is the easiest option if you
+			intend your show and hide animations to simply reverse one another.
+			
+			Alternatively, if you need more control over your show and hide
+			animations, you can provide a function.	This function will be called
+			whenever the overlay has its show or hide method invoked, and will
+			be provided a boolean (true meaning it's being shown, false meaning
+			it's being hidden), and a callback. You can then manage the animations
+			yourself within that function, and then invoke the callback when
+			either animation is complete.
+			
+			Passing null will delete any previously set animation.
 		
-		Alternatively, if you need more control over your show and hide animations, you can provide a function.
-		This function will be called whenever the overlay has its show or hide
-		method invoked, and will be provided a boolean (true meaning it's being shown, false meaning it's
-		being hidden), and a callback. You can then manage the animations yourself within that function, and then invoke the
-		callback when either animation is complete.
-		
-		Passing null will delete any previously set animation.
+		@returns this
 	*/
 	OverlayProto.setAnim = function(anim) { //todo: could be word, like "fade", or a function
 		if (anim === null) {
@@ -330,6 +337,8 @@ Glow.provide(function(glow) {
 	}
 	
 	function hide() {
+		var that = this;
+		
 		this.shown = false;
 		this._stateElm.removeClass('shown');
 		
