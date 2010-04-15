@@ -219,11 +219,56 @@ Glow.provide(function(glow) {
 		@param {glow.events.Event} event Event Object
 	*/
 	
+	// animations that can be referred to in setAnim by string.
+	// Each is an array of 2 item, one function to put the Overlay in an initial state
+	// for this animation, and one for the animation itself
+	var anims = {
+		slide: [
+			function(overlay) {
+				overlay.container.height(0);
+			},
+			function(isShow, callback) {
+				var anim,
+					container = this.container;
+					
+				if (isShow) {
+					anim = container.slideOpen(0.5).data('glow_slideOpen');
+				}
+				else {
+					anim = container.slideShut(0.5).data('glow_slideShut');
+				}
+				
+				anim.on('complete', callback);
+			}
+		],
+		fade: [
+			function(overlay) {
+				overlay.container.css('opacity', 0);
+			},
+			function(isShow, callback) {
+				var anim,
+					container = this.container;
+					
+				if (isShow) {
+					anim = container.fadeIn(0.5).data('glow_fadeIn');
+				}
+				else {
+					anim = container.fadeOut(0.5).data('glow_fadeOut');
+				}
+				
+				anim.on('complete', callback);
+			}
+		]
+	}
+	
 	/**
 		@name glow.ui.Overlay#setAnim
 		@function
 		@description Set the animation to use when showing and hiding this overlay.
-		@param {Array|Function|null} anim Anim to use.
+		@param {string|Array|Function|null} anim Anim to use.
+			At its simplest, this can be the string 'slide' or 'fade', to give
+			the overlay a fading/sliding animation.
+		
 			If this value is an animation definition, in the form of an array of
 			arguments to pass to the {@link glow.Anim} constructor, those values
 			will be used to create the show animation. The hide animation will
@@ -236,16 +281,21 @@ Glow.provide(function(glow) {
 			be provided a boolean (true meaning it's being shown, false meaning
 			it's being hidden), and a callback. You can then manage the animations
 			yourself within that function, and then invoke the callback when
-			either animation is complete.
+			either animation is complete. In your function, 'this' refers to the
+			overlay.
 			
 			Passing null will delete any previously set animation.
 		
 		@returns this
 	*/
-	OverlayProto.setAnim = function(anim) { //todo: could be word, like "fade", or a function
+	OverlayProto.setAnim = function(anim) {
 		if (anim === null) {
 			delete this._animDef;
 			delete this._animator;
+		}
+		else if (typeof anim === 'string') {
+			anims[anim][0](this);
+			this._animator = anims[anim][1];
 		}
 		else if (typeof anim === 'function') {
 			this._animator = anim;
@@ -297,8 +347,7 @@ Glow.provide(function(glow) {
 	function show() {
 		var that = this;
 		
-		this.shown = true;
-		this._stateElm.addClass('shown');
+		setShown(that, true);
 		
 		if (this._animator) {
 			this._animator.call(this, true, function() { afterShow.call(that); });
@@ -313,6 +362,7 @@ Glow.provide(function(glow) {
 					if (that._anim.reversed) {
 						if (that.lastState === 1) {
 							that.lastState = -that.lastState;
+							setShown(that, false);
 							afterHide.call(that);
 						}
 					}
@@ -336,20 +386,39 @@ Glow.provide(function(glow) {
 		this.fire('afterShow');
 	}
 	
+	/**
+		@private
+		@function
+		@description Set the shown state & add/remove a class from the state element
+	*/
+	function setShown(overlay, shownState) {
+		var stateElm = overlay._stateElm;
+		
+		overlay.shown = shownState;
+		
+		if (shownState) {
+			stateElm.addClass('shown');
+		}
+		else {
+			stateElm.removeClass('shown');
+		}
+	}
+	
 	function hide() {
 		var that = this;
 		
-		this.shown = false;
-		this._stateElm.removeClass('shown');
-		
 		if (this._animator) {
-			this._animator.call(this, false, function() { afterHide.call(that); });
+			this._animator.call(this, false, function() {
+				setShown(that, false);
+				afterHide.call(that);
+			});
 		}
 		else if (this._anim) {
 			this._anim.reverse();
 			this._anim.start();
 		}
 		else {
+			setShown(that, false);
 			afterHide.call(this);
 		}
 	}
