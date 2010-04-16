@@ -67,7 +67,6 @@
 			-webkit-border-top-right-radius: 15px;
 			-webkit-border-top-left-radius: 15px;
 			text-shadow: rgba(0, 0, 0, 0.5) 4px 4px 1px;
-			/*border-bottom: 4px solid #2b81af;*/
 		}
 		
 		#qunit-testrunner-toolbar
@@ -141,7 +140,7 @@
 			ui: 'ui/Widget/Widget.html',
 			focusable: 'ui/Focusable/Focusable.html'
 		};
-
+		
 		// modify testpages urls, based on configurations in GET params
 		(function() {
 			var query = (window.location.search || '?').substring(1);
@@ -155,11 +154,21 @@
 		
 		function init() {
 			window.harness = new Harness(testpages, window.conf);
-			harness.nextTest();
+			harness.nextPage(); // in this case, go to the first
 		}
 		
-		window.onload = init;
+		window.onload = init; // warning: overwriting
 		
+		// aggregate the results from all the test suites here:
+		window.testsuites = [];
+		
+		
+		
+		
+		/**
+			The Test Harness used to manage running the various testsuites
+			@constructor
+		 */
 		function Harness(testpages, opts) {
 			this.testpages = testpages;
 			this.opts = opts || {maxwait: 20000};
@@ -175,18 +184,16 @@
 			for (var name in testpages) { this.testNames.push(name); }
 		}
 		
-		Harness.prototype.nextTest = function() {
+		Harness.prototype.nextPage = function() {
 			this.currentTest++;
 			
-			if (this.currentTest >= this.testNames.length) { // run out of test pages
+			if (this.currentTest >= this.testNames.length) { // ran out of test pages?
 				this.conclude();
 				return;
 			}
 			
-			var location,
-				name = this.testNames[this.currentTest];
-				
-			src = this.testpages[name];
+			var name = this.testNames[this.currentTest],
+				src = this.testpages[name];
 				
 			var ol = document.getElementById('runall-tests');
 			if (ol) {
@@ -202,8 +209,10 @@
 			this.timer = setTimeout(function() { that.timesUp(); }, this.opts.maxwait);
 		}
 		
-		Harness.prototype.conclude = function() {/*debug*///console.log('conclude()');
+		// run once after the last test suite is finished
+		Harness.prototype.conclude = function() { /*debug*///console.log('conclude()');
 			var banner;
+			
 			if (statusElm = document.getElementById('runall-status')) {
 				statusElm.innerHTML= 'Tests completed.<br>'+(this.currentTest - this.fails)+' tests of '+this.currentTest+' passed, '+this.fails+' failed.';
 			}
@@ -211,9 +220,13 @@
 			if (bannerElm = document.getElementById('runall-banner')) {
 				bannerElm.className = (this.fails === 0)? 'qunit-pass' : 'qunit-fail';
 			}
+			
+			/*debug*///console.log('testsuites = '+window.testsuites.toSource()+'');
+			
+			window.runallComplete = true;
 		}
 		
-		Harness.prototype.result = function(name, failures, total) {
+		Harness.prototype.result = function(name, failures, total) { /*debug*///console.info('Harness#result('+name+', '+failures+', '+total+')');
 			this.results[name] = { failures: failures, total: total };
 			
 			var status = '<a href="'+this.testpages[name]+'" target="_blank">'+this.testpages[name]+'<'+'/a>: <strong>(<b class="fail">'+failures+'<'+'/b>, <b class="pass">'+(total-failures)+'<'+'/b>, '+total+')<'+'/strong>';
@@ -227,7 +240,7 @@
 			this.close(name);
 		}
 		
-		Harness.prototype.status = function(name, message, className) {/*debug*///console.log('status('+name+')');
+		Harness.prototype.status = function(name, message, className) { /*debug*///console.log('status('+name+')');
 			var statusElm;
 			
 			if (className) {
@@ -247,14 +260,14 @@
 		Harness.prototype.timesUp = function() {
 			var name = this.testNames[this.currentTest];
 
-			this.close(name); // bye bye tests
+			this.close(name); // bye bye test suite
 			
 			if (!this.results[name]) {
 				this.results[name] = { failures: -1, total: -1 };
 				var status = '<a href="'+this.testpages[name]+'" target="_blank">'+this.testpages[name]+'<'+'/a>: <strong>(<b class="fail">timed out<'+'/b>) gave up waiting for result after '+this.opts.maxwait+'ms <'+'/strong>';
 				this.status(name, status, 'fail');
 			}
-			this.nextTest();
+			this.nextPage();
 		}
 		
 		Harness.addFrame = function(name, src, opts) {
@@ -277,23 +290,90 @@
 			frameElm.parentNode.removeChild(frameElm);
 		}
 		
-		Harness.attach = function(name, unitTester) {
-			unitTester.done = function (failures, total) {/*debug*///console.log('unitTester.done');
-				window.harness.result(name, failures, total);
-			//}
-			//unitTester.testDone = function(name, failures, total) {
-				window.harness.nextTest();
+		// is called from the top of each test page
+		Harness.attach = function(suiteName, unitTester) {
+		
+			window.testsuites.push({
+				testsuite: {
+					name: suiteName,
+					tests: 0,
+					failures: 0,
+					errors: 0,
+					time: (+new Date()), // start time, in milliseconds
+					timestamp: getTimeStamp()
+				},
+				testcases: [ ] // to be populated
+			});
+			
+			unitTester.done = function (failures, total) { /*debug*///console.info('unitTester.done('+failures+', '+total+')');
+				
+				
+				window.harness.result(suiteName, failures, total);
+				window.harness.nextPage();
 			}
+			
 			unitTester.moduleStart = function(moduleName) {
-				window.harness.status(name, 'module: '+moduleName);
+				window.harness.status(suiteName, 'module: '+moduleName);
 			}
+			
+			unitTester.moduleDone = function(name, failures, total) {
+				
+			}
+			
 			unitTester.testStart = function(testName) {
-				window.harness.status(name, 'running test: '+testName);
+				window.harness.status(suiteName, 'running test: '+testName);
+				
+				var currentLog = window.testsuites[window.testsuites.length - 1];
+				currentLog.testcases.push({
+					name: testName,
+					classname: suiteName,
+					outcome: '',
+					message: '',
+					systemOut: ''
+				});
+			}
+			
+			unitTester.testDone = function(testName, failures, total) {
+ 				var currentLog = window.testsuites[window.testsuites.length - 1],
+ 					currentTest = currentLog.testcases[currentLog.testcases.length-1];
+ 				
+ 				currentTest.outcome = (failures === 0)? 'pass' : 'fail';
+ 				
+ 				currentLog.testsuite.tests += 1;
+ 				if (failures) {
+ 					currentLog.testsuite.failures += 1;
+ 				}
+			}
+			
+			unitTester.log = function(result, message) {
+				var currentLog = window.testsuites[window.testsuites.length - 1],
+					currentTest = currentLog.testcases[currentLog.testcases.length-1];
+				currentTest.systemOut += message + '; ';
 			}
 		}
+		
+		// xunit requires datestamps to be in a standard ISO format
+		function getTimeStamp() {
+			var date = new Date(),
+			y = date.getUTCFullYear(),
+			m = date.getUTCMonth() + 1,
+			d = date.getUTCDate(),
+			h = date.getUTCHours(),
+			n = date.getUTCMinutes(),
+			s = date.getUTCSeconds(),
+			t = (-date.getTimezoneOffset()/60);
+			
+			m = (m < 10 ? '0' : '') + m; // ensure date/time numbers have two digits
+			d = (d < 10 ? '0' : '') + d;
+			h = (h < 10 ? '0' : '') + h;
+			n = (n < 10 ? '0' : '') + n;
+			s = (s < 10 ? '0' : '') + s;
+			t = (t >= 0 ? '+' : '') + t; // ensure timezone offset has a +/- prefix
+			
+			// like 2010-04-14T16:24:04+1
+			return '' + y + '-' + m + '-' + d + 'T' + h + ':' + n + ':' + s + t;
+		}
 	</script>
-
-
 </head>
 <body>
 	<h1 id="runall-header">Run All Tests: Glow 2</h1>
