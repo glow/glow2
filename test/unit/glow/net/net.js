@@ -8,9 +8,11 @@ module('glow.net');
 	test('Basic net.get', function(){
 		expect(8);
 		stop();	
-	
-		var getRequest = glow.net.get("xhr/basictext.txt").on("load", 
+		
+		var getRequest = glow.net.get("xhr/basictext.txt")
+		.on("load", 
 			function(response){
+				
 				ok(true, 'correct callback used');
 				equal(response.status, 200, 'Status code');
 				equal(response.nativeResponse.status, 200, 'Native response found');
@@ -23,7 +25,7 @@ module('glow.net');
 				ok(false, 'correct callback used');
 				start();
 			});
-		
+
 		equal(typeof getRequest.abort, 'function', 'Return object has abort method');
 		equal(typeof getRequest.on, 'function', 'Return object has on method');
 		equal(typeof getRequest.destroy, 'function', 'Return object has destroy method');
@@ -308,14 +310,14 @@ test("glow.net.getJsonp aborting", function() {
 
 
 test("glow.net.getResources single CSS", function() {
-	expect(5);
+	expect(4);
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var cssRequest = glow.net.getResources("http://www.bbc.co.uk/glow/styles/default.css").on('progress',
+	var cssRequest = glow.net.getResources("xhr/resources/test.css").on('progress',
 		function(response){
 			ok(true, "Progress fired for single CSS file");
-			equal( response, "http://www.bbc.co.uk/glow/styles/default.css", "Got uri of the item that just completed (progress)" );
+		
 			}).on('load',
 		function(response) {
 			ok(true, "Load fired");
@@ -333,15 +335,15 @@ test("glow.net.getResources single CSS", function() {
 });
 
 test("glow.net.getResources single image", function() {
-	expect(5);
+	expect(4);
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var image = glow.net.getResources("http://www.bbc.co.uk/glow/styles/images/banner.png")
+	var image = glow.net.getResources("xhr/resources/dragon.jpg")
 	.on('progress',
 		function(response){
 			ok(true, "Progress fired for single image (this should appear 1 time)");
-			equal( response, "http://www.bbc.co.uk/glow/styles/images/banner.png", "Got uri of the item that just completed (progress)" );
+			
 			
 			}).on('load',
 		function(response) {
@@ -369,7 +371,6 @@ test("glow.net.getResources multiple images", function() {
 	.on('progress',
 		function(response){
 			ok(true, "Progress fired (this should appear 2 times)");
-			
 			})
 	.on('load',
 		function(response) {
@@ -399,10 +400,11 @@ test("glow.net.getResources mixed images and css", function() {
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var imagesAndCss = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif", "http://www.bbc.co.uk/glow/styles/default.css"],
+	var imagesAndCss = glow.net.getResources(["xhr/resources/homebannerbg.png", "xhr/resources/gradientbg.png", "xhr/resources/test.css"],
 					   {timeout: 2}).on('progress',
 	function(response){
 			ok(true, "Progress fired (this should appear 3 times)");
+		
 			})
 	.on('load',
 		function(response) {
