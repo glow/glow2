@@ -223,15 +223,13 @@ Glow.provide(function(glow) {
 		@function
 	*/
 	glow.NodeList._copyData = function(from, to){
-		if ( !from[dataPropName] ){
-			return;
-		}
-		else{			
-			to = new glow.NodeList(to);
-			to.data( dataCache[from[dataPropName]] );			
-			return;
-		}
+		var i = to.length,
+			data;
 		
+		while (i--) {
+			data = dataCache[ from[i][dataPropName] ];
+			data && to.slice(i, i+1).data(data);
+		}
 	}
 	/**
 		Used to remove the data when a node is destroyed

@@ -60,51 +60,57 @@ test('glow.NodeList#clone data preserving', 0, function() {
 	equal(cloned.data("colour"), 'red', 'Cloned node has expected data');
 });
 
-test('glow.NodeList#clone events preserving', 2, function() {
-	var triggered = false;
-	var firedCount = 0;
-	function callback(event){				
-			triggered2 = true;
-			ok(event instanceof glow.events.Event, "event objected passed into listener");
-			triggered2 = false;
-			
-			
-	}
-
+test('glow.NodeList#clone events preserving', 4, function() {
+	var triggered = false,
+		firedCount = 0,
+		toClone = glow("#innerDiv1"),
+		cloned,
+		callbackFired = 0,
+		eventIdProp = '__eventId' + glow.UID;
 	
-	var toClone = new glow.NodeList("#innerDiv1");
+	function callback(event){
+		callbackFired++
+	}
 	
 	// add an Event to it
-	glow.events.addListeners(
-			toClone,
-			"customEvent",
-			callback
-		);
-	// check that the event is properly attached
-	glow.events.fire(toClone, 'customEvent');
+	toClone.on('customEvent', callback);
 	
 	// clone it
-	var cloned = toClone.clone();
+	cloned = toClone.clone();
 	
-	var triggered2 = false;
+	notEqual(cloned[0][eventIdProp], toClone[0][eventIdProp], 'Elements do not share same event ID property');
 	
 	// check that the event is properly attached to the second element
-	glow.events.fire(cloned, 'customEvent');
+	cloned.fire('customEvent');
 	
+	// check the event is on the copied item	
+	equal(callbackFired, 1, 'Listener called on clone');
+	
+	callbackFired = 0;
+	toClone.fire('customEvent');
+	equal(callbackFired, 1, 'Listener called on original');
 	
 	//now destroy the first nodelist and check that the second still has it's event	
-	//toClone.destroy();
-	//ok(glow.events.hasListener(cloned, "customEvent"), "Cloned element has attached event after original is destroyed");
+	toClone.destroy();
+	
+	callbackFired = 0;
+	cloned.fire('customEvent');
+	
+	equal(callbackFired, 1, 'Listener still called on clone, despite original destroyed');
 });
 
-module('glow.NodeList#clone', {setup:setup, teardown:teardown});
+module('glow.NodeList#copy', {setup:setup, teardown:teardown});
 
-test('glow.NodeList#copy', 12, function() {
+test('glow.NodeList#copy', 13, function() {
 	var myNodeList = new glow.NodeList('#innerDiv1, #innerDiv2'),
 		copies,
-		divParent = myNodeList[0].parentNode;
+		divParent = myNodeList[0].parentNode,
+		eventIdProp = '__eventId' + glow.UID;
 	
 	equal(typeof myNodeList.copy, 'function', 'glow.NodeList#copy is a function');
+	
+	// give the nodes an event id
+	myNodeList.on('whatever', function() {});
 	
 	copies = myNodeList.copy();
 	
@@ -114,6 +120,7 @@ test('glow.NodeList#copy', 12, function() {
 	notEqual( copies[0], myNodeList[0], 'First elements aren\'t equal' );
 	notEqual( copies[1], myNodeList[1], 'Second elements aren\'t equal' );
 	equal( copies.length, myNodeList.length, 'Lengths are equal' );
+	notEqual(copies[0][eventIdProp], myNodeList[0][eventIdProp], 'Elements do not share same event ID property');
 	
 	equal(copies[0].nodeName, 'DIV', 'copy is div');
 	equal(copies[0].firstChild.nodeValue, 'D', 'copied inner text node');

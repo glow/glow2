@@ -206,43 +206,42 @@ Glow.provide(function(glow) {
 	};
 	
 	/**
-		Copies the events from one nodelist to another
+		Copies the events from one NodeList to another
 		@private
-		@name glow.events._copyEvent
+		@name glow.events._copyEvents
 		@see glow.NodeList#clone
 		@function
 	*/
-	events._copyEvent = function(from, to){
-		var listenersToCopy,
-		i = [from].length,
-		listenersForEvent,
-		name,
-		callback,
-		thisVal;
+	events._copyDomEvents = function(from, to){
+		var objIdent,
+			i = from.length,
+			j, jLen,
+			listeners,
+			listenersForEvent,
+			eventName,
+			toItem;
 		
+		// loop over elements
 		while(i--){
+			objIdent = from[i][eventKey];
+			listeners = eventListeners[objIdent];
 			
-			var objIdent = [from][i][eventKey];
-			
-			listenersForEvent = eventListeners[objIdent];
-			
+			if (objIdent){
+				toItem = to.slice(i, i+1);
 				
-			if(!objIdent){
+				// loop over event names (of listeners attached)
+				for ( eventName in listeners ) {
+					listenersForEvent = listeners[eventName];
 					
-				return false;
+					// loop over individual listeners and add them to the 'to' item
+					// loop forward to preserve event order
+					for (j = 0, jLen = listenersForEvent.length; j < jLen; j++) {
+						// add listener
+						toItem.on( eventName, listenersForEvent[j][0], listenersForEvent[j][1] );
+					}
+				}
 			}
-			else{
-				for ( var eventName in eventListeners[objIdent] ) {
-					name = eventName;
-					callback = eventListeners[objIdent][eventName][0][0];
-					thisVal = eventListeners[objIdent][eventName][0][1];
-				}				
-				events._addDomEventListener([to], name, callback, thisVal);
 		}
-	
-		return;
-		}
-		
 	}
 	/**
 	@name glow.events._getListeners

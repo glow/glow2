@@ -504,49 +504,17 @@ Glow.provide(function(glow) {
 			// get a copy of all heading elements
 			var myClones = glow.get("h1, h2, h3, h4, h5, h6").clone();
 	*/
+	
 	NodeListProto.clone = function() {
-		var nodes = [],
-			eventIdProp = '__eventId' + glow.UID,
-			i = this.length;
+		var clonedNodeList = this.copy(),
+			allCloneElms = clonedNodeList.get('*').push(clonedNodeList),
+			allElms = this.get('*').push(this);
 		
+		// now copy over the data and events for all cloned elements
+		glow.events._copyDomEvents(allElms, allCloneElms);
+		glow.NodeList._copyData(allElms, allCloneElms);
 		
-		while (i--) {
-			nodes[i] = this[i].cloneNode(true);
-			// some browsers (ie) also clone node properties as attributes
-			// we need to get rid of the eventId.
-			allCloneElms = new glow.NodeList( nodes ).get("*").push( nodes );
-			j = allCloneElms.length;
-				while(j--) {
-					nodes[i][eventIdProp] = null;
-					
-					// now copy over the data and events
-					glow.events._copyEvent(this[i], nodes[i]);
-					glow.NodeList._copyData(this[i], nodes[i]);
-				}
-			
-		}
-		// some browsers (ie) also clone node properties as attributes
-		// we need to get rid of the eventId.
-		//allCloneElms = new glow.NodeList( nodes ).get("*").push( nodes );
-		//j = allCloneElms.length;
-		
-		//while(j--) {
-			//allCloneElms[j][eventIdProp] = null;
-		//}
-		
-		
-				
-		// copy data from base elements to clone elements
-		/*allBaseElms = this.get("*").push( this );
-		i = allCloneElms.length;
-		while (i--) {
-			allCloneElms[i].removeAttribute(dataPropName);
-			glow.dom.get(allCloneElms[i]).data(
-			glow.dom.get(allBaseElms[i]).data()
-			);
-		}*/
-		
-		return new glow.NodeList(nodes);
+		return clonedNodeList;
 	};
 	
 	
@@ -565,13 +533,29 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.copy = function() {
 		var nodes = [],
-			i = this.length;
+			i = this.length,
+			clonedNodeList,
+			allCloneElms,
+			eventIdProp = '__eventId' + glow.UID,
+			dataPropName = '_uniqueData' + glow.UID;
 		
 		while (i--) {
 			nodes[i] = this[i].cloneNode(true);
 		}
 		
-		return new glow.NodeList(nodes);
+		clonedNodeList = new glow.NodeList(nodes);
+		
+		// IE also clones node properties as attributes
+		// we need to get rid of the eventId & dataId
+		if (glow.env.ie) {
+			allCloneElms = clonedNodeList.get('*').push(nodes);
+			i = allCloneElms.length;
+			while (i--) {
+				allCloneElms[i][dataPropName] = allCloneElms[i][eventIdProp] = undefined;
+			}
+		}
+		
+		return clonedNodeList;
 	};
 	
 	/**
