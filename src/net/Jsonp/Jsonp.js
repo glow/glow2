@@ -266,7 +266,7 @@ Glow.provide(function(glow) {
 	
 	JsonpRequestProto.abort = function() {
 			glow.net.abortRequest(this);
-			
+			this.fire('abort')
 		};
 	
 	

@@ -9,7 +9,7 @@ module('glow.net');
 		expect(8);
 		stop();	
 	
-		var request = glow.net.get("xhr/basictext.txt").on("load", 
+		var getRequest = glow.net.get("xhr/basictext.txt").on("load", 
 				function(response){
 					ok(true, "correct callback used");
 					equal(response.status, 200, "Status code");
@@ -23,9 +23,9 @@ module('glow.net');
 					start();
 				});
 		
-		equal(typeof request.abort, "function", "Return object has abort method");
-		equal(typeof request.on, "function", "Return object has on method");
-		equal(typeof request.destroy, "function", "Return object has destroy method");
+		equal(typeof getRequest.abort, "function", "Return object has abort method");
+		equal(typeof getRequest.on, "function", "Return object has on method");
+		equal(typeof getRequest.destroy, "function", "Return object has destroy method");
 	});
 	
 	
@@ -67,7 +67,7 @@ module('glow.net');
 	expect(3);
 	stop(5000);
 	
-			var request = glow.net.get("xhr/xml.xml").on("load", 
+			var getXml = glow.net.get("xhr/xml.xml").on("load", 
 				function(response){
 					ok(true, "correct callback used");
 					var xml = response.xml();
@@ -89,7 +89,7 @@ module('glow.net');
 		expect(5);
 		stop(5000);
 		
-		glow.net.get("xhr/xml.txt", {
+		var getXml = glow.net.get("xhr/xml.txt", {
 			forceXml: true}).on("load", 
 				function(response){
 					ok(true, "correct callback used");
@@ -114,7 +114,7 @@ module('glow.net');
 		expect(4);
 		stop(5000);
 		
-		glow.net.get("xhr/requestheaderdump.php", 
+		var getRequest = glow.net.get("xhr/json.txt", 
 		{some:"postData", blah:["something", "somethingElse"]}).on("load", 
 				function(response){
 					ok(true, "correct callback used");
@@ -140,7 +140,7 @@ module('glow.net');
 		
 		stop(5000);
 		var aborted = true;
-		var request = glow.net.get("xhr/large.txt").on("load", 
+		var abortableRequest = glow.net.get("xhr/large.txt").on("load", 
 				function(response){
 					aborted = false;
 				}).on("error",
@@ -150,7 +150,7 @@ module('glow.net');
 				function(response){
 					ok(true, "Abort event fired");
 				});
-		request.abort();
+		abortableRequest.abort();
 		window.setTimeout(function() {
 			ok(aborted, "Request aborted");
 			start();
@@ -164,7 +164,7 @@ module('glow.net');
 	test("glow.net.post async string", function() {
 	expect(3);
 	stop(5000);
-	var request = glow.net.post("xhr/requestheaderdump.php",
+	var postRequest = glow.net.post("xhr/requestheaderdump.php",
 					"some=postData&blah=hurrah").on("load",
 				  function(response){
 					if ( response.text().slice(0, 2) == '<?' ) {
@@ -189,7 +189,7 @@ module('glow.net');
 	expect(3);
 	stop(5000);
 	
-	var request = glow.net.post("xhr/requestheaderdump.php",
+	var postRequest = glow.net.post("xhr/requestheaderdump.php",
 								{some:"postData", blah:["something", "somethingElse"]}).on("load",
 					function(response){
 						if ( response.text().slice(0, 2) == '<?' ) {
@@ -218,7 +218,7 @@ test("glow.net.get timeout cancelling", function() {
 	
 	var noError = true;
 	
-	var request = glow.net.get("xhr/basictext.txt",
+	var getRequest = glow.net.get("xhr/basictext.txt",
 					{timeout: 2}).on("load",
 				function(response){
 					ok(true, "load called");
@@ -242,7 +242,7 @@ test("glow.net.getJsonp general", function() {
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var request = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
+	var jsonpRequest = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
 					   {timeout: 2}).on('load',
 		function(data) {
 			ok(true, "Callback called");
@@ -270,7 +270,7 @@ test("glow.net.getJsonp timeout and charset", function() {
 	var onLoadCalled = false;
 	
 	//this script doesn't actually callback, so it'll timeout
-	glow.net.getJsonp("xhr/loadscriptfail.js?callback={callback}",
+	var jsonpRequest = glow.net.getJsonp("xhr/loadscriptfail.js?callback={callback}",
 					  {timeout: 2,
 						charset: "utf-8"}).on('load', 
 		function(data) {
@@ -285,66 +285,61 @@ test("glow.net.getJsonp timeout and charset", function() {
 
 	equals(glow(document.body.lastChild).attr("charset"), "utf-8", "Charset set");
 });
-/*
-test("glow.net.getJsonp aborting", function() {
-	expect(3);
+
+test("glow.net.getJsonp aborting", function() {	
 	stop(5000);
 	var onLoadCalled = false;
 	var onErrorCalled = false;
 	var onAbortCalled = false;
 	
-	var request = glow.net.getJsonp("testdata/xhr/jsoncallback.js?callback={callback}",
+	var jsonpRequest = glow.net.getJsonp("testdata/xhr/jsoncallback.js?callback={callback}",
 									{timeout: 2}).on('load', 
 		function(data) {
-			console.log('load');
-			onLoadCalled = true;
-			start();
+			onLoadCalled = true;			
 		}).on('error',
 		function() {
-			console.log('error');
-			onErrorCalled = true;
-			start();
+			onErrorCalled = true;			
 		}).on('abort',
 		function() {
-			console.log('abort');
-			onAbortCalled = true;
-			start();
+			onAbortCalled = true;			
 		});
 		
 	
-	if (request.completed) {
-		console.log("completed");
-		skip("Request complete, too late to abort");
+	
 		
-		return;
-	}
-	//request.abort();
+	jsonpRequest.abort();
 	
 	window.setTimeout(function () {
-		ok(!onLoadCalled, "load not called");
-		ok(!onErrorCalled, "error (timeout) not called");
-		ok(onAbortCalled, "abort called");
-		start();
+		if (!request.completed) {
+			expect(3);
+			ok(!onLoadCalled, "load not called");
+			ok(!onErrorCalled, "error (timeout) not called");
+			ok(onAbortCalled, "abort called");
+			start();
+		}
+		else{
+			expect(1);
+			ok(request.completed, "The request completed to quickly to abort it");
+			start();
+		}
 	}, 3000);
 });
 
-*/
+
 
 test("glow.net.getResources single CSS", function() {
-	expect(3);
+	expect(4);
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var request = glow.net.getResources("http://www.bbc.co.uk/glow/styles/default.css",
+	var cssRequest = glow.net.getResources("http://www.bbc.co.uk/glow/styles/default.css",
 					   {timeout: 2}).on('progress',
-		function(url){
+		function(response){
 			ok(true, "Progress fired");
-			console.log("url completed: "+url);
-			console.log(url);
+			equal( response, "http://www.bbc.co.uk/glow/styles/default.css", "Got uri of the item that just completed (progress)" );
 			}).on('load',
 		function(data) {
 			ok(true, "Load fired");
-			//equal(data.hello, "world", "Data passed");
 			start();
 		}).on('error',
 			function() {
@@ -366,10 +361,10 @@ test("glow.net.getResources single image", function() {
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var request = glow.net.getResources("http://www.bbc.co.uk/glow/styles/images/banner.png",
+	var image = glow.net.getResources("http://www.bbc.co.uk/glow/styles/images/banner.png",
 					   {timeout: 2}).on('progress',
 		function(response){
-			ok(true, "Progress fired");
+			ok(true, "Progress fired (this should appear 1 time)");
 			equal( response, "http://www.bbc.co.uk/glow/styles/images/banner.png", "Got uri of the item that just completed (progress)" );
 			
 			}).on('load',
@@ -394,14 +389,14 @@ test("glow.net.getResources single image", function() {
 });
 
 test("glow.net.getResources multiple images", function() {
-	expect(3);
+	expect(4);
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var request = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif"],
+	var images = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif"],
 					   {timeout: 2}).on('progress',
 		function(response){
-			ok(true, "Progress fired");
+			ok(true, "Progress fired (this should appear 2 times)");
 			}).on('load',
 		function(data) {
 			ok(true, "Load fired");
@@ -423,14 +418,15 @@ test("glow.net.getResources multiple images", function() {
 	
 });
 test("glow.net.getResources mixed images and css", function() {
-	expect(3);
+	expect(5);
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var request = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif", "http://www.bbc.co.uk/glow/styles/default.css"],
+	var imagesAndCss = glow.net.getResources(["http://www.bbc.co.uk/glow/styles/images/banner.png", "http://www.bbc.co.uk/includes/blq/resources/gvl/r57/img/header_blocks.gif", "http://www.bbc.co.uk/glow/styles/default.css"],
 					   {timeout: 2}).on('progress',
 		function(response){
-			ok(true, "Progress fired");
+			ok(true, "Progress fired (this should appear 3 times)");
+			console.log("progress response:"+ response);
 			}).on('load',
 		function(data) {
 			ok(true, "Load fired");
@@ -455,7 +451,7 @@ test("glow.net.getResources mixed images and css", function() {
 test("glow.net.put json", function() {
 	expect(2);
 	stop(5000);
-	var request = glow.net.put("xhr/put.php",
+	var putRequest = glow.net.put("xhr/put.php",
 		{some:"putData", blah:["something", "somethingElse"]}).on('load',
 			function(response) {
 				if ( response.text().slice(0, 2) == '<?' ) {
@@ -478,7 +474,7 @@ test("glow.net.put json", function() {
 test("glow.net.del", function() {
 	expect(2);
 	stop();
-	var request = glow.net.del("xhr/delete.php").on('load', 
+	var doomedRequest = glow.net.del("xhr/delete.php").on('load', 
 			function(response) {
 				if ( response.text().slice(0, 2) == '<?' ) {
 					start();
@@ -501,7 +497,7 @@ test("glow.net.crossDomainRequest", function () {
     expect(1);
 	stop(5000);
 
-    glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search',
+    var crossdomainrequest = glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search',
 							{_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
        function (response) {
 		

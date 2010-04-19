@@ -31,6 +31,10 @@ Glow.provide(function(glow) {
 		var request,
 			opts = glow.net.populateOptions(opts);
 		
+		if(!urls.push){
+			urls = [urls];
+		}
+		
 		return new glow.net.ResourceRequest(urls, opts);
 		
 	};
@@ -42,17 +46,18 @@ Glow.provide(function(glow) {
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	function ResourceRequest(urls, opts) {
-		var type,
-			extension = (/[.]/.exec(urls)) ? /[^.]+$/.exec(urls) : undefined,
-			totalImages = urls.length;
-			
+		var totalResources = urls.length;
+			console.log(totalResources);
 		
-		for(var i = 0; i < totalResources; i++){	
+		for(var i = 0; i < totalResources; i++){
+			var extension = (/[.]/.exec(urls[i])) ? /[^.]+$/.exec(urls[i]) : undefined;
 			if(extension == 'css'){
-				var request = loadCss([urls], this)
+				console.log(urls[i])
+				var request = loadCss(urls[i], this)
 			}
 			else{
-				var request = loadImages([urls], this)
+				console.log(urls[i])
+				var request = loadImages(urls[i], this)
 			}
 		}
 		
@@ -62,7 +67,7 @@ Glow.provide(function(glow) {
 	}
 	function loadImages(images, request){
 
-		 
+		 console.log("loadimage");
 		   // initialize internal state.
 		   this.numberLoaded = 0;
 		   this.numberProcessed = 0;
@@ -72,8 +77,9 @@ Glow.provide(function(glow) {
 		   this.totalImages = images.length;
 	
 		   // for each image, call preload()
-		for ( var i = 0; i < totalImages; i++ ){
+	
 			var oImage = new Image;
+			console.log(oImage);
 			this.allImages.push(oImage.src);
 				   
 					// set up event handlers for the Image object
@@ -92,9 +98,9 @@ Glow.provide(function(glow) {
 					
 					oImage.onabort = function() { request.fire('abort') };
 	
-					oImage.src = images[i];
+					oImage.src = images;
 					
-		   }
+		   
 			
 			return(allImages);
 		}

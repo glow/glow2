@@ -208,8 +208,9 @@ Glow.provide(function(glow) {
 		@returns thistwixst
 	*/
 	RequestProto.abort = function() {
-				if (!this.completed && !events.fire(this, "abort").defaultPrevented()) {
-					abortRequest(this);
+				if (!this.completed && !events.fire(this, 'abort').defaultPrevented()) {
+					glow.net.abortRequest(this);
+					this.fire('abort')
 				}
 				return this;
 			};
