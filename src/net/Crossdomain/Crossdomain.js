@@ -88,6 +88,7 @@ Glow.provide(function(glow) {
 	net.crossDomainGet = function(url, opts) {
 		var request = new CrossDomainRequest(url, {}, true, opts);
 			request._send();
+			return request;
 		};
 		
 		
@@ -294,8 +295,10 @@ Glow.provide(function(glow) {
 			
 			function CrossDomainResponse(textResponse) { this._text = textResponse; }
 			
-			CrossdomainResponseProto = CrossdomainResponseProto.prototype;
-			glow.util.extend(CrossdomainResponseProto, glow.events.Target);
+			glow.util.extend(CrossDomainResponse, glow.events.Target);
+			
+			CrossdomainResponseProto = CrossDomainResponse.prototype;
+			
 			
 			CrossdomainResponseProto.text = function() { return this._text; }
 			CrossdomainResponseProto.json = function() { return glow.util.encodeJson(this._text); }
