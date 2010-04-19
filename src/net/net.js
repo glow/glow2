@@ -42,10 +42,7 @@ Glow.provide(function(glow) {
 		 */
 		net.populateOptions = function(opts) {
 			var newOpts = glow.util.apply({
-				headers: {},
-				onLoad: emptyFunc,
-				onError: emptyFunc,
-				onAbort: emptyFunc,
+				headers: {},				
 				async: true,
 				cacheBust: true,
 				data: null,
@@ -83,11 +80,12 @@ Glow.provide(function(glow) {
 		 * @returns Object
 		 */
 		function makeXhrRequest(method, url, opts) {
+			
 			var req = xmlHTTPRequest(), //request object
 				data = opts.data && (typeof opts.data == "string" ? opts.data : glow.util.encodeUrl(opts.data)),
 				i,
 				request = new glow.net.Request(req, opts);
-			
+		
  
 			if (!opts.cacheBust) {
 				url = noCacheUrl(url);
@@ -100,20 +98,24 @@ Glow.provide(function(glow) {
 			for (i in opts.headers) {
 				req.setRequestHeader(i, opts.headers[i]);
 			}
- 
+
 			function send() {
 				request.send = emptyFunc;
 
 					//sort out the timeout if there is one
 					if (opts.timeout) {
+						 
 						request._timeout = setTimeout(function() {
+							
 							abortRequest(request);
+							
 							var response = new glow.net.Response(req, true, request);
 							request.fire("error", response);
 						}, opts.timeout * 1000);
 					}
- 
+					
 					req.onreadystatechange = function() {
+					
 						if (req.readyState == 4) {
 							//clear the timeout
 							request._timeout && clearTimeout(request._timeout);
@@ -122,7 +124,9 @@ Glow.provide(function(glow) {
 							var response = new glow.net.Response(req, false, request);
 
 							if (response.wasSuccessful) {
+							
 								request.fire("load", response);
+								
 							} else {
 								request.fire("error", response);
 							}
@@ -130,13 +134,14 @@ Glow.provide(function(glow) {
 							req.onreadystatechange = new Function();
 						}
 					};
+					
 					req.send(data);
 					return request;
 				
 			}
  
 			request.send = send;
-			return opts.defer ? request : send();
+			return send();
 		}
 		/**
 		@name glow.net.abortRequest
@@ -199,7 +204,9 @@ Glow.provide(function(glow) {
 		
 	*/
 	net.get = function(url, opts) {
+			
 		opts = glow.net.populateOptions(opts);
+		
 			return makeXhrRequest('GET', url, opts);
 		};
 	
@@ -269,12 +276,13 @@ Glow.provide(function(glow) {
 		*/
 	
 	net.send = function(method, url, data, opts) {
+	
 		// Ensure that an empty body does not cause a 411 error.
 			data = data || '';
 
 			opts = glow.net.populateOptions(o);
 			opts.data = data;
-
+			
 			return makeXhrRequest(method, url, opts);
 		};
 	

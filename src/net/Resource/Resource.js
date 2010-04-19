@@ -15,11 +15,9 @@ Glow.provide(function(glow) {
 		@param {String} url
 			Url of the script. 
 		@param {Object} [opts]
-			@param {Boolean} [opts.useCache=false] Allow a cached response
-			@param {Number} [opts.timeout] Time to allow for the request in seconds
-			
+			@param {Number} [opts.timeout] Time to allow for the request in seconds		
  
-		@returns {glow.net.Request}
+		@returns {glow.net.ResourceRequest}
  
 		@example
 			// load script with a callback specified
@@ -28,10 +26,16 @@ Glow.provide(function(glow) {
 					// use data
 				});
 		*/
-	net.getResources = function(urls, opts) {
+	net.getResources = function(urls, opts) {		
 		var request,
 			opts = glow.net.populateOptions(opts);
-		
+		if (opts.timeout) {
+			this._timeout = setTimeout(function() {
+				glow.net.abortRequest(this);
+				
+				
+			}, opts.timeout * 1000);
+		}
 		if(!urls.push){
 			urls = [urls];
 		}
@@ -46,10 +50,12 @@ Glow.provide(function(glow) {
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	function ResourceRequest(urls, opts) {
-		totalResources = urls.length,
-		totalRequests;
 		
-		for(var i = 0; i < totalResources; i++){
+		this.totalResources = urls.length,
+		this.totalRequests = 0;
+		
+		
+		for(var i = 0; i < this.totalResources; i++){
 			var extension = (/[.]/.exec(urls[i])) ? /[^.]+$/.exec(urls[i]) : undefined,
 				request;
 			if(extension == 'css'){
@@ -58,20 +64,25 @@ Glow.provide(function(glow) {
 			else{
 				var request = _loadImages(urls[i], this)
 			}
+			
 		}
+		
+		
 		
 	}
 	
 	function _loadImages(images, request){
 		var oImage = new Image;
-		
+	
 		oImage.onload = function() {
 			request.fire('progress', oImage.src);
-			totalRequests++
-			if(totalRequests == totalResources){
-				var response = new glow.net.ResourceResponse(oImage.src, totalRequests)
+			request.totalRequests++
+			if(request.totalRequests == request.totalResources){
+				
+				var response = new glow.net.ResourceResponse(oImage.src, request.totalRequests)
 				request.fire('load', response);
-				}
+				
+			}
 		}
 		oImage.onerror = function() {
 			request.fire('error')
@@ -89,24 +100,24 @@ Glow.provide(function(glow) {
 	
 	
 	
-	function _loadCss(source, request){		
+	function _loadCss(source, request){
 		var onLoad = ResourceRequest._progress,
 			link = glow('<link />').attr({
-					rel: "stylesheet",
-					media: "screen",
+					rel: 'stylesheet',
+					media: 'screen',
 					type: 'text/css',
 					href: source
 			  });
-			
 			// some browsers offer an onload method, so for those we let it use that
-			if (("onload" in link) && !Browser.Engines.webkit()) {
+			if (('onload' in link) && !Browser.Engines.webkit()) {
 				if (onLoad){
 					link.onload = function(){
 						request.fire('progress', source);
-						totalRequests++
-						if(totalRequests == totalResources){
-							var response = new glow.net.ResourceResponse(link, totalRequests);
+						request.totalRequests++
+						if(request.totalRequests == request.totalResources){
+							var response = new glow.net.ResourceResponse(link, request.totalRequests);
 							request.fire('load', response);
+							
 						}
 					}
 				}
@@ -115,20 +126,15 @@ Glow.provide(function(glow) {
 			else {
 				setTimeout(function () {
 					request.fire('progress', source);
-					totalRequests++
-					if(totalRequests == totalResources){
-						var response = new glow.net.ResourceResponse(link, totalRequests)
+					request.totalRequests++
+					if(request.totalRequests == request.totalResources){
+						var response = new glow.net.ResourceResponse(link, request.totalRequests)
 						request.fire('load', response);
+						
 					}
 				}, 3000);
 			}
-			
-			
-			
 		
-		
-		
-		return link;
 	}
 	
 	glow.util.extend(ResourceRequest, glow.events.Target);
@@ -142,9 +148,7 @@ Glow.provide(function(glow) {
 		@name glow.net.ResourceRequest#event:load
 		@event
 		@param {glow.events.Event} event Event Object
-		@description Fired when the request is sucessful
-			For a get / post request, this will be fired when request returns
-			with an HTTP code of 2xx. 
+		@description Fired when all the requested items have completed.
 	*/
  
 	/**
@@ -152,11 +156,7 @@ Glow.provide(function(glow) {
 		@event
 		@param {glow.events.Event} event Event Object
 		@description Fired when the request is aborted
-			If you cancel the default (eg, by returning false) the request
-			will continue.
-		@description Returned by {@link glow.net.post glow.net.post}, {@link glow.net.get glow.net.get} async requests and {@link glow.net.loadScript glow.net.loadScript}
-			@see <a href="../furtherinfo/net/net.shtml">Using glow.net</a>
-			glowPrivateConstructor There is no direct constructor, since {@link glow.net.post glow.net.post} and {@link glow.net.get glow.net.get} create the instances.
+			
 	*/
  
 	/**
@@ -164,9 +164,7 @@ Glow.provide(function(glow) {
 		@event
 		@param {glow.events.Event} event Event Object
 		@description Fired when the request is unsucessful
-			For a get/post request, this will be fired when request returns
-			with an HTTP code which isn't 2xx or the request times out. loadScript
-			calls will fire 'error' only if the request times out.
+			This is fired if the request timesout.
 	*/
 
  
@@ -182,7 +180,20 @@ Glow.provide(function(glow) {
 	
 	
 	function ResourceResponse(resources, completed) {
-		this._text = resources,
+		/**
+		@name glow.net.ResourceRequest#nodes
+		@description Provides a nodelist of completed items.
+		@type {glow.NodeList}
+	
+		*/
+		this.nodes = resources,
+		/**
+		@name glow.net.ResourceRequest#complete
+		@description Reports total number of items completed
+		@example
+					
+		@type Array
+		*/
 		this.completed = completed;
 	}
 			
@@ -191,24 +202,6 @@ Glow.provide(function(glow) {
 	ResourceResponseProto = ResourceResponse.prototype;
 			
 
-	/**
-		@name glow.net.ResourceRequest#element
-		@description Provides a nodelist of completed items.
-		@type {glow.NodeList}
-	
-	*/
-	ResourceResponseProto.element = function() { return this._text; }
-	
-	/**
-		@name glow.net.ResourceRequest#complete
-		@description Reports total number of items completed
-		@example
-					
-		@type Array
-	*/
-	ResourceResponseProto.completed = function() {
-		return this._text;
-	}
 	
 	glow.net.ResourceResponse = ResourceResponse;
 });

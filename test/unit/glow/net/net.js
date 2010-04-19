@@ -205,11 +205,11 @@ module('glow.net');
 
 	test("glow.net.get timeout cancelling", function() {
 		expect(2);
-		stop();
+		stop(5000);
 		
 		var noError = true;
 		
-		var getRequest = glow.net.get("xhr/basictext.txt",
+		var getRequest = glow.net.get("xhr/morebasictext.txt",
 				{timeout: 2}).on("load",
 			function(response){
 				ok(true, "load called");
@@ -220,9 +220,12 @@ module('glow.net');
 				noError = false;
 			});
 		
-	
+		
 		ok(noError, "error (timeout) not called");		
-		stop(5000);
+	
+		
+		
+		
 	});
 
 

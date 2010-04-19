@@ -18,6 +18,8 @@ Glow.provide(function(glow) {
 	@param {glow.net.Request} [request] Original request object
 	*/
 	function Response(nativeResponse, timedOut, request) {
+		
+			
 		//run Event constructor
 		//events.Event.call(this);
 			
@@ -118,7 +120,20 @@ Glow.provide(function(glow) {
 				return nativeResponse.responseXML;
 			}				
 		};
-
+		/* (hidden from jsdoc as it appeared in output docs)
+		@name glow.net-shouldParseAsXml
+		@function
+		@description Should the response be treated as xml? This function is used by IE only
+			'this' is the response object
+		@returns {Boolean}
+		*/
+		function shouldParseAsXml() {
+			var contentType = this.header("Content-Type"),
+				endsPlusXml = /\+xml$/;
+			// IE 6 & 7 fail to recognise Content-Types ending +xml (eg application/rss+xml)
+			// Files from the filesystem don't have a content type, but could be xml files, parse them to be safe
+			return endsPlusXml.test(contentType) || contentType === '';
+		}
 		/**
 		@name glow.net.Response#json
 		@function
