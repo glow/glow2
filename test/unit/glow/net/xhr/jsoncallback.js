@@ -1,5 +1,5 @@
 (function() {
-	alert("ping!");
+
 //this is really really dirty
 if (document.body.lastChild.nodeName.toLowerCase() != "script") return;
 var callbackName = /callback=([^&]+)/.exec(document.body.lastChild.src)[1];

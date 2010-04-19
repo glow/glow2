@@ -2,6 +2,7 @@ Glow.provide(function(glow) {
 	var undefined,
 		JsonpRequestProto,
 		net = glow.net,
+		emptyFunc = function(){},
 		events = glow.events,
 		/**
 			 * @name glow.net.scriptElements
@@ -111,9 +112,19 @@ Glow.provide(function(glow) {
 				//sort out the timeout
 				if (opts.timeout) {
 					request._timeout = setTimeout(function() {
-						abortRequest(request);
+						glow.net.abortRequest(request);
+						
+						var callbackIndex = request._callbackIndex;
+						if (callbackIndex) {
+							//clear callback
+							window[globalObjectName][callbackPrefix + callbackIndex] = emptyFunc;
+							//remove script element
+							glow(scriptElements[callbackIndex]).destroy();
+							
+						}
 						request.fire('error');
 					}, opts.timeout * 1000);
+					request.fire('abort');
 				}
 				//using setTimeout to stop Opera 9.0 - 9.26 from running the loaded script before other code
 				//in the current script block
@@ -251,7 +262,12 @@ Glow.provide(function(glow) {
 	*/
 	}
 	glow.util.extend(JsonpRequest, glow.events.Target);
-
+	JsonpRequestProto = JsonpRequest.prototype;
+	
+	JsonpRequestProto.abort = function() {
+			glow.net.abortRequest(this);
+			
+		};
 	
 	
 	glow.net.JsonpRequest = JsonpRequest;

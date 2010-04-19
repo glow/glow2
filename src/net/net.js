@@ -11,10 +11,7 @@ Glow.provide(function(glow) {
 				XML_ERR:'Cannot get response as XML, check the mime type of the data',
 				POST_DEFAULT_CONTENT_TYPE:'application/x-www-form-urlencoded;'
 			},
-			endsPlusXml = /\+xml$/,
-			
-			
-			
+			endsPlusXml = /\+xml$/,			
 			events = glow.events,
 			emptyFunc = function(){},
 			idCount = 1;
@@ -151,9 +148,8 @@ Glow.provide(function(glow) {
 		@param {glow.net.Request} req Request Object
 		@returns this
 		*/
-		function abortRequest(req) {
-			var nativeReq = req.nativeRequest,
-				callbackIndex = req._callbackIndex;
+		net.abortRequest = function(req) {
+			var nativeReq = req.nativeRequest;
 
 			//clear timeout
 			req._timeout && clearTimeout(req._timeout);
@@ -163,12 +159,9 @@ Glow.provide(function(glow) {
 				// prevent parent scopes leaking (cross-page) in IE
 				nativeReq.onreadystatechange = new Function();
 				nativeReq.abort();
-			} else if (callbackIndex) {
-				//clear callback
-				window[globalObjectName][callbackPrefix + callbackIndex] = emptyFunc;
-				//remove script element
-				glow(scriptElements[callbackIndex]).destroy();
 			}
+			
+			
 		}
 	/**
 	@name glow.net.get

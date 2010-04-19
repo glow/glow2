@@ -231,7 +231,7 @@ test("glow.net.get timeout cancelling", function() {
 	
 		
 	window.setTimeout(function () {
-		ok(noError, "onError not called")
+		ok(noError, "error (timeout) not called")
 		start();
 	}, 3000);
 });
@@ -245,23 +245,17 @@ test("glow.net.getJsonp general", function() {
 	var request = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
 					   {timeout: 2}).on('load',
 		function(data) {
-			console.log("1");
 			ok(true, "Callback called");
-			console.log(data);
 			equal(data.hello, "world", "Data returned");
 			start();
 		}).on('error',
 			function() {
-				console.log("2");
 				timeoutCancelled = false;
 				
 			});
-	
-	
-	//console.log(request.element());
-	
+
 	window.setTimeout(function () {
-		ok(timeoutCancelled, "onError not called")
+		ok(timeoutCancelled, "error (timeout) not called")
 		
 		start();
 	}, 3000);
@@ -270,7 +264,7 @@ test("glow.net.getJsonp general", function() {
 });
 
 test("glow.net.getJsonp timeout and charset", function() {
-	expect(3);
+	expect(2);
 	stop(5000);
 	
 	var onLoadCalled = false;
@@ -302,36 +296,41 @@ test("glow.net.getJsonp aborting", function() {
 	var request = glow.net.getJsonp("testdata/xhr/jsoncallback.js?callback={callback}",
 									{timeout: 2}).on('load', 
 		function(data) {
+			console.log('load');
 			onLoadCalled = true;
 			start();
 		}).on('error',
 		function() {
+			console.log('error');
 			onErrorCalled = true;
 			start();
 		}).on('abort',
 		function() {
+			console.log('abort');
 			onAbortCalled = true;
 			start();
 		});
 		
 	
 	if (request.completed) {
-		t.skip("Request complete, too late to abort");
+		console.log("completed");
+		skip("Request complete, too late to abort");
+		
 		return;
 	}
 	request.abort();
 	
 	window.setTimeout(function () {
-		ok(!onLoadCalled, "onLoad not called");
-		ok(!onErrorCalled, "onError not called");
-		ok(onAbortCalled, "onAbort called");
+		ok(!onLoadCalled, "load not called");
+		ok(!onErrorCalled, "error (timeout) not called");
+		ok(onAbortCalled, "abort called");
 		start();
 	}, 3000);
 });
 
 
 
-test("glow.net.getResources general", function() {
+test("glow.net.getResources general // TO DO", function() {
 	expect(3);
 	stop(5000);
 	var timeoutCancelled = true;
@@ -351,7 +350,7 @@ test("glow.net.getResources general", function() {
 	//console.log(request.element());
 	
 	window.setTimeout(function () {
-		ok(timeoutCancelled, "onError not called")
+		ok(timeoutCancelled, "error (timeout) not called")
 		
 		start();
 	}, 3000);
