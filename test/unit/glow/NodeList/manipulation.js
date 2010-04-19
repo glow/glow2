@@ -1126,17 +1126,15 @@ test('glow.NodeList#insertBefore on detatched elements & non-elements', 13, func
 
 module('glow.NodeList#destroy', {setup:setup, teardown:teardown});
 
-test('glow.NodeList#destroy removes elements', 5, function() {
+test('glow.NodeList#destroy removes elements', 3, function() {
 	var myNodeList = new glow.NodeList( byId('elmWithMixedNodes').childNodes ),
-		returnNodeList;
+		returnVal;
 	
 	equal(typeof myNodeList.destroy, 'function', 'glow.NodeList#destroy is a function');
 	
-	returnNodeList = myNodeList.destroy();
+	returnVal = myNodeList.destroy();
 	
-	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
-	notEqual(returnNodeList, myNodeList, 'New nodelist returned');
-	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+	strictEqual(returnVal, undefined, 'undefined returned');
 	
 	strictEqual( byId('elmWithMixedNodes').childNodes.length, 0, 'Elements have been removed from document' );
 	
@@ -1150,77 +1148,28 @@ test('glow.NodeList#destroy removes elements', 5, function() {
 	});
 });
 
-test('glow.NodeList#destroy edge cases', 6, function() {
+test('glow.NodeList#destroy edge cases', 1, function() {
 	// empty nodelist
 	var myNodeList = new glow.NodeList(),
 		returnNodeList;
 	
 	returnNodeList = myNodeList.destroy();
 	
-	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
-	notEqual(returnNodeList, myNodeList, 'New nodelist returned');
-	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
-	
 	// elements with no parent
 	myNodeList = new glow.NodeList('<div></div>Hello<!--comment-->');
 	returnNodeList = myNodeList.destroy();
 	
-	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
-	notEqual(returnNodeList, myNodeList, 'New nodelist returned');
-	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+	ok(true, 'Completed without exceptions');
 });
 
-test('glow.NodeList#destroy removes events', 7, function() {
-	var shortLifeSpan = new glow.NodeList("#innerDiv1");
-	
-	var triggered = false;
-	function callback(event){				
-			triggered2 = true;
-			ok(event instanceof glow.events.Event, "event objected passed into listener");
-	}	
-	
-	// add an Event to it
-	glow.events.addListeners(
-			shortLifeSpan,
-			"customEvent",
-			callback
-		);
-	
-	// check that the event is properly attached
-	glow.events.fire(shortLifeSpan, 'customEvent');
-	
-	
-	returnNodeList = shortLifeSpan.destroy();
-	
-	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
-	notEqual(returnNodeList, shortLifeSpan, 'New nodelist returned');
-	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
-	
-	triggered = false;
-	
-	// check that the event is properly attached
-	glow.events.fire(shortLifeSpan, 'customEvent');
-	
-	ok(!triggered, "Event could not be fired after element destroyed");
-	
-	glow.events.fire(returnNodeList, 'customEvent');
-	
-	ok(!triggered, "Return node event could not be fired after element destroyed");
-
-});
-
-test('glow.NodeList#destroy removes data', 5, function() {
+test('glow.NodeList#destroy removes data', 2, function() {
 	var shortLifeSpan = new glow.NodeList("#innerDiv1");
 	
 	shortLifeSpan.data("colour", "green");	
 	
 	equal(shortLifeSpan.data("colour"), "green", 'Node has correct data attached before destroy');
 	
-	returnNodeList = shortLifeSpan.destroy();
-	
-	equal(returnNodeList.constructor, glow.NodeList, 'Nodelist returned');
-	notEqual(returnNodeList, shortLifeSpan, 'New nodelist returned');
-	strictEqual(returnNodeList.length, 0, 'New nodelist is empty');
+	shortLifeSpan.destroy();
 
 	ok(!shortLifeSpan.data("colour"), 'The node data has also been destroyed');
 	
