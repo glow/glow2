@@ -18,6 +18,7 @@ Glow.provide(function(glow) {
 	@param {glow.net.Request} [request] Original request object
 	*/
 	function Response(nativeResponse, timedOut, request) {
+		console.log("response")
 		//run Event constructor
 		//events.Event.call(this);
 			

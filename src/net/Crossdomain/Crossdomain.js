@@ -223,18 +223,9 @@ Glow.provide(function(glow) {
 			*/
 			CrossDomainRequestProto._addTimeout = function () {
 				var request = this;
-				this.timeout = setTimeout(function () {
-					var err;
-					if (request.opts.hasOwnProperty('onTimeout')) {
-						try {
-							request.opts.onTimeout();
-						}
-						catch (e) {
-							err = e;
-						}
-					}
+				this.timeout = setTimeout(function () {				
+					request.fire('error');					
 					request._cleanup();
-					if (err) throw new Error('error in xDomainPost onTimeout callback: ' + err);
 				}, (this.opts.timeout || 10) * 1000); /* 10 second default */
 			},
 
@@ -272,25 +263,11 @@ Glow.provide(function(glow) {
 			@description Callback for load event of blank page in same origin
 			*/
 			CrossDomainRequestProto._readHandler = function () {
-				var err;
-				console.log(this.opts.hasOwnProperty('onLoad'));
-				if (this.opts.hasOwnProperty('onLoad')) {
-					
-					try {
-						//this.opts.onLoad(this._window().name);
-						
-						this.fire('load', this._window().name);
-					}
-					catch (e) {
-						err = e;
-					}
-				}
-				console.log('here')
-				this._cleanup();
-				if (err)
-					throw new Error('error in xDomainPost onLoad callback: ' + err);
+				var response = new glow.net.CrossDomainResponse(this._window().name);
+				this.fire('load', response);			
+				this._cleanup();			
 			},
-
+			
 			/**
 			@name CrossDomainRequest#_cleanup
 			@private
@@ -314,10 +291,11 @@ Glow.provide(function(glow) {
 			}
 		
 	
-	
-		
-	
+			function CrossDomainResponse(textResponse) { this._text = textResponse; }
+			CrossDomainResponse.prototype.text = function() { return this._text; }
+			 CrossDomainResponse.prototype.json = function() { return makeItJson(this._text); }
 
 	
 	glow.net.CrossDomainRequest = CrossDomainRequest;
+	glow.net.CrossDomainResponse = CrossDomainResponse
 });
