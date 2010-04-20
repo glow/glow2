@@ -261,18 +261,18 @@ test('Multiple ?, multiple values, no from vals', 2, function() {
 	
 	var anim = glow.anim.Anim(0.5),
 		testPropLog = [],
-		obj = {testProp:'[hello 0px 80px world]'};
+		obj = {testProp:'[hello .5px 80px 0.5px -20.54px world]'};
 	
 	anim.target(obj).prop('testProp', {
-		template: '[hello ?px ?px world]',
-		to: [10, 100]
+		template: '[hello ?px ?px ?px ?px world]',
+		to: [10, 100, 78, 42]
 	});
 	
 	anim.on('frame', function() {
 		testPropLog.push( obj.testProp );
 	}).on('complete', function() {	
-		equal(testPropLog[0], '[hello 0px 80px world]', 'first value correct');
-		equal(testPropLog.slice(-1)[0], '[hello 10px 100px world]', 'last value correct');
+		equal(testPropLog[0], '[hello 0.5px 80px 0.5px -20.54px world]', 'first value correct');
+		equal(testPropLog.slice(-1)[0], '[hello 10px 100px 78px 42px world]', 'last value correct');
 		
 		start();
 	});

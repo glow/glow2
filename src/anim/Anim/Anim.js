@@ -107,15 +107,18 @@ Glow.provide(function(glow) {
 		@param {function|string} [opts.tween='easeBoth'] The way the value moves through time.
 			Strings are treated as properties of {@link glow.tweens}, although
 			a tween function can be provided.
-		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops)?
-			This will free any DOM references the animation may have created. Once
-			the animation is destroyed, it cannot be started again.
-		@param {boolean} [opts.loop=true] Loop the animation.
-			Looped animations will fire a 'complete' event on each loop.
+			
+			The default is an {@link glow.tweens.easeBoth easeBoth} tween.
+		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops)
+			Shortcut for {@link glow.anim.Anim#destroyOnComplete}.
+		@param {boolean} [opts.loop=false] Loop the animation.
+			Shortcut for setting {@link glow.anim.Anim#loop}.
 			
 		@example
-			// Using glow.anim.Anim to animate an SVG blur over 5 seconds
-			glow.anim.Anim(5).target(feGaussianBlurElm).prop('stdDeviation', {
+			// Using glow.anim.Anim to animate an SVG blur over 5 seconds, with an easeOut tween
+			glow.anim.Anim(5, {
+				tween: 'easeOut'
+			}).target(feGaussianBlurElm).prop('stdDeviation', {
 				from: 0,
 				to: 8
 			}).start();
@@ -188,9 +191,12 @@ Glow.provide(function(glow) {
 			return new Anim(duration, opts);
 		}
 		
-		opts = opts || {};
+		opts = glow.util.apply({
+			destroyOnComplete: true
+			// other options have falsey defaults
+		}, opts || {});
 		
-		this.destroyOnComplete = (opts.destroyOnComplete !== false);
+		this.destroyOnComplete = opts.destroyOnComplete;
 		
 		if (typeof opts.tween === 'string') {
 			this.tween = glow.tweens[opts.tween]();

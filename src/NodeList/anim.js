@@ -186,7 +186,7 @@ Glow.provide(function(glow) {
 				// deal with special values, scrollTop and scrollLeft which aren't really CSS
 				// This is the only animation that can work on the window object too
 				if ( propName.indexOf('scroll') === 0 && (nodeList[i].scrollTo || nodeList[i].scrollTop !== undefined) ) {
-					animateScroll(nodeList[i], anim, from, to, propName);
+					animateScroll(nodeList[i], anim, propertyIsArray ? property[0] : undefined, to, propName);
 					continue;
 				}
 				

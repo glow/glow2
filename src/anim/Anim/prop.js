@@ -9,10 +9,9 @@ Glow.provide(function(glow) {
 			
 			'targets' is used by the compiled function
 	*/
-	glow.anim.Anim.prototype._evalFunc = function evalFunc(str, targets) {
-		var func;
-		eval('func=function(){' + str + '}');
-		return func;
+	glow.anim.Anim.prototype._evalFunc = function evalFunc(s, targets) {
+		eval('var f=function(){' + s + '}');
+		return f;
 	}
 });
 
@@ -33,7 +32,22 @@ Glow.provide(function(glow) {
 		@description Set the target object for subsequent calls to {@link glow.anim.Anim#prop prop}
 		@param {Object} newTarget New target object
 			
-		@returns {glow.anim.Anim}
+		@returns this
+		
+		@example
+			// animate objToAnimate.value from 0 to 10 over 3 seconds
+			// and anotherObjToAnimate.data from -100 to 20 over 3 seconds
+		
+			var objToAnimate = {},
+				anotherObjToAnimate = {};
+		
+			new glow.anim.Anim(3).target(objToAnimate).prop('value', {
+				from: 0,
+				to: 10
+			}).target(anotherObjToAnimate).prop('data', {
+				from: 100,
+				to: -20
+			})
 	*/
 	AnimProto.target = function(newTarget) {
 		/*!debug*/
@@ -133,7 +147,7 @@ Glow.provide(function(glow) {
 		@description Builds the function for an animation object's frame listener
 			This function animatate object properties as instructed by #prop
 	*/
-	function buildFunction(anim, targetIndex, propName, opts) {
+	function buildFunction(anim, targetIndex, propName, conf) {
 		var targets = anim._targets,
 			// this is going to be our listener for the frame event
 			functionStr = anim._funcStr,
@@ -141,7 +155,7 @@ Glow.provide(function(glow) {
 		
 		functionStr += 'var target=targets[' + targetIndex + '];' +
 			'target["' + propName.replace(/"/g, '\\"') + '"]=' +
-			compileTemplate(opts.template, opts.from, opts.to, opts.max, opts.min, opts.round) +
+			compileTemplate(conf.template, conf.from, conf.to, conf.max, conf.min, conf.round) +
 			';'; 
 		
 		// retain new function string
@@ -161,19 +175,19 @@ Glow.provide(function(glow) {
 		@private
 		@description Determines the value(s) to animate from
 	*/
-	function getFromVals(propValue, opts) {
+	function getFromVals(propValue, conf) {
 		var results,
-			template = opts.template,
+			template = conf.template,
 			templateRegexStr;
 			
 		// this is easy if from values are already specified
 		// or there isn't a template to follow
-		if (opts.from !== undefined || !template) {
-			return opts.from || propValue;
+		if (conf.from !== undefined || !template) {
+			return conf.from || propValue;
 		}
 		
 		// turn the template into a regular expression, turning the ? into regex for detecting numbers
-		templateRegexStr = glow.util.escapeRegex(template).replace(/([^\\]|^)\\\?/g, '$1(\\-?\\d+(?:\\.\\d+)?)');
+		templateRegexStr = glow.util.escapeRegex(template).replace(/([^\\]|^)\\\?/g, '$1(\\-?(?:\\d+)?(?:\\.\\d+)?)');
 		results = new RegExp(templateRegexStr).exec(propValue);
 		if (!results) {
 			throw new Error('glow.anim.Anim#prop: Could not detect start values using template: ' + template);
@@ -195,8 +209,11 @@ Glow.provide(function(glow) {
 			Before calling this, set the target object via {@link glow.anim.Anim#target}.
 			
 		@param {string} propertyName Name of the property to animate.
-		@param {Object} opts Options object
-		@param {string} [opts.template] Template for complex values
+		@param {Object} conf Animation configuration object.
+			All configuration properties are optional with the exception of
+			'to', and 'from' in some cases (conditions below).
+		
+		@param {string} [conf.template] Template for complex values
 			Templates can be used for values which are strings rather than numbers.
 			
 			Question-marks are used within templates as placeholders for animated
@@ -210,7 +227,7 @@ Glow.provide(function(glow) {
 			A literal question-mark can be placed in a template by preceeding it
 			with a backslash.
 			
-		@param {number|number[]} [opts.from] Value(s) to animate from
+		@param {number|number[]} [conf.from] Value(s) to animate from
 			This can be a single number, or an array of numbers; one for each
 			question-mark in the template.
 			
@@ -218,11 +235,11 @@ Glow.provide(function(glow) {
 			will fail if the current value is undefined or is in a format
 			different to the template.
 			
-		@param {number|number[]} opts.to Value(s) to animate to
+		@param {number|number[]} conf.to Value(s) to animate to
 			This can be a single number, or an array of numbers; one for each
 			question-mark in the template.
 			
-		@param {boolean|boolean[]} [opts.round=false] Round values to the nearest whole number?
+		@param {boolean|boolean[]} [conf.round=false] Round values to the nearest whole number?
 			Use this to prevent the property being set to a fractional value.
 			
 			This can be a single boolean, or an array of booleans; one for each
@@ -230,7 +247,7 @@ Glow.provide(function(glow) {
 			where the rgb values need to be whole numbers, but the alpha value is
 			between 0-1.
 		
-		@param {number|number[]} [opts.min] Minimum value(s)
+		@param {number|number[]} [conf.min] Minimum value(s)
 			Use this to stop values animating beneath certain values.
 			
 			Eg, some tweens go beyond their end position, but heights cannot
@@ -239,7 +256,7 @@ Glow.provide(function(glow) {
 			This can be a single number, or an array of numbers; one for each
 			question-mark in the template. 'undefined' means no restriction.
 			
-		@param {number|number[]} [opts.max] Maximum value(s)
+		@param {number|number[]} [conf.max] Maximum value(s)
 			Use this to stop values animating beyond certain values.
 			
 			Eg, some tweens go beyond their end position, but colour values cannot
@@ -248,9 +265,45 @@ Glow.provide(function(glow) {
 			This can be a single number, or an array of numbers; one for each
 			question-mark in the template. 'undefined' means no restriction.
 			
-		@returns {glow.anim.Anim}
+		@returns this
+		
+		@example
+			// Using glow.anim.Anim to animate an SVG blur over 5 seconds, with an easeOut tween
+			glow.anim.Anim(5, {
+				tween: 'easeOut'
+			}).target(feGaussianBlurElm).prop('stdDeviation', {
+				from: 0,
+				to: 8
+			}).start();
+			
+		@example
+			// Animate a CSS property we don't support in glow.NodeList#anim
+			// This rotates a Mozilla CSS gradient
+			var styleObject = glow('#nav').prop('style');
+			
+			glow.anim.Anim(10).target(styleObject).prop('background', {
+				// the question-mark in the template is replaced with the animate value
+				template: '-moz-linear-gradient(?deg, red, blue)'
+				from: 0,
+				to: 360
+			}).start();
+			
+		@example
+			// Animate a CSS property we don't support in glow.NodeList#anim
+			// This changes the colour of a webkit drop shadow from yellow to blue
+			var styleObject = glow('#nav').prop('style');
+			
+			glow.anim.Anim(3).target(styleObject).prop('WebkitBoxShadow', {
+				// the ? in the template are replaced with the animate values
+				template: 'rgb(?, ?, ?) 0px 4px 14px'
+				// provide a 'from' and 'to' value for each question-mark
+				from: [255, 255, 0],
+				to: [0, 0, 255],
+				// round the value, colours can't be fractional
+				round: true
+			}).start();
 	*/
-	AnimProto.prop = function(propName, opts) {
+	AnimProto.prop = function(propName, conf) {
 		/*!debug*/
 			if (arguments.length !== 2) {
 				glow.debug.warn('[wrong count] glow.anim.Anim#prop expects 2 arguments, not ' + arguments.length + '.');
@@ -258,14 +311,17 @@ Glow.provide(function(glow) {
 			if (typeof propName !== 'string') {
 				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects string as "propName" argument, not ' + typeof propName + '.');
 			}
-			if (typeof opts !== 'object') {
-				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects object as "opts" argument, not ' + typeof opts + '.');
+			if (typeof conf !== 'object') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects object as "conf" argument, not ' + typeof conf + '.');
 			}
-			if (opts.to === undefined) {
-				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects number/array as "opts.to" argument, not ' + typeof opts.to + '.');
+			if (conf.to === undefined || (!conf.to.push && typeof conf.to !== 'number') ) {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects number/array as "conf.to" argument, not ' + typeof conf.to + '.');
 			}
-			if (opts.template !== undefined && typeof opts.template !== 'string') {
-				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects string as "opts.template" argument, not ' + typeof opts.template + '.');
+			if (conf.from !== undefined && (!conf.from.push && typeof conf.from !== 'number') ) {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects number/array as "conf.from" argument, not ' + typeof conf.from + '.');
+			}
+			if (conf.template !== undefined && typeof conf.template !== 'string') {
+				glow.debug.warn('[wrong type] glow.anim.Anim#prop expects string as "conf.template" argument, not ' + typeof conf.template + '.');
 			}
 			if (this._targets.length === 0) {
 				glow.debug.warn('[unmet prerequisite] glow.anim.Anim#target must be called before glow.anim.Anim#prop');
@@ -275,13 +331,13 @@ Glow.provide(function(glow) {
 		var targetIndex = this._targets.length - 1,
 			target = this._targets[targetIndex];
 		
-		// default opts
-		opts = glow.util.apply({
-			from: getFromVals(target[propName], opts),
+		// default conf
+		conf = glow.util.apply({
+			from: getFromVals(target[propName], conf),
 			round: false
-		}, opts);
+		}, conf);
 		
-		buildFunction(this, targetIndex, propName, opts);
+		buildFunction(this, targetIndex, propName, conf);
 		
 		return this;
 	};
