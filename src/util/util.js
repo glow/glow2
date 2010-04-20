@@ -63,16 +63,44 @@ Glow.provide(function(glow) {
 		@returns {string} The data type of the object.
 	*/
 	function _getType(object) {
-		if (typeof object === 'object') {
-			if (object === null) { return 'null'; }
-			if (Object.prototype.toString.call(object) === '[object Array]') { // see: http://perfectionkills.com/instanceof-considered-harmful-or-how-to-write-a-robust-isarray/
-				return 'array';
-			}
+		var typeOfObject = typeof object,
+			constructorStr;
+		
+		if (object === null) {
+			return 'null';
 		}
 		
-		return typeof object;
+		if (typeOfObject === 'object') {
+			if (object.constructor.name) {
+				return object.constructor.name;
+			}
+			else {
+				constructorStr = object.constructor.toString();
+				return constructorStr.slice( constructorStr.indexOf('function ') + 9, constructorStr.indexOf('(') );
+			}
+		}
+		else {
+			return typeOfObject;
+		}
 	}
 
+	/**
+		@name glow.util.getType
+		@function
+		@description Get the native type of constructor name of an object.
+			This allows you to safely get the type of an object, even
+			if it came from another frame.
+			
+		@param {Object} object Object to get the type of.
+			
+		@example
+			glow.util.getType('Hello'); // 'string'
+			glow.util.getType( {} ); // 'Object'
+			glow.util.getType(12); // 'number'
+			glow.util.getType( [] ); // 'Array'
+			glow.util.getType( glow('#whatever') ); // 'NodeList'
+	*/
+	util.getType = _getType;
 	
 	/**
 		@name glow.util.apply
@@ -214,40 +242,39 @@ Glow.provide(function(glow) {
 			// will return "foo=Foo&bar=Bar%201&bar=Bar2"
 	*/
 	util.encodeUrl = function (object) {
-		var objectType = _getType(object);
-		var paramsList = [];
-		var listLength = 0;
-
-		if (objectType !== 'object') {
-			throw new Error('glow.util.encodeUrl: cannot encode item');
-		}
-		else {
-			for (var key in object) {
-				switch(_getType(object[key])) {
-					case 'function':
-					case 'object':
-						throw new Error('glow.util.encodeUrl: cannot encode item');
-						break;
-					case 'array':
-						for(var i = 0, l = object[key].length; i < l; i++) {
-							switch(_getType(object[key])[i]) {
-								case 'function':
-								case 'object':
-								case 'array':
-									throw new Error('glow.util.encodeUrl: cannot encode item');
-									break;
-								default:
-									paramsList[listLength++] = key + '=' + encodeURIComponent(object[key][i]);
-							}
+		var type = _getType(object),
+			paramsList = [],
+			listLength = 0;
+		
+		/*!debug*/
+			if (typeof object !== 'object') {
+				throw new Error('glow.util.encodeUrl: cannot encode item');
+			}
+		/*gubed!*/
+		
+		for (var key in object) {
+			type = _getType( object[key] );
+			/*!debug*/
+				if (type !== 'Array' || type !== 'string') {
+					glow.debug.warn('[wrong type] glow.util.encodeUrl expected Array or String value for "' + key + '", not ' + type + '.');
+				}
+			/*gubed!*/
+			if (type === 'Array') {
+				for(var i = 0, l = object[key].length; i < l; i++) {
+					/*!debug*/
+						if (_getType(object[key])[i] !== 'string') {
+							glow.debug.warn('[wrong type] glow.util.encodeUrl expected string value for "' + key + '" value at index ' + i + ', not ' + _getType(object[key])[i] + '.');
 						}
-						break;
-					default:
-						paramsList[listLength++] = key + '=' + encodeURIComponent(object[key]);
+					/*gubed!*/
+					paramsList[listLength++] = key + '=' + encodeURIComponent(object[key][i]);
 				}
 			}
-
-			return paramsList.join('&');
+			else { // assume string
+				paramsList[listLength++] = key + '=' + encodeURIComponent(object[key]);
+			}
 		}
+
+		return paramsList.join('&');
 	};
 	
 	/**
