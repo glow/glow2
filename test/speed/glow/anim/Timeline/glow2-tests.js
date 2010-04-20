@@ -6,7 +6,7 @@ woosh.addTests('glow2-src', {
 			window.anim2 = new glow.anim.Anim(2);
 			window.anim3 = new glow.anim.Anim(3);
 			window.anim4 = new glow.anim.Anim(1);
-			window.timeline = glow.anim.Timeline().track(anim1, anim2).track(anim3, anim4);
+			window.timeline = new glow.anim.Timeline().track(anim1, anim2).track(anim3, anim4);
 		}
 	},
 	'Creating 2 track timeline': new woosh.TimeTest(1, function() {

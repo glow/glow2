@@ -3,7 +3,7 @@ module('reverse');
 test('reverse', 6, function() {
 	stop(2000);
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		valueLog = [];
 	
 	equal(typeof anim.reverse, 'function', 'Reverse is function');
@@ -29,7 +29,7 @@ test('reverse', 6, function() {
 test('reverse while playing', 3, function() {
 	stop(2000);
 
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		valueLog = [],
 		reversedVal;
 	
@@ -54,7 +54,7 @@ module('pingPong');
 test('pingPong', 6, function() {
 	stop(2000);
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		valueLog = [],
 		startTime = new Date;
 	

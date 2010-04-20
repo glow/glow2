@@ -1,6 +1,6 @@
 module('glow.anim.Timeline');
 
-test('Creating Timeline instances', 9, function() {
+test('Creating Timeline instances', 8, function() {
 	equal(typeof glow.anim.Timeline, 'function', 'glow.anim.Timeline constructor');
 	
 	var timeline = new glow.anim.Timeline();
@@ -11,11 +11,11 @@ test('Creating Timeline instances', 9, function() {
 	strictEqual(timeline.duration, 0, 'duration set');
 	strictEqual(timeline.destroyOnComplete, true, 'destroyOnComplete set');
 	
-	var timeline2 = glow.anim.Timeline();
-	
-	equal(timeline2 && timeline2.constructor, glow.anim.Timeline, 'Constructor creates instance without new');
-	
-	var timeline3 = glow.anim.Timeline({
+
+
+
+
+	var timeline3 = new glow.anim.Timeline({
 		loop: true,
 		destroyOnComplete: false
 	});
@@ -25,9 +25,9 @@ test('Creating Timeline instances', 9, function() {
 });
 
 test('Adding animations to a timeline', 6, function() {
-	var anim1 = glow.anim.Anim(3).start(),
-		anim2 = glow.anim.Anim(2),
-		timeline = glow.anim.Timeline(),
+	var anim1 = new glow.anim.Anim(3).start(),
+		anim2 = new glow.anim.Anim(2),
+		timeline = new glow.anim.Timeline(),
 		returnVal;
 		
 	equal(typeof timeline.track, 'function', '#track correct type');
@@ -62,9 +62,9 @@ test('Adding animations to a timeline', 6, function() {
 test('event sequence - Adding animations to a timeline', 15, function() {
 	stop(5000);
 	
-	var anim1 = glow.anim.Anim(0.25),
-		anim2 = glow.anim.Anim(0.5),
-		timeline = glow.anim.Timeline().track(anim1, anim2),
+	var anim1 = new glow.anim.Anim(0.25),
+		anim2 = new glow.anim.Anim(0.5),
+		timeline = new glow.anim.Timeline().track(anim1, anim2),
 		returnVal,
 		animEventLog = [],
 		timelineEventLog = [],
@@ -155,12 +155,12 @@ test('event sequence - Adding animations to a timeline', 15, function() {
 test('multiple tracks - Adding animations to a timeline', 9, function() {
 	stop(5000);
 	
-	var anim1 = glow.anim.Anim(0.25),
-		anim2 = glow.anim.Anim(0.5),
+	var anim1 = new glow.anim.Anim(0.25),
+		anim2 = new glow.anim.Anim(0.5),
 		anim1PositionLog = [],
 		anim2PositionLog = [],
 		anim1Playing = true,
-		timeline = glow.anim.Timeline().track(anim1).track(anim2);
+		timeline = new glow.anim.Timeline().track(anim1).track(anim2);
 		
 	equal(timeline.duration, 0.5, 'Duration updated');
 	
@@ -195,7 +195,7 @@ test('multiple tracks - Adding animations to a timeline', 9, function() {
 test('Adding numbers and functions to timeline', 3, function() {
 	stop();
 	
-	var anim1 = glow.anim.Anim(0.5),
+	var anim1 = new glow.anim.Anim(0.5),
 		timeline,
 		startTime,
 		anim1PositionLog = [],
@@ -215,7 +215,7 @@ test('Adding numbers and functions to timeline', 3, function() {
 		anim1PositionLog.push( this.position );
 	});
 	
-	timeline = glow.anim.Timeline().track(0.25, callback, anim1).on('complete', function() {
+	timeline = new glow.anim.Timeline().track(0.25, callback, anim1).on('complete', function() {
 		ok(anim1PositionLog[0] >= 0.25, 'anim1 starts 0.25 in: ' + anim1PositionLog[0]);
 		start();
 	});
@@ -227,8 +227,8 @@ test('Adding numbers and functions to timeline', 3, function() {
 test('stopping & resuming', 3, function() {
 	stop();
 	
-	var anim1 = glow.anim.Anim(0.25),
-		anim2 = glow.anim.Anim(0.25),
+	var anim1 = new glow.anim.Anim(0.25),
+		anim2 = new glow.anim.Anim(0.25),
 		stoppedAndResumed = false,
 		anim1Log = [],
 		anim2Log = [],
@@ -268,7 +268,7 @@ test('stopping & resuming', 3, function() {
 		anim2Log.push('complete');
 	});
 	
-	timeline = glow.anim.Timeline().track(anim1, anim2).on('start', function() {
+	timeline = new glow.anim.Timeline().track(anim1, anim2).on('start', function() {
 		timelineLog.push('start');
 	}).on('stop', function() {
 		timelineLog.push('stop');
@@ -313,15 +313,15 @@ test('stopping & resuming', 3, function() {
 test('Timelines in timelines', 4, function() {
 	stop();
 	
-	var anim1 = glow.anim.Anim(0.25),
-		anim2 = glow.anim.Anim(0.25),
-		anim3 = glow.anim.Anim(0.25),
+	var anim1 = new glow.anim.Anim(0.25),
+		anim2 = new glow.anim.Anim(0.25),
+		anim3 = new glow.anim.Anim(0.25),
 		anim1Complete,
 		anim2Complete,
 		anim3Complete,
-		timeline1 = glow.anim.Timeline().track(anim2, anim3),
+		timeline1 = new glow.anim.Timeline().track(anim2, anim3),
 		timeline1Complete,
-		timeline2 = glow.anim.Timeline().track(anim1, timeline1);
+		timeline2 = new glow.anim.Timeline().track(anim1, timeline1);
 		
 	anim1.on('complete', function() {
 		anim1Complete = true;
@@ -350,9 +350,9 @@ test('Timelines in timelines', 4, function() {
 test('Event cancelling', 1, function() {
 	stop(2000);
 	
-	var anim1 = glow.anim.Anim(0.25),
-		anim2 = glow.anim.Anim(0.25),
-		timeline1 = glow.anim.Timeline().track(anim1, anim2),
+	var anim1 = new glow.anim.Anim(0.25),
+		anim2 = new glow.anim.Anim(0.25),
+		timeline1 = new glow.anim.Timeline().track(anim1, anim2),
 		cancelStart = true,
 		stopped = false,
 		eventLog = [];
@@ -405,8 +405,8 @@ test('event cancelling (complete)', 2, function() {
 		lastPos = 0.5,
 		correctPositions = true,
 		eventLog = [],
-		anim = glow.anim.Anim(0.5),
-		anim = glow.anim.Timeline().track(anim).on('start', function() {
+		anim = new glow.anim.Anim(0.5),
+		timeline = new glow.anim.Timeline().track(anim).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
 			if (eventLog.slice(-1)[0] !== 'frame') {
@@ -450,8 +450,8 @@ test('Looping', 2, function() {
 		lastPos = 0.5,
 		correctPositions = true,
 		eventLog = [],
-		anim = glow.anim.Anim(0.5),
-		timeline = glow.anim.Timeline({loop:true}).track(anim).on('start', function() {
+		anim = new glow.anim.Anim(0.5),
+		timeline = new glow.anim.Timeline({loop:true}).track(anim).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
 			if (eventLog.slice(-1)[0] !== 'frame') {
@@ -490,13 +490,13 @@ test('Looping', 2, function() {
 });
 
 test('goTo', 15, function() {
-	var anim1 = glow.anim.Anim(0.25, {tween: 'linear'}),
-		anim2 = glow.anim.Anim(0.25, {tween: 'linear'}),
-		anim3 = glow.anim.Anim(0.25, {tween: 'linear'}),
+	var anim1 = new glow.anim.Anim(0.25, {tween: 'linear'}),
+		anim2 = new glow.anim.Anim(0.25, {tween: 'linear'}),
+		anim3 = new glow.anim.Anim(0.25, {tween: 'linear'}),
 		anim1Val = 0,
 		anim2Val = 0,
 		anim3Val = 0,
-		timeline = glow.anim.Timeline().track(anim1, anim2, anim3);
+		timeline = new glow.anim.Timeline().track(anim1, anim2, anim3);
 		
 	anim1.on('frame', function() {
 		anim1Val = this.value;
@@ -545,8 +545,8 @@ test('destroy', 1, function() {
 	stop();
 	
 	var eventLog = [],
-		anim = glow.anim.Anim(0.5),
-		timeline = glow.anim.Timeline().track(anim).on('start', function() {
+		anim = new glow.anim.Anim(0.5),
+		timeline = new glow.anim.Timeline().track(anim).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
 			if (eventLog.slice(-1)[0] !== 'frame') {

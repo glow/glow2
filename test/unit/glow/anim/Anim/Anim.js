@@ -1,6 +1,6 @@
 module('glow.anim.Anim');
 
-test('Creating animation instances', 12, function() {
+test('Creating animation instances', 11, function() {
 	equal(typeof glow.anim, 'object', 'glow.anim namespace');
 	equal(typeof glow.anim.Anim, 'function', 'glow.anim.Anim constructor');
 	
@@ -14,12 +14,12 @@ test('Creating animation instances', 12, function() {
 	strictEqual(anim.value, 0, 'value set');
 	strictEqual(anim.duration, 3, 'duration set');
 	
-	var anim2 = glow.anim.Anim(3);
-	
-	equal(anim2.constructor, glow.anim.Anim, 'Constructor creates instance without new');
+
+
+
 	
 	var customTween = function(t) { return t; };
-	var anim3 = glow.anim.Anim(5, {
+	var anim3 = new glow.anim.Anim(5, {
 		loop: true,
 		tween: customTween
 	});
@@ -38,7 +38,7 @@ test('Basic animation event & prop lifecycle', 19, function() {
 		valuesCorrect = true,
 		startDate = new Date;
 	
-	var anim = glow.anim.Anim(2).on('start', function() {
+	var anim = new glow.anim.Anim(2).on('start', function() {
 		eventLog.push('start');
 		strictEqual(anim.position, 0, 'Position set');
 		strictEqual(anim.playing, false, 'playing set');
@@ -103,8 +103,8 @@ test('Basic animation event & prop lifecycle', 19, function() {
 test('2 animations running at once', 9, function() {
 	stop();
 	
-	var anim1 = glow.anim.Anim(1),
-		anim2 = glow.anim.Anim(2),
+	var anim1 = new glow.anim.Anim(1),
+		anim2 = new glow.anim.Anim(2),
 		eventLog = [],
 		anim1ValueLog = [],
 		anim2ValueLog = [],
@@ -188,7 +188,7 @@ test('animation stopping and resuming', 5, function() {
 		positionLog = [],
 		firstHalf = true,
 		returnVal,
-		anim = glow.anim.Anim(1).on('start', function() {
+		anim = new glow.anim.Anim(1).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
 			if (eventLog.slice(-1)[0] !== 'frame') {
@@ -233,7 +233,7 @@ test('event cancelling (start & stop)', function() {
 	var cancelStart = true,
 		stopped = false,
 		eventLog = [],
-		anim = glow.anim.Anim(0.5).on('start', function() {
+		anim = new glow.anim.Anim(0.5).on('start', function() {
 			eventLog.push('start');
 			// cancel the start event once
 			var r = !cancelStart;
@@ -281,7 +281,7 @@ test('event cancelling (complete)', 2, function() {
 		lastPos = 0.5,
 		correctPositions = true,
 		eventLog = [],
-		anim = glow.anim.Anim(0.5).on('start', function() {
+		anim = new glow.anim.Anim(0.5).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
 			if (eventLog.slice(-1)[0] !== 'frame') {
@@ -321,7 +321,7 @@ test('starting from position', 1, function() {
 	stop();
 	
 	var positionLog = [],
-		anim = glow.anim.Anim(0.5).on('frame', function() {
+		anim = new glow.anim.Anim(0.5).on('frame', function() {
 			positionLog.push(this.position);
 		}).on('complete', function() {
 			equal(Math.min.apply(null, positionLog), 0.3, 'Started 0.3 in');
@@ -333,7 +333,7 @@ test('goTo', 2, function() {
 	stop();
 	
 	var positionLog = [],
-		anim = glow.anim.Anim(0.5).on('frame', function() {
+		anim = new glow.anim.Anim(0.5).on('frame', function() {
 			positionLog.push(this.position);
 		}).on('complete', function() {
 			equal(Math.min.apply(null, positionLog), 0.3, 'Started 0.3 in');
@@ -350,7 +350,7 @@ test('destroy', 1, function() {
 	stop();
 	
 	var eventLog = [],
-		anim = glow.anim.Anim(0.5).on('start', function() {
+		anim = new glow.anim.Anim(0.5).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
 			if (eventLog.slice(-1)[0] !== 'frame') {
@@ -382,7 +382,7 @@ test('Looping', 2, function() {
 		lastPos = 0.5,
 		correctPositions = true,
 		eventLog = [],
-		anim = glow.anim.Anim(0.5, {loop:true}).on('start', function() {
+		anim = new glow.anim.Anim(0.5, {loop:true}).on('start', function() {
 			eventLog.push('start');
 		}).on('frame', function() {
 			if (eventLog.slice(-1)[0] !== 'frame') {
@@ -429,7 +429,7 @@ test('Tweening', 2, function() {
 	}
 	
 	var valueLog = [],
-		anim = glow.anim.Anim(0.5, {tween:customTween}).on('frame', function() {
+		anim = new glow.anim.Anim(0.5, {tween:customTween}).on('frame', function() {
 			valueLog.push( String(this.value) );
 		}).on('complete', function() {
 			var expectedValueLog = new Array(valueLog.length + 1).join('0.5,').slice(0, -1).split(',');
@@ -443,7 +443,7 @@ test('String tween', 1, function() {
 	stop(5000);
 	
 	var valueLog = [],
-		anim = glow.anim.Anim(0.5, {tween:'elasticOut'}).on('frame', function() {
+		anim = new glow.anim.Anim(0.5, {tween:'elasticOut'}).on('frame', function() {
 			valueLog.push(this.value);
 		}).on('complete', function() {
 			// the elasticOut tween's values go beyond 1, we use that to test if that tween was used

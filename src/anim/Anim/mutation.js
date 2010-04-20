@@ -49,7 +49,7 @@ Glow.provide(function(glow) {
 			This is handy for animations that do something on (for example)
 			mouseenter, then need to animate back on mouseleave
 		
-		@returns {glow.anim.Anim}
+		@returns this
 		
 		@example
 			// change a nav item's background colour from white to yellow
@@ -107,7 +107,7 @@ Glow.provide(function(glow) {
 		@description Alters the animation so it plays forward, then in reverse
 			The duration of the animation is doubled.
 		
-		@returns {glow.anim.Anim}
+		@returns this
 		
 		@example
 			// Fades #myDiv to red then back to its original colour

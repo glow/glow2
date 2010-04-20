@@ -483,7 +483,7 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong count] glow.NodeList#currentAnim expects 0 arguments, not ' + arguments.length + '.');
 			}
 		/*gubed!*/
-		return this.data('glow_currentAnim') || glow.anim.Anim(0);
+		return this.data('glow_currentAnim') || new glow.anim.Anim(0);
 	}
 	
 	/**
@@ -504,7 +504,7 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong count] glow.NodeList#lastQueuedAnim expects 0 arguments, not ' + arguments.length + '.');
 			}
 		/*gubed!*/
-		return this.data('glow_lastQueuedAnim') || glow.anim.Anim(0);
+		return this.data('glow_lastQueuedAnim') || new glow.anim.Anim(0);
 	}
 	
 	/**

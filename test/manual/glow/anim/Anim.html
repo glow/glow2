@@ -157,7 +157,7 @@
 	<script type="text/javascript" class="showSrc">
 		glow('#mexWave').html( new Array(101).join('<div></div>') );
 		
-		var animTimeline = glow.anim.Timeline({
+		var animTimeline = new glow.anim.Timeline({
 			loop: true
 		});
 		
@@ -240,7 +240,7 @@
 					currentAnim.reverse().start();
 				}
 				else {
-					anim = glow.anim.Anim(0.35, {
+					anim = new glow.anim.Anim(0.35, {
 						destroyOnComplete: false,
 						tween: 'easeOut'
 					});
@@ -289,7 +289,7 @@
 					currentAnim.reverse().start();
 				}
 				else {
-					anim = glow.anim.Anim(0.5, {
+					anim = new glow.anim.Anim(0.5, {
 						destroyOnComplete: false,
 						tween: glow.tweens.overshootOut(5)
 					});
@@ -331,7 +331,7 @@
 				barSize = 50;
 			
 			glow('#beginAscii').on('click', function() {
-				glow.anim.Anim(5).on('frame', function() {
+				new glow.anim.Anim(5).on('frame', function() {
 					var onChars = Math.floor(this.value * barSize),
 						offChars = barSize - onChars,
 						// add the | and - chars

@@ -1,6 +1,6 @@
 module('glow.ui.Focusable - no children');
 
-test('construction & basic destruction', 10, function() {
+test('construction & basic destruction', 8, function() {
 	var elm = glow('#elementToTest1');
 	
 	equal(typeof glow.ui.Focusable, 'function', 'glow.ui.Focusable exists');
@@ -15,10 +15,10 @@ test('construction & basic destruction', 10, function() {
 	equal(typeof focusable.destroy, 'function', '#destroy exists');
 	focusable.destroy();
 	
-	focusable = glow.ui.Focusable(elm);
-	equal(focusable.constructor, glow.ui.Focusable, 'Has correct constructor without new');
-	ok(focusable.container.eq(elm), 'container set');
-	focusable.destroy();
+
+
+
+
 	
 	focusable = elm.focusable();
 	equal(focusable.constructor, glow.ui.Focusable, 'Has correct constructor via NodeList');

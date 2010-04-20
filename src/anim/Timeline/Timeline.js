@@ -74,24 +74,24 @@ Glow.provide(function(glow) {
 			
 		@example
 			// play 3 animations one after another
-			glow.anim.Timeline().track(anim1, anim2, anim3).start();
+			new glow.anim.Timeline().track(anim1, anim2, anim3).start();
 			
 		@example
 			// play 2 animations at the same time
-			glow.anim.Timeline()
+			new glow.anim.Timeline()
 				.track(anim1)
 				.track(anim2)
 				.start();
 			
 		@example
 			// play 2 animations with a second pause in between
-			glow.anim.Timeline().track(anim1, 1, anim2).start();
+			new glow.anim.Timeline().track(anim1, 1, anim2).start();
 			
 		@example
 			// Make a 'mexican wave'
 			// #waveContainer contains 100 divs absolutely positioned next to each other
 			
-			var animTimeline = glow.anim.Timeline({
+			var animTimeline = new glow.anim.Timeline({
 				loop: true
 			});
 			
@@ -120,9 +120,7 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong type] glow.anim.Iimeline expects object as "opts" argument, not ' + typeof opts + '.');
 			}
 		/*gubed!*/
-		if (this === glow.anim) {
-			return new Timeline(opts);
-		}
+		
 		opts = opts || {};
 		this.destroyOnComplete = (opts.destroyOnComplete !== false);
 		this.loop = !!opts.loop;
@@ -236,7 +234,7 @@ Glow.provide(function(glow) {
 			By default, this will be the last position of the animation (if it was stopped)
 			or 0.
 		
-		@returns {glow.anim.Timeline}
+		@returns this
 	*/
 	TimelineProto.start = function() {
 		this._anim.start();
@@ -248,7 +246,7 @@ Glow.provide(function(glow) {
 		@function
 		@description Stops the animation playing.
 			Stopped animations can be resumed by calling {@link glow.anim.Timeline#start start}.
-		@returns {glow.anim.Timeline}
+		@returns this
 	*/
 	TimelineProto.stop = function() {
 		/*!debug*/
@@ -281,7 +279,7 @@ Glow.provide(function(glow) {
 		@function
 		@description Destroys all animations in the timeline & detaches references to DOM nodes
 			This frees memory & is called automatically when the animation completes
-		@returns {glow.anim.Timeline}
+		@returns undefined
 	*/
 	TimelineProto.destroy = function() {
 		/*!debug*/
@@ -308,7 +306,7 @@ Glow.provide(function(glow) {
 		// remove listeners
 		glow.events.removeAllListeners( [this] );
 		this._tracks = undefined;
-		return this;
+		
 	};
 
 	/**
@@ -480,7 +478,7 @@ Glow.provide(function(glow) {
 			Functions will be called. If the function takes 0.5 seconds to call, the next
 			animation will start 0.5 seconds in, keeping everything in sync.
 			
-		@returns {glow.anim.Timeline}
+		@returns this
 	*/
 	TimelineProto.track = function() {
 		/*!debug*/

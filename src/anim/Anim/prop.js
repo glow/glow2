@@ -269,7 +269,7 @@ Glow.provide(function(glow) {
 		
 		@example
 			// Using glow.anim.Anim to animate an SVG blur over 5 seconds, with an easeOut tween
-			glow.anim.Anim(5, {
+			new glow.anim.Anim(5, {
 				tween: 'easeOut'
 			}).target(feGaussianBlurElm).prop('stdDeviation', {
 				from: 0,
@@ -281,7 +281,7 @@ Glow.provide(function(glow) {
 			// This rotates a Mozilla CSS gradient
 			var styleObject = glow('#nav').prop('style');
 			
-			glow.anim.Anim(10).target(styleObject).prop('background', {
+			new glow.anim.Anim(10).target(styleObject).prop('background', {
 				// the question-mark in the template is replaced with the animate value
 				template: '-moz-linear-gradient(?deg, red, blue)'
 				from: 0,
@@ -293,7 +293,7 @@ Glow.provide(function(glow) {
 			// This changes the colour of a webkit drop shadow from yellow to blue
 			var styleObject = glow('#nav').prop('style');
 			
-			glow.anim.Anim(3).target(styleObject).prop('WebkitBoxShadow', {
+			new glow.anim.Anim(3).target(styleObject).prop('WebkitBoxShadow', {
 				// the ? in the template are replaced with the animate values
 				template: 'rgb(?, ?, ?) 0px 4px 14px'
 				// provide a 'from' and 'to' value for each question-mark

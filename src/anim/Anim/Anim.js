@@ -116,7 +116,7 @@ Glow.provide(function(glow) {
 			
 		@example
 			// Using glow.anim.Anim to animate an SVG blur over 5 seconds, with an easeOut tween
-			glow.anim.Anim(5, {
+			new glow.anim.Anim(5, {
 				tween: 'easeOut'
 			}).target(feGaussianBlurElm).prop('stdDeviation', {
 				from: 0,
@@ -128,7 +128,7 @@ Glow.provide(function(glow) {
 			// This rotates a Mozilla CSS gradient
 			var styleObject = glow('#nav').prop('style');
 			
-			glow.anim.Anim(10).target(styleObject).prop('background', {
+			new glow.anim.Anim(10).target(styleObject).prop('background', {
 				// the question-mark in the template is replaced with the animate value
 				template: '-moz-linear-gradient(?deg, red, blue)'
 				from: 0,
@@ -140,7 +140,7 @@ Glow.provide(function(glow) {
 			// This changes the colour of a webkit drop shadow from yellow to blue
 			var styleObject = glow('#nav').prop('style');
 			
-			glow.anim.Anim(3).target(styleObject).prop('WebkitBoxShadow', {
+			new glow.anim.Anim(3).target(styleObject).prop('WebkitBoxShadow', {
 				// the ? in the template are replaced with the animate values
 				template: 'rgb(?, ?, ?) 0px 4px 14px'
 				// provide a 'from' and 'to' value for each question-mark
@@ -159,7 +159,7 @@ Glow.provide(function(glow) {
 				// our progress bar is 20 chars
 				barSize = 20;
 				
-			glow.anim.Anim(2).on('frame', function() {
+			new glow.anim.Anim(2).on('frame', function() {
 				var onChars = Math.floor(this.value * barSize),
 					offChars = barSize - onChars,
 					// add the + and - chars
@@ -186,10 +186,6 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong value] glow.anim.Anim - tween ' + opts.tween + ' does not exist');
 			}
 		/*gubed!*/
-		
-		if (this === glow.anim) {
-			return new Anim(duration, opts);
-		}
 		
 		opts = glow.util.apply({
 			destroyOnComplete: true
@@ -304,7 +300,7 @@ Glow.provide(function(glow) {
 			By default, this will be the last position of the animation (if it was stopped)
 			or 0.
 		
-		@returns {glow.anim.Anim}
+		@returns this
 	*/
 	AnimProto.start = function(position) {
 		/*!debug*/
@@ -332,7 +328,7 @@ Glow.provide(function(glow) {
 			Stopped animations can be resumed by calling {@link glow.anim.Anim#start start}.
 			
 			If the animation isn't playing, this has no effect.
-		@returns {glow.anim.Anim}
+		@returns this
 	*/
 	AnimProto.stop = function() {
 		/*!debug*/
@@ -353,7 +349,7 @@ Glow.provide(function(glow) {
 		@description Destroys the animation & detaches references to objects
 			This frees memory & is called automatically when an animation
 			completes.
-		@returns {glow.anim.Anim}
+		@returns undefined
 	*/
 	AnimProto.destroy = function() {
 		/*!debug*/
@@ -363,7 +359,6 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		glow.events.removeAllListeners( [this] );
 		this._targets = undefined;
-		return this;
 	};
 	
 	/**
@@ -378,7 +373,7 @@ Glow.provide(function(glow) {
 			// Otherwise, it will simply move to that position.
 			myAnim.goTo(2.5);
 			
-		@returns {glow.anim.Anim}
+		@returns this
 	*/
 	AnimProto.goTo = function(position) {
 		/*!debug*/

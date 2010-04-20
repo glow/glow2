@@ -215,11 +215,6 @@ Glow.provide(function(glow) {
 		
 		var keyboardNav;
 		
-		// catch if the user hasn't used 'new'
-		if (this === glow.ui) {
-			return new Focusable(container, opts);
-		}
-		
 		opts = this._opts = glow.util.apply({
 			children: '',
 			keyboardNav: 'arrows',

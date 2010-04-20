@@ -1,7 +1,7 @@
 module('glow.anim.Anim#prop');
 
 test('target setting', 5, function() {
-	var anim = glow.anim.Anim(1),
+	var anim = new glow.anim.Anim(1),
 		returnVal,
 		obj = {},
 		obj2 = {};
@@ -22,7 +22,7 @@ test('target setting', 5, function() {
 test('Single val prop anim (no template)', 5, function() {
 	stop();
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		returnVal,
 		testPropLog = [],
 		obj = {};
@@ -51,7 +51,7 @@ test('Single val prop anim (no template)', 5, function() {
 test('Single val prop anim with no from', 2, function() {
 	stop();
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {testProp: 110};
 	
@@ -73,7 +73,7 @@ test('Single val prop anim with no from', 2, function() {
 test('Single val anim 2 targets', 6, function() {
 	stop();
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		obj1TestPropLog = [],
 		obj2TestPropLog = [],
 		obj1 = {},
@@ -109,7 +109,7 @@ test('Single val prop anim (no template) range & round=true', 3, function() {
 	stop();
 	
 	// elasticOut will try and go below zero
-	var anim = glow.anim.Anim(0.5, {tween:'elasticOut'}),
+	var anim = new glow.anim.Anim(0.5, {tween:'elasticOut'}),
 		testPropLog = [],
 		obj = {};
 	
@@ -136,7 +136,7 @@ test('Single val prop anim (no template) range & round=true', 3, function() {
 test('Single val with template', 3, function() {
 	stop();
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {};
 	
@@ -172,7 +172,7 @@ test('Single val with template', 3, function() {
 test('Multiple ?, single value & escaping ?', 2, function() {
 	stop();
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {};
 	
@@ -200,7 +200,7 @@ test('Multiple ?, single value & escaping ?', 2, function() {
 test('Multiple ?, multiple values', 2, function() {
 	stop();
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {};
 	
@@ -226,7 +226,7 @@ test('Multiple ?, range & round', 3, function() {
 	stop();
 	
 	// elasticOut will try and go below zero
-	var anim = glow.anim.Anim(0.5, {tween:'elasticOut'}),
+	var anim = new glow.anim.Anim(0.5, {tween:'elasticOut'}),
 		testPropLog = [],
 		testPropLogStr,
 		obj = {};
@@ -259,7 +259,7 @@ test('Multiple ?, range & round', 3, function() {
 test('Multiple ?, multiple values, no from vals', 2, function() {
 	stop();
 	
-	var anim = glow.anim.Anim(0.5),
+	var anim = new glow.anim.Anim(0.5),
 		testPropLog = [],
 		obj = {testProp:'[hello .5px 80px 0.5px -20.54px world]'};
 	

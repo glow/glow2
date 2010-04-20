@@ -2,7 +2,7 @@
 woosh.addTests('glow2-src', {
 	'$preTest': function(prevTest, nextTest) {
 		if (!prevTest) {
-			window.anim = glow.anim.Anim(3).target({});
+			window.anim = new glow.anim.Anim(3).target({});
 		}
 	},
 	'Creating animation & adding frame event': new woosh.TimeTest(1, function() {
