@@ -87,7 +87,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.util.getType
 		@function
-		@description Get the native type of constructor name of an object.
+		@description Get the native type or constructor name of an object.
 			This allows you to safely get the type of an object, even
 			if it came from another frame.
 			
@@ -99,6 +99,14 @@ Glow.provide(function(glow) {
 			glow.util.getType(12); // 'number'
 			glow.util.getType( [] ); // 'Array'
 			glow.util.getType( glow('#whatever') ); // 'NodeList'
+			
+		@example
+			var MyConstructor = function() {},
+				obj = new MyConstructor;
+			
+			glow.util.getType(obj); // ''
+			// The above returns an empty string as the constructor
+			// is an anonymous function and therefore has no name
 	*/
 	util.getType = _getType;
 	
