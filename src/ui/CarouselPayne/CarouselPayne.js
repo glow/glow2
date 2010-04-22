@@ -1,16 +1,16 @@
 Glow.provide(function(glow) {
-	var undefined, CarouselWindowProto;
+	var undefined, CarouselPayneProto;
 	
 	/**
-		@name glow.ui.CarouselWindow
+		@name glow.ui.CarouselPayne
 		@class
 		@extends glow.ui.Behaviour (or Widget, depends on implementation)
-		@description Create a 'window' of elements that scroll from one to another.
+		@description Create a payne of elements that scroll from one to another.
 			This is a component of (TODO: names of widgets that use this).
 			
 		@param {glow.NodeList|selector|HTMLElement} container Container of the carousel items.
 			The direct children of this item will be treated as carousel items. They will
-			be positioned next to eachother horizontally.
+			be positioned next to eacho ther horizontally.
 			
 			Each item takes up the same horizontal space, equal to the width of the largest
 			item (including padding and border) + the largest of its horizontal margins (as set in CSS).
@@ -34,11 +34,10 @@ Glow.provide(function(glow) {
 				These are used in combination with opts.step and opts.loop to ensure 'pages'
 				don't get out of sync.
 			
-			@param {number} [opts.activeItems] The number of interactive items in the carousel.
-				TODO: Not happy with the name of this, any better ideas?
+			@param {number} [opts.spotlightSize] The number of items to treat as main spotlighted items.
 				
 				A carousel way be wide enough to display 2 whole items, but setting
-				this to 1 will result in the active item sitting in the middle, with
+				this to 1 will result in the spotlight item sitting in the middle, with
 				half of the previous item appearing before, and half the next item
 				appearing after.
 				
@@ -46,35 +45,35 @@ Glow.provide(function(glow) {
 				the width of the container. Any remaining width will be used to partially
 				show the previous/next item.
 				
-			@param {boolean} [opts.slide=false] Slide the carousel continuiously?
+			@param {boolean} [opts.glide=false] Slide the carousel continuiously?
 				TODO: Waiting for exact behaviour of this from designers
 				
-				This will only apply to scrolling via #start & will be like the
+				This will only apply to scrolling via #moveStart & will be like the
 				swooshing behaviour we have in Glow 1.
 				
 		@example
-			new glow.ui.CarouselWindow('#carouselItems', {
+			new glow.ui.CarouselPayne('#carouselItems', {
 				duration: 0.4,
 				step: 2,
 				loop: true
 			});
 	*/
-	function CarouselWindow(container, opts) {};
-	glow.util.extend(CarouselWindow, glow.ui.Behaviour);
-	CarouselWindowProto = CarouselWindow.prototype;
+	function CarouselPayne(container, opts) {};
+	glow.util.extend(CarouselPayne, glow.ui.Behaviour);
+	CarouselPayneProto = CarouselPayne.prototype;
 	
 	/**
-		@name glow.ui.CarouselWindow#_offsetLeft
+		@name glow.ui.CarouselPayne#_offsetLeft
 		@type number
-		@description The number of pixels from the left of the container to the first active item.
+		@description The number of pixels from the left of the container to the first spotlighted item.
 			This will be used by the main Carousel class to determine the width of the
 			previous button.
 	*/
 	
 	/**
-		@name glow.ui.CarouselWindow#_offsetRight
+		@name glow.ui.CarouselPayne#_offsetRight
 		@type number
-		@description The number of pixels from the right of the container to the last active item.
+		@description The number of pixels from the right of the container to the last spotlighted item.
 			This will be used by the main Carousel class to determine the width of the
 			next button.
 			
@@ -83,53 +82,53 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
-		@name glow.ui.CarouselWindow#container
+		@name glow.ui.CarouselPayne#container
 		@type glow.NodeList
-		@description CarouselWindow container element
+		@description CarouselPayne container element
 	*/
 	
 	/**
-		@name glow.ui.CarouselWindow#items
+		@name glow.ui.CarouselPayne#items
 		@type glow.NodeList
 		@description Carousel items.
-			This is the same as `myCarouselWindow.container.children()`
+			This is the same as `myCarouselPayne.container.children()`
 	*/
 	
 	/**
-		@name glow.ui.CarouselWindow#getVisibleItems
+		@name glow.ui.CarouselPayne#getSpotlightItems
 		@function
-		@description Get the active items curerntly in view.
+		@description Get the currently spotlighted items.
 		
 		@returns {glow.NodeList}
 	*/
-	CarouselWindowProto.getVisibleItems = function() {};
+	CarouselPayneProto.getSpotlightItems = function() {};
 	
 	/**
-		@name glow.ui.CarouselWindow#getVisibleIndexes
+		@name glow.ui.CarouselPayne#getSpotlightIndexes
 		@function
-		@description Gets an array of visible indexes.
-			These are the indexes of the nodes within {@link glow.ui.CarouselWindow#items}.
+		@description Gets an array of spotlighted indexes.
+			These are the indexes of the nodes within {@link glow.ui.CarouselPayne#items}.
 		
 		@returns {number[]}
 	*/
-	CarouselWindowProto.getVisibleIndexes = function() {};
+	CarouselPayneProto.getSpotlightIndexes = function() {};
 	
 	/**
-		@name glow.ui.CarouselWindow#moveTo
+		@name glow.ui.CarouselPayne#moveTo
 		@function
 		@description Move the items so a given index is the leftmost active item.
 			This method respects the carousel's limits and its step. If it's
-			not possible to move the item so it's the leftmost item, it will
+			not possible to move the item so it's the leftmost item of the spotlight, it will
 			be placed as close to the left as possible.
 		
 		@param {number} itemIndex Item index to move to.
 		
 		@returns this
 	*/
-	CarouselWindowProto.moveTo = function() {};
+	CarouselPayneProto.moveTo = function() {};
 	
 	/**
-		@name glow.ui.CarouselWindow#moveBy
+		@name glow.ui.CarouselPayne#moveBy
 		@function
 		@description Move by a number of items.
 		
@@ -138,15 +137,15 @@ Glow.provide(function(glow) {
 			forwards.
 			
 			This method respects the carousel's limits and its step. If it's
-			not possible to move the item so it's the leftmost item, it will
+			not possible to move the item so it's the leftmost item of the spotlight, it will
 			be placed as close to the left as possible.
 		
 		@returns this
 	*/
-	CarouselWindowProto.moveBy = function() {};
+	CarouselPayneProto.moveBy = function() {};
 	
 	/**
-		@name glow.ui.CarouselWindow#moveStart
+		@name glow.ui.CarouselPayne#moveStart
 		@function
 		@description Start moving the carousel in a particular direction.
 			If opts.slide is false this has the effect of calling
@@ -160,15 +159,15 @@ Glow.provide(function(glow) {
 		
 		@example
 			nextBtn.on('mousedown', function() {
-				myCarouselWindow.moveStart();
+				myCarouselPayne.moveStart();
 			}).on('mouseup', function() {
-				myCarouselWindow.moveStop();
+				myCarouselPayne.moveStop();
 			});
 	*/
-	CarouselWindowProto.moveStart = function() {};
+	CarouselPayneProto.moveStart = function() {};
 	
 	/**
-		@name glow.ui.CarouselWindow#moveStop
+		@name glow.ui.CarouselPayne#moveStop
 		@function
 		@description Stop moving the carousel.
 			The current animation will end, leaving the carousel
@@ -176,21 +175,21 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	CarouselWindowProto.moveStop = function() {};
+	CarouselPayneProto.moveStop = function() {};
 	
 	/**
-		@name glow.ui.CarouselWindow#destroy
+		@name glow.ui.CarouselPayne#destroy
 		@function
 		@description Remove listeners and styles from this instance.
 			HTML elements will not be destroyed.
 			
 		@returns undefined
 	*/
-	CarouselWindowProto.moveStop = function() {};
+	CarouselPayneProto.moveStop = function() {};
 	
 	/**
-		TODO: this behaviour is in Focusable, CarouselWindow just needs to pass the event through
-		@name glow.ui.CarouselWindow#event:choose
+		TODO: this behaviour is in Focusable, CarouselPayne just needs to pass the event through
+		@name glow.ui.CarouselPayne#event:choose
 		@event
 		@description Fires when a carousel item is chosen.
 			Items are chosen by clicking, or pressing enter when a child is active.
@@ -199,11 +198,11 @@ Glow.provide(function(glow) {
 		
 		@param {glow.events.Event} event Event Object
 		@param {glow.NodeList} event.item Item chosen
-		@param {number} event.itemIndex The index of the chosen item in {@link glow.ui.CarouselWindow#items}.
+		@param {number} event.itemIndex The index of the chosen item in {@link glow.ui.CarouselPayne#items}.
 	*/
 	
 	/**
-		@name glow.ui.CarouselWindow#event:move
+		@name glow.ui.CarouselPayne#event:move
 		@event
 		@description Fires when the carousel is about to move.
 			Canceling this event prevents the carousel from moving.
@@ -221,13 +220,13 @@ Glow.provide(function(glow) {
 			
 		@example
 			// double the amount a carousel will move by
-			myCarouselWindow.on('move', function(e) {
+			myCarouselPayne.on('move', function(e) {
 				e.moveBy *= 2;
 			});
 	*/
 	
 	/**
-		@name glow.ui.CarouselWindow#event:afterMove
+		@name glow.ui.CarouselPayne#event:afterMove
 		@event
 		@description Fires when the carousel has finished moving.
 			Canceling this event prevents the carousel from moving.
@@ -240,11 +239,11 @@ Glow.provide(function(glow) {
 			
 		@example
 			// double the amount a carousel will move by
-			myCarouselWindow.on('afterMove', function(e) {
+			myCarouselPayne.on('afterMove', function(e) {
 				// show content related to this.getVisibleIitems()[0]
 			});
 	*/
 	
 	// EXPORT
-	glow.ui.CarouselWindow = CarouselWindow;
+	glow.ui.CarouselPayne = CarouselPayne;
 });
