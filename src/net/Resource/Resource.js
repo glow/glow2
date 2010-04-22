@@ -26,7 +26,12 @@ Glow.provide(function(glow) {
 					// use data
 				});
 		*/
-	net.getResources = function(urls, opts) {		
+	net.getResources = function(urls, opts) {
+		/*!debug*/
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.net.getResources expects 0 or 1 argument, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		var request,
 			opts = glow.net.populateOptions(opts);
 		if (opts.timeout) {
@@ -52,7 +57,8 @@ Glow.provide(function(glow) {
 	function ResourceRequest(urls, opts) {
 		
 		this.totalResources = urls.length,
-		this.totalRequests = 0;
+		this.totalRequests = 0,
+		this.allAssets = [];
 		
 		
 		for(var i = 0; i < this.totalResources; i++){
@@ -60,6 +66,9 @@ Glow.provide(function(glow) {
 				request;
 			if(extension == 'css'){
 				var request = _loadCss(urls[i], this)
+			}
+			else if(extension == 'js'){
+				var request = _loadJs(urls[i], this);
 			}
 			else{
 				var request = _loadImages(urls[i], this)
@@ -71,18 +80,29 @@ Glow.provide(function(glow) {
 		
 	}
 	
+	/*
+	 @name _progress
+	 @private
+	 @description Fires a progress event for a given request and also fire if all assets have loaded.
+	*/
+	function _progress(asset, elm, request){
+		request.fire('progress', asset);
+			request.totalRequests++
+			request.allAssets.push(elm);
+			if(request.totalRequests == request.totalResources){
+				
+				var response = new glow.net.ResourceResponse(request.allAssets, request.totalRequests)
+				request.fire('load', response);
+				
+			}
+	}
+	
 	function _loadImages(images, request){
 		var oImage = new Image;
 	
 		oImage.onload = function() {
-			request.fire('progress', oImage.src);
-			request.totalRequests++
-			if(request.totalRequests == request.totalResources){
-				
-				var response = new glow.net.ResourceResponse(oImage.src, request.totalRequests)
-				request.fire('load', response);
-				
-			}
+			var asset = oImage.src;
+			_progress(asset, oImage, request);
 		}
 		oImage.onerror = function() {
 			request.fire('error')
@@ -98,7 +118,28 @@ Glow.provide(function(glow) {
 		
 	}
 	
-	
+	function _loadJs(source, request){
+		var onLoad = ResourceRequest._progress,
+			script = glow('<script></script>').attr({
+					type: 'text/javascript',
+					src: source
+			  });
+			// some browsers offer an onload method, so for those we let it use that
+			if (('onload' in script) && !Browser.Engines.webkit()) {
+				if (onLoad){
+					link.onload = function(){
+						_progress(source, script, request);
+					}
+				}
+			  }
+			// for browser that don't (that's most of them) we load after a timeout of 3s
+			else {
+				setTimeout(function () {
+					_progress(source, script, request);
+				}, 3000);
+			}
+		
+	}
 	
 	function _loadCss(source, request){
 		var onLoad = ResourceRequest._progress,
@@ -112,26 +153,14 @@ Glow.provide(function(glow) {
 			if (('onload' in link) && !Browser.Engines.webkit()) {
 				if (onLoad){
 					link.onload = function(){
-						request.fire('progress', source);
-						request.totalRequests++
-						if(request.totalRequests == request.totalResources){
-							var response = new glow.net.ResourceResponse(link, request.totalRequests);
-							request.fire('load', response);
-							
-						}
+						_progress(source, link, request);
 					}
 				}
 			  }
 			// for browser that don't (that's most of them) we load after a timeout of 3s
 			else {
 				setTimeout(function () {
-					request.fire('progress', source);
-					request.totalRequests++
-					if(request.totalRequests == request.totalResources){
-						var response = new glow.net.ResourceResponse(link, request.totalRequests)
-						request.fire('load', response);
-						
-					}
+					_progress(source, link, request);
 				}, 3000);
 			}
 		
@@ -186,7 +215,7 @@ Glow.provide(function(glow) {
 		@type {glow.NodeList}
 	
 		*/
-		this.nodes = resources,
+		this.nodes = glow(resources),
 		/**
 		@name glow.net.ResourceRequest#complete
 		@description Reports total number of items completed
