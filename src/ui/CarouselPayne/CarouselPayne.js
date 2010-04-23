@@ -25,14 +25,9 @@ Glow.provide(function(glow) {
 			
 			@param {number} [opts.step=1] Number of items to move at a time.
 			@param {boolean} [opts.loop=false] Loop the carousel from the last item to the first.
-			@param {number} [opts.paddingItems=0] Number of empty spaces to add onto the end of the carousel.
-				An empty space is the width of the other carousel items.
-			
+			@param {boolean} [opts.page] Keep pages in sync by adding space to the end of the carousel.
 				Spaces don't exist as physical HTML elements, but simply a gap from the last item
 				to the end.
-				
-				These are used in combination with opts.step and opts.loop to ensure 'pages'
-				don't get out of sync.
 			
 			@param {number} [opts.spotlightSize] The number of items to treat as main spotlighted items.
 				
@@ -95,23 +90,23 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
-		@name glow.ui.CarouselPayne#getSpotlightItems
+		@name glow.ui.CarouselPayne#spotlightItems
 		@function
 		@description Get the currently spotlighted items.
 		
 		@returns {glow.NodeList}
 	*/
-	CarouselPayneProto.getSpotlightItems = function() {};
+	CarouselPayneProto.spotlightItems = function() {};
 	
 	/**
-		@name glow.ui.CarouselPayne#getSpotlightIndexes
+		@name glow.ui.CarouselPayne#spotlightIndexes
 		@function
 		@description Gets an array of spotlighted indexes.
 			These are the indexes of the nodes within {@link glow.ui.CarouselPayne#items}.
 		
 		@returns {number[]}
 	*/
-	CarouselPayneProto.getSpotlightIndexes = function() {};
+	CarouselPayneProto.spotlightIndexes = function() {};
 	
 	/**
 		@name glow.ui.CarouselPayne#moveTo
@@ -240,7 +235,7 @@ Glow.provide(function(glow) {
 		@example
 			// double the amount a carousel will move by
 			myCarouselPayne.on('afterMove', function(e) {
-				// show content related to this.getVisibleIitems()[0]
+				// show content related to this.spotlightItems()[0]
 			});
 	*/
 	
