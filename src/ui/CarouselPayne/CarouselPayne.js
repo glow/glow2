@@ -30,8 +30,7 @@ Glow.provide(function(glow) {
 				to the end.
 			
 			@param {number} [opts.spotlightSize] The number of items to treat as main spotlighted items.
-				
-				A carousel way be wide enough to display 2 whole items, but setting
+				A carousel may be wide enough to display 2 whole items, but setting
 				this to 1 will result in the spotlight item sitting in the middle, with
 				half of the previous item appearing before, and half the next item
 				appearing after.
