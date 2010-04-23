@@ -291,8 +291,7 @@ Glow.provide(function(glow) {
 		var allElements = this.get('*').push(this);
 		
 		// remove data and listeners
-		glow.NodeList._destroyData(allElements);
-		glow.events.removeAllListeners(allElements);
+		glow.events.removeAllListeners( allElements.removeData() );
 		
 		this.appendTo(tmpDiv);
 		tmpDiv.innerHTML = '';

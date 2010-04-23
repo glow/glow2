@@ -135,7 +135,8 @@ Glow.provide(function(glow) {
 		var args = arguments,
 			argsLen = args.length,
 			thisLen = this.length,
-			name = keyvals = args[0], // using this API: attr(name) or attr({key: val}) ?
+			keyvals,
+			name = args[0], // using this API: attr(name) or attr({key: val}) ?
 			dom0Property = '',
 			node,
 			attrNode;
@@ -231,24 +232,7 @@ Glow.provide(function(glow) {
 			data && to.slice(i, i+1).data(data);
 		}
 	}
-	/**
-		Used to remove the data when a node is destroyed
-		@private
-		@name glow.NodeList._copyData
-		@see glow.NodeList#destroy
-		@function
-	*/
-	glow.NodeList._destroyData = function(removeFrom){
-		if ( !removeFrom && !removeFrom[0][dataPropName] ){
-			return;
-		}
-		else{
-			removeFromNode = new glow.NodeList(removeFrom);
-			removeFromNode.removeData();			
-			return;
-		}
-		
-	}
+
 	/**
 	@name glow.NodeList#data
 	@function

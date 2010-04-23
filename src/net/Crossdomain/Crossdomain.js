@@ -1,7 +1,7 @@
 Glow.provide(function(glow) {
 	var undefined,
-		CrossdomainRequestProto,
-		CrossdomainResponseProto,
+		CrossDomainRequestProto,
+		CrossDomainResponseProto,
 		net = glow.net,
 		emptyFunc = function(){},
 		events = glow.events,
@@ -298,11 +298,11 @@ Glow.provide(function(glow) {
 			
 			glow.util.extend(CrossDomainResponse, glow.events.Target);
 			
-			CrossdomainResponseProto = CrossDomainResponse.prototype;
+			CrossDomainResponseProto = CrossDomainResponse.prototype;
 			
 			
-			CrossdomainResponseProto.text = function() { return this._text; }
-			CrossdomainResponseProto.json = function() { return glow.util.encodeJson(this._text); }
+			CrossDomainResponseProto.text = function() { return this._text; }
+			CrossDomainResponseProto.json = function() { return glow.util.encodeJson(this._text); }
 
 	
 	glow.net.CrossDomainRequest = CrossDomainRequest;
