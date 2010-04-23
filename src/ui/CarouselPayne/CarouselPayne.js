@@ -4,7 +4,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.CarouselPayne
 		@class
-		@extends glow.ui.Behaviour (or Widget, depends on implementation)
+		@extends glow.ui.Widget
 		@description Create a payne of elements that scroll from one to another.
 			This is a component of (TODO: names of widgets that use this).
 			
@@ -59,7 +59,7 @@ Glow.provide(function(glow) {
 			});
 	*/
 	function CarouselPayne(container, opts) {};
-	glow.util.extend(CarouselPayne, glow.ui.Behaviour);
+	glow.util.extend(CarouselPayne, glow.ui.Widget);
 	CarouselPayneProto = CarouselPayne.prototype;
 	
 	/**
