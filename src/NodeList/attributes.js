@@ -136,7 +136,7 @@ Glow.provide(function(glow) {
 			argsLen = args.length,
 			thisLen = this.length,
 			keyvals,
-			name = args[0], // using this API: attr(name) or attr({key: val}) ?
+			name = keyvals = args[0], // using this API: attr(name) or attr({key: val}) ?
 			dom0Property = '',
 			node,
 			attrNode;
