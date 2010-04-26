@@ -8,7 +8,7 @@ Glow.provide(function(glow) {
 		@description Create a payne of elements that scroll from one to another.
 			This is a component of (TODO: names of widgets that use this).
 			
-		@param {glow.NodeList|selector|HTMLElement} container Container of the carousel items.
+		@param {glow.NodeList|selector|HTMLElement} itemContainer Container of the carousel items.
 			The direct children of this item will be treated as carousel items. They will
 			be positioned next to eacho ther horizontally.
 			
@@ -56,7 +56,7 @@ Glow.provide(function(glow) {
 				paging: true
 			});
 	*/
-	function Carousel(container, opts) {};
+	function Carousel(itemContainer, opts) {};
 	glow.util.extend(Carousel, glow.ui.Widget);
 	CarouselProto = Carousel.prototype;
 	
@@ -64,6 +64,12 @@ Glow.provide(function(glow) {
 		@name glow.ui.Carousel#items
 		@type glow.NodeList
 		@description Carousel items.
+	*/
+	
+	/**
+		@name glow.ui.Carousel#itemContainer
+		@type glow.NodeList
+		@description Parent element of the carousel items.
 	*/
 	
 	/**
@@ -123,6 +129,22 @@ Glow.provide(function(glow) {
 		@returns undefined
 	*/
 	CarouselProto.destroy = function() {};
+	
+	/**
+		@name glow.ui.Carousel#updateUi
+		@function
+		@description Refresh the carousel after moving/adding/removing items.
+			You can edit the items within the carousel using NodeLists such
+			as {@link glow.ui.Carousel#itemContainer}.
+			
+		@example
+			// Add a new carousel item
+			myCarousel.itemContainer.append('<li>New Item</li>');
+			// Move the new item into position & update page nav etc...
+			myCarousel.updateUi();
+			
+		@returns this
+	*/
 	
 	/**
 		@name glow.ui.Carousel#event:choose
