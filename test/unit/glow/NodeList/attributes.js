@@ -602,61 +602,46 @@ test('glow.NodeList#removeData', 5, function() {
 	ok( (myNodeList === self), 'The call to removeData is chainable.');
 });
 
-// if (glow.debug) test('glow.NodeList#removeData debug', 2, function() {
-// 	try {
-// 		myNodeList.removeData('a', 'b'); // error
-// 	}
-// 	catch(e) {
-// 		ok(true, 'Passing more than 1 argument throws an error.');
-// 	}
-// 	
-// 	try {
-// 		myNodeList.removeData([]); // error
-// 	}
-// 	catch(e) {
-// 		ok(true, 'Passing wrong type of argument throws an error.');
-// 	}
-// });1
 
 test('glow.NodeList#val', 12, function() {
 	equal(
-		new glow.NodeList("<input type=\"text\" name=\"blah\"/>").val(),
+		glow("<input type=\"text\" name=\"blah\"/>").val(),
 		"",
 		"unspecified value returns empty string"
 	);
 
 	equal(
-		new glow.NodeList("<input type=\"text\" name=\"blah\" value=\"val\"/>").val(),
+		glow("<input type=\"text\" name=\"blah\" value=\"val\"/>").val(),
 		"val",
 		"get value from text input"
 	);
 
 	equal(
-		new glow.NodeList("<input type=\"checkbox\" name=\"blah\" value=\"val\" checked=\"checked\"/>").val(),
+		glow("<input type=\"checkbox\" name=\"blah\" value=\"val\" checked=\"checked\"/>").val(),
 		"val",
 		"get value from checked checkbox"
 	);
 	
 	equal(
-		new glow.NodeList("<input type=\"checkbox\" name=\"blah\" value=\"val\"/>").val(),
+		glow("<input type=\"checkbox\" name=\"blah\" value=\"val\"/>").val(),
 		"",
 		"Empty value from unchecked checkbox"
 	);
 
 	equal(
-		new glow.NodeList("<input type=\"radio\" name=\"blah\" value=\"val\"/>").val(),
+		glow("<input type=\"radio\" name=\"blah\" value=\"val\"/>").val(),
 		"",
 		"Empty value from unchecked radio"
 	);
 
 	equal(
-		new glow.NodeList("<input type=\"radio\" name=\"blah\" value=\"val\" checked=\"checked\"/>").val(),
+		glow("<input type=\"radio\" name=\"blah\" value=\"val\" checked=\"checked\"/>").val(),
 		"val",
 		"get value from checked radio"
 	);
 
 	equal(
-		new glow.NodeList(
+		glow(
 			"<select name=\"blah\"><option>foo</option>" +
 			"<option value=\"bah\" selected=\"selected\">bar</option></select>"
 		).val(),
@@ -665,7 +650,7 @@ test('glow.NodeList#val', 12, function() {
 	);
 
 
-	var formVal = new glow.NodeList(
+	var formVal = glow(
 		"<form>" +
 		  "<fieldset>" +
 			"<input type=\"hidden\" name=\"hidden1\" value=\"hidden1val\"/>" +
@@ -692,17 +677,17 @@ test('glow.NodeList#val', 12, function() {
 		"</form>"
 	).val();
 
-	equal(formVal.nm1, "val1", "form element in form value");
+	/*8*/equal(formVal.nm1, "val1", "form element in form value");
 	
 
 
 
-	ok(! ('ck1' in formVal), "unchecked checkbox value not in form");
-	equal(formVal.ck2, "val2", "checked checkbox value in form");
+	/*9*/ok(! ('ck1' in formVal), "unchecked checkbox value not in form");
+	/*10*/equal(formVal.ck2, "val2", "checked checkbox value in form");
 	
 	
 
-	equal(formVal.myRadios, "rval2", "radio has value of checked radio");
-	equal(formVal.myRadios2, undefined, "unchecked radios have undefined value");
+	/*11*/equal(formVal.myRadios, "rval2", "radio has value of checked radio");
+	/*12*/equal(formVal.myRadios2, undefined, "unchecked radios have undefined value");
 });
 
