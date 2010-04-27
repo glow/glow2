@@ -699,7 +699,7 @@ Glow.provide(function(glow) {
 			name     : "A N Other"
 		});
 	*/
-	NodeListProto.val = function(){
+	NodeListProto.val = function(){		
 		var args = arguments,
 			val = args[0],
 			i = 0,
@@ -895,7 +895,6 @@ Glow.provide(function(glow) {
 			j,
 			radio,
 			nodeName;
-
 		while (i--) {
 			formElement = formElements[i];
 			nodeName = formElement.nodeName.toLowerCase();
@@ -914,6 +913,7 @@ Glow.provide(function(glow) {
 					vals[name] = undefined;
 				}
 			} else if (formElement.type == 'radio') {
+				
 				if (radios[name]) {
 					radios[name][radios[name].length] = formElement;
 				} else {
@@ -933,6 +933,7 @@ Glow.provide(function(glow) {
 			}
 		}
 		for (i in radios) {
+			var length,
 			j = 0;
 			for (length = radios[i].length; j < length; j++) {
 				radio = radios[i][j];
@@ -942,7 +943,7 @@ Glow.provide(function(glow) {
 					break;
 				}
 			}
-			if (! name in vals) { vals[name] = undefined; }
+			if (! name in vals) { alert('15 if name in vals'); vals[name] = undefined; }
 		}
 		return vals;
 	}

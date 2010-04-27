@@ -1,31 +1,31 @@
 Glow.provide(function(glow) {
 	var undefined,
 		RequestProto,
-		net = glow.net,
 		events = glow.events;
 		
 	/**
-		@name glow.net.Request
-		@class
-		@description Returned by {@link glow.net.post post}, {@link glow.net.get get} async requests and {@link glow.net.loadScript loadScript}
-		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.post post} and {@link glow.net.get get} create the instances.
+	@name glow.net.Request
+	@class
+	@description Returned by {@link glow.net.post post}, {@link glow.net.get get} async requests and {@link glow.net.loadScript loadScript}
+	@glowPrivateConstructor There is no direct constructor, since {@link glow.net.post post} and {@link glow.net.get get} create the instances.
 	*/
 
 	
 	function Request(requestObj, opts) {
+		
 			/**
-			 * @name glow.net.Request#_timeout
-			 * @private
-			 * @description timeout ID. This is set by makeXhrRequest or loadScript
-			 * @type Number
-			 */
+			@name glow.net.Request#_timeout
+			@private
+			@description timeout ID. This is set by makeXhrRequest or loadScript
+			@type Number
+			*/
 			this._timeout = null;
 			
-			/*
-			 @name glow.net.Request#_forceXml
-			 @private
-			 @type Boolean
-			 @description Force the response to be treated as xml
+			/**
+			@name glow.net.Request#_forceXml
+			@private
+			@type Boolean
+			@description Force the response to be treated as xml
 			*/
 			this._forceXml = opts.forceXml;
 			
@@ -36,39 +36,30 @@ Glow.provide(function(glow) {
 			}
 			
 			/**
-			 * @name glow.net.Request#complete
-			 * @description Boolean indicating whether the request has completed
-			 * @example
-				// request.complete with an asynchronous call
-				var request = glow.net.get(
-					"myFile.html", 
-					{
-						async: true,
+			@name glow.net.Request#complete
+			@description Boolean indicating whether the request has completed
+			@example
+			// request.complete with an asynchronous call
+			var request = glow.net.get(
+				"myFile.html", 
+				{
+					async: true,
 						onload: function(response) {
-							alert(request.complete); // returns true
-						}
+						alert(request.complete); // returns true
 					}
-				);
-				alert(request.complete); // returns boolean depending on timing of asynchronous call
+				}
+			);
+			alert(request.complete); // returns boolean depending on timing of asynchronous call
 
-				// request.complete with a synchronous call
-				var request = glow.net.get("myFile.html", {async: false;});
-				alert(request.complete); // returns true
-			 * @type Boolean
-			 */
+			// request.complete with a synchronous call
+			var request = glow.net.get("myFile.html", {async: false;});
+			alert(request.complete); // returns true
+			
+			@type Boolean
+			*/
 			this.complete = false;
 
-			if (typeof requestObj == "number") {
-				/**
-				 * @name glow.net.Request#_callbackIndex
-				 * @private
-				 * @description Index of the callback in glow.net._jsonCbs
-				 *   This is only relavent for requests made via loadscript using the
-				 *   {callback} placeholder
-				 * @type Number
-				 */
-				this._callbackIndex = requestObj;
-			} else {
+			
 				/**
 				 * @name glow.net.Request#nativeRequest
 				 * @description The request object from the browser.
@@ -87,7 +78,7 @@ Glow.provide(function(glow) {
 				 * @type Object
 				 */
 				this.nativeRequest = requestObj;
-			}
+			
 
 
 		
@@ -110,8 +101,8 @@ Glow.provide(function(glow) {
 		@description Fired when the request is aborted
 			If you cancel the default (eg, by returning false) the request
 			will continue.
-		@description Returned by {@link glow.net.post glow.net.post}, {@link glow.net.get glow.net.get} async requests and {@link glow.net.loadScript glow.net.loadScript}
-			@see <a href="../furtherinfo/net/net.shtml">Using glow.net</a>
+		@description Returned by {@link glow.net.post glow.net.post}, {@link glow.net.get glow.net.get}, {@link glow.net.put glow.net.put} and {@link glow.net.delete glow.net.delete}
+
 			glowPrivateConstructor There is no direct constructor, since {@link glow.net.post glow.net.post} and {@link glow.net.get glow.net.get} create the instances.
 	*/
  
