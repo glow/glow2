@@ -28,15 +28,13 @@ test('glow.NodeList#css general set methods', 6, function() {
 		margin: "10px"
 	});
 	equal(nodes.css("font-style"), "italic", "Set font-style to italic");
-	equal(nodes.css("font-size"), "10px", "Set font-weight to 10px");
-	equal(nodes.css("padding-left"), "10px", "Set font-weight to 10px");
-	equal(nodes.css("margin-left"), "10px", "Set font-weight to 10px");
+	equal(nodes.css("font-size"), "10px", "Set font-size to 10px");
+	equal(nodes.css("padding-left"), "10px", "Set padding-left to 10px");
+	equal(nodes.css("margin-left"), "10px", "Set margin-left to 10px");
 	//node.parentNode.removeChild(node);
 });
 
-test('glow.NodeList#css general get methods', 11, function() {
-	//var node = new glow.NodeList('#cssTests');
-	//document.body.appendChild(node);
+test('glow.NodeList#css general get methods', 8, function() {
 	nodes = new glow.NodeList("#cssTests div.width100");
 	/*1*/equal(nodes.css("width"), "100px", "Width");
 	nodes = new glow.NodeList("#cssTests div.height100");
@@ -56,12 +54,6 @@ test('glow.NodeList#css general get methods', 11, function() {
 	/*7*/equal(nodes.css("margin-right"), "10px", "Absolute margin");
 
 	/*8*/equal(nodes.css("margin-left"), "60px", "Relative margin");
-	nodes = new glow.NodeList("#cssTests div.padTest");
-	/*9*/equal(nodes.css(["padding-right", "padding-left"]), "70px", "Left and right padding total");
-	nodes = new glow.NodeList("#cssTests div.borderTest");
-	/*10*/equal(nodes.css(["border-right-width", "border-left-width"]), "70px", "Left and right border total");
-	nodes = new glow.NodeList("#cssTests div.marginTest");
-	/*11*/equal(nodes.css(["margin-right", "margin-left"]), "70px", "Left and right margin total");
 		//this is fine, but IE's % padding calculator is broken so it fails this test
 		//equal(glow.dom.get("#cssTests div.padTest2").css("padding-left"), "250px", "Percent padding");
 		//cannot get value for auto in some browsers
@@ -84,14 +76,14 @@ test('glow.NodeList#css lists', 6, function() {
 test('glow.NodeList#css colours', 4, function() {
 	//color tests
 	nodes = new glow.NodeList("#cssTests div.colourTest");
-	equal(nodes.css("color"), "rgb(0, 255, 0)", "color");
+	equal(nodes.css("color"), "rgba(0, 255, 0, 1)", "color");
 	nodes = new glow.NodeList("#cssTests div.colourTest div");
-	equal(nodes.css("color"), "rgb(0, 255, 0)", "color nested");
+	equal(nodes.css("color"), "rgba(0, 255, 0, 1)", "color nested");
 	//safari gets this one a little wrong, but it's ok
 	nodes = new glow.NodeList("#cssTests div.colourTest");
-	ok(/rgb\(12[78], 12[78], 12[78]\)/.test(nodes.css("background-color")), "background-color (percentage color)");
+	ok(/rgba\(12[78], 12[78], 12[78], 1\)/.test(nodes.css("background-color")), "background-color (percentage color)");
 	nodes = new glow.NodeList("#cssTests div.colourTest");
-	equal(nodes.css("border-left-color"), "rgb(0, 128, 0)", "border-left-color (keyword)");
+	equal(nodes.css("border-left-color"), "rgba(0, 128, 0, 1)", "border-left-color (keyword)");
 
 });
 
@@ -102,10 +94,8 @@ test('glow.NodeList#css backgrounds', 3, function() {
 	equal(nodes.css("background-attachment"), "scroll", "background-attachment");
 	
 	ok(/^repeat\b/.test(nodes.css("background-repeat")), "background-repeat");
-	equal(nodes.css("background-color"), "rgb(0, 0, 255)", "background-color");
-
-		
-
+	
+	equal(nodes.css("background-color"), "rgba(0, 0, 255, 1)", "background-color");
 });
 
 test('glow.NodeList#css text styles', 10, function() {
@@ -193,6 +183,22 @@ test('glow.NodeList#css floats, display and position', 21, function() {
 	/*21*/equal(nodes.css("height"), "30px", "height (px val display none)");
 
 
+});
+
+test('glow.NodeList#css edge cases', 2, function() {
+	// This catches IE out. If a border has a width but border-style: none, it still thinks it has width
+	strictEqual( glow('div.borderStyleNone').css('border-left-width'), '0px', 'Zero border when no border style' );
+	
+	// This catches Webkit out http://bugs.webkit.org/show_bug.cgi?id=13343
+	strictEqual( glow('div.unequalMargins').css('margin-right'), '11px', 'Correct value for right margin (is different to left margin)' );
+});
+
+test('glow.NodeList#css non-elements', 1, function() {
+	var mixedNodes = glow( glow('#mixedNodes')[0].childNodes );
+	
+	mixedNodes.css('width', '30px');
+	
+	equal(mixedNodes.filter('div').css('width'), '30px');
 });
 
 test('glow.NodeList#height', 12, function() {

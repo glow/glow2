@@ -1,150 +1,150 @@
 Glow.provide(function(glow) {
 	var NodeList = glow.NodeList,
 		NodeListProto = NodeList.prototype,
-		doc = document,	
-		win = window;
-			
-	/********************************PRIVATE METHODS*****************************************/
-		
-	/*
-	PrivateMethod: toStyleProp
-		Converts a css property name into its javascript name, such as "background-color" to "backgroundColor".
-
-	Arguments: prop - (String) CSS Property name
-
-	Returns: String, javascript style property name
-	*/
+		win = window,
+		document = win.document,	
+		getComputedStyle = document.defaultView && document.defaultView.getComputedStyle,
+		// regex for toStyleProp
+		dashAlphaRe = /-(\w)/g,
+		// regex for getCssValue
+		isNumberButNotPx = /^-?[\d\.]+(?!px)[%a-z]+$/i,
+		ieOpacityRe = /alpha\(opacity=([^\)]+)\)/,
+		// regex for #css
+		hasUnits = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/;
 	
+	// replace function for toStyleProp
+	function toStylePropReplace(match, p1) {
+		return p1.toUpperCase();
+	}
+	
+	/**
+		@private
+		@function
+		@description Converts a css property name into its javascript name.
+			Such as "background-color" to "backgroundColor".
+		@param {string} prop CSS Property name.
+		@returns {string}
+	*/
 	function toStyleProp(prop) {
 		if (prop == 'float') {
 			return glow.env.ie ? 'styleFloat' : 'cssFloat';
 		}
-		return prop.replace(/-(\w)/g, function(match, p1) {
-			return p1.toUpperCase();
-		});
-	}
-	/*
-	PrivateMethod: getCssValue
-		Get a computed css property
-		
-	Arguments:
-		elm - element
-		prop - css property or array of properties to add together
-
-	Returns:	String, value
-	*/
-	function getCssValue(elm, prop) {
-		var r, //return value
-			total = 0,
-			i = 0,
-			/*regex for detecting which css properties need to be calculated relative to the y axis*/
-			usesYAxis = /height|top/,
-			propLen = prop.length,
-			cssPropRegex = /^(?:(width|height)|(border-(top|bottom|left|right)-width))$/,
-			compStyle = doc.defaultView && (doc.defaultView.getComputedStyle(elm, null) || doc.defaultView.getComputedStyle),
-			elmCurrentStyle = elm.currentStyle,
-			oldDisplay,
-			match,
-			propTest = prop.push || cssPropRegex.exec(prop) || [];
-
-
-		if (prop.push) { //multiple properties, add them up
-			for (; i < propLen; i++) {
-				total += parseInt( getCssValue(elm, prop[i]), 10 ) || 0;
-			}
-			return total + 'px';
-		}
-			
-		if (propTest[1]) { // is width / height
-			if (!isVisible(elm)) { //element may be display: none
-				return tempBlock(elm, function() {
-					return getElmDimension(elm, propTest[1]) + 'px';
-				});
-			}
-			return getElmDimension(elm, propTest[1]) + 'px';
-		}
-		else if (propTest[2] //is border-*-width
-			&& glow.env.ie
-			&& getCssValue(elm, 'border-' + propTest[3] + '-style') == 'none'
-		) {
-			return '0';
-		}
-		else if (compStyle) { //W3 Method
-			//this returns computed values
-			if (typeof compStyle == 'function') {
-			//safari returns null for compStyle when element is display:non
-			oldDisplay = elm.style.display;
-			r = tempBlock(elm, function() {
-			if (prop == 'display') { //get true value for display, since we've just fudged it
-				elm.style.display = oldDisplay;
-				if (!doc.defaultView.getComputedStyle(elm, null)) {
-					return 'none';
-				}
-				elm.style.display = 'block';
-			}
-			return getCssValue(elm, prop);
-			});
-			} else {
-				// assume equal horizontal margins in safari 3
-				// http://bugs.webkit.org/show_bug.cgi?id=13343
-				// The above bug doesn't appear to be closed, but it works fine in Safari 4
-				if (glow.env.webkit > 500 && glow.env.webkit < 526 && prop == 'margin-right' && compStyle.getPropertyValue('position') != 'absolute') {
-					prop = 'margin-left';
-				}
-				r = compStyle.getPropertyValue(prop);
-			}
-		} else if (elmCurrentStyle) { //IE method
-				if (prop == 'opacity') {
-					match = /alpha\(opacity=([^\)]+)\)/.exec(elmCurrentStyle.filter);
-					return match ? String(parseInt(match[1], 10) / 100) : '1';
-				}
-				//this returns cascaded values so needs fixing
-				r = String(elmCurrentStyle[toStyleProp(prop)]);
-				if (/^-?[\d\.]+(?!px)[%a-z]+$/i.test(r) && prop != 'font-size') {
-					r = getPixelValue(elm, r, usesYAxis.test(prop)) + 'px';
-				}
-			}
-			//some results need post processing
-			if (prop.indexOf('color') != -1) { //deal with colour values
-				r = NodeList._parseColor(r).toString();
-			} else if (r.indexOf('url') == 0) { //some browsers put quotes around the url, get rid
-				r = r.replace(/\"/g,'');
-			}
-			return r;
-		}
-	/*
-	PrivateMethod: isVisible
-		Is the element visible?
-	*/
-	function isVisible(elm) {
-		//this is a bit of a guess, if there's a better way to do this I'm interested!
-		return elm.offsetWidth ||
-			elm.offsetHeight;
+		return prop.replace(dashAlphaRe, toStylePropReplace);
 	}
 	
+	/**
+		@private
+		@function
+		@description Get a total value of multiple CSS properties
+		@param {HTMLElement} elm
+		@param {string[]} props CSS properties to get the total value of
+		@returns {number}
+	*/
+	function getTotalCssValue(elm, props) {
+		var total = 0,
+			i = props.length;
+			
+		while (i--) {
+			total += parseFloatFunc(
+				getCssValue( elm, props[i] )
+			) || 0;
+		}
+		
+		return total;
+	}
+	
+	/**
+		@private
+		@function
+		@description Get a computed css property
+		@param {HTMLElement} elm
+		@param {string} prop CSS property to get the value of
+		@returns {string}
+	*/
+	function getCssValue(elm, prop) {
+		var defaultView = elm.ownerDocument.defaultView,
+			computedStyle,
+			r,
+			currentStyle,
+			oldDisplay,
+			match;
+		
+		if (getComputedStyle) { // the W3 way
+			computedStyle = defaultView.getComputedStyle(elm, null);
+			
+			// http://bugs.webkit.org/show_bug.cgi?id=13343
+			// Webkit fails to get margin-right for rendered elements.
+			// margin-right is measured from the right of the element to the right of the parent
+			if (glow.env.webkit && prop === 'margin-right') {
+				oldDisplay = elm.style.display;
+				elm.style.display = 'none';
+				r = computedStyle[prop];
+				elm.style.display = oldDisplay;
+			}
+			else {
+				r = computedStyle.getPropertyValue(prop);
+			}
+		}
+		else if (currentStyle = elm.currentStyle) { // the IE<9 way
+			if (prop === 'opacity') { // opacity, the IE way
+				match = ieOpacityRe.exec(currentStyle.filter);
+				return match ? String(parseInt(match[1], 10) / 100) || '1' : '1';
+			}
+			// catch border-*-width. IE gets this wrong if the border style is none
+			else if (
+				prop.indexOf('border') === 0 &&
+				prop.slice(-5) === 'width' &&
+				getCssValue(elm, 'border-style') === 'none') {
+				
+				return '0px';
+			}
+			
+			r = currentStyle[ toStyleProp(prop) ];
+			
+			// font-size gives us incorrect values when put through getPixelValue, avoid
+			if (isNumberButNotPx.test(r) && prop != 'font-size') {
+				r = getPixelValue( elm, r, prop.indexOf('height') >= 0 || prop.indexOf('top') >= 0 ) + 'px';
+			}
+		}
+		
+		// post-process return value
+		if (prop === 'opacity') {
+			r = r || '1';
+		}
+		else if (prop.indexOf('color') != -1) { //deal with colour values
+			r = NodeList._parseColor(r).toString();
+		}
+		
+		return r;
+	}
+	
+	// vars used in _parseColor
 	var mathRound = Math.round,
 		parseIntFunc = parseInt,
 		parseFloatFunc = parseFloat,
 		htmlColorNames = {
-			black: 0,
-			silver: 0xc0c0c0,
-			gray: 0x808080,
-			white: 0xffffff,
-			maroon: 0x800000,
-			red: 0xff0000,
-			purple: 0x800080,
+			black:   0x000000,
+			silver:  0xc0c0c0,
+			gray:    0x808080,
+			white:   0xffffff,
+			maroon:  0x800000,
+			red:     0xff0000,
+			purple:  0x800080,
 			fuchsia: 0xff00ff,
-			green: 0x8000,
-			lime: 0xff00,
-			olive: 0x808000,
-			yellow: 0xffff00,
-			navy: 128,
-			blue: 255,
-			teal: 0x8080,
-			aqua: 0xffff,
-			orange: 0xffa500
+			green:   0x008000,
+			lime:    0x00ff00,
+			olive:   0x808000,
+			yellow:  0xffff00,
+			navy:    0x000080,
+			blue:    0x0000ff,
+			teal:    0x008080,
+			aqua:    0x00ffff,
+			orange:  0xffa500
 		},
-		colorRegex = /^rgb\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)/i;
+		// match a string like rgba(10%, 10%, 10%, 0.5) where the % and alpha parts are optional
+		colorRegex = /^rgba?\(([\d\.]+)(%?),\s*([\d\.]+)(%?),\s*([\d\.]+)(%?)(?:,\s*([\d\.]+))?/i,
+		transColorRegex = /^(transparent|rgba\(0, ?0, ?0, ?0\))$/,
+		wordCharRegex = /\w/g;
 	
 	/**
 		@name glow.NodeList._parseColor
@@ -155,157 +155,136 @@ Glow.provide(function(glow) {
 			Returned string also has r, g & b number properties
 	*/
 	NodeList._parseColor = function (val) {
-		if (/^(transparent|rgba\(0, ?0, ?0, ?0\))$/.test(val)) { return 'transparent'; }
+		if ( transColorRegex.test(val) ) {
+			return 'rgba(0, 0, 0, 0)';
+		}
 		
 		var match, //tmp regex match holder
-			r, g, b, //final colour vals
+			r, g, b, a, //final colour vals
 			hex; //tmp hex holder
 
-		if (match = colorRegex.exec(val)) { //rgb() format, cater for percentages
-			r = match[2] ? mathRound(((parseFloatFunc(match[1]) / 100) * 255)) : parseIntFunc(match[1]);
-			g = match[4] ? mathRound(((parseFloatFunc(match[3]) / 100) * 255)) : parseIntFunc(match[3]);
-			b = match[6] ? mathRound(((parseFloatFunc(match[5]) / 100) * 255)) : parseIntFunc(match[5]);
+		if ( match = colorRegex.exec(val) ) { //rgb() format, cater for percentages
+			r = match[2] ? mathRound( parseFloatFunc(match[1]) * 2.55 ) : parseIntFunc(match[1]);
+			g = match[4] ? mathRound( parseFloatFunc(match[3]) * 2.55 ) : parseIntFunc(match[3]);
+			b = match[6] ? mathRound( parseFloatFunc(match[5]) * 2.55 ) : parseIntFunc(match[5]);
+			a = parseFloatFunc( match[7] || '1' );
 		} else {
 			if (typeof val == 'number') {
 				hex = val;
-			} else if (val.charAt(0) == '#') {
-				if (val.length == '4') { //deal with #fff shortcut
-					val = val.replace(/\w/g, '$&$&');
+			}
+			else if (val.charAt(0) == '#') {
+				if (val.length === 4) { //deal with #fff shortcut
+					val = val.replace(wordCharRegex, '$&$&');
 				}
 				hex = parseIntFunc(val.slice(1), 16);
-			} else {
+			}
+			else {
 				hex = htmlColorNames[val];
 			}
 
 			r = (hex) >> 16;
 			g = (hex & 0x00ff00) >> 8;
 			b = (hex & 0x0000ff);
+			a = 1;
 		}
 
-		val = new String('rgb(' + r + ', ' + g + ', ' + b + ')');
+		val = new String('rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')');
 		val.r = r;
 		val.g = g;
 		val.b = b;
+		val.a = a;
 		return val;
 	}
-	/*
-	PrivateMethod: getElmDimension
-		Gets the size of an element as an integer, not including padding or border
-	*/
+	
+	// vars for generateWidthAndHeight
 	var horizontalBorderPadding = [
-				'border-left-width',
-				'border-right-width',
-				'padding-left',
-				'padding-right'
-			],
-			verticalBorderPadding = [
-				'border-top-width',
-				'border-bottom-width',
-				'padding-top',
-				'padding-bottom'
-			];
-		function getElmDimension(elm, cssProp /* (width|height) */) {
-			var r,
-			doc = document,
-			docElm = doc.documentElement,
-			docBody = document.body,
-			docElmOrBody = glow.env.standardsMode ? docElm : docBody,
-			isWidth = (cssProp == 'width'),
-			cssPropCaps = isWidth ? 'Width' : 'Height',
-			cssBorderPadding;
-
-			if (elm.window) { // is window
-				r = glow.env.webkit < 522.11 ? (isWidth ? elm.innerWidth				: elm.innerHeight) :
-					glow.env.webkit			? (isWidth ? docBody.clientWidth		: elm.innerHeight) :
-					glow.env.opera < 9.5		? (isWidth ? docBody.clientWidth		: docBody.clientHeight) :
-					/* else */			  (isWidth ? docElmOrBody.clientWidth	: docElmOrBody.clientHeight);
-
-			}
-			else if (elm.getElementById) { // is document
-				// we previously checked offsetWidth & clientWidth here
-				// but they returned values too large in IE6 scrollWidth seems enough
-				r = Math.max(
-					docBody['scroll' + cssPropCaps],
-					docElm['scroll' + cssPropCaps]
-				)
-			}
-			else {
-				// get an array of css borders & padding
-				cssBorderPadding = isWidth ? horizontalBorderPadding : verticalBorderPadding;
-				r = elm['offset' + cssPropCaps] - parseInt( getCssValue(elm, cssBorderPadding) );
-			}
-			return r;
+			'border-left-width',
+			'border-right-width',
+			'padding-left',
+			'padding-right'
+		],
+		verticalBorderPadding = [
+			'border-top-width',
+			'border-bottom-width',
+			'padding-top',
+			'padding-bottom'
+		];
+	
+	/**
+		@private
+		@function
+		@description Get width or height of an element width/height.
+		@param {HTMLElement} elm Element to measure.
+		@param {string} 'Width' or 'Height'.
+	*/
+	function getDimension(elm, cssProp) {
+		// exit if there's no element, or it isn't an Element, window or document
+		if ( !elm || elm.nodeType === 3 || elm.nodeType === 8 ) {
+			return 0;
 		}
 		
-	/*
-	PrivateMethod: setElmsSize
-		Set element's size
-
-	Arguments:
-		elms - (<NodeList>) Elements
-		val - (Mixed) Set element height / width. In px unless stated
-		type - (String) "height" or "width"
-
-	Returns:
-		Nowt.
-	*/
-	function setElmsSize(elms, val, type) {
-		if (typeof val == 'number' || /\d$/.test(val)) {
-			val += 'px';
-		}
-		for (var i = 0, len = elms.length; i < len; i++) {
-			elms[i].style[type] = val;
-		}
-	}
-	
-	/*
-	PrivateMethod: tempBlock
-		Gives an element display:block (but keeps it hidden) and runs a function, then sets the element back how it was
-
-	Arguments:
-		elm - element
-		func - function to run
-
-	Returns:
-		Return value of the function
-	*/
-	function tempBlock(elm, func) {
-		//TODO: rather than recording individual style properties, just cache cssText? This was faster for getting the element size
 		var r,
-			elmStyle = elm.style,
-			oldDisp = elmStyle.display,
-			oldVis = elmStyle.visibility,
-			oldPos = elmStyle.position;
+			document = elm.ownerDocument || elm.document || elm,
+			docElm = document.documentElement,
+			docBody = document.body,
+			docElmOrBody = glow.env.standardsMode ? docElm : docBody,
+			isWidth = (cssProp == 'Width'),
+			cssBorderPadding;
 
-			elmStyle.visibility = 'hidden';
-			elmStyle.position = 'absolute';
-			elmStyle.display = 'block';
-		if (!isVisible(elm)) {
-			elmStyle.position = oldPos;
-			r = tempBlock(elm.parentNode, func);
-			elmStyle.display = oldDisp;
-			elmStyle.visibility = oldVis;
-		} else {
-			r = func();
-			elmStyle.display = oldDisp;
-			elmStyle.position = oldPos;
-			elmStyle.visibility = oldVis;
+		if (elm.window) { // is window
+			r = glow.env.webkit ? (isWidth ? docBody.clientWidth : elm.innerHeight) :
+				/* else */        docElmOrBody['client' + cssProp];
+		}
+		else if (elm.getElementById) { // is document
+			// we previously checked offsetWidth & clientWidth here
+			// but they returned values too large in IE6
+			r = Math.max(
+				docBody['scroll' + cssProp],
+				docElm['scroll' + cssProp]
+			)
+		}
+		else {
+			// get an array of css borders & padding
+			cssBorderPadding = isWidth ? horizontalBorderPadding : verticalBorderPadding;
+			r = elm['offset' + cssProp] - getTotalCssValue(elm, cssBorderPadding);
 		}
 		return r;
 	}
+		
+	/**
+		@private
+		@function
+		@description Set element's width or height
+		@param {glow.NodeList} elements
+		@param {number} newSize
+		@param {string} type 'width' or 'height'
+	*/
+	function setDimension(elms, val, type) {
+		var i = elms.length;
+		
+		// add px onto the end if needed
+		if ( !isNaN(val) ) {
+			val += 'px';
+		}
+		
+		while (i--) {
+			if (elms[i].nodeType === 1) {
+				elms[i].style[type] = val;
+			}
+		}
+	}
 	
-	/*
-	PrivateMethod: getPixelValue
-		Converts a relative value into an absolute pixel value. Only works in IE with Dimension value (not stuff like relative font-size).
-		Based on some Dean Edwards' code
-
-	Arguments:
-		element - element used to calculate relative values
-		value - (string) relative value
-		useYAxis - (string) calulate relative values to the y axis rather than x
-
-	Returns:
-		Number
+	/**
+		@private
+		@function
+		@description Converts a relative value into an absolute pixel value.
+			Only works in IE with Dimension value (not stuff like relative font-size).
+			Based on some Dean Edwards' code
+		
+		@param {HTMLElement} element Used to calculate relative values
+		@param {string} value Relative value
+		@param {boolean} useYAxis Calulate relative values to the y axis rather than x
+		@returns number
 	*/
 	function getPixelValue(element, value, useYAxis) {
 		// Remember the original values
@@ -330,7 +309,6 @@ Glow.provide(function(glow) {
 		return r;
 	}
 	
-	/*************************************** API METHODS ******************************************/
 	/**
 	@name glow.NodeList#css
 	@function
@@ -351,66 +329,66 @@ Glow.provide(function(glow) {
 		
 	@example
 		// get value from first node
-		glow("#subNav").css("display");
+		glow('#subNav').css('display');
 		
 	@example
 		// set left padding to 10px on all nodes
-		glow("#subNav li").css("padding-left", "2em");
+		glow('#subNav li').css('padding-left', '2em');
 		
 	@example
 		// where appropriate, px is assumed when no unit is passed
-		glow("#mainPromo").css("margin-top", 300);
+		glow('#mainPromo').css('margin-top', 300);
 		
 	@example
 		// set multiple CSS values at once
 		// NOTE: Property names containing a hyphen such as font-weight must be quoted
-		glow("#myDiv").css({
+		glow('#myDiv').css({
 			'font-weight': 'bold',
 			'padding'	 : '10px',
 			'color'		 : '#00cc99'
 		});
 	*/
-	
-	
 	NodeListProto.css = function(prop, val) {
 		var thisStyle,
 			i = this.length,
-			len = this.length,
-			originalProp = prop,
-			hasUnits = /width|height|top$|bottom$|left$|right$|spacing$|indent$|font-size/,
-			style;
+			styleProp,
+			style,
+			firstItem = this[0];
 
-			if (prop.constructor === Object) { // set multiple values
-				for (style in prop) {
-					this.css(style, prop[style]);
-				}
-				return this;
+		if (prop.constructor === Object) { // set multiple values
+			for (style in prop) {
+				this.css( style, prop[style] );
 			}
-			else if (val != undefined) { //set one CSS value
-				prop = toStyleProp(prop);
-				while (i--) {
+			return this;
+		}
+		else if (val !== undefined) { //set one CSS value
+			styleProp = toStyleProp(prop);
+			while (i--) {
+				if (this[i].nodeType === 1) {
 					thisStyle = this[i].style;
 						
-					if (typeof val == 'number' && hasUnits.test(originalProp)) {
-						val = val.toString() + 'px';
+					if ( typeof val == 'number' && hasUnits.test(prop) ) {
+						val += 'px';
 					}
-					if (prop == 'opacity' && glow.env.ie) {
+					
+					if (prop === 'opacity' && glow.env.ie) {
+						val = parseFloatFunc(val);
 						//in IE the element needs hasLayout for opacity to work
 						thisStyle.zoom = '1';
-						if (val === '') {
-							thisStyle.filter = '';
-						} else {
-							thisStyle.filter = 'alpha(opacity=' + Math.round(Number(val, 10) * 100) + ')';
-						}
-					} else {
-						thisStyle[prop] = val;
+						thisStyle.filter = (val !== 1) ?
+							'alpha(opacity=' + mathRound(val * 100) + ')' :
+							'';
+					}
+					else {
+						thisStyle[styleProp] = val;
 					}
 				}
-					return this;
-			} else { //getting stuff
-				if (!len) { return; }
-				return getCssValue(this[0], prop);
-			}	
+			}
+			return this;
+		}
+		else { //getting stuff
+			return (firstItem && firstItem.nodeType === 1) ? getCssValue(firstItem, prop) : '';
+		}	
 	};
 	
 	/**
@@ -443,13 +421,13 @@ Glow.provide(function(glow) {
 		
 	@example
 		// get the height of the window
-		glow(window).height();
+		glow(win).height();
 	*/
 	NodeListProto.height = function(height) {
-		if (height == undefined) {
-			return getElmDimension(this[0], 'height');
+		if (height === undefined) {
+			return getDimension(this[0], 'Height');
 		}
-		setElmsSize(this, height, 'height');
+		setDimension(this, height, 'height');
 		return this;	
 	};
 	
@@ -486,10 +464,10 @@ Glow.provide(function(glow) {
 		glow(window).width();
 	*/
 	NodeListProto.width = function(width) {
-		if (width == undefined) {
-			return getElmDimension(this[0], 'width');
+		if (width === undefined) {
+			return getDimension(this[0], 'Width');
 		}
-		setElmsSize(this, width, 'width');
+		setDimension(this, width, 'width');
 		return this;
 	};
 	
@@ -508,12 +486,12 @@ Glow.provide(function(glow) {
 			
 	@example
 		// get the scroll left value of #myDiv
-		var scrollPos = glow("#myDiv").scrollLeft();
+		var scrollPos = glow('#myDiv').scrollLeft();
 		// scrollPos is a number, eg: 45
 
 	@example
 		// set the scroll left value of #myDiv to 20
-		glow("#myDiv").scrollLeft(20);
+		glow('#myDiv').scrollLeft(20);
 
 	@example
 		// get the scrollLeft of the window
@@ -652,9 +630,9 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.show = function() {
 		var i = this.length,
-			len = this.length,
 			currItem,
 			itemStyle;
+			
 		while (i--) {
 			/* Create a NodeList for the current item */
 			currItem = new glow.NodeList(this[i]);
@@ -662,9 +640,9 @@ Glow.provide(function(glow) {
 			if (currItem.css('display') == 'none') {
 				itemStyle.display = '';
 				itemStyle.visibility = 'visible';
-			/* If display is still none, set to block */
-			if (currItem.css('display') == 'none') {
-				itemStyle.display = 'block';
+				/* If display is still none, set to block */
+				if (currItem.css('display') == 'none') {
+					itemStyle.display = 'block';
 				}
 			}	
 		}
@@ -685,49 +663,56 @@ Glow.provide(function(glow) {
 		glow("#myDiv").offset().top
 	*/
 	NodeListProto.offset = function() {
-				// http://weblogs.asp.net/bleroy/archive/2008/01/29/getting-absolute-coordinates-from-a-dom-element.aspx - great bit of research, most bugfixes identified here (and also jquery trac)
+		if ( !this[0] || this[0].nodeType !== 1) {
+			return {top: 0, left: 0};
+		}
+		
+		// http://weblogs.asp.net/bleroy/archive/2008/01/29/getting-absolute-coordinates-from-a-dom-element.aspx - great bit of research, most bugfixes identified here (and also jquery trac)
 		var elm = this[0],
-		doc = document,
-		docElm = doc.documentElement,
+			doc = elm.ownerDocument,
+			docElm = doc.documentElement,
+			window = doc.defaultView || doc.parentWindow,
 			docScrollPos = {
 				x: getScrollOffset(window, true),
 				y: getScrollOffset(window, false)
-			}
+			};
 
 		//this is simple(r) if we can use 'getBoundingClientRect'
 		// Sorry but the sooper dooper simple(r) way is not accurate in Safari 4
 		if (!glow.env.webkit && elm.getBoundingClientRect) {
 			var rect = elm.getBoundingClientRect();
+			
 			return {
 				top: Math.floor(rect.top)
-				/*
-				 getBoundingClientRect is realive to top left of
-				 the viewport, so we need to sort out scrolling offset
-				*/
-				+ docScrollPos.y
-				/*
-				IE adds the html element's border to the value. We can
-				deduct this value using client(Top|Left). However, if
-				the user has done html{border:0} clientTop will still
-				report a 2px border in IE quirksmode so offset will be off by 2.
-				Hopefully this is an edge case but we may have to revisit this
-				in future
-				*/
-				- docElm.clientTop,
+					/*
+					 getBoundingClientRect is realive to top left of
+					 the viewport, so we need to sort out scrolling offset
+					*/
+					+ docScrollPos.y
+					/*
+					IE adds the html element's border to the value. We can
+					deduct this value using client(Top|Left). However, if
+					the user has done html{border:0} clientTop will still
+					report a 2px border in IE quirksmode so offset will be off by 2.
+					Hopefully this is an edge case but we may have to revisit this
+					in future
+					*/
+					- docElm.clientTop,
 
 				left: Math.floor(rect.left) //see above for docs on all this stuff
-				+ docScrollPos.x
-				- docElm.clientLeft
+					+ docScrollPos.x
+					- docElm.clientLeft
 			};
-		} else { //damnit, let's go the long way around
+		}
+		else { //damnit, let's go the long way around
 			var top = elm.offsetTop,
-			left = elm.offsetLeft,
-			originalElm = elm,
-			nodeNameLower,
-			docBody = document.body,
-			//does the parent chain contain a position:fixed element
-			involvesFixedElement = false,
-			offsetParentBeforeBody = elm;
+				left = elm.offsetLeft,
+				originalElm = elm,
+				nodeNameLower,
+				docBody = document.body,
+				//does the parent chain contain a position:fixed element
+				involvesFixedElement = false,
+				offsetParentBeforeBody = elm;
 
 			//add up all the offset positions
 			while (elm = elm.offsetParent) {
@@ -753,6 +738,7 @@ Glow.provide(function(glow) {
 
 			//deduct all the scroll offsets
 			elm = originalElm;
+			
 			while ((elm = elm.parentNode) && (elm != docBody) && (elm != docElm)) {
 				left -= elm.scrollLeft;
 				top -= elm.scrollTop;
@@ -772,10 +758,8 @@ Glow.provide(function(glow) {
 			}
 
 			//FIXES
-			// Webkit < 500 body's offset gets counted twice for absolutely-positioned elements (or if there's a fixed element)
 			// Gecko - non-absolutely positioned elements that are direct children of body get the body offset counted twice
 			if (
-				(glow.env.webkit < 500 && (involvesFixedElement || getCssValue(offsetParentBeforeBody, 'position') == 'absolute')) ||
 				(glow.env.gecko && getCssValue(offsetParentBeforeBody, 'position') != 'absolute')
 			) {
 				left -= docBody.offsetLeft;
@@ -826,8 +810,7 @@ Glow.provide(function(glow) {
 	*/
 	function getPositionedParent(elm) {
 		var offsetParent = elm.offsetParent,
-		doc = document,
-		docElm = doc.documentElement;
+		docElm = document.documentElement;
 			
 		// get the real positioned parent
 		// IE places elements with hasLayout in the offsetParent chain even if they're position:static

@@ -52,6 +52,10 @@
 		border-width: 10px 10px 5em 5em;
 		border-style: dotted dashed double solid; 
 	}
+	.borderStyleNone {
+		border-width: 100px;
+		border-style: none;
+	}
 	.listTest {
 		list-style-type: square;
 	}
@@ -138,6 +142,13 @@
 	.displayTest2 {
 		display: none;
 	}
+	.colorRed {
+		color: #f00;
+	}
+	.unequalMargins {
+		margin: 10px 11px 12px 13px;
+		width: 10px;
+	}
 	/* anim tests */
 		#fadein, #fadeout, #slideup, #slidedown {
 			width: 100px;
@@ -153,12 +164,14 @@
 	<h2 id="qunit-userAgent"></h2>
 	<h2 id="glow-version"></h2>
 	<ol id="qunit-tests"></ol>
-<div id="nodelistcsstests">
-	<div id="cssTests">
-		<div class="test">Test</div>
-		<div class="width100">Test</div>
+	<div id="nodelistcsstests">
+		<div id="cssTests">
+			<div class="test">Test</div>
+			<div class="width100">Test</div>
 			<div class="height100">Test</div>
-			<div class="containsWidth100Div" style="float:left"><div class="width100">Test</div></div>
+			<div class="containsWidth100Div" style="float:left">
+				<div class="width100">Test</div>
+			</div>
 			<div class="padTest">padTest</div>
 			<div class="borderTest">Test</div>
 			<div class="marginTest">Test</div>
@@ -187,60 +200,64 @@
 			<div class="displayTest1">Test</div>
 			<div class="displayTest2">Test</div>
 			<div class="displayNone" style="display:none"><div class="posTest8">Test</div></div>
-		<div class="height100">Test</div>
+			<div class="height100">Test</div>
 			<div class="height100 padding10">Test</div>
 			<div class="bordered" style="width:100px;height:100px;border:10px solid #000">Test</div>
 			<div class="height100 overflowScroll">Test</div>
 			<div class="containsHeight100Div"><div class="height100">Test</div></div>
-		<div class="width100">Test</div>
+			<div class="width100">Test</div>
 			<div class="width100 padding10">Test</div>
 			<div class="bordered" style="width:100px;border:10px solid #000">Test</div>
 			<div class="width100 overflowScroll">Test</div>
 			<div class="containsWidth100Div" style="float:left"><div class="width100">Test</div></div>
 			<div style="width:500px; height: 100px"> <div id="autoWidthTest" style="border:5px solid red; padding:10px;"></div> </div>
-	</div>
-	
-	<div id="offsetTest" style="position:absolute; top:0; left:0; background:#000; zoom:1; overflow: hidden">
-		<div id="elm1" style="position:relative; height:120px; width:300px; padding:20px; margin: 0 10px 10px 10px">
-			<div id="elm1_1" style="height:5px; width:5px; padding:5px; border:5px solid #000"></div>
+			<div class="borderStyleNone"></div>
+			<div style="display:none"> <div class="colorRed"></div> </div>
+			<div class="unequalMargins"></div>
+			<div id="mixedNodes"><!--comment-->text<div></div></div>
 		</div>
-		<div id="elm2" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
-			<div id="elm2_1" style="height:5px; width:5px; padding:20px; border:5px solid #000"></div>
-		</div>
-		<div id="elm3" style="height:200px; width:130px; padding:20px; margin:10px">
-			<div id="elm3_1" style="height:5px; width:5px; padding:20px; border:5px solid #000; margin: 10px; background: #000"></div>
+		
+		<div id="offsetTest" style="position:absolute; top:0; left:0; background:#000; zoom:1; overflow: hidden">
+			<div id="elm1" style="position:relative; height:120px; width:300px; padding:20px; margin: 0 10px 10px 10px">
+				<div id="elm1_1" style="height:5px; width:5px; padding:5px; border:5px solid #000"></div>
 			</div>
-		<div id="elm4" style="position:absolute; height:50px; width:50px; padding:5px; margin:10px; top:5px; left: 5px">
-			<div id="elm4_1" style="height:5px; width:5px; padding:0px; margin:5px"></div>
-		</div>
-		<div id="elm5" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
-			<div id="elm5_1" style="height:5px; width:5px; padding:0px; margin-top:-10px; background: yellow"></div>
-		</div>
-	</div>
-	
-	
-	<div id="positionTest" style="position:relative; background:#000; zoom:1; overflow: hidden">
-		<div id="pos1" style="position:relative; height:120px; width:300px; padding:20px; margin: 0 10px 10px 10px">
-			<div id="pos1_1" style="height:5px; width:5px; padding:5px; border:5px solid #000"></div>
-		</div>
-		<div id="pos2" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
-			<div id="pos2_1" style="height:5px; width:5px; padding:20px; border:5px solid #000"></div>
-		</div>
-		<div id="pos3" style="height:200px; width:130px; padding:20px; margin:10px">
-			<div id="pos3_1" style="height:5px; width:5px; padding:20px; border:5px solid #000; margin: 10px"></div>
-		</div>
-		<div id="pos4" style="position:absolute; height:50px; width:50px; padding:5px; margin:10px; top:5px; left: 5px">
-			<div id="pos4_1" style="height:5px; width:5px; padding:0px; margin:5px"></div>
-		</div>
-		<div id="pos5" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
-			<div id="pos5_1" style="height:5px; width:5px; padding:0px; margin-top:-10px; background: yellow"></div>
+			<div id="elm2" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
+				<div id="elm2_1" style="height:5px; width:5px; padding:20px; border:5px solid #000"></div>
+			</div>
+			<div id="elm3" style="height:200px; width:130px; padding:20px; margin:10px">
+				<div id="elm3_1" style="height:5px; width:5px; padding:20px; border:5px solid #000; margin: 10px; background: #000"></div>
+				</div>
+			<div id="elm4" style="position:absolute; height:50px; width:50px; padding:5px; margin:10px; top:5px; left: 5px">
+				<div id="elm4_1" style="height:5px; width:5px; padding:0px; margin:5px"></div>
+			</div>
+			<div id="elm5" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
+				<div id="elm5_1" style="height:5px; width:5px; padding:0px; margin-top:-10px; background: yellow"></div>
+			</div>
 		</div>
 		
-		<div id="scrolltests" style="width:300px; height:200px; overflow:scroll; zoom:1;"><div style="width:2000px;height:2000px"></div></div>
-		<p id="visibility-toggle">test</p>
 		
+		<div id="positionTest" style="position:relative; background:#000; zoom:1; overflow: hidden">
+			<div id="pos1" style="position:relative; height:120px; width:300px; padding:20px; margin: 0 10px 10px 10px">
+				<div id="pos1_1" style="height:5px; width:5px; padding:5px; border:5px solid #000"></div>
+			</div>
+			<div id="pos2" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
+				<div id="pos2_1" style="height:5px; width:5px; padding:20px; border:5px solid #000"></div>
+			</div>
+			<div id="pos3" style="height:200px; width:130px; padding:20px; margin:10px">
+				<div id="pos3_1" style="height:5px; width:5px; padding:20px; border:5px solid #000; margin: 10px"></div>
+			</div>
+			<div id="pos4" style="position:absolute; height:50px; width:50px; padding:5px; margin:10px; top:5px; left: 5px">
+				<div id="pos4_1" style="height:5px; width:5px; padding:0px; margin:5px"></div>
+			</div>
+			<div id="pos5" style="position:relative; height:140px; width:300px; padding:20px; margin:10px; border: 10px solid red">
+				<div id="pos5_1" style="height:5px; width:5px; padding:0px; margin-top:-10px; background: yellow"></div>
+			</div>
+			
+			<div id="scrolltests" style="width:300px; height:200px; overflow:scroll; zoom:1;"><div style="width:2000px;height:2000px"></div></div>
+			<p id="visibility-toggle">test</p>
+			
+		</div>
 	</div>
-</div>
 </body>
 </html>
 
