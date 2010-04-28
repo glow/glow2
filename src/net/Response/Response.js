@@ -4,7 +4,8 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.net.Response
 	@class
-	@description Provided in callbacks to {@link glow.net.post glow.net.post} and {@link glow.net.get glow.net.get}
+	@extends glow.event.Event
+	@description Provided in callbacks to {@link glow.net.post glow.net.post}, {@link glow.net.get glow.net.get}, {@link glow.net.put glow.net.put} and {@link glow.net.delete glow.net.delete} and glow.net.Requests load and error events.
 
  
 	@glowPrivateConstructor There is no direct constructor.
@@ -19,9 +20,6 @@ Glow.provide(function(glow) {
 	*/
 	function Response(nativeResponse, timedOut, request) {
 		
-			
-		//run Event constructor
-		//events.Event.call(this);
 			
 		/**
 		@name glow.net.Response#_request
@@ -54,7 +52,7 @@ Glow.provide(function(glow) {
 		/**
 		@name glow.net.Response#timedOut
 		@description Boolean indicating if the requests time out was reached.
-		@type Boolean
+		@type boolean
 		*/
 		
 		this.timedOut = !!timedOut;
@@ -62,7 +60,7 @@ Glow.provide(function(glow) {
 		/**
 		@name glow.net.Response#wasSuccessful
 		@description  Boolean indicating if the request returned successfully.
-		@type Boolean
+		@type boolean
 		*/
 			
 		this.wasSuccessful = (this.status >= 200 && this.status < 300) ||
@@ -74,7 +72,7 @@ Glow.provide(function(glow) {
 	}
 	
 	
-	glow.util.extend(Response, glow.events.Target);
+	glow.util.extend(Response, glow.events.Event);
 	ResponseProto = Response.prototype;
 	
 
@@ -83,8 +81,7 @@ Glow.provide(function(glow) {
 			@name glow.net.Response#text
 			@function
 			@description Gets the body of the response as plain text
-			@returns {String}
-				Response as text
+			@returns {string} Response as text
 		*/
 	
 		ResponseProto.text = function() {
@@ -95,8 +92,7 @@ Glow.provide(function(glow) {
 		@name glow.net.Response#xml
 		@function
 		@description Gets the body of the response as xml
-		@returns {xml}
-			Response as XML
+		@returns {xml} Response as XML
 		*/
 		
 		ResponseProto.xml = function() {
@@ -115,13 +111,13 @@ Glow.provide(function(glow) {
 			else {
 				// check property exists
 				if (!nativeResponse.responseXML) {
-					throw new Error(STR.XML_ERR);
+					throw new Error('Cannot get response as XML, check the mime type of the data');
 				}
 				return nativeResponse.responseXML;
 			}				
 		};
-		/* (hidden from jsdoc as it appeared in output docs)
-		@name glow.net-shouldParseAsXml
+		/**
+		@private
 		@function
 		@description Should the response be treated as xml? This function is used by IE only
 			'this' is the response object
@@ -129,7 +125,7 @@ Glow.provide(function(glow) {
 		*/
 		function shouldParseAsXml() {
 			var contentType = this.header("Content-Type"),
-				endsPlusXml = /\+xml$/;
+				endsPlusXml = str.slice(-4);
 			// IE 6 & 7 fail to recognise Content-Types ending +xml (eg application/rss+xml)
 			// Files from the filesystem don't have a content type, but could be xml files, parse them to be safe
 			return endsPlusXml.test(contentType) || contentType === '';

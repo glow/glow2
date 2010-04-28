@@ -5,24 +5,24 @@ Glow.provide(function(glow) {
 		emptyFunc = function(){},
 		events = glow.events,
 		/**
-			 * @name glow.net.scriptElements
+			 * @name scriptElements
 			 * @private
 			 * @description Script elements that have been added via {@link glow.net.loadScript loadScript}
-			 * @type Array
+			 * @type HTMLElement[]
 			 */
 			scriptElements = [],
 			/**
-			 * @name glow.net.callbackPrefix
+			 * @name callbackPrefix
 			 * @private
 			 * @description Callbacks in _jsonCbs will be named this + a number
-			 * @type String
+			 * @type string
 			 */
 			callbackPrefix = 'c',
 			/**
-			 * @name glow.net.globalObjectName
+			 * @name globalObjectName
 			 * @private
-			 * @description Name of the global object used to store loadScript callbacks
-			 * @type String
+			 * @description Name of the global object used to store getJsonp callbacks
+			 * @type string
 			 */
 			globalObjectName = '_' + glow.UID + 'loadScriptCbs';
 	/**
@@ -32,13 +32,13 @@ Glow.provide(function(glow) {
 			This can be used cross domain, but should only be used with trusted
 			sources as any javascript included in the script will be executed.
  
-		@param {String} url
+		@param {string} url
 			Url of the script. An optional "{callback}" value may be added to the the querystring if the data source supports it.
-		@param {Object} [opts]
+		@param {object} [opts]
 			An object of options to use if "{callback}" is specified in the url.
-			@param {Boolean} [opts.cacheBust=true] Allow a cached response
-			@param {Number} [opts.timeout] Time to allow for the request in seconds
-			@param {String} [opts.charset] Charset attribute value for the script
+			@param {boolean} [opts.cacheBust=true] Allow a cached response
+			@param {number} [opts.timeout] Time to allow for the request in seconds
+			@param {string} [opts.charset] Charset attribute value for the script
 			
  
 		@returns {glow.net.Request}

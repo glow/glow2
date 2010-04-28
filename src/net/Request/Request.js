@@ -24,7 +24,7 @@ Glow.provide(function(glow) {
 			/**
 			@name glow.net.Request#_forceXml
 			@private
-			@type Boolean
+			@type boolean
 			@description Force the response to be treated as xml
 			*/
 			this._forceXml = opts.forceXml;
@@ -36,59 +36,46 @@ Glow.provide(function(glow) {
 			}
 			
 			/**
-			@name glow.net.Request#complete
-			@description Boolean indicating whether the request has completed
-			@example
-			// request.complete with an asynchronous call
-			var request = glow.net.get(
-				"myFile.html", 
-				{
-					async: true,
-						onload: function(response) {
-						alert(request.complete); // returns true
-					}
-				}
-			);
-			alert(request.complete); // returns boolean depending on timing of asynchronous call
-
-			// request.complete with a synchronous call
-			var request = glow.net.get("myFile.html", {async: false;});
-			alert(request.complete); // returns true
-			
-			@type Boolean
-			*/
+				@name glow.net.Request#complete
+				@description Boolean indicating whether the request has completed
+				@example
+					// request.complete with an asynchronous call
+					var request = glow.net.get(
+						"myFile.html").on('load', 
+						function(response){
+							alert(request.complete); // returns true
+						})
+						
+							
+				@type boolean
+					 */
 			this.complete = false;
 
 			
-				/**
-				 * @name glow.net.Request#nativeRequest
-				 * @description The request object from the browser.
-				 *   This may not have the same properties and methods across user agents.
-				 *   Also, this will be undefined if the request originated from loadScript.
-				 * @example
-				var request = glow.net.get(
-					"myFile.html", 
-					{
-						async: true,
-						onload: function(response) {
+			/**
+				@name glow.net.Request#nativeRequest
+				@description The request object from the browser.
+					This may not have the same properties and methods across user agents.
+					Also, this will be undefined if the request originated from getJsonp.
+				@example
+					var request = glow.net.get(
+						"myFile.html").on('load', 
+						function(response){
 							alert(request.NativeObject); // returns Object()
-						}
-					}
-				);
-				 * @type Object
-				 */
+						});
+							
+				@type Object
+						 */
 				this.nativeRequest = requestObj;
+	}
 			
-
-
-		
 		
 		
 		 
 	/**
 		@name glow.net.Request#event:load
 		@event
-		@param {glow.events.Event} event Event Object
+		@param {glow.net.Response} Response Net Response object
 		@description Fired when the request is sucessful
 			For a get / post request, this will be fired when request returns
 			with an HTTP code of 2xx. 
@@ -101,9 +88,8 @@ Glow.provide(function(glow) {
 		@description Fired when the request is aborted
 			If you cancel the default (eg, by returning false) the request
 			will continue.
-		@description Returned by {@link glow.net.post glow.net.post}, {@link glow.net.get glow.net.get}, {@link glow.net.put glow.net.put} and {@link glow.net.delete glow.net.delete}
-
-			glowPrivateConstructor There is no direct constructor, since {@link glow.net.post glow.net.post} and {@link glow.net.get glow.net.get} create the instances.
+		
+		glowPrivateConstructor There is no direct constructor, since {@link glow.net.post glow.net.post} and {@link glow.net.get glow.net.get} create the instances.
 	*/
  
 	/**
@@ -111,7 +97,7 @@ Glow.provide(function(glow) {
 		@event
 		@param {glow.events.Event} event Event Object
 		@description Fired when the request is unsucessful
-			For a get/post request, this will be fired when request returns
+			For a get/post/put/delete request, this will be fired when request returns
 			with an HTTP code which isn't 2xx or the request times out. loadScript
 			calls will fire 'error' only if the request times out.
 	*/
@@ -123,68 +109,23 @@ Glow.provide(function(glow) {
  
 		@param {Object} requestObj
 			Object which represents the request type.
-			For XHR requests it should be an XmlHttpRequest object, for loadScript
+			For XHR requests it should be an XmlHttpRequest object, for getJsonp
 			requests it should be a number, the Index of the callback in glow.net._jsonCbs
  
 	*/
 		
-	/**
-		@name glow.net.Request#complete
-		@description Boolean indicating whether the request has completed
-		@example
-			// request.complete with an asynchronous call
-			var request = glow.net.get(
-				"myFile.html").on('load', 
-				function(response){
-					alert(request.complete); // returns true
-				})
-				
-					
-		@type Boolean
-			 */
+	
 		
-	/**
-		@name glow.net.Request#nativeRequest
-		@description The request object from the browser.
-			This may not have the same properties and methods across user agents.
-			Also, this will be undefined if the request originated from loadScript.
-		example
-			var request = glow.net.get(
-				"myFile.html").on('load', 
-				function(response){
-					alert(request.NativeObject); // returns Object()
-				});
-					
-		@type Object
-				 */
-	}
+	
 	glow.util.extend(Request, glow.events.Target);
 	RequestProto = Request.prototype;
 	
-	/**
-		@name glow.net.Request#send
-		@function
-		@description Sends the request.
-			This is done automatically unless the defer option is set
-		@example
-			var request = glow.net.get(
-				"myFile.html").on('load', 
-				function(response){
-					// handle response
-				}); 
-					
-			request.send(); // returns "Loaded"
-		@returns {Object}
-			This for async requests or a response object for sync requests
-	*/
-	RequestProto.send = function() {};
+	
 	/**
 		@name glow.net.Request#abort
 		@function
-		@description Aborts an async request
-			The load & error events will not fire. If the request has been
-			made using {@link glow.net.loadScript loadScript}, the script
-			may still be loaded but	the callback will not be fired.
+		@description Aborts a request
+			The load & error events will not fire.
 		@example
 			var request = glow.net.get(
 				"myFile.html").on('load', 
@@ -196,7 +137,7 @@ Glow.provide(function(glow) {
 					}
 				});  
 			request.abort(); // returns "Something bad happened.  The request was aborted"
-		@returns thistwixst
+		@returns this
 	*/
 	RequestProto.abort = function() {
 				if (!this.completed && !events.fire(this, 'abort').defaultPrevented()) {
