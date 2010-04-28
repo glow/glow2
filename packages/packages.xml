@@ -19,9 +19,9 @@
 			<file>src/net/net.js</file>
 			<file>src/net/Request/Request.js</file>
 			<file>src/net/Response/Response.js</file>
-			<file>src/net/Jsonp/Jsonp.js</file>
-			<file>src/net/Resource/Resource.js</file>
-			<file>src/net/Crossdomain/Crossdomain.js</file>
+			<file>src/net/Jsonp.js</file>
+			<file>src/net/Resource.js</file>
+			<file>src/net/Crossdomain.js</file>
 			<file>src/NodeList/NodeList.js</file>
 			<file>src/NodeList/attributes.js</file>
 			<file>src/NodeList/_sizzle/sizzle/sizzle.js</file>
