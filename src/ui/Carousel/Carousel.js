@@ -4,13 +4,12 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.Carousel
 		@class
-		@extends glow.ui.Widget (happy for this to change depending on what's best for the implementation)
-		@description Create a payne of elements that scroll from one to another.
-			This is a component of (TODO: names of widgets that use this).
+		@extends glow.ui.Widget
+		@description Create a pane of elements that scroll from one to another.
 			
 		@param {glow.NodeList|selector|HTMLElement} itemContainer Container of the carousel items.
 			The direct children of this item will be treated as carousel items. They will
-			be positioned next to eacho ther horizontally.
+			be positioned next to each other horizontally.
 			
 			Each item takes up the same horizontal space, equal to the width of the largest
 			item (including padding and border) + the largest of its horizontal margins (as set in CSS).
@@ -20,6 +19,7 @@ Glow.provide(function(glow) {
 			
 		@param {object} [opts] Options
 			@param {number} [opts.duration=0.2] Duration of scrolling animations in seconds.
+			
 			@param {string|function} [opts.tween='easeBoth'] Tween to use for animations.
 				This can be a property name of {@link glow.tweens} or a tweening function.
 			
@@ -29,6 +29,7 @@ Glow.provide(function(glow) {
 				be added to the end of the carousel so pages stay in sync.
 				
 				If 'false' or 1, the carousel moves one item at a time.
+				
 			@param {boolean} [opts.loop=false] Loop the carousel from the last item to the first.
 			
 			@param {number} [opts.spotlightSize] The number of items to treat as main spotlighted items.
@@ -41,13 +42,9 @@ Glow.provide(function(glow) {
 				the width of the container, allowing room for next & previous buttons.
 				Any remaining width will be used to partially show the previous/next item
 				beneath the next & previous buttons.
-				
-			@param {string} [opts.pageNav] The position of the paging navigation.
-				By default, no page navigation is displayed.
 			
-				TODO: waiting for clarification from style guide
-				
 			@param {string} [opts.className] Class name to add to the container.
+			
 			@param {string} [opts.id]  Id to add to the container.
 				
 		@example
@@ -70,6 +67,61 @@ Glow.provide(function(glow) {
 		@name glow.ui.Carousel#itemContainer
 		@type glow.NodeList
 		@description Parent element of the carousel items.
+	*/
+	
+	/**
+		@name glow.ui.Carousel#addPageNav
+		@function
+		@description Add page navigation to the carousel.
+			The page navigation show the user which position they are viewing
+			within the carousel.
+		
+		@param {string|selector|HTMLElement} position The position of the paging navigation.
+			This can be a CSS selector pointing to an element, or one of the following
+			shortcuts:
+		
+			<dl>
+				<dt>belowLast</dt>
+				<dd>Display the nav beneath the last spotlight item</dd>
+				<dt>belowNext</dt>
+				<dd>Display the nav beneath the next button</dd>
+				<dt>belowCenter</dt>
+				<dd>Display the nav beneath the carousel, centred</dd>
+				<dt>aboveLast</dt>
+				<dd>Display the nav above the last spotlight item</dd>
+				<dt>aboveNext</dt>
+				<dd>Display the nav above the next button</dd>
+				<dt>aboveCenter</dt>
+				<dd>Display the nav above the carousel, centred</dd>
+			</dl>
+			
+		@param {boolean} [showNumbers=false] Display as numbers rather than blocks.
+		
+		@returns this
+		
+		@example
+			new glow.ui.Carousel('#carouselContainer').addPageNav('belowLast', true);
+	*/
+	CarouselProto.addPageNav = function(position, showNumbers) {};
+	
+	/**
+		@name glow.ui.Carousel#addTitles
+		@function
+		@description Add title boxes beneath each item in the carousel.
+			These move independently of the carousel, fading in & out rather than
+			scrolling.
+			
+		@param {selector} selector Selector to identify the title box in each carousel item.
+			This element will moved out of the carousel and shown beneath the carousel item
+			when it is in the spotlight.
+			
+		@param {number} [fadeDuration] Duration to fade the title boxes in/out.
+			By default, this is the same as the carousel move duration.
+			
+		@returns this
+		
+		@example
+			new glow.ui.Carousel('#carouselContainer').addTitles('div.title');
 	*/
 	
 	/**
