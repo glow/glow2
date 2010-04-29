@@ -7,7 +7,7 @@ Glow.provide(function(glow) {
 		/**
 			 * @name scriptElements
 			 * @private
-			 * @description Script elements that have been added via {@link glow.net.loadScript loadScript}
+			 * @description Script elements that have been added via {@link glow.net.getJsonp getJsonp}
 			 * @type HTMLElement[]
 			 */
 			scriptElements = [],
@@ -33,19 +33,18 @@ Glow.provide(function(glow) {
 			sources as any javascript included in the script will be executed.
  
 		@param {string} url
-			Url of the script. An optional "{callback}" value may be added to the the querystring if the data source supports it.
+			Url of the script. "{callback}" must be added to the the querystring to ensure this method functions properly.
 		@param {object} [opts]
-			An object of options to use if "{callback}" is specified in the url.
-			@param {boolean} [opts.cacheBust=true] Allow a cached response
 			@param {number} [opts.timeout] Time to allow for the request in seconds
 			@param {string} [opts.charset] Charset attribute value for the script
 			
  
-		@returns {glow.net.Request}
+		@returns {glow.net.Response}
  
 		@example
 			// load script with a callback specified
-			glow.net.getJsonp("http://www.server.com/json/tvshows.php?jsoncallback={callback}").on('load'), 
+			glow.net.getJsonp("http://www.server.com/json/tvshows.php?jsoncallback={callback}")
+			.on('load'), 
 				function(data){
 					// use data
 				});
@@ -63,7 +62,6 @@ Glow.provide(function(glow) {
 			
 			request = new glow.net.JsonpRequest(newIndex, opts),
 			
-			url = opts.cacheBust ? url : noCacheUrl(url),
 			
 			//the global property used to hide callbacks
 			globalObject = window[globalObjectName] || (window[globalObjectName] = {});
@@ -126,17 +124,9 @@ Glow.provide(function(glow) {
 					}, opts.timeout * 1000);
 					request.fire('abort');
 				}
-				//using setTimeout to stop Opera 9.0 - 9.26 from running the loaded script before other code
-				//in the current script block
-				if (glow.env.opera) {
-					setTimeout(function() {
-						if (script) { //script may have been removed already
-							script.src = url;
-						}
-					}, 0);
-				} else {
-					script.src = url;
-				}
+				
+				script.src = url;
+				
 				//add script to page
 				document.body.appendChild(script);
 				
@@ -148,95 +138,57 @@ Glow.provide(function(glow) {
 		
 	/**
 		@name glow.net.JsonpRequest
-		@class
 		@description Returned by {@link glow.net.getResources }
 		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	 
-	function JsonpRequest(requestObj, opts) {
-	/**
-			 * @name glow.net.Request#_timeout
-			 * @private
-			 * @description timeout ID. This is set by makeXhrRequest or loadScript
+	function JsonpRequest(request, opts) {
+		/**
+		@private
+		@description timeout ID. This is set by makeXhrRequest or loadScript
 			 * @type Number
 			 */
 			this._timeout = null;
 			
-			/*
-			 @name glow.net.Request#_forceXml
-			 @private
-			 @type Boolean
-			 @description Force the response to be treated as xml
-			*/
-			this._forceXml = opts.forceXml;
 			
-			// force the reponse to be treated as xml
-			// IE doesn't support overrideMineType, we need to deal with that in {@link glow.net.Response#xml}
-			if (opts.forceXml && requestObj.overrideMimeType) {
-				requestObj.overrideMimeType('application/xml');
-			}
 			
-			/**
-			 * @name glow.net.Request#complete
-			 * @description Boolean indicating whether the request has completed
-			 * @example
-				// request.complete with an asynchronous call
-				var request = glow.net.get(
-					"myFile.html", 
-					{
-						async: true,
-						onload: function(response) {
-							alert(request.complete); // returns true
-						}
-					}
-				);
-				alert(request.complete); // returns boolean depending on timing of asynchronous call
+			
+			
+		/**
+		@name glow.net.JsonpRequest#complete
+		@description Boolean indicating whether the request has completed
+		@example
 
-				// request.complete with a synchronous call
-				var request = glow.net.get("myFile.html", {async: false;});
-				alert(request.complete); // returns true
-			 * @type Boolean
-			 */
+		var request = glow.net.getJsonp(
+			"myFile.html").on('load', function(request){ 
+				request.complete); // returns true
+			});
+				
+		@type Boolean
+		*/
 			this.complete = false;
 
-			if (typeof requestObj == "number") {
+
 				/**
-				 * @name glow.net.Request#_callbackIndex
+				 * @name glow.net.JsonpRequest#_callbackIndex
 				 * @private
 				 * @description Index of the callback in glow.net._jsonCbs
 				 *   This is only relavent for requests made via loadscript using the
 				 *   {callback} placeholder
 				 * @type Number
 				 */
-				this._callbackIndex = requestObj;
-			} else {
-				/**
-				 * @name glow.net.Request#nativeRequest
-				 * @description The request object from the browser.
-				 *   This may not have the same properties and methods across user agents.
-				 *   Also, this will be undefined if the request originated from loadScript.
-				 * @example
-				var request = glow.net.get(
-					"myFile.html", 
-					{
-						async: true,
-						onload: function(response) {
-							alert(request.NativeObject); // returns Object()
-						}
-					}
-				);
-				 * @type Object
-				 */
-				this.nativeRequest = requestObj;
-			}
+				this._callbackIndex = request;
+			
 	 
+	
+	}
+	
 	/**
 		@name glow.net.JsonpRequest#event:load
 		@event
 		@param {glow.events.Event} event Event Object
 		@description Fired when the request is sucessful
-			For a get / post request, this will be fired when request returns
-			with an HTTP code of 2xx. 
+			
 	*/
  
 	/**
@@ -244,26 +196,27 @@ Glow.provide(function(glow) {
 		@event
 		@param {glow.events.Event} event Event Object
 		@description Fired when the request is aborted
-			If you cancel the default (eg, by returning false) the request
-			will continue.
-		@description Returned by {@link glow.net.post glow.net.post}, {@link glow.net.get glow.net.get} async requests and {@link glow.net.loadScript glow.net.loadScript}
-			@see <a href="../furtherinfo/net/net.shtml">Using glow.net</a>
-			glowPrivateConstructor There is no direct constructor, since {@link glow.net.post glow.net.post} and {@link glow.net.get glow.net.get} create the instances.
+
+
 	*/
  
 	/**
 		@name glow.net.JsonpRequest#event:error
 		@event
 		@param {glow.events.Event} event Event Object
-		@description Fired when the request is unsucessful
-			For a get/post request, this will be fired when request returns
-			with an HTTP code which isn't 2xx or the request times out. loadScript
-			calls will fire 'error' only if the request times out.
+		@description Fired when the request times out
+			getJsonp calls will fire 'error' only if the request times out.
 	*/
-	}
+	
 	glow.util.extend(JsonpRequest, glow.events.Target);
 	JsonpRequestProto = JsonpRequest.prototype;
 	
+	/**
+		@name glow.net.JsonpRequest#abort
+		@function
+		@description Will attempt to abort the request
+			
+	*/
 	JsonpRequestProto.abort = function() {
 			glow.net.abortRequest(this);
 			this.fire('abort')
