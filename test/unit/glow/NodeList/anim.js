@@ -84,8 +84,8 @@ test('animating colour', 2, function() {
 	}, {startNow:false}).on('frame', function() {
 		colourLog.push( nodeList.css('background-color') );
 	}).on('complete', function() {
-		equal(colourLog[0], 'rgb(255, 0, 0)', 'color start value');
-		equal(colourLog.slice(-1)[0], 'rgb(0, 255, 255)', 'oolor end value');
+		equal(colourLog[0], 'rgba(255, 0, 0, 1)', 'color start value');
+		equal(colourLog.slice(-1)[0], 'rgba(0, 255, 255, 1)', 'oolor end value');
 		
 		start();
 	}).start();
