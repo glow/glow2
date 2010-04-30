@@ -43,15 +43,55 @@ Glow.provide(function(glow) {
 				Any remaining width will be used to partially show the previous/next item
 				beneath the next & previous buttons.
 			
+			@param {selector} [opts.titleBox] Treat an element as the title box for each item.
+				This is a selector which points to an element within each carousel item. That
+				element will moved out of the carousel and shown beneath the carousel item
+				when it is in the spotlight.
+			
+				These move independently of the carousel, fading in & out rather than
+				scrolling.
+				
+				By default, title boxes are not used.
+			
 			@param {string} [opts.className] Class name to add to the container.
 			
 			@param {string} [opts.id]  Id to add to the container.
 				
 		@example
+			// This creates a carousel out of HTML like...
+			// <ol id="carouselItems">
+			//   <li>
+			//     <a href="anotherpage.html">
+			//       <img width="200" height="200" src="img.jpg" alt="" />
+			//	   </a>
+			//     <div class="furtherInfo">This is item 1</div>
+			//   </li>
+			//   ...more list items like above...
 			var myCarousel = new glow.ui.Carousel('#carouselItems', {
 				loop: true,
-				paging: true
+				paging: true,
+				titleBox: 'div.furtherInfo'
+			}).on('choose', function(e) {
+				// follow the link when the item's selected
+				window.location = e.item.get('a').prop('href');
+				return false;
 			});
+			
+		@example
+			// Make a carousel of thumbnails, which show the full image when clicked.
+			// Carousel items look like this...
+			// <li>
+			//   <a href="fullimage.jpg">
+			//     <img src="thumbnail.jpg" width="100" height="100" alt="whatever" />
+			//   </a>
+			// </li>
+			var fullImage = glow('#fullImage'),
+				myCarousel = new glow.ui.Carousel('#carouselItems', {
+					spotlightSize: 6
+				}).addPageNav('belowCenter').on('choose', function(e) {
+					fullImage.prop( 'src', e.item.get('a').prop('href') );
+					return false;
+				});
 	*/
 	function Carousel(itemContainer, opts) {};
 	glow.util.extend(Carousel, glow.ui.Widget);
@@ -105,26 +145,6 @@ Glow.provide(function(glow) {
 	CarouselProto.addPageNav = function(position, showNumbers) {};
 	
 	/**
-		@name glow.ui.Carousel#addTitles
-		@function
-		@description Add title boxes beneath each item in the carousel.
-			These move independently of the carousel, fading in & out rather than
-			scrolling.
-			
-		@param {selector} selector Selector to identify the title box in each carousel item.
-			This element will moved out of the carousel and shown beneath the carousel item
-			when it is in the spotlight.
-			
-		@param {number} [fadeDuration] Duration to fade the title boxes in/out.
-			By default, this is the same as the carousel move duration.
-			
-		@returns this
-		
-		@example
-			new glow.ui.Carousel('#carouselContainer').addTitles('div.title');
-	*/
-	
-	/**
 		@name glow.ui.Carousel#spotlightItems
 		@function
 		@description Get the currently spotlighted items.
@@ -149,6 +169,9 @@ Glow.provide(function(glow) {
 		@description Move the items so a given index is in the spotlight.
 		
 		@param {number} itemIndex Item index to move to.
+		
+		@param {boolean} [animate=true] Transition to the item.
+			If false, the carousel will switch to the new index.
 		
 		@returns this
 	*/

@@ -1,8 +1,8 @@
 Glow.provide(function(glow) {
-	var undefined, CarouselPayneProto;
+	var undefined, CarouselPaneProto;
 	
 	/**
-		@name glow.ui.CarouselPayne
+		@name glow.ui.CarouselPane
 		@class
 		@extends glow.ui.Widget
 		@description Create a payne of elements that scroll from one to another.
@@ -46,18 +46,18 @@ Glow.provide(function(glow) {
 				swooshing behaviour we have in Glow 1.
 				
 		@example
-			new glow.ui.CarouselPayne('#carouselItems', {
+			new glow.ui.CarouselPane('#carouselItems', {
 				duration: 0.4,
 				step: 2,
 				loop: true
 			});
 	*/
-	function CarouselPayne(container, opts) {};
-	glow.util.extend(CarouselPayne, glow.ui.Widget);
-	CarouselPayneProto = CarouselPayne.prototype;
+	function CarouselPane(container, opts) {};
+	glow.util.extend(CarouselPane, glow.ui.Widget);
+	CarouselPaneProto = CarouselPane.prototype;
 	
 	/**
-		@name glow.ui.CarouselPayne#_offsetLeft
+		@name glow.ui.CarouselPane#_offsetLeft
 		@type number
 		@description The number of pixels from the left of the container to the first spotlighted item.
 			This will be used by the main Carousel class to determine the width of the
@@ -65,7 +65,7 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
-		@name glow.ui.CarouselPayne#_offsetRight
+		@name glow.ui.CarouselPane#_offsetRight
 		@type number
 		@description The number of pixels from the right of the container to the last spotlighted item.
 			This will be used by the main Carousel class to determine the width of the
@@ -76,39 +76,39 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
-		@name glow.ui.CarouselPayne#container
+		@name glow.ui.CarouselPane#container
 		@type glow.NodeList
-		@description CarouselPayne container element
+		@description CarouselPane container element
 	*/
 	
 	/**
-		@name glow.ui.CarouselPayne#items
+		@name glow.ui.CarouselPane#items
 		@type glow.NodeList
 		@description Carousel items.
-			This is the same as `myCarouselPayne.container.children()`
+			This is the same as `myCarouselPane.container.children()`
 	*/
 	
 	/**
-		@name glow.ui.CarouselPayne#spotlightItems
+		@name glow.ui.CarouselPane#spotlightItems
 		@function
 		@description Get the currently spotlighted items.
 		
 		@returns {glow.NodeList}
 	*/
-	CarouselPayneProto.spotlightItems = function() {};
+	CarouselPaneProto.spotlightItems = function() {};
 	
 	/**
-		@name glow.ui.CarouselPayne#spotlightIndexes
+		@name glow.ui.CarouselPane#spotlightIndexes
 		@function
 		@description Gets an array of spotlighted indexes.
-			These are the indexes of the nodes within {@link glow.ui.CarouselPayne#items}.
+			These are the indexes of the nodes within {@link glow.ui.CarouselPane#items}.
 		
 		@returns {number[]}
 	*/
-	CarouselPayneProto.spotlightIndexes = function() {};
+	CarouselPaneProto.spotlightIndexes = function() {};
 	
 	/**
-		@name glow.ui.CarouselPayne#moveTo
+		@name glow.ui.CarouselPane#moveTo
 		@function
 		@description Move the items so a given index is the leftmost active item.
 			This method respects the carousel's limits and its step. If it's
@@ -119,10 +119,10 @@ Glow.provide(function(glow) {
 		
 		@returns this
 	*/
-	CarouselPayneProto.moveTo = function() {};
+	CarouselPaneProto.moveTo = function() {};
 	
 	/**
-		@name glow.ui.CarouselPayne#moveBy
+		@name glow.ui.CarouselPane#moveBy
 		@function
 		@description Move by a number of items.
 		
@@ -136,10 +136,10 @@ Glow.provide(function(glow) {
 		
 		@returns this
 	*/
-	CarouselPayneProto.moveBy = function() {};
+	CarouselPaneProto.moveBy = function() {};
 	
 	/**
-		@name glow.ui.CarouselPayne#moveStart
+		@name glow.ui.CarouselPane#moveStart
 		@function
 		@description Start moving the carousel in a particular direction.
 			If opts.slide is false this has the effect of calling
@@ -153,15 +153,15 @@ Glow.provide(function(glow) {
 		
 		@example
 			nextBtn.on('mousedown', function() {
-				myCarouselPayne.moveStart();
+				myCarouselPane.moveStart();
 			}).on('mouseup', function() {
-				myCarouselPayne.moveStop();
+				myCarouselPane.moveStop();
 			});
 	*/
-	CarouselPayneProto.moveStart = function() {};
+	CarouselPaneProto.moveStart = function() {};
 	
 	/**
-		@name glow.ui.CarouselPayne#moveStop
+		@name glow.ui.CarouselPane#moveStop
 		@function
 		@description Stop moving the carousel.
 			The current animation will end, leaving the carousel
@@ -169,21 +169,21 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	CarouselPayneProto.moveStop = function() {};
+	CarouselPaneProto.moveStop = function() {};
 	
 	/**
-		@name glow.ui.CarouselPayne#destroy
+		@name glow.ui.CarouselPane#destroy
 		@function
 		@description Remove listeners and styles from this instance.
 			HTML elements will not be destroyed.
 			
 		@returns undefined
 	*/
-	CarouselPayneProto.moveStop = function() {};
+	CarouselPaneProto.moveStop = function() {};
 	
 	/**
-		TODO: this behaviour is in Focusable, CarouselPayne just needs to pass the event through
-		@name glow.ui.CarouselPayne#event:choose
+		TODO: this behaviour is in Focusable, CarouselPane just needs to pass the event through
+		@name glow.ui.CarouselPane#event:choose
 		@event
 		@description Fires when a carousel item is chosen.
 			Items are chosen by clicking, or pressing enter when a child is active.
@@ -192,11 +192,11 @@ Glow.provide(function(glow) {
 		
 		@param {glow.events.Event} event Event Object
 		@param {glow.NodeList} event.item Item chosen
-		@param {number} event.itemIndex The index of the chosen item in {@link glow.ui.CarouselPayne#items}.
+		@param {number} event.itemIndex The index of the chosen item in {@link glow.ui.CarouselPane#items}.
 	*/
 	
 	/**
-		@name glow.ui.CarouselPayne#event:move
+		@name glow.ui.CarouselPane#event:move
 		@event
 		@description Fires when the carousel is about to move.
 			Canceling this event prevents the carousel from moving.
@@ -214,13 +214,13 @@ Glow.provide(function(glow) {
 			
 		@example
 			// double the amount a carousel will move by
-			myCarouselPayne.on('move', function(e) {
+			myCarouselPane.on('move', function(e) {
 				e.moveBy *= 2;
 			});
 	*/
 	
 	/**
-		@name glow.ui.CarouselPayne#event:afterMove
+		@name glow.ui.CarouselPane#event:afterMove
 		@event
 		@description Fires when the carousel has finished moving.
 			Canceling this event prevents the carousel from moving.
@@ -233,11 +233,11 @@ Glow.provide(function(glow) {
 			
 		@example
 			// double the amount a carousel will move by
-			myCarouselPayne.on('afterMove', function(e) {
+			myCarouselPane.on('afterMove', function(e) {
 				// show content related to this.spotlightItems()[0]
 			});
 	*/
 	
 	// EXPORT
-	glow.ui.CarouselPayne = CarouselPayne;
+	glow.ui.CarouselPane = CarouselPane;
 });
