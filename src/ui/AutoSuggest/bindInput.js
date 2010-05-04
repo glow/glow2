@@ -5,21 +5,21 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.AutoSuggest#bindOpts
 		@type Object
-		@description The options object passed into #bindInput, with defaults added
+		@description The options object passed into #bindInput, with defaults added.
 	*/
 	
 	/**
 		@name glow.ui.AutoSuggest#input
 		@type glow.NodeList
 		@description Refers to the input element to which this is linked to, or an empty NodeList.
-			Link an input to an AutoSuggest using {@link glow.ui.AutoSuggest#bindInput bindInput}
+			Link an input to an AutoSuggest using {@link glow.ui.AutoSuggest#bindInput bindInput}.
 	*/
 	AutoSuggestProto.input = glow();
 	
 	/**
 		@name glow.ui.AutoSuggest#overlay
 		@type glow.ui.Overlay
-		@description The overlay linked to this autosuggest
+		@description The overlay linked to this autosuggest.
 			The Overlay is created when {@link glow.ui.AutoSuggest#bindInput bindInput} is
 			called.
 	*/
@@ -181,7 +181,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.AutoSuggest#bindInput
 		@function
-		@description Link this autosuggest to a text input
+		@description Link this autosuggest to a text input.
 			This triggers {@link glow.ui.AutoSuggest#find} when the value in
 			the input changes.
 			
@@ -213,7 +213,7 @@ Glow.provide(function(glow) {
 			This prevents searches being made on each key press, instead it
 			waits for the input to be idle for a given number of seconds.
 		@param {string} [opts.anim] Animate the Overlay when it shows/hides.
-			This can be any parameter accepted by {@link glow.ui.Overlay#setAnim Overlay#setAnim}
+			This can be any parameter accepted by {@link glow.ui.Overlay#setAnim Overlay#setAnim}.
 			
 		@returns this
 	*/

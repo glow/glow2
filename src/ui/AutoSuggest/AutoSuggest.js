@@ -10,7 +10,7 @@ Glow.provide(function(glow) {
 		@name glow.ui.AutoSuggest
 		@extends glow.ui.Widget
 		@constructor
-		@description Create a menu that displays results filtered by a search term
+		@description Create a menu that displays results filtered by a search term.
 			This widget can be easily linked to a text input via {@link glow.ui.AutoSuggest#linkToInput}
 			so results will be filtered by text entered by the user. This appears as a list of selectable
 			items below the input element (optional) which dynamically updates based on what
@@ -29,10 +29,10 @@ Glow.provide(function(glow) {
 				scroll to get to further results.
 				
 				By default, no maximum is imposed.
-			@param {number} [opts.width] Apply a width to the results list
+			@param {number} [opts.width] Apply a width to the results list.
 				By default, the AutoSuggest is the full width of its containing element,
 				or the width of the input it's linked to if autoPositioning.
-			@param {number} [opts.maxResults] Limit the number of results to display
+			@param {number} [opts.maxResults] Limit the number of results to display.
 			@param {number} [opts.minLength=3] Minimum number of chars before search is executed
 				This prevents searching being performed until a specified amount of chars
 				have been entered.
@@ -78,7 +78,7 @@ Glow.provide(function(glow) {
 			});
 	*/
 	function AutoSuggest(opts) {		
-		this._opts = opts = glow.util.apply({
+		opts = glow.util.apply({
 			minLength: 3,
 			keyboardNav: 'arrows-y',
 			activateFirst: true
@@ -92,12 +92,6 @@ Glow.provide(function(glow) {
 	AutoSuggestProto = AutoSuggest.prototype;
 	
 	/**
-		@name glow.ui.AutoSuggest#_opts
-		@type Object
-		@description Options provided to the constructor with defaults added
-	*/
-	
-	/**
 		@name glow.ui.AutoSuggest#_loading
 		@type boolean
 		@description True if the autosuggest is waiting for data.
@@ -108,26 +102,26 @@ Glow.provide(function(glow) {
 		@name glow.ui.AutoSuggest#_pendingFind
 		@type string
 		@description Pending search string.
-			This is populated if find is called while the autoSuggest is _loading
+			This is populated if find is called while the autoSuggest is _loading.
 	*/
 	
 	/**
 		@name glow.ui.AutoSuggest#_data
 		@type Object[]
-		@description Array of objects, the current datasource for this AutoSuggest
+		@description Array of objects, the current datasource for this AutoSuggest.
 	*/
 	AutoSuggestProto._data = [];
 	
 	/**
 		@name glow.ui.AutoSuggest#_dataFunc
 		@type function
-		@description Function used for fetching data (potentially) async
+		@description Function used for fetching data (potentially) async.
 	*/
 	
 	/**
 		@name glow.ui.AutoSuggest#_filter
 		@type function
-		@description The current filter function
+		@description The current filter function.
 	*/
 	AutoSuggestProto._filter = function(val, caseSensitive) {
 		var nameStart = this.name.slice(0, val.length);
@@ -139,7 +133,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.AutoSuggest#_format
 		@type function
-		@description The current format function
+		@description The current format function.
 	*/
 	AutoSuggestProto._format = function(result, val) {
 		var text = tmpDiv.text(result.name).html(),
@@ -218,7 +212,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.AutoSuggest#setFilter
 		@function
-		@description Set the function used to filter the dataset for results
+		@description Set the function used to filter the dataset for results.
 			Overwrite this to change the filtering behaviour.
 		
 		@param {function} filter Filter function.
@@ -231,7 +225,7 @@ Glow.provide(function(glow) {
 			lowercased.
 		  
 			The default filter will return items where the search term matches the start of their 'name'
-			property. If the dataset is simply an array of strings, that string will be used instead of the 'name' property
+			property. If the dataset is simply an array of strings, that string will be used instead of the 'name' property.
 		
 		@example
 			// Search the name property for strings that contain val
@@ -260,7 +254,7 @@ Glow.provide(function(glow) {
 		@function
 		@description Control how matches are output.
 			
-		@param {function} formatter Function to generate output
+		@param {function} formatter Function to generate output.
 			The first param to your function will be the matched item from your data list.
 			The second param is the search value.
 			
@@ -286,7 +280,7 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
-		@description Process the data into an acceptable format for #_data
+		@description Process the data into an acceptable format for #_data.
 	*/
 	function populateData(autoSuggest, data) {
 		var i,
@@ -396,7 +390,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.AutoSuggest#data
 		@function
-		@description Set the data or datasource to search
+		@description Set the data or datasource to search.
 			This give the AutoSuggest the data to search, or the means to fetch
 			the data to search.
 			
