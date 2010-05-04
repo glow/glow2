@@ -32,7 +32,7 @@ Glow.provide(function(glow) {
 				
 			@param {boolean} [opts.loop=false] Loop the carousel from the last item to the first.
 			
-			@param {number} [opts.spotlightSize] The number of items to treat as main spotlighted items.
+			@param {number} [opts.spotlight] The number of items to treat as main spotlighted items.
 				A carousel may be wide enough to display 2 whole items, but setting
 				this to 1 will result in the spotlight item sitting in the middle, with
 				half of the previous item appearing before, and half the next item
@@ -67,7 +67,7 @@ Glow.provide(function(glow) {
 				loop: true,
 				paging: true,
 				itemTitles: 'div.furtherInfo'
-			}).on('choose', function(e) {
+			}).on('select', function(e) {
 				// follow the link when the item's selected
 				window.location = e.item.get('a').prop('href');
 				return false;
@@ -83,8 +83,8 @@ Glow.provide(function(glow) {
 			// </li>
 			var fullImage = glow('#fullImage'),
 				myCarousel = new glow.ui.Carousel('#carouselItems', {
-					spotlightSize: 6
-				}).addPageNav('belowCenter').on('choose', function(e) {
+					spotlight: 6
+				}).addPageNav('belowCenter').on('select', function(e) {
 					fullImage.prop( 'src', e.item.get('a').prop('href') );
 					return false;
 				});
@@ -112,7 +112,8 @@ Glow.provide(function(glow) {
 			The page navigation show the user which position they are viewing
 			within the carousel.
 		
-		@param {string|selector|HTMLElement} position The position of the paging navigation.
+		@param {Object} [opts] Options object.
+		@param {string|selector|HTMLElement} [opts.position='belowLast'] The position of the paging navigation.
 			This can be a CSS selector pointing to an element, or one of the following
 			shortcuts:
 		
@@ -121,24 +122,27 @@ Glow.provide(function(glow) {
 				<dd>Display the nav beneath the last spotlight item</dd>
 				<dt>belowNext</dt>
 				<dd>Display the nav beneath the next button</dd>
-				<dt>belowCenter</dt>
+				<dt>belowMiddle</dt>
 				<dd>Display the nav beneath the carousel, centred</dd>
 				<dt>aboveLast</dt>
 				<dd>Display the nav above the last spotlight item</dd>
 				<dt>aboveNext</dt>
 				<dd>Display the nav above the next button</dd>
-				<dt>aboveCenter</dt>
+				<dt>aboveMiddle</dt>
 				<dd>Display the nav above the carousel, centred</dd>
 			</dl>
 			
-		@param {boolean} [showNumbers=false] Display as numbers rather than blocks.
+		@param {boolean} [opts.useNumbers=false] Display as numbers rather than blocks.
 		
 		@returns this
 		
 		@example
-			new glow.ui.Carousel('#carouselContainer').addPageNav('belowLast', true);
+			new glow.ui.Carousel('#carouselContainer').addPageNav({
+				position: 'belowMiddle',
+				useNumbers: true
+			});
 	*/
-	CarouselProto.addPageNav = function(position, showNumbers) {};
+	CarouselProto.addPageNav = function(opts) {};
 	
 	/**
 		@name glow.ui.Carousel#spotlightItems
@@ -218,16 +222,16 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
-		@name glow.ui.Carousel#event:choose
+		@name glow.ui.Carousel#event:select
 		@event
-		@description Fires when a carousel item is chosen.
-			Items are chosen by clicking, or pressing enter when a child is in the spotlight.
+		@description Fires when a carousel item is selected.
+			Items are selected by clicking, or pressing enter when a child is in the spotlight.
 		
 			Canceling this event prevents the default click/key action.
 		
 		@param {glow.events.Event} event Event Object
-		@param {glow.NodeList} event.item Item chosen
-		@param {number} event.itemIndex The index of the chosen item in {@link glow.ui.Carousel#items}.
+		@param {glow.NodeList} event.item Item selected
+		@param {number} event.itemIndex The index of the selected item in {@link glow.ui.Carousel#items}.
 	*/
 	
 	/**
@@ -237,21 +241,14 @@ Glow.provide(function(glow) {
 			Canceling this event prevents the carousel from moving.
 			
 			This will fire for repeated move actions. Ie, this will fire many times
-			after #start is called.
+			while the mouse button is held on one of the arrows.
 		
 		@param {glow.events.Event} event Event Object
-		@param {number} event.currentIndex Index of the current leftmost item.
-		@param {number} event.moveBy The number of items the Carousel will move by.
-			This is undefined for 'sliding' moves where the destination isn't known.
-			
-			This value can be overwritten, resulting in the carousel moving a different amount.
-			The carousel step will still be respected.
-			
-		@example
-			// double the amount a carousel will move by
-			myCarousel.on('move', function(e) {
-				e.moveBy *= 2;
-			});
+		@param {number} event.destination Index of the destination item.
+			This will be undefined for continuous scrolling movements (when the mouse
+			is held down on the back/forward arrows & paging is off).
+		
+			You can get the current index via `myCarousel.spotlightIndexes()[0]`.
 	*/
 	
 	/**

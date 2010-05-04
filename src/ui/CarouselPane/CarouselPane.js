@@ -183,16 +183,16 @@ Glow.provide(function(glow) {
 	
 	/**
 		TODO: this behaviour is in Focusable, CarouselPane just needs to pass the event through
-		@name glow.ui.CarouselPane#event:choose
+		@name glow.ui.CarouselPane#event:select
 		@event
-		@description Fires when a carousel item is chosen.
-			Items are chosen by clicking, or pressing enter when a child is active.
+		@description Fires when a carousel item is selected.
+			Items are selected by clicking, or pressing enter when a child is active.
 		
 			Canceling this event prevents the default click/key action.
 		
 		@param {glow.events.Event} event Event Object
-		@param {glow.NodeList} event.item Item chosen
-		@param {number} event.itemIndex The index of the chosen item in {@link glow.ui.CarouselPane#items}.
+		@param {glow.NodeList} event.item Item selected
+		@param {number} event.itemIndex The index of the selected item in {@link glow.ui.CarouselPane#items}.
 	*/
 	
 	/**

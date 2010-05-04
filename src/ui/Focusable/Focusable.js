@@ -257,7 +257,7 @@ Glow.provide(function(glow) {
 		}
 		
 		// listen for clicks
-		this.container.on('click', clickChooseListener, this);
+		this.container.on('click', clickSelectListener, this);
 		
 		// add to our array of focusables
 		focusables.push(this);
@@ -484,7 +484,7 @@ Glow.provide(function(glow) {
 		focusable._active = false;
 		
 		// remove listeners
-		documentNodeList.detach('keypress', focusable._keyHandler).detach('keydown', keyChooseListener);
+		documentNodeList.detach('keypress', focusable._keyHandler).detach('keydown', keySelectListener);
 		
 		// allow the container to receive focus in case the child elements change
 		focusable.container.prop('tabIndex', 0);
@@ -507,7 +507,7 @@ Glow.provide(function(glow) {
 			updateChildren(focusable);
 			focusable._active = true;
 			// start listening to the keyboard
-			documentNodeList.on('keypress', focusable._keyHandler, focusable).on('keydown', keyChooseListener, focusable);
+			documentNodeList.on('keypress', focusable._keyHandler, focusable).on('keydown', keySelectListener, focusable);
 		}
 		
 		// simply activating
@@ -684,7 +684,7 @@ Glow.provide(function(glow) {
 		this.modal(false).active(false).container
 			// remove listeners
 			.detach('mouseover', hoverListener)
-			.detach('click', clickChooseListener)
+			.detach('click', clickSelectListener)
 			// remove from tab order
 			.prop('tabIndex', -1);
 			
@@ -700,16 +700,16 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
-		@name glow.ui.Focusable#event:choose
+		@name glow.ui.Focusable#event:select
 		@event
-		@description Fires when a child of the Focusable is chosen
-			Items are chosen by clicking, or pressing enter when a child is active.
+		@description Fires when a child of the Focusable is selected.
+			Items are selected by clicking, or pressing enter when a child is active.
 		
 			Cancelling this event prevents the default click/key action.
 		
 		@param {glow.events.Event} event Event Object
-		@param {glow.NodeList} event.item Item chosen
-		@param {number} event.itemIndex The index of the chosen item in {@link glow.ui.Focusable#children}.
+		@param {glow.NodeList} event.item Item selected.
+		@param {number} event.itemIndex The index of the selected item in {@link glow.ui.Focusable#children}.
 	*/
 	
 	/**
@@ -719,9 +719,9 @@ Glow.provide(function(glow) {
 			Listens for click selections on the Focusable
 			'this' is the Focusable.
 	*/
-	function clickChooseListener() {
+	function clickSelectListener() {
 		if ( this.activeChild[0] ) {
-			return !this.fire('choose', {
+			return !this.fire('select', {
 				item: this.activeChild,
 				itemIndex: this.activeIndex
 			}).defaultPrevented();
@@ -735,9 +735,9 @@ Glow.provide(function(glow) {
 			Same as above, but for keys
 			'this' is the Focusable.
 	*/
-	function keyChooseListener(event) {
+	function keySelectListener(event) {
 		if (event.key === 'return') {
-			return clickChooseListener.call(this);
+			return clickSelectListener.call(this);
 		}
 	}
 	
