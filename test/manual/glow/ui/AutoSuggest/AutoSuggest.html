@@ -61,7 +61,7 @@
 			});
 			
 			test('Use the mouse to click addListener', function(results) {
-				autoSuggest.on('choose', function(e) {
+				autoSuggest.on('select', function(e) {
 					if (part === 1) {
 						results.ok(
 							e.item.alias === 'glow.events.addListener' &&
@@ -81,7 +81,7 @@
 			});
 			
 			test('Use the mouse to click events', function(results) {
-				autoSuggest.on('choose', function(e) {
+				autoSuggest.on('select', function(e) {
 					if (part === 2) {
 						results.ok(
 							e.item.alias === 'glow.events' &&
@@ -126,7 +126,7 @@
 			});
 			
 			test('Use the up & down arrow keys to highlight elasticOut and press enter to select, focus should remain in the text input, the left & right arrow keys should move the caret in the text box', function(results) {
-				autoSuggest.on('choose', function(e) {
+				autoSuggest.on('select', function(e) {
 					if (part === 1) {
 						results.ok(
 							e.item.alias === 'glow.tweens.elasticOut'
@@ -136,7 +136,7 @@
 			});
 			
 			test('Selecting elasticOut alters the input text and clears results', function(results) {
-				autoSuggest.on('choose', function(e) {
+				autoSuggest.on('select', function(e) {
 					if (part === 1) {
 						results.ok(
 							this.content.children().length === 0 &&
@@ -174,7 +174,7 @@
 			module('delimiting');
 			
 			test('Type "elastic" into the text input and select "elasticOut"', function(results) {
-				autoSuggest.on('choose', function(e) {
+				autoSuggest.on('select', function(e) {
 					if (part === 1) {
 						results.ok(
 							this.input.val() === 'elasticOut, '
@@ -186,8 +186,8 @@
 				});
 			});
 			
-			test('Now type "add" and choose "addClass"', function(results) {
-				autoSuggest.on('choose', function(e) {
+			test('Now type "add" and select "addClass"', function(results) {
+				autoSuggest.on('select', function(e) {
 					if (part === 2) {
 						results.ok(
 							this.input.val() === 'elasticOut, addClass, '
@@ -259,7 +259,7 @@
 		})();
 	</script>
 	
-	<h2>Glow API AutoSuggest - async (+ fading anim + activateFirst off + choose behaviour)</h2>
+	<h2>Glow API AutoSuggest - async (+ fading anim + activateFirst off + select behaviour)</h2>
 	
 	<div class="testarea" style="height:500px">
 		<input type="text" id="autoSuggest6Input" />
@@ -281,7 +281,7 @@
 					}, 500)
 				}).bindInput('#autoSuggest6Input', {
 					anim: 'fade'
-				}).on('choose', function(e) {
+				}).on('select', function(e) {
 					window.location = 'http://www.bbc.co.uk/glow/docs/1.7/api/' + e.item.href;
 				})
 			});

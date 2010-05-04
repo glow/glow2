@@ -113,11 +113,11 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
-		@description Listener for AutoSuggest's choose event.
-			This creates the completeOnChoose behaviour.
+		@description Listener for AutoSuggest's select event.
+			This creates the completeOnSelect behaviour.
 			'this' is the AutoSuggest.
 	*/
-	function completeChooseListener(e) {
+	function completeSelectListener(e) {
 		var valSplit,
 			valSplitLen,
 			newVal = e.item.name,
@@ -201,11 +201,11 @@ Glow.provide(function(glow) {
 			If false, you need to position the overlay's container manually. It's
 			recommended to do this as part of the Overlay's show event, so the
 			position is updated each time it appears.
-		@param {boolean} [opts.completeOnChoose=true] Update the input when an item is selected.
+		@param {boolean} [opts.completeOnSelect=true] Update the input when an item is selected.
 			This will complete the typed text with the result matched.
 			
 			You can create custom actions by listening for the
-			{@link glow.ui.AutoSuggest#event:choose 'choose' event}
+			{@link glow.ui.AutoSuggest#event:select 'select' event}
 		@param {string} [opts.delim] Delimiting char(s) for selections.
 			When defined, the input text will be treated as multiple values,
 			separated by this string (with surrounding spaces ignored).
@@ -220,7 +220,7 @@ Glow.provide(function(glow) {
 	AutoSuggestProto.bindInput = function(input, opts) {		
 		var bindOpts = this._bindOpts = glow.util.apply({
 				autoPosition: true,
-				completeOnChoose: true,
+				completeOnSelect: true,
 				delay: 0.5
 			}, opts || {} ),
 			appendTo = bindOpts.appendTo,
@@ -235,7 +235,7 @@ Glow.provide(function(glow) {
 			.on('blur', inputBlur, this)
 			.on('beforedeactivate', inputDeact, this);
 		
-		bindOpts.completeOnChoose && this.on('choose', completeChooseListener, this);
+		bindOpts.completeOnSelect && this.on('select', completeSelectListener, this);
 		
 		// add to document, or...
 		if (appendTo) {

@@ -193,11 +193,11 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
-		@description Choose listener for the focusable.
+		@description Select listener for the focusable.
 			'this' is the AutoSuggest
 	*/
-	function focusableChooseListener(e) {
-		return !this.fire('choose', {
+	function focusableSelectListener(e) {
+		return !this.fire('select', {
 			li: e.item,
 			item: e.item.data('as_data')
 		}).defaultPrevented();
@@ -206,7 +206,7 @@ Glow.provide(function(glow) {
 	function returnFalse() { return false; }
 	
 	AutoSuggestProto._bind = function() {
-		var focusable = this.focusable.on('choose', focusableChooseListener, this);
+		var focusable = this.focusable.on('select', focusableSelectListener, this);
 		this._tie(focusable);
 		
 		// prevent 
@@ -747,9 +747,9 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
-		@name glow.ui.AutoSuggest#event:choose
+		@name glow.ui.AutoSuggest#event:select
 		@event
-		@description Fired when an item in the AutoSuggest is chosen
+		@description Fired when an item in the AutoSuggest is selected.
 			You can use this event to react to the user interacting with
 			the AutoSuggest
 			
@@ -759,9 +759,9 @@ Glow.provide(function(glow) {
 		@param {glow.NodeList} event.li The list item in the AutoSuggest that was selected
 			
 		@example
-			myAutoSuggest.on('choose', function(event) {
+			myAutoSuggest.on('select', function(event) {
 				// this assumes our data objects have a 'url' property
-				loaction.href = event.selected.url;
+				loaction.href = event.item.url;
 			});
 	*/
 	
