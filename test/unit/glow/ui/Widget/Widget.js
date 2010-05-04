@@ -24,7 +24,7 @@ module('glow.ui.Widget base class');
 	
 	// extend the base Widget...
 	function MyWidget(value, opts) {
-		MyWidget.base.call(this, 'mywidget');
+		MyWidget.base.call(this, 'mywidget', opts);
 	
 		this.on('_sync', function(e) {
 			if (e.newValue !== undefined) { this.value = e.newValue; }
@@ -32,7 +32,7 @@ module('glow.ui.Widget base class');
 		});
 		
 		this._init(opts);
-		this._build('<p></p>', opts);
+		this._build('<p></p>');
 		this._bind();
 		this._updateUi();
 	}

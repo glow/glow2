@@ -29,7 +29,7 @@ function errorHandler($msg) {
 	$msg = str_replace("\\", "\\\\", $msg);
 	$msg = str_replace("'", "\\'", $msg);
 	$msg = preg_replace("/[\r\n]/", "\\n", $msg);
-    echo "\window.console && console.log('Knit Error: $msg.');\n";
+    echo "window.console && console.log('Knit Error: $msg.');\n";
     exit(1);
 }
 

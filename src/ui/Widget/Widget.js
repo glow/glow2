@@ -17,11 +17,15 @@ Glow.provide(function(glow) {
 		@param {string} name The name of this widget.
 			This is added to class names in the generated DOM nodes that wrap the widget interface.
 			
+		@param {object} [opts]
+			@param {string} [opts.className] Class name to add to the container.
+			@param {string} [opts.id]  Id to add to the container.
+			
 		@example
-			function MyWidget() {
+			function MyWidget(opts) {
 				// set up your widget...
-				// call the base constructor
-				glow.ui.Widget.call(this);
+				// call the base constructor, passing in the name and the options
+				glow.ui.Widget.call(this, 'MyWidget', opts);
 				
 				// start init
 				this._init();
@@ -29,7 +33,7 @@ Glow.provide(function(glow) {
 			glow.util.extend(MyWidget, glow.ui.Widget);
 	*/
 	
-	function Widget(name) {
+	function Widget(name, opts) {
 		/*!debug*/
 			if (arguments.length !== 1) {
 				glow.debug.warn('[wrong count] glow.ui.Widget expects 1 argument, not '+arguments.length+'.');
@@ -43,6 +47,7 @@ Glow.provide(function(glow) {
 		this._locale = 'en'; // todo: default should come from i18n module
 		this.phase = 'constructed';
 		this._observers = [];
+		this._opts = opts || {};
 	}
 	glow.util.extend(Widget, glow.events.Target); // Widget is a Target
 	WidgetProto = Widget.prototype;
@@ -70,6 +75,12 @@ Glow.provide(function(glow) {
 		@protected
 		@type glow.NodeList
 		@description The wrapper element that contains the theme class
+	*/
+	/**
+		@name glow.ui.Widget#_opts
+		@protected
+		@type Object
+		@description The option object passed into the constructor
 	*/
 	/**
 		@name glow.ui.Widget#_disabled
@@ -297,9 +308,6 @@ Glow.provide(function(glow) {
 		@param {selector|HTMLElement|NodeList} [content] Content element for the widget.
 			This will be wrapped in container, theme & state elements. By default this is
 			an empty div.
-		@param {object} [opts]
-			@param {string} [opts.className] Class name to add to the generated DOM nodes that wrap this widget.
-			@param {string} [opts.id]  Id to add to the generated DOM nodes that wrap this widget.
 			
 		@example
 			MyWidget.prototype._build = function() {
@@ -311,17 +319,16 @@ Glow.provide(function(glow) {
 				this._bind();
 			}
 	 */
-	WidgetProto._build = function(content, opts) {
+	WidgetProto._build = function(content) {
 		/*!debug*/
-			if (arguments.length > 2) {
-				glow.debug.warn('[wrong count] glow.ui.Widget#_build expects 0-2 arguments, not '+arguments.length+'.');
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.ui.Widget#_build expects 0-1 argument, not '+arguments.length+'.');
 			}
 		/*gubed!*/
 		
 		var container,
-			name = this._name;
-		
-		opts = opts || {};
+			name = this._name,
+			opts = this._opts;
 		
 		content = this.content = glow(content || '<div></div>');
 		

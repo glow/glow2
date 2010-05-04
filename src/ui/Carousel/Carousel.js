@@ -43,7 +43,7 @@ Glow.provide(function(glow) {
 				Any remaining width will be used to partially show the previous/next item
 				beneath the next & previous buttons.
 			
-			@param {selector} [opts.titleBox] Treat an element as the title box for each item.
+			@param {selector} [opts.itemTitles] Treat an element as the title for each item.
 				This is a selector which points to an element within each carousel item. That
 				element will moved out of the carousel and shown beneath the carousel item
 				when it is in the spotlight.
@@ -52,10 +52,6 @@ Glow.provide(function(glow) {
 				scrolling.
 				
 				By default, title boxes are not used.
-			
-			@param {string} [opts.className] Class name to add to the container.
-			
-			@param {string} [opts.id]  Id to add to the container.
 				
 		@example
 			// This creates a carousel out of HTML like...
@@ -70,7 +66,7 @@ Glow.provide(function(glow) {
 			var myCarousel = new glow.ui.Carousel('#carouselItems', {
 				loop: true,
 				paging: true,
-				titleBox: 'div.furtherInfo'
+				itemTitles: 'div.furtherInfo'
 			}).on('choose', function(e) {
 				// follow the link when the item's selected
 				window.location = e.item.get('a').prop('href');

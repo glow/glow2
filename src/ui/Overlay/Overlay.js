@@ -32,30 +32,29 @@ Glow.provide(function(glow) {
 	
 	function Overlay(content, opts) {
 		//call the base class's constructor
-		Overlay.base.call(this, 'overlay');
+		Overlay.base.call(this, 'overlay', opts);
 		
 		this.uid = 'overlayId_' + glow.UID + '_' + (++idCounter);
 		instances[this.uid] = this;
 		
 		this.lastState = -1; // enforce that states always alternate, -1 for hidden, +1 for shown
 		
-		opts = opts || {};
-		this._init(opts);
-		this._build(content, this.opts);
+		this._init();
+		this._build(content);
 		this._bind();
 	}
 	glow.util.extend(Overlay, glow.ui.Widget);
 	
 	OverlayProto = Overlay.prototype;
 	
-	OverlayProto._init = function(opts) {
-		WidgetProto._init.call(this, opts);
-		
+	OverlayProto._init = function() {
 		var defaults = {
 			zIndex: 9991
 		};
 		
-		this.opts = glow.util.apply(defaults, opts);
+		opts = glow.util.apply(defaults, this._opts);
+		
+		WidgetProto._init.call(this);
 		
 		/**
 			@name glow.ui.Overlay#shown
@@ -74,10 +73,9 @@ Glow.provide(function(glow) {
 		delete instances[this.uid];
 	}
 	
-	OverlayProto._build = function(content, opts) {
-		WidgetProto._build.call(this, content, opts);
+	OverlayProto._build = function(content) {
+		WidgetProto._build.call(this, content);
 		
-		this.container.css('z-index', this.opts.zIndex);
 		// TODO: should the iframe always be added? would make styling more consistent across browsers
 		//add IE iframe hack if needed, wrap content in an iFrame to prevent certain elements below from showing through
 		if (glow.env.ie < 7) { /*debug*///console.log('created iframe');
@@ -92,7 +90,7 @@ Glow.provide(function(glow) {
 				.css('left', 0);
 		}
 		
-		this.container.css('z-index', this.opts.zIndex);
+		this.container.css('z-index', this._opts.zIndex);
 		
 		return this;
 	}
