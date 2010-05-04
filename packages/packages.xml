@@ -52,6 +52,7 @@
 			<file>src/ui/AutoSuggest/bindInput.js</file>
 			<file>src/ui/CarouselPane/CarouselPane.js</file>
 			<file>src/ui/Carousel/Carousel.js</file>
+			<file>src/ui/Carousel/pageNav.js</file>
 			<file>src/footer/ui.js</file>
 		</js>
 		<css>
@@ -59,6 +60,7 @@
 			<file>src/ui/ui.css</file>
 			<file>src/ui/Overlay/Overlay.css</file>
 			<file>src/ui/AutoSuggest/AutoSuggest.css</file>
+			<file>src/ui/Carousel/Carousel.css</file>
 		</css>
 	</ui>
 </packages>
