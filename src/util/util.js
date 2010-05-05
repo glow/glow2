@@ -120,9 +120,11 @@ Glow.provide(function(glow) {
 			
 			Properties from 'source's prototype chain will not be copied.
 		
-		@param {Object} destination Destination object
+		@param {Object} [destination] Destination object.
+			If this object is undefined or falsey, a new object will be created.
 		
-		@param {Object} source Properties of this object will be copied onto the destination
+		@param {Object} [source] Properties of this object will be copied onto the destination
+			If this object is undefined or falsey, a new object will be created.
 		
 		@returns {Object} The destination object.
 		
@@ -131,10 +133,10 @@ Glow.provide(function(glow) {
 			//results in {foo: "hello", bar: "everyone"}
 	*/
 	util.apply = function(destination, source) {
+		destination = destination || {};
+		source = source || {};
+		
 		/*!debug*/
-			if (arguments.length != 2) {
-				glow.debug.warn('[wrong count] glow.util.apply expects 2 arguments, not '+arguments.length+'.');
-			}
 			if (typeof destination != 'object') {
 				glow.debug.warn('[wrong type] glow.util.apply expects argument "destination" to be of type object, not ' + typeof destination + '.');
 			}
