@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: glow.ui.CarouselPane</title>
+	
+	<script type="text/javascript" src="../../../lib/log4javascript.js"></script>
+	<script type="text/javascript" src="../../../lib/log.js"></script>
+	
+	<script src="../../../../unit/lib/testhelper.js?base=../../../../../" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+		testHelper.conf.debug = true;
+		testHelper.addScript('core.js');
+		testHelper.addScript('ui.js');
+	</script>
+	
+	<script type="text/javascript" src="../../../lib/manualtest.js"></script>
+	
+	<style type="text/css">
+		#myCarousel
+		{
+			margin: 0;
+			list-style-type: none;
+			height: 200px;
+		}
+		
+		#myCarousel li
+		{
+			width: 100px;
+			height: 100px;
+			padding-right: 2px;
+			padding-left: 2px;
+		}
+		
+		#myCarousel li img {
+			width: 100px;
+			height: 100px;
+		}
+		
+		#spotlight { border: 1px #FF4B00 dashed; }
+		
+		button:
+		{
+			display: block;
+			float: left;
+			width: 100px;
+			height: 30px;
+		}
+		
+		.clone
+		{
+			filter: alpha(opacity=60);
+			-moz-opacity: 0.6;
+			-khtml-opacity: 0.6;
+			opacity: 0.6;
+		}
+		
+		.CarouselPane-viewport { border: 1px solid #666; }
+	</style>
+</head>
+
+<body>
+	<h1>glow.ui.CarouselPane</h1>
+	
+	<h2>Construct Horizontal</h2>
+	
+	<ol>
+		<li>example</li>
+	</ol>
+	
+	<div class="testarea" style="width: 100%;">
+	
+		<ol id="myCarousel">
+			<li>
+				<img src="images/1.jpg" alt="Scouting For Girls">
+			</li>
+			<li>
+				<img src="images/2.jpg" alt="The Fame Monster">
+			</li>
+			<li>
+				<img src="images/3.jpg" alt="One of the Boys">
+			</li>
+			<li>
+				<img src="images/4.jpg" alt="Monkey Business">
+			</li>
+			<li>
+				<img src="images/5.jpg" alt="Shake a Bone">
+			</li>
+			<li>
+				<img src="images/6.jpg" alt="MeatLoaf">
+			</li>
+			<li>
+				<img src="images/7.jpg" alt="Britteny">
+			</li>
+<!--			<li>
+				<img src="images/8.jpg" alt="Mumford">
+			</li>
+			<li>
+				<img src="images/9.jpg" alt="Kate Nash">
+			</li>
+			
+			 -->
+			
+		</ol>
+	</div>
+	
+	<div>
+		<button type="button" id="glidePrev">&nbsp;&lt;&lt;&nbsp;</button>
+		|
+		<button type="button" id="prev">&nbsp;&lt;&nbsp;</button>
+		|
+		<button type="button" id="next">&nbsp;&gt;&nbsp;</button>
+		|
+		<button type="button" id="glideNext">&nbsp;&gt;&gt;&nbsp;</button>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
+
+			var opts = {
+				step: 1
+				//,spotlightSize: 3
+				,loop: true
+				//,page: true
+				,duration: 0.5
+				//,tween: 'elasticOut'
+			};
+			var c = new glow.ui.CarouselPane('#myCarousel', opts);
+			c.on('move', function(e) {
+				//console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
+				//if (e.moveBy < 0 && e.currentIndex < 1) { return false; }
+				
+				//if (e.currentIndex >= 4) { return false; }
+			});
+			
+			c.on('afterMove', function(e) {
+				//console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
+				//console.log( 'move complete: '+ e.currentIndex );
+			});
+			//c.moveBy(-1);
+			
+			glow('#prev').on('click', function() { c.prev(); });
+			glow('#next').on('click', function() { c.next(); });
+			
+			glow('#glideNext').on('mousedown', function() {
+				c.moveStart();
+			}).on('mouseup', function() {
+				c.moveStop();
+			});
+			
+			glow('#glidePrev').on('mousedown', function() {
+				c.moveStart('backwards');
+			}).on('mouseup', function() {
+				c.moveStop();
+			});
+	
+			// make carousel's spotlight easier to see
+			var spot = glow('<div id="spotlight"><\/div>');
+			glow(document.body).append(spot);
+			function showSpotlight(c) {
+				spot.css({
+					width: c._spot.width,
+					height: c._spot.height + 10,
+					position: 'absolute',
+					top: c.container.offset().top + c._spot.top - 5,
+					left: c.container.offset().left + c._spot.left + c._spot.offset.left
+				});
+			}
+			showSpotlight(c);
+			c.on('updateUi', function() { showSpotlight(c); });
+			
+			/* TODO
+				runtime changes to items
+				fire events
+				API conformance/integrate with Carousel widget
+				tests
+				css in a separate sheet/different themes
+				prevent interaction with clones (even during animation)
+				vertical carousel
+				documentation (jsdoc)
+				refactor
+				margins
+				destroy
+			*/
+		});
+	</script>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>
