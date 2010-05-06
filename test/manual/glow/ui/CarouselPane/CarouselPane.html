@@ -36,26 +36,15 @@
 			padding-left: 2px;
 		}
 		
+		
+		*/
+		
 		#myCarousel li img {
 			width: 200px;
 			height: 200px;
 		}
-		*/
 		
-		#myCarousel
-		{
-			margin: 0;
-			list-style-type: none;
-		}
 		#spotlight { border: 1px #FF4B00 dashed; }
-		
-		button:
-		{
-			display: block;
-			float: left;
-			width: 100px;
-			height: 30px;
-		}
 		
 		.clone
 		{
@@ -81,40 +70,20 @@
 	<div class="testarea" style="width: 100%;">
 	
 		<ol id="myCarousel">
-			<li>
-				<img src="images/1.jpg" alt="Scouting For Girls">
-			</li>
-			<li>
-				<img src="images/2.jpg" alt="The Fame Monster">
-			</li>
-			<li>
-				<img src="images/3.jpg" alt="One of the Boys">
-			</li>
-			<li>
-				<img src="images/4.jpg" alt="Monkey Business">
-			</li>
-			<li>
-				<img src="images/5.jpg" alt="Shake a Bone">
-			</li>
-			<li>
-				<img src="images/6.jpg" alt="MeatLoaf">
-			</li>
-			<li>
-				<img src="images/7.jpg" alt="Britteny">
-			</li>
-			<li>
-				<img src="images/8.jpg" alt="Mumford">
-			</li>
-			<li>
-				<img src="images/9.jpg" alt="Kate Nash">
-			</li>
-<!--			
-			 -->
-			
+			<li><img src="images/1.jpg" alt="Scouting For Girls"></li>
+			<li><img src="images/2.jpg" alt="The Fame Monster"></li>
+			<li><img src="images/3.jpg" alt="One of the Boys"></li>
+			<li><img src="images/4.jpg" alt="Monkey Business"></li>
+			<li><img src="images/5.jpg" alt="Shake a Bone"></li>
+			<li><img src="images/6.jpg" alt="MeatLoaf"></li>
+			<li><img src="images/7.jpg" alt="Britteny"></li>
+			<li><img src="images/8.jpg" alt="Mumford"></li>
+			<li><img src="images/9.jpg" alt="Kate Nash"></li>
+<!-- -->
 		</ol>
 	</div>
 	
-	<div>
+	<div style="margin-top: 12px">
 		<button type="button" id="glidePrev">&nbsp;&lt;&lt;&nbsp;</button>
 		|
 		<button type="button" id="prev">&nbsp;&lt;&nbsp;</button>
@@ -136,7 +105,7 @@
 // 				,duration: 0.4
 // 				//,tween: 'elasticOut'
 // 			};
-			var c = new glow.ui.CarouselPane('#myCarousel');
+			var c = new glow.ui.CarouselPane('#myCarousel', {step: 3, loop: true});
 			c.on('move', function(e) {
 				//console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
 				//if (e.moveBy < 0 && e.currentIndex < 1) { return false; }

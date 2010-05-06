@@ -71,8 +71,13 @@ Glow.provide(function(glow) {
 			axis: 'x'
 		}, opts || {});
 		
+		// TODO move to bind
 		this._resizeHandler = function(e) {
 			that.updateUi();
+		}
+		
+		if (opts.loop === false && opts.step !== 1) {
+			opts.page = true;
 		}
 
 		glow.ui.Widget.call(this, 'CarouselPane', opts);
@@ -83,8 +88,9 @@ Glow.provide(function(glow) {
 	glow.util.extend(CarouselPane, glow.events.Target); // CarouselPane is a Target
 	CarouselPaneProto = CarouselPane.prototype;         // shortcut
 	
-	CarouselPaneProto._init = function(container) {
+	CarouselPaneProto._init = function(container) {  /*debug*///console.log('CarouselPaneProto._init');
 		WidgetProto._init.call(this);
+		
 		
 		// used value vs configured value (they may not be the same).
 		this._step = this._opts.step;
@@ -127,10 +133,7 @@ Glow.provide(function(glow) {
 		}
 		
 		this._itemDimensions = getDimensions(this.items);
-		this._gap = this._opts.page? 
-			(this._step - (this.items.length % this._step))% this._step * this._itemDimensions[this._geom[0]]
-			: 0;
-		this._gapCount = this._gap? (this._gap / this._itemDimensions[this._geom[0]]) : 0;
+
 		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
 		
 		this._viewport.css({
@@ -141,7 +144,11 @@ Glow.provide(function(glow) {
 			padding: 0,
 			margin: 0,
 			width: this._opts.axis === 'x'? '100%' : this._itemDimensions.width,
-			height:  this._opts.axis === 'y'? '100%' : this._itemDimensions.height,
+			height:  this._opts.axis === 'y'? '100%' : this._itemDimensions.height
+		});
+		
+		this.stage.css({
+			margin: 0,
 			listStyleType: 'none' // useful when content is a list
 		});
 		
@@ -152,7 +159,7 @@ Glow.provide(function(glow) {
 			@description Information about the spotlight area.
 		*/
 		this._spot = CarouselPane._getSpot(this._viewport.width(), this.items, this._itemDimensions, this._opts);
-		
+		this._gap = getGap.apply(this);
 		if (this._opts.step === true) {
 			this._step = this._spot.capacity;
 		}
@@ -162,7 +169,7 @@ Glow.provide(function(glow) {
 			/*gubed!*/
 			
 			this._step = this._spot.capacity;
-			this._init();
+			this._gap = getGap.apply(this); 
 		}
 		
 		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100}); // [wing][stage[spot]stage][wing]
@@ -176,6 +183,24 @@ Glow.provide(function(glow) {
 		calculateIndex.call(this);
 	}
 	
+	
+	function getGap() { /*debug*///console.log('getGap()');
+		var gap = { size: 0, count: 0 };
+	
+		if (this._opts.page) {
+			gap.count = 
+				this._spot.capacity -
+				(
+					this.items.length -
+					Math.floor(this.items.length / this._step) * this._step
+				);
+			
+			gap.size = gap.count * this._itemDimensions[this._geom[0]];
+		}
+	
+		return gap;
+	}
+	
 	CarouselPaneProto._bind = function() { /*debug*///console.log('CarouselPaneProto._bind');
 		WidgetProto._bind.call(this);
 		
@@ -186,7 +211,7 @@ Glow.provide(function(glow) {
 		WidgetProto._updateUi.call(this);
 		
 		
-		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100});
+		this.stage.css({width: this._viewport.width() + this._wingSize * 2, height: '100%'});
 		this._spot = CarouselPane._getSpot(this._viewport.width(), this.items, this._itemDimensions, this._opts);
 		
 		if (this._opts.step === true) {
@@ -353,7 +378,7 @@ Glow.provide(function(glow) {
 		
 		// takes into account gaps and wraps
 		for (var i = 0, leni = this._spot.capacity; i < leni; i++) {
-			index = (findex + i)%(this.items.length + this._gapCount);
+			index = (findex + i)%(this.items.length + this._gap.count);
 			// skip gaps
 			if (index >= this.items.length || index < 0) {
 				continue; // or maybe keep gaps? index = NaN;
@@ -470,7 +495,7 @@ Glow.provide(function(glow) {
 				swap.call(that);
 				
 				// force index to be a number from 0 to items.length
-				that.index = that.index % (that.items.length  + that._gapCount);
+				that.index = that.index % (that.items.length  + that._gap.count);
 				//that.index = (that.index < 0)? that.index + that.items.length : that.index;
 				
 				that.fire('afterMove', {currentIndex: that.index});
@@ -490,10 +515,10 @@ Glow.provide(function(glow) {
 	 */
 	function jump() {
 		if (this.index < 0) {
-			this.moveTo(this.items.length + this._gapCount + this.index, {tween: null});
+			this.moveTo(this.items.length + this._gap.count + this.index, {tween: null});
 		}
 		else if (this.index >= this.items.length) {
-			this.moveTo(this.index - (this.items.length + this._gapCount), {tween: null});
+			this.moveTo(this.index - (this.items.length + this._gap.count), {tween: null});
 		}
 	}
 	
@@ -522,12 +547,12 @@ Glow.provide(function(glow) {
 			return;
 		}
 		
-		for (var i = 0, leni = this._spot.capacity - this._gapCount; i < leni; i++) {
+		for (var i = 0, leni = this._spot.capacity - this._gap.count; i < leni; i++) {
 			if (this.index + i >= this.items.length) {
 				var swapperPos = (this.index + i)%this.items.length;
 				swapper = this.items.item(swapperPos);
 				swapper.data('carousel-position', swapperPos);
-				var swapTo = offset +((this.index + i +this._gapCount)*amount);
+				var swapTo = offset +((this.index + i +this._gap.count)*amount);
 				swapper.css(styleName, swapTo);
 			}
 		}
@@ -612,8 +637,9 @@ Glow.provide(function(glow) {
 			}
 			else {
 				spot.capacity = Math.floor( viewportWidth / itemDimensions.width );
-				spot.capacity = Math.min(spot.capacity, items.length);
 			}
+		
+
 			spot.width = spot.capacity * itemDimensions.width;
 			spot.height = itemDimensions.height
 			
@@ -653,7 +679,7 @@ Glow.provide(function(glow) {
 			}
 			
 			// how many sets of clones (on each side) are needed to fill the off-spotlight portions of the stage?
-			var repsMax =  1 + Math.ceil(this._spot.offset.left / (this._itemDimensions.width*this.items.length + this._gap));
+			var repsMax =  1 + Math.ceil(this._spot.offset.left / (this._itemDimensions.width*this.items.length + this._gap.size));
 			
 			for (var reps = 1; reps <= repsMax; reps++) {
 				i = this.items.length;
@@ -661,14 +687,14 @@ Glow.provide(function(glow) {
 					// add clones to prev side
 					clone = this.items.item(i).copy();
 					this.stage[0].appendChild(clone[0]); // TODO
-					clone.css(styleName, offset - reps*this._gap - (reps*this.items.length - i) * amount);
+					clone.css(styleName, offset - reps*this._gap.size - (reps*this.items.length - i) * amount);
 					clone.addClass('clone');
 					clone.css('z-index', 1);
 					
 					// add clones to next side
 					clone = clone.copy();
 					this.stage[0].appendChild(clone[0]);
-					clone.css(styleName, offset + reps*this._gap + (reps*this.items.length + i) * amount);
+					clone.css(styleName, offset + reps*this._gap.size + (reps*this.items.length + i) * amount);
 					clone.css('z-index', 1);
 				}
 			}
