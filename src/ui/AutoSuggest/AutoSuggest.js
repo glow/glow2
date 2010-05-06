@@ -77,7 +77,12 @@ Glow.provide(function(glow) {
 				location.href = event.selected.url;
 			});
 	*/
-	function AutoSuggest(opts) {		
+	function AutoSuggest(opts) {
+		/*!debug*/
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.ui.AutoSuggest expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+		/*gubed!*/
 		opts = glow.util.apply({
 			minLength: 3,
 			keyboardNav: 'arrows-y',
@@ -245,6 +250,11 @@ Glow.provide(function(glow) {
 		@return this
 	*/
 	AutoSuggestProto.setFilter = function(filter) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.ui.Autosuggest#setFilter expects 1 argument, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		this._filter = filter;
 		return this;
 	};
@@ -273,6 +283,11 @@ Glow.provide(function(glow) {
 			}).data('userSearch.php?usernamePartial={val}').linkToInput('#username');
 	*/
 	AutoSuggestProto.setFormat = function(formatter) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.ui.Autosuggest#setFormat expects 1 argument, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		this._format = formatter;
 		return this;
 	};
@@ -466,6 +481,11 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	AutoSuggestProto.data = function(data) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.ui.Autosuggest#data expects 1 argument, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		if (typeof data === 'string') {
 			// look for urls without {val}, they get their data once & once only
 			if (data.indexOf('{val}') == -1) {
@@ -623,6 +643,11 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	AutoSuggestProto.find = function(str) {
+		/*!debug*/
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.ui.Autosuggest#find expects 1 argument, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		if (str.length >= this._opts.minLength) {
 			// refresh/load data if there's a function
 			this._dataFunc && this._dataFunc(str);
@@ -650,6 +675,11 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	AutoSuggestProto.hide = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.ui.Autosuggest#hide expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		// generating empty output does the trick
 		generateOutput(this, [], '');
 		return this;
@@ -663,6 +693,11 @@ Glow.provide(function(glow) {
 			element will remain on the page.
 	*/
 	AutoSuggestProto.destroy = function() {
+		/*!debug*/
+			if (arguments.length !== 0) {
+				glow.debug.warn('[wrong count] glow.ui.Autosuggest#destroy expects 0 arguments, not ' + arguments.length + '.');
+			}
+		/*gubed!*/
 		this._data = undefined;
 		
 		// remove events from the input

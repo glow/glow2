@@ -217,7 +217,15 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	AutoSuggestProto.bindInput = function(input, opts) {		
+	AutoSuggestProto.bindInput = function(input, opts) {
+		/*!debug*/
+			if (arguments.length < 1 || arguments.length > 2) {
+				glow.debug.warn('[wrong count] glow.ui.AutoSuggest#bindInput expects 1 or 2 arguments, not ' + arguments.length + '.');
+			}
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.ui.AutoSuggest#bindInput expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+		/*gubed!*/
 		var bindOpts = this._bindOpts = glow.util.apply({
 				autoPosition: true,
 				completeOnSelect: true,
