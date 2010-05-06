@@ -93,6 +93,8 @@ Glow.provide(function(glow) {
 				});
 	*/
 	function Carousel(itemContainer, opts) {
+		var spot;
+		
 		Widget.call(this, 'Carousel', opts);
 		
 		opts = this._opts;
@@ -103,7 +105,20 @@ Glow.provide(function(glow) {
 			opts.page = true;
 		}
 		
-		this.itemContainer = glow(itemContainer).item(0);
+		this.itemContainer = itemContainer = glow(itemContainer).item(0);
+		
+		// see if we're going to get enough room for our prev/next buttons
+		spot = glow.ui.CarouselPane._getSpot(
+			itemContainer.parent().width(),
+			itemContainer.children().css('position', 'absolute'),
+			0,
+			opts
+		);
+		
+		// enfore our minimum back/fwd button size
+		if (spot.offset.left < 25) {
+			opts.spotlight = opts.spotlightSize = spot.capacity - 1;
+		}
 		
 		this._init();
 	};
@@ -117,7 +132,7 @@ Glow.provide(function(glow) {
 	*/
 	
 	/**
-		@name glow.ui.Carousel#_backBtn
+		@name glow.ui.Carousel#_prevBtn
 		@type glow.NodeList
 		@description Element acting as back button
 	*/
@@ -160,23 +175,33 @@ Glow.provide(function(glow) {
 	};
 	
 	CarouselProto._build = function () {
-		// TODO: extract the title boxes before making the pane
 		// TODO: check the size of the wings, if they're too small reduce the spotlight accordingly
 		
-		var content = this.content,
+		var content,
 			titleBoxes = this._titleBoxes = getItemTitles(this),
-			pane = this._pane = new glow.ui.CarouselPane(this.itemContainer, this._opts);
+			pane = this._pane = new glow.ui.CarouselPane(this.itemContainer, this._opts),
+			spot = pane._spot;
 		
+		WidgetProto._build.call( this, pane.container.wrap('<div></div>').parent() );
+		
+		content = this.content;
 		this.items = pane.items;
 		this.itemContainer = pane.itemContainer;
 		
-		WidgetProto._build.call(this, pane.container);
+		pane.moveTo(0, {
+			tween: null
+		});
 		
-		this._backBtn = glow('<div class="carousel-back"></div>').prependTo(content);
-		this._nextBtn = glow('<div class="carousel-fwd"></div>').appendTo(content);
-		this._titlesHolder = glow('<div class="carousel-titles"></div>').appendTo(content);
-		
-		// TODO: size back & fwd buttons
+		// add next & prev buttons, autosizing them
+		this._prevBtn = glow('<div class="Carousel-prev"></div>').prependTo(content).css({
+			width: spot.offset.left,
+			height: spot.height
+		});
+		this._nextBtn = glow('<div class="Carousel-next"></div>').prependTo(content).css({
+			width: spot.offset.right,
+			height: spot.height
+		});
+		this._titlesHolder = glow('<div class="Carousel-titles"></div>').appendTo(content);
 		
 		this._bind();
 	};
@@ -196,7 +221,7 @@ Glow.provide(function(glow) {
 		if (!titleSelector) { return undefined; }
 		
 		carousel.itemContainer.children().each(function() {
-			var itemTitle = glow('<div class="carousel-title"></div>').append(
+			var itemTitle = glow('<div class="Carousel-title"></div>').append(
 				glow(this).get(titleSelector).item(0)
 			);
 			
@@ -229,7 +254,7 @@ Glow.provide(function(glow) {
 	function paneMove(event) {	
 		if ( !this.fire('move', event).defaultPrevented() ) {
 			// TODO: pick the right page to activate
-			updatePageNav(this, 0);
+			this._updateNav(0);
 			hideTitles(this);
 		}
 	}
@@ -292,8 +317,11 @@ Glow.provide(function(glow) {
 		@description Listener for back button's 'mousedown' event.
 			'this' is the Carousel
 	*/
-	function backMouseDown() {
-		this._pane.moveStart(true);
+	function prevMouseDown(event) {
+		if (event.button === 0) {
+			this._pane.moveStart(true);
+			return false;
+		}
 	}
 	
 	/**
@@ -302,8 +330,11 @@ Glow.provide(function(glow) {
 		@description Listener for fwd button's 'mousedown' event.
 			'this' is the Carousel
 	*/
-	function nextMouseDown() {
-		this._pane.moveStart();
+	function nextMouseDown(event) {
+		if (event.button === 0) {
+			this._pane.moveStart();
+			return false;
+		}
 	}
 	
 	/**
@@ -329,7 +360,7 @@ Glow.provide(function(glow) {
 			.on('afterMove', paneAfterMove, this)
 			.on('move', paneMove, this);
 		
-		this._backBtn.on('mousedown', backMouseDown, this)
+		this._prevBtn.on('mousedown', prevMouseDown, this)
 			.on('mouseup', paneMoveStop, this)
 			.on('mouseleave', paneMoveStop, this);
 		

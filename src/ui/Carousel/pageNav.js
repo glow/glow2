@@ -118,14 +118,19 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
-		@private
+		@name glow.ui.Carousel#_updateNav
 		@function
 		@description Activate a particular item on the pageNav
+		
+		@param {number} indexToActivate
 	*/
-	function updatePageNav(carousel, indexToActivate) {
-		var activeClassName = 'active';
-		carousel._pageNav.children()
-			.removeClass(activeClassName)
-			.item(indexToActivate).addClass(activeClassName);
+	CarouselProto._updateNav = function(indexToActivate) {
+		if (this._pageNav) {
+			var activeClassName = 'active';
+			
+			this._pageNav.children()
+				.removeClass(activeClassName)
+				.item(indexToActivate).addClass(activeClassName);	
+		}
 	}
 });
