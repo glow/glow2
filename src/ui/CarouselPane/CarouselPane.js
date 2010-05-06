@@ -114,18 +114,24 @@ Glow.provide(function(glow) {
 		}
 		
 		this.index = 0;
-		this._itemDimensions = getDimensions(this.items);
-		this._gap = this._opts.page? 
-			(this._step - (this.items.length % this._step))% this._step * this._itemDimensions[this._geom[0]]
-			: 0;
-		this._gapCount = this._gap? (this._gap / this._itemDimensions[this._geom[0]]) : 0;
-		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
+		
 		
 		this._build();
 	}
 	
 	CarouselPaneProto._build = function() { /*debug*///console.log('CarouselPaneProto._build');
 		WidgetProto._build.call(this, this._viewport, this._opts);
+		
+		for (var i = 0, leni = this.items.length; i < leni; i++) {
+			this.items.item(i).css({position: 'absolute', 'z-index': 2});
+		}
+		
+		this._itemDimensions = getDimensions(this.items);
+		this._gap = this._opts.page? 
+			(this._step - (this.items.length % this._step))% this._step * this._itemDimensions[this._geom[0]]
+			: 0;
+		this._gapCount = this._gap? (this._gap / this._itemDimensions[this._geom[0]]) : 0;
+		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
 		
 		this._viewport.css({
 			overflow: 'scroll',
@@ -286,12 +292,7 @@ Glow.provide(function(glow) {
 				that.index = that.index % that.items.length;
 				that.index = (that.index < 0)? that.index + that.items.length : that.index;
 					
-				var e = that.fire('move', {
-					moveBy: dir,
-					currentIndex: that.index
-				});
-				
-				if ( e.defaultPrevented() ) {
+				if ( that.fire('move', { moveBy: dir, currentIndex: that.index }).defaultPrevented() ) {
 					glideStop.call(that);
 				}
 			})
@@ -311,6 +312,22 @@ Glow.provide(function(glow) {
 		this._inMotion = true;
 		this._gliderBrake = false;
 		this._glider.start();
+	}
+	
+	function indexMoveTo(index) {
+		this.index += delta;
+		
+		// force index to be a number from 0 to items.length
+		this.index = this.index % this.items.length;
+		this.index = (this.index < 0)? this.index + this.items.length : this.index;
+		
+		return this.index;
+	}
+	
+	function indexMoveBy(delta) {
+		indexMoveTo.call(this, this.index += delta);
+		
+		return this.index;
 	}
 	
 	function glideStop() {

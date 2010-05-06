@@ -18,6 +18,9 @@
 	<script type="text/javascript" src="../../../lib/manualtest.js"></script>
 	
 	<style type="text/css">
+		/*body {
+			width: 300px;
+		}*/
 		#myCarousel
 		{
 			margin: 0;
@@ -27,15 +30,15 @@
 		
 		#myCarousel li
 		{
-			width: 100px;
-			height: 100px;
+			/*width: 200px;
+			height: 200px;*/
 			padding-right: 2px;
 			padding-left: 2px;
 		}
 		
 		#myCarousel li img {
-			width: 100px;
-			height: 100px;
+			width: 200px;
+			height: 200px;
 		}
 		
 		#spotlight { border: 1px #FF4B00 dashed; }
@@ -121,10 +124,10 @@
 
 			var opts = {
 				step: 1
-				//,spotlightSize: 3
+				,spotlightSize: 3
 				,loop: true
 				//,page: true
-				,duration: 0.5
+				,duration: 0.4
 				//,tween: 'elasticOut'
 			};
 			var c = new glow.ui.CarouselPane('#myCarousel', opts);
