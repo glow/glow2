@@ -20,7 +20,7 @@
 	<style type="text/css">
 		/*body {
 			width: 300px;
-		}*/
+		}
 		#myCarousel
 		{
 			margin: 0;
@@ -30,8 +30,8 @@
 		
 		#myCarousel li
 		{
-			/*width: 200px;
-			height: 200px;*/
+			width: 200px;
+			height: 200px;
 			padding-right: 2px;
 			padding-left: 2px;
 		}
@@ -40,7 +40,13 @@
 			width: 200px;
 			height: 200px;
 		}
+		*/
 		
+		#myCarousel
+		{
+			margin: 0;
+			list-style-type: none;
+		}
 		#spotlight { border: 1px #FF4B00 dashed; }
 		
 		button:
@@ -96,13 +102,13 @@
 			<li>
 				<img src="images/7.jpg" alt="Britteny">
 			</li>
-<!--			<li>
+			<li>
 				<img src="images/8.jpg" alt="Mumford">
 			</li>
 			<li>
 				<img src="images/9.jpg" alt="Kate Nash">
 			</li>
-			
+<!--			
 			 -->
 			
 		</ol>
@@ -122,15 +128,15 @@
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var opts = {
-				step: 1
-				,spotlightSize: 3
-				,loop: true
-				//,page: true
-				,duration: 0.4
-				//,tween: 'elasticOut'
-			};
-			var c = new glow.ui.CarouselPane('#myCarousel', opts);
+// 			var opts = {
+// 				step: 4
+// 				,spotlightSize: 4
+// 				,loop: true
+// 				,page: true
+// 				,duration: 0.4
+// 				//,tween: 'elasticOut'
+// 			};
+			var c = new glow.ui.CarouselPane('#myCarousel');
 			c.on('move', function(e) {
 				//console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
 				//if (e.moveBy < 0 && e.currentIndex < 1) { return false; }

@@ -288,9 +288,7 @@ Glow.provide(function(glow) {
 				{tween: 'linear'}
 			)
 			.on('start', function() {
-				// force index to be a number from 0 to items.length
-				that.index = that.index % that.items.length;
-				that.index = (that.index < 0)? that.index + that.items.length : that.index;
+				indexMoveTo.call(that);
 					
 				if ( that.fire('move', { moveBy: dir, currentIndex: that.index }).defaultPrevented() ) {
 					glideStop.call(that);
@@ -315,7 +313,7 @@ Glow.provide(function(glow) {
 	}
 	
 	function indexMoveTo(index) {
-		this.index += delta;
+		if (index !== undefined) { this.index = index; }
 		
 		// force index to be a number from 0 to items.length
 		this.index = this.index % this.items.length;
@@ -411,8 +409,7 @@ Glow.provide(function(glow) {
 		@param {undefined|null|string} opts.tween If undefined, use the default animation,
 		if null then no animation, if a string then use the named tween.
 	 */
-	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*///console.log('moveTo('+itemIndex+', '+opts+')');
-
+	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*///console.log('moveTo('+itemIndex+')');
 		if (this._inMotion) {
 			return false;
 		}
@@ -441,11 +438,13 @@ Glow.provide(function(glow) {
 
 		var destination = this._wingSize + this.container[0].scrollLeft + itemIndex * this._itemDimensions.width,
 			anim;
-		
+	
 		swap.call(this, 'back');
 		if (opts.tween === null) {
 			this.content[0].scrollLeft = destination;
 			this.index = itemIndex;
+			
+			this._inMotion = false;
 		}
 		else if (canGo.call(this, itemIndex)) {
 			this._inMotion = true;
@@ -462,22 +461,21 @@ Glow.provide(function(glow) {
 			this.index = itemIndex;
 			
 			var that = this;
-			if (this._opts.loop) {
-				anim.on('complete', function() {
-					that._inMotion = false;
-					
-					jump.call(that);
-					swap.call(that);
-					
-					// force index to be a number from 0 to items.length
-					that.index = that.index % (that.items.length  + that._gapCount);
-					//that.index = (that.index < 0)? that.index + that.items.length : that.index;
-					
-					that.fire('afterMove', {currentIndex: that.index});
-					if (opts.callback) { opts.callback(); }
-				});
-			}
-			
+
+			anim.on('complete', function() {
+
+				that._inMotion = false;
+				
+				jump.call(that);
+				swap.call(that);
+				
+				// force index to be a number from 0 to items.length
+				that.index = that.index % (that.items.length  + that._gapCount);
+				//that.index = (that.index < 0)? that.index + that.items.length : that.index;
+				
+				that.fire('afterMove', {currentIndex: that.index});
+				if (opts.callback) { opts.callback(); }
+			});
 		}
 		
 		return this;
