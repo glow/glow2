@@ -15,7 +15,12 @@
 	</script>
 	
 	<style type="text/css">
-		
+		#carousel1Outer {
+			width: 550px;
+		}
+		#carousel1 li {
+			width: 100px;
+		}
 	</style>
 </head>
 
@@ -28,7 +33,7 @@
 		<li>...</li>
 	</ol>
 	
-	<div class="testarea">
+	<div class="testarea" id="carousel1Outer">
 		<ol id="carousel1">
 			<li><img src="../CarouselPane/images/1.jpg" alt="" width="100" height="100" /></li>
 			<li><img src="../CarouselPane/images/2.jpg" alt="" width="100" height="100" /></li>
@@ -44,8 +49,7 @@
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			//new glow.ui.Carousel('#carousel1');
-			new glow.ui.CarouselPane('#carousel1');
+			new glow.ui.Carousel('#carousel1');
 		});
 	</script>
 

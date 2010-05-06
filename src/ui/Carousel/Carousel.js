@@ -93,13 +93,15 @@ Glow.provide(function(glow) {
 				});
 	*/
 	function Carousel(itemContainer, opts) {
+		Widget.call(this, 'Carousel', opts);
+		
+		opts = this._opts;
+		
 		if (opts.page) {
 			// todo: need to work out how to make step the same as resulting spotlight
 			opts.step = opts.page;
 			opts.page = true;
 		}
-		
-		Widget.call(this, 'Carousel', opts);
 		
 		this.itemContainer = glow(itemContainer).item(0);
 		
@@ -162,7 +164,7 @@ Glow.provide(function(glow) {
 		// TODO: check the size of the wings, if they're too small reduce the spotlight accordingly
 		
 		var content = this.content,
-			titleBoxes = this._titleBoxes = getItemTitles(carousel),
+			titleBoxes = this._titleBoxes = getItemTitles(this),
 			pane = this._pane = new glow.ui.CarouselPane(this.itemContainer, this._opts);
 		
 		this.items = pane.items;
@@ -239,12 +241,7 @@ Glow.provide(function(glow) {
 	*/
 	function hideTitles(carousel) {
 		var currentTitles = carousel._titlesHolder.children();
-		
-		if ( currentTitles[0] ) {
-			currentTitles.anim(carousel._opts.duration, {
-				opacity: [1, 0]
-			})
-		}
+		currentTitles.fadeOut(carousel._opts.duration);
 	}
 	
 	/**
@@ -265,13 +262,28 @@ Glow.provide(function(glow) {
 		@description Show the titles for the currently displayed items
 	*/
 	function showTitles(carousel) {
-		var currentTitles = carousel._titlesHolder.children();
+		// bail if no item titles
+		if (!carousel._itemTiles) { return; }
 		
-		if ( currentTitles[0] ) {
-			currentTitles.anim(carousel._opts.duration, {
-				opacity: [1, 0]
-			})
+		var indexes = carousel.spotlightIndexes(),
+			carouselItems = carousel.spotlightItems(),
+			itemTitles = carousel._itemTiles,
+			titlesHolder = carousel._titlesHolder.empty(),
+			titlesHolderOffset = titlesHolder.offset().left,
+			titlesToShow = glow();
+			
+		for (var i = 0, leni = indexes.length; i < leni; i++) {
+			titlesToShow.push(
+				// get the title
+				itemTitles.item( indexes[i] )
+					// add it to the holder
+					.appendTo(titlesHolder)
+					// position it
+					.css( 'left', titlesHolderOffset - carouselItems.item(i).offset().left )
+			);
 		}
+		
+		titlesToShow.fadeIn(carousel._opts.duration);
 	}
 	
 	/**
