@@ -392,8 +392,7 @@ Glow.provide(function(glow) {
 				continue; // or maybe keep gaps? index = NaN;
 			}
 			indexes.push(index);
-		}
-console.log('>> indexes is '+indexes);		
+		}		
 		return indexes;
 	}
 	
