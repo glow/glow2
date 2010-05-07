@@ -35,10 +35,10 @@ Glow.provide(function(glow) {
 	
 	function Widget(name, opts) {
 		/*!debug*/
-			if (arguments.length !== 1) {
-				glow.debug.warn('[wrong count] glow.ui.Widget expects 1 argument, not '+arguments.length+'.');
+			if (arguments.length < 1 || arguments.length > 2) {
+				glow.debug.warn('[wrong count] glow.ui.Widget expects 1 or 2 arguments, not '+arguments.length+'.');
 			}
-			else if (typeof arguments[0] !== 'string') {
+			if (typeof arguments[0] !== 'string') {
 				glow.debug.warn('[wrong type] glow.ui.Widget expects argument 1 to be of type string, not '+typeof arguments[0]+'.');
 			}
 		/*gubed!*/
