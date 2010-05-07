@@ -724,7 +724,7 @@ Glow.provide(function(glow) {
 		var currentHeight = item.css('height'),
 			fullHeight;
 		item.css('height', 'auto');
-		fullHeight = item.css('height');
+		fullHeight = item.height();
 		item.css('height', currentHeight);
 		return {height: fullHeight}
 	}, 'easeBoth', function() {
