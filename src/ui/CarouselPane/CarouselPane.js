@@ -381,10 +381,11 @@ Glow.provide(function(glow) {
 	CarouselPaneProto.spotlightIndexes = function() { /*debug*///console.log('CarouselPaneProto.spotlightIndexes()');
 		var indexes = [],
 			findex = calculateIndex.call(this),
-			index;
+			index,
+			maxi = (this._opts.loop)? this._spot.capacity : this.items.length;
 		
 		// takes into account gaps and wraps
-		for (var i = 0, leni = this._spot.capacity; i < leni; i++) {
+		for (var i = 0; i < maxi; i++) {
 			index = (findex + i)%(this.items.length + this._gap.count);
 			// skip gaps
 			if (index >= this.items.length || index < 0) {
@@ -392,7 +393,7 @@ Glow.provide(function(glow) {
 			}
 			indexes.push(index);
 		}
-		
+console.log('>> indexes is '+indexes);		
 		return indexes;
 	}
 	
