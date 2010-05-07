@@ -116,8 +116,8 @@ Glow.provide(function(glow) {
 		);
 		
 		// enfore our minimum back/fwd button size
-		if (spot.offset.left < 25) {
-			opts.spotlight = opts.spotlightSize = spot.capacity - 1;
+		if (spot.offset.left < 50) {
+			opts.spotlight = spot.capacity - 1;
 		}
 		
 		this._init();
@@ -193,18 +193,42 @@ Glow.provide(function(glow) {
 		});
 		
 		// add next & prev buttons, autosizing them
-		this._prevBtn = glow('<div class="Carousel-prev"></div>').prependTo(content).css({
+		this._prevBtn = glow('<div class="Carousel-prev"><div class="Carousel-btnIcon"></div></div>').prependTo(content).css({
 			width: spot.offset.left,
-			height: spot.height
+			height: spot.height,
+			'line-height': spot.height
 		});
-		this._nextBtn = glow('<div class="Carousel-next"></div>').prependTo(content).css({
+		this._nextBtn = glow('<div class="Carousel-next"><div class="Carousel-btnIcon"></div></div>').prependTo(content).css({
 			width: spot.offset.right,
-			height: spot.height
+			height: spot.height,
+			'line-height': spot.height
 		});
 		this._titlesHolder = glow('<div class="Carousel-titles"></div>').appendTo(content);
 		
+		updateButtons(this);
+		
 		this._bind();
 	};
+	
+	/**
+		@private
+		@function
+		@description Update the enabled / disabled state of the buttons.
+	*/
+	function updateButtons(carousel) {
+		// buttons are always active for a looping carousel
+		if (carousel._opts.loop) {
+			return;
+		}
+		
+		var indexes = carousel.spotlightIndexes(),
+			lastIndex = indexes[indexes.length - 1],
+			lastItemIndex = carousel.items.length - 1;
+
+		// add or remove the disabled class from the buttons
+		carousel._prevBtn[ (indexes[0] === 0) ? 'addClass' : 'removeClass' ]('Carousel-prev-disabled');
+		carousel._nextBtn[ (lastIndex === lastItemIndex) ? 'addClass' : 'removeClass' ]('Carousel-next-disabled');
+	}
 	
 	/**
 		@private
@@ -277,6 +301,7 @@ Glow.provide(function(glow) {
 	*/
 	function paneAfterMove(event) {
 		if ( !this.fire('afterMove', event).defaultPrevented() ) {
+			updateButtons(this);
 			showTitles(this);
 		}
 	}

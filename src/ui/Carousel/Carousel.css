@@ -2,28 +2,46 @@
 	position: relative;
 }
 
-.glowCSSVERSION-Carousel .Carousel-next,
-.glowCSSVERSION-Carousel .Carousel-prev {
-	position: absolute;
-	z-index: 3;
-	cursor: pointer;
+/* next/prev buttons */
+	.glowCSSVERSION-Carousel .Carousel-next,
+	.glowCSSVERSION-Carousel .Carousel-prev {
+		position: absolute;
+		z-index: 3;
+		cursor: pointer;
+		background: #333;
+		background: rgba(51, 51, 51, 0.75);
+		line-height: 100%;
+		/* nasty hack for the background, IE6 7 & 8 */
+		background: none\9;
+		filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#BF333333,endColorstr=#BF333333);
+	}
 	
-	background: #333;
-	background: rgba(51, 51, 51, 0.75);
-	background-image: url(images/Carousel/arrows.png);
-	/* nasty hack for the background, IE6 7 & 8 */
-	background: none\9;
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#BF333333,endColorstr=#BF333333);
-}
-
-.glowCSSVERSION-Carousel .Carousel-next {
-	right: 0;
-}
-
-.glowCSSVERSION-Carousel .Carousel-prev {
-	left: 0;
-}
-
-img {
-	display: block;
-}
+	.glowCSSVERSION-Carousel .Carousel-next {
+		right: 0;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-prev {
+		left: 0;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-btnIcon {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		margin: -15px 0 0 -11px;
+		background: url(images/Carousel/arrows.png);
+		width: 23px;
+		height: 31px;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-prev .Carousel-btnIcon {
+		background-position: -23px 0;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-prev-disabled .Carousel-btnIcon {
+		background-position: -23px -31px;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-next-disabled .Carousel-btnIcon {
+		background-position: 0 -31px;
+	}

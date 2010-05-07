@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: glow.ui.Carousel</title>
+	
+	<script type="text/javascript" src="../../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../../lib/style.css" />
+	<script src="../../../../unit/lib/testhelper.js?base=../../../../../" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+		testHelper.addScript('core.js');
+		testHelper.addScript('ui.js');
+		testHelper.addCss('ui.css');
+	</script>
+	
+	<style type="text/css">
+		#carousel1Outer {
+			width: 550px;
+		}
+		#carousel1 {
+			margin: 0; padding: 0;
+			list-style: none;
+		}
+		#carousel1 img {
+			display: block;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>glow.ui.Carousel</h1>
+	
+	<h2></h2>
+	
+	<ol>
+		<li>...</li>
+	</ol>
+	
+	<div class="testarea" id="carousel1Outer">
+		<ol id="carousel1">
+			<li><img src="../CarouselPane/images/1.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/2.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/3.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/4.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/5.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/6.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/7.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/8.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/9.jpg" alt="" width="100" height="100" /></li>
+		</ol>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			window.myCarouselPane = new glow.ui.CarouselPane('#carousel1', {
+				step: true
+			});
+		});
+	</script>
+
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>
