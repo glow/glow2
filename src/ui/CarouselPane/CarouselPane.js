@@ -53,13 +53,22 @@ Glow.provide(function(glow) {
 			});
 	*/
 	function CarouselPane(container, opts) {
-		var that = this;
-		
 		/*!debug*/
+			if (!container) {
+				glow.debug.warn('[wrong count] glow.ui.CarouselPane - argument "container" is required.');
+				return;
+			}
 			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step) {
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be greater than opts.spotlight ('+ opts.spotlight + ').');
 			}
+		
+			if (glow(container).length === 0) {
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - "'+container+'" is not a valid element specifier for the container.');
+				return;
+			}
 		/*gubed!*/
+		
+		var that = this;
 		
 		opts = glow.util.apply({
 			duration: 0.2,
@@ -68,10 +77,10 @@ Glow.provide(function(glow) {
 			loop: false,
 			glide: false,
 			page: false, // add a gap?
-			axis: 'x'
+			axis: 'x'    // either 'x' or 'y'
 		}, opts || {});
 		
-		// TODO move to bind
+		// TODO move to bind?
 		this._resizeHandler = function(e) {
 			that.updateUi();
 		}
@@ -91,15 +100,14 @@ Glow.provide(function(glow) {
 	CarouselPaneProto._init = function(container) {  /*debug*///console.log('CarouselPaneProto._init');
 		WidgetProto._init.call(this);
 		
-		
 		// used value vs configured value (they may not be the same).
 		this._step = this._opts.step;
 		
-		// either 'x' or 'y'
 		this._geom = (this._opts.axis === 'y')? ['height', 'top'] : ['width', 'left'];
 		
 		if (!this.stage) {
 			this.stage = glow(container).item(0);
+			
 			this._viewport = glow('<div class="CarouselPane-viewport"></div>');
 			glow(this.stage).wrap(this._viewport);
 		}
@@ -120,7 +128,6 @@ Glow.provide(function(glow) {
 		}
 		
 		this.index = 0;
-		
 		
 		this._build();
 	}
@@ -175,7 +182,7 @@ Glow.provide(function(glow) {
 		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100}); // [wing][stage[spot]stage][wing]
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
-			this.items.item(i).css({position: 'absolute', 'z-index': 2});
+			this.items.item(i).css({position: 'absolute', 'z-index': 2, width: this._itemDimensions.width, height: this._itemDimensions.height});
 		}
 		layout.call(this);		
 		this._bind();
@@ -578,11 +585,24 @@ Glow.provide(function(glow) {
 		return this;
 	}
 	
+	
+	/**
+		@name glow.ui.CarouselPane#next
+		@function
+		@description Move forward by the step.
+		@returns this
+	*/
 	CarouselPaneProto.next = function() { /*debug*///console.log('next()');
 		this.moveTo(this.index + this._step);
 		return this;
 	}
 	
+	/**
+		@name glow.ui.CarouselPane#prev
+		@function
+		@description Move backward by the step.
+		@returns this
+	*/
 	CarouselPaneProto.prev = function() { /*debug*///console.log('prev()');
 		this.moveTo(this.index - this._step);
 		return this;
