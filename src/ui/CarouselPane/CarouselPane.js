@@ -31,7 +31,7 @@ Glow.provide(function(glow) {
 				Spaces don't exist as physical HTML elements, but simply a gap from the last item
 				to the end.
 			
-			@param {number} [opts.spotlightSize] The number of items to treat as main spotlighted items.
+			@param {number} [opts.spotlight] The number of items to treat as main spotlighted items.
 				A carousel may be wide enough to display 2 whole items, but setting
 				this to 1 will result in the spotlight item sitting in the middle, with
 				half of the previous item appearing before, and half the next item
@@ -56,8 +56,8 @@ Glow.provide(function(glow) {
 		var that = this;
 		
 		/*!debug*/
-			if (opts && opts.spotlightSize && opts.step && opts.spotlightSize < opts.step) {
-				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be greater than opts.spotlightSize ('+ opts.spotlightSize + ').');
+			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step) {
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be greater than opts.spotlight ('+ opts.spotlight + ').');
 			}
 		/*gubed!*/
 		
@@ -112,11 +112,11 @@ Glow.provide(function(glow) {
 		*/
 		this.items = this.stage.children();
 		
-		if (this._opts.spotlightSize > this.items.length) {
+		if (this._opts.spotlight > this.items.length) {
 			/*!debug*/
-				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.spotlightSize (' + this._opts.spotlightSize +') cannot be greater than the number of items ('+ this.items.length + ').');
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.spotlight (' + this._opts.spotlight +') cannot be greater than the number of items ('+ this.items.length + ').');
 			/*gubed!*/
-			this._opts.spotlightSize = this.items.length;
+			this._opts.spotlight = this.items.length;
 		}
 		
 		this.index = 0;
@@ -165,7 +165,7 @@ Glow.provide(function(glow) {
 		}
 		else if (this._opts.step > this._spot.capacity) {
 			/*!debug*/
-				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + this._opts.step +') cannot be greater than the calculated spotlightSize ('+ this._spot.capacity + ').');
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + this._opts.step +') cannot be greater than the calculated spotlight ('+ this._spot.capacity + ').');
 			/*gubed!*/
 			
 			this._step = this._spot.capacity;
@@ -629,11 +629,11 @@ Glow.provide(function(glow) {
 		if (!itemDimensions) { itemDimensions = getDimensions(items); }
 		
 		if (opts.axis = 'x') {
-			if (opts.spotlightSize) {
-				if (opts.spotlightSize > items.length) {
-					throw new Error('spotlightSize cannot be larger than item count.');
+			if (opts.spotlight) {
+				if (opts.spotlight > items.length) {
+					throw new Error('spotlight cannot be larger than item count.');
 				}
-				spot.capacity = opts.spotlightSize;
+				spot.capacity = opts.spotlight;
 			}
 			else {
 				spot.capacity = Math.floor( viewportWidth / itemDimensions.width );
