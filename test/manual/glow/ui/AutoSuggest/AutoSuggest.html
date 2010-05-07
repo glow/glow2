@@ -201,10 +201,10 @@
 		})();
 	</script>
 	
-	<h2>Glow API AutoSuggest - overlay</h2>
+	<h2>Glow API AutoSuggest - overlay &amp; delimiters</h2>
 	
 	<div class="testarea" style="height:500px">
-		<input type="text" id="autoSuggest4Input" />
+		<input type="text" id="autoSuggest4Input" style="width:500px" />
 	</div>
 	
 	<script type="text/javascript">
@@ -215,7 +215,8 @@
 			glow.ready(function() {
 				window.autoSuggest = new glow.ui.AutoSuggest().data(glow1Api)
 					.bindInput('#autoSuggest4Input', {
-						anim: 'slide'
+						anim: 'slide',
+						delim: ','
 					});
 			});
 		})();

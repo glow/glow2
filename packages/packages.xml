@@ -63,7 +63,6 @@
 			<file>src/ui/ui.css</file>
 			<file>src/ui/Overlay/Overlay.css</file>
 			<file>src/ui/AutoSuggest/AutoSuggest.css</file>
-			<file>src/ui/AutoSuggest/gel.css</file>
 		</css>
 	</ui>
 </packages>

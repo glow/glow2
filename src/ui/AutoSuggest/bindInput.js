@@ -47,16 +47,23 @@ Glow.provide(function(glow) {
 			
 			autoSuggest._inputTimeout = setTimeout(function() {
 				var val = input.val(),
-					valSplit;
+					lastDelimPos,
+					caretPos;
 				
 				// deal with delims
 				if (delim) {
-					valSplit = val.split(delim);
-					val = valSplit[valSplit.length - 1];
+					caretPos = getCaretPosition(autoSuggest);
+					// get the text before the caret
+					val = val.slice(0, caretPos);
+					// is there a delimiter before the caret?
+					lastDelimPos = val.lastIndexOf(delim);
+					// if so, ignore the bits before the caret
+					if (lastDelimPos !== -1) {
+						val = val.slice( val.lastIndexOf(delim) + delim.length );
+					}
 				}
 				
 				val = glow.util.trim(val);
-				
 				autoSuggest.find(val);
 			}, autoSuggest._bindOpts.delay * 1000);
 		}
@@ -64,6 +71,7 @@ Glow.provide(function(glow) {
 			switch (e.key) {
 				case 'escape':
 					autoSuggest.hide();
+					deleteSelectedText(autoSuggest);
 					return false;
 				case 'up':
 				case 'down':
@@ -113,27 +121,135 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
-		@description Listener for AutoSuggest's select event.
-			This creates the completeOnSelect behaviour.
+		@description Listener for AutoSuggest's select event if opts.autoComplete is true
+			This creates the autoComplete behaviour.
 			'this' is the AutoSuggest.
 	*/
-	function completeSelectListener(e) {
-		var valSplit,
-			valSplitLen,
-			newVal = e.item.name,
-			delim = this._bindOpts.delim;
+	function completeSelectListener(event) {
+		completeInput(this.hide(), event.item.name);
+		makeSelection(this, this.input.val().length);
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for focusable's childActivate event if opts.autoComplete is true.
+			This updates the text as the user cycles through items.
+		
+			'this' is the AutoSuggest
+	*/
+	function focusablechildActivate(event) {
+		if (event.method == 'hover') { return; }
+		completeInput(this, event.item.data('as_data').name, true);
+	}
+	
+	/**
+		@private
+		@function
+		@description Autocomplete value in the input.
+		@param {glow.ui.AutoSuggest} autoSuggest
+		@param {string} newVal Value to complete to
+		@param {boolean} [select=false] Highlight the completed portion?
+			This is used while cycling through values
+	*/
+	function completeInput(autoSuggest, newVal, select) {
+		deleteSelectedText(autoSuggest);
+		
+		var input = autoSuggest.input,
+			oldVal = input.val(),
+			caretPos = getCaretPosition(autoSuggest),
+			rangeStart = caretPos,
+			rangeEnd = newVal.length,
+			delim = autoSuggest._bindOpts.delim,
+			lastDelimPos,
+			firstValPart = '';
 		
 		// we don't want to overwrite the whole thing if we're using delimiters
 		if (delim) {
-			valSplit = this.input.val().split(delim);
-			valSplitLen = valSplit.length;
-			
-			// pad with a space unless we're completing the first item
-			valSplit[valSplitLen - 1] = (valSplitLen === 1 ? '' : ' ') + newVal;
-			newVal = valSplit.join(delim) + delim + ' ';
+			lastDelimPos = oldVal.slice(0, caretPos).lastIndexOf(delim);
+			if (lastDelimPos !== -1) {
+				firstValPart = oldVal.slice(0, lastDelimPos) + delim + ' ';
+			}
+			newVal = firstValPart + newVal + delim + ' ';
+			rangeEnd = newVal.length;
+			newVal += oldVal.slice(caretPos);
 		}
 		
-		this.hide().input.val(newVal);
+		input.val(newVal);
+		select && makeSelection(autoSuggest, rangeStart, rangeEnd);
+	}
+	
+	
+	/**
+		@private
+		@function
+		@description Make a selection in the bound input
+		
+		@param {glow.ui.AutoSuggest} autoSuggest
+		@param {number} start Start point of the selection
+		@param {number} [end=start] End point of the selection
+	*/
+	function makeSelection(autoSuggest, start, end) {
+		end = (end === undefined) ? start : end;
+		
+		var inputElm = autoSuggest.input[0],
+			character = 'character',
+			range;
+
+		if (!window.opera && inputElm.createTextRange) { // IE
+			range = inputElm.createTextRange();
+			range.moveStart(character, start);
+			range.moveEnd(character, end - inputElm.value.length);
+			range.select();
+		}
+		else { // moz, saf, opera
+			inputElm.select();
+			inputElm.selectionStart = start;
+			inputElm.selectionEnd = end;
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Get the caret position within the input
+	*/
+	function getCaretPosition(autoSuggest) {
+		var inputElm = autoSuggest.input[0],
+			r;
+		
+		if (document.selection) { // IE
+			range = document.selection.createRange();
+			range.collapse();
+			range.setEndPoint( 'StartToStart', inputElm.createTextRange() );
+			r = range.text.length;
+		}
+		else { // moz, saf, opera
+			r = inputElm.selectionStart;
+		}
+		
+		return r;
+	}
+	
+	/**
+		@private
+		@function
+		@description Delete the currently selected text in the input.
+			This is used when esc is pressed and in focusablechildActivate
+	*/
+	function deleteSelectedText(autoSuggest) {
+		var inputElm = autoSuggest.input[0],
+			val = inputElm.value,
+			selectionStart;
+		
+		if (document.selection) { // IE
+			document.selection.createRange().text = '';
+		}
+		else { // others
+			selectionStart = inputElm.selectionStart;
+			inputElm.value = val.slice(0, selectionStart) + val.slice(inputElm.selectionEnd);
+			inputElm.selectionStart = selectionStart;
+		}
 	}
 	
 	/**
@@ -201,7 +317,7 @@ Glow.provide(function(glow) {
 			If false, you need to position the overlay's container manually. It's
 			recommended to do this as part of the Overlay's show event, so the
 			position is updated each time it appears.
-		@param {boolean} [opts.completeOnSelect=true] Update the input when an item is selected.
+		@param {boolean} [opts.autoComplete=true] Update the input when an item is highlighted & selected.
 			This will complete the typed text with the result matched.
 			
 			You can create custom actions by listening for the
@@ -228,7 +344,7 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		var bindOpts = this._bindOpts = glow.util.apply({
 				autoPosition: true,
-				completeOnSelect: true,
+				autoComplete: true,
 				delay: 0.5
 			}, opts || {} ),
 			appendTo = bindOpts.appendTo,
@@ -243,7 +359,10 @@ Glow.provide(function(glow) {
 			.on('blur', inputBlur, this)
 			.on('beforedeactivate', inputDeact, this);
 		
-		bindOpts.completeOnSelect && this.on('select', completeSelectListener, this);
+		if (bindOpts.autoComplete) {
+			this.on('select', completeSelectListener, this)
+				.focusable.on('childActivate', focusablechildActivate, this);
+		}
 		
 		// add to document, or...
 		if (appendTo) {

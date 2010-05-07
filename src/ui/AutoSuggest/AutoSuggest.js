@@ -680,6 +680,7 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong count] glow.ui.Autosuggest#hide expects 0 arguments, not ' + arguments.length + '.');
 			}
 		/*gubed!*/
+		clearTimeout(autoSuggest._inputTimeout);
 		// generating empty output does the trick
 		generateOutput(this, [], '');
 		return this;
