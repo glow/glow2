@@ -26,7 +26,7 @@ testHelper = {
 		if (typeof w == 'undefined') { w = window; };
 		
 		// when adding script files commando, switch debug on and off via the querystring, like ?debug=true
-		if (testHelper.getDebug() === 'true') { ///\bdebug=true\b/.test(window.location.search) && scriptName.indexOf('debug.js') === -1) {
+		if (testHelper.getDebug()) { ///\bdebug=true\b/.test(window.location.search) && scriptName.indexOf('debug.js') === -1) {
 			scriptName = scriptName.replace('.js', '.debug.js');
 		}
 		

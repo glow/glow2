@@ -24,7 +24,7 @@ if (!window.Glow) { // loading packages via user SCRIPT tags?
 	window.glow = function(nodeListContents) {
 		return new glow.NodeList(nodeListContents);
 	};
-	
+	glow.UID = 'glow' + Math.floor(Math.random() * (1<<30));
 	glow.load = function() {
 		throw new Error('Method load() is not available without glow.js');
 	}
