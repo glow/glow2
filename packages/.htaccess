@@ -3,6 +3,9 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 
 RewriteCond %{QUERY_STRING}  ^$
+RewriteRule ^src/images/([^\/]+)/([^\/]+\.(?:png|gif|jpg))$ ../src/ui/$1/images/$1/$2 [L]
+
+RewriteCond %{QUERY_STRING}  ^$
 RewriteRule ^[^\/]+/[a-z.]+\.(?:js|css)$ knit.php?package=$0 [L]
 
 RewriteCond %{QUERY_STRING} ^(.+)$
