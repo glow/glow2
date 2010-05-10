@@ -81,7 +81,7 @@ Glow.provide(function(glow) {
 			minLength: 3,
 			keyboardNav: 'arrows-y',
 			activateFirst: true
-		}, opts || {});
+		}, opts);
 
 		Widget.call(this, 'AutoSuggest', opts);
 		this._init();
@@ -142,7 +142,7 @@ Glow.provide(function(glow) {
 		// wrap the selected portion in <strong>
 		// This would be so much easier if it weren't for case sensitivity
 		if (valStart !== -1) {
-			text = text.slice(0, valStart) + '<strong>' + text.slice(valStart, valEnd) + '</strong>' + text.slice(valEnd)
+			text = text.slice(0, valStart) + '<em class="AutoSuggest-match">' + text.slice(valStart, valEnd) + '</em>' + text.slice(valEnd)
 		}
 		
 		return text;
@@ -162,7 +162,7 @@ Glow.provide(function(glow) {
 	}
 	
 	AutoSuggestProto._build = function() {
-		WidgetProto._build.call(this, '<ul></ul>', this._opts);
+		WidgetProto._build.call(this, '<ol></ol>', this._opts);
 		
 		var opts = this._opts,
 			width = opts.width
@@ -328,8 +328,7 @@ Glow.provide(function(glow) {
 		}
 	}
 	
-	// class to use when loading data, used in setDataFunction
-	var loadingClass = 'glowCSSVERSION-AutoSuggest-loading';
+	
 	
 	/**
 		@private
@@ -341,7 +340,9 @@ Glow.provide(function(glow) {
 	function setDataFunction(autoSuggest, func) {
 		// create a new function for fetching data
 		autoSuggest._dataFunc = function(val) {
-			var input = autoSuggest.input;
+			var input = autoSuggest.input,
+				bindOpts = autoSuggest._bindOpts,
+				loadingClass = (bindOpts && bindOpts.loadingClass) || '';
 			
 			// put us in the loading state and call the user's function
 			autoSuggest._loading = true;
@@ -560,7 +561,7 @@ Glow.provide(function(glow) {
 		
 		// Activate the focusable if we have results
 		if (resultsLen) {
-			resultsLen && opts.activateFirst && focusable.active(true);
+			opts.activateFirst && focusable.active(true);
 			// show & position our overlay
 			autoSuggest._showOverlay();
 		}

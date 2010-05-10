@@ -15,9 +15,6 @@
 	</script>
 	
 	<style type="text/css">
-		.active {
-			background: yellow;
-		}
 	</style>
 </head>
 
@@ -219,44 +216,6 @@
 					.bindInput('#autoSuggest4Input', {
 						anim: 'slide',
 						delim: ','
-					});
-			});
-		})();
-	</script>
-	
-	<h2>Glow API AutoSuggest - alternative slide anim</h2>
-	
-	<div class="testarea" style="height:500px">
-		<input type="text" id="autoSuggest5Input" />
-	</div>
-	
-	<script type="text/javascript">
-		(function() {
-			var autoSuggest,
-				part = 1;
-			
-			glow.ready(function() {
-				window.autoSuggest = new glow.ui.AutoSuggest().data(glow1Api)
-					.bindInput('#autoSuggest5Input', {
-						anim: function(isShow, callback) {
-							var anim,
-								container = this.container,
-								fullHeight = container.height('auto').height();
-								
-							function frame() {
-								container.scrollTop( fullHeight - container.height() );
-							}
-							
-							if (isShow) {
-								container.height(0);
-								anim = container.slideOpen(0.5).data('glow_slideOpen')
-							}
-							else {
-								anim = container.slideShut(0.5).data('glow_slideShut');
-							}
-							
-							anim.on('frame', frame).on('complete', callback);
-						}
 					});
 			});
 		})();

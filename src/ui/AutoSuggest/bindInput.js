@@ -352,7 +352,11 @@ Glow.provide(function(glow) {
 			waits for the input to be idle for a given number of seconds.
 		@param {string} [opts.anim] Animate the Overlay when it shows/hides.
 			This can be any parameter accepted by {@link glow.ui.Overlay#setAnim Overlay#setAnim}.
-			
+		@param {string} [opts.loadingClass] Class name added to the input while data is being loaded.
+			This can be used to change the display of the input element while data is being
+			fetched from the server. By default, a spinner is displayed in the input.
+		
+		
 		@returns this
 	*/
 	AutoSuggestProto.bindInput = function(input, opts) {
@@ -367,8 +371,9 @@ Glow.provide(function(glow) {
 		var bindOpts = this._bindOpts = glow.util.apply({
 				autoPosition: true,
 				autoComplete: true,
-				delay: 0.5
-			}, opts || {} ),
+				delay: 0.5,
+				loadingClass: 'glowCSSVERSION-AutoSuggest-loading'
+			}, opts),
 			appendTo = bindOpts.appendTo,
 			container = this.container,
 			overlay,
@@ -392,8 +397,19 @@ Glow.provide(function(glow) {
 		}
 		// ...make overlay
 		else {
-			this.overlay = overlay = new glow.ui.Overlay(container);
+			this.overlay = overlay = new glow.ui.Overlay(container)
+				.on('hide', overlayHide, this)
+				.on('afterShow', overlayAfterShow, this);
+			
+			// the overlay will reactivate the focusable when needed
+			this.focusable.disabled(true);
+			
 			overlay.container.appendTo(document.body);
+			
+			// use alternate slide anim
+			if (bindOpts.anim === 'slide') {
+				bindOpts.anim = altSlideAnim;
+			}
 			
 			bindOpts.anim && overlay.setAnim(bindOpts.anim);
 			
@@ -402,4 +418,59 @@ Glow.provide(function(glow) {
 		
 		return this;
 	};
+	
+	/**
+		@private
+		@function
+		@description Alternative slide animation.
+			The AutoSuggest uses a different style of slide animation to the
+			usual Overlay, this creates it.
+	*/
+	function altSlideAnim(isShow, callback) {
+		var anim,
+			container = this.container,
+			fullHeight = container.height('auto').height();
+			
+		function frame() {
+			container.scrollTop( fullHeight - container.height() );
+		}
+		
+		if (isShow) {
+			container.height(0);
+			anim = container.slideOpen(0.5).data('glow_slideOpen')
+		}
+		else {
+			anim = container.slideShut(0.5).data('glow_slideShut');
+		}
+		
+		anim.on('frame', frame).on('complete', callback);
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for overlay hide.
+			'this' is the autoSuggest.
+			
+			This stops the focusable being interactive during its hide & show animation.
+	*/
+	function overlayHide() {
+		this.focusable.disabled(true);
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for overlay show.
+			'this' is the autoSuggest
+	*/
+	function overlayAfterShow() {
+		var focusable = this.focusable;
+		
+		focusable.disabled(false);
+		
+		if (this._opts.activateFirst) {
+			focusable.active(true);
+		}
+	}
 });
