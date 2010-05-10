@@ -213,7 +213,9 @@
 				part = 1;
 			
 			glow.ready(function() {
-				window.autoSuggest = new glow.ui.AutoSuggest().data(glow1Api)
+				window.autoSuggest = new glow.ui.AutoSuggest({
+					maxHeight: 100
+				}).data(glow1Api)
 					.bindInput('#autoSuggest4Input', {
 						anim: 'slide',
 						delim: ','

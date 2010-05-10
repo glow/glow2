@@ -2,9 +2,8 @@ Glow.provide(function(glow) {
 	var undefined, AutoSuggestProto,
 		Widget = glow.ui.Widget,
 		WidgetProto = Widget.prototype,
-		// this is used for HTML escaping in _format and checking max-height
-		tmpDiv = glow('<div></div>'),
-		supportsMaxHeight;
+		// this is used for HTML escaping in _format
+		tmpDiv = glow('<div></div>');
 	
 	/**
 		@name glow.ui.AutoSuggest
@@ -24,11 +23,6 @@ Glow.provide(function(glow) {
 			portion underlined. You can change the output via {@link glow.ui.AutoSuggest#setFormat setFormat}
 		
 		@param {Object} [opts] Options				
-			@param {number} [opts.maxHeight] Apply a maximum height to the results list
-				This does not impact the number of results, the user will be able to
-				scroll to get to further results.
-				
-				By default, no maximum is imposed.
 			@param {number} [opts.width] Apply a width to the results list.
 				By default, the AutoSuggest is the full width of its containing element,
 				or the width of the input it's linked to if autoPositioning.
@@ -171,8 +165,7 @@ Glow.provide(function(glow) {
 		WidgetProto._build.call(this, '<ul></ul>', this._opts);
 		
 		var opts = this._opts,
-			width = opts.width,
-			maxHeight = opts.maxHeight,
+			width = opts.width
 			content = this.content;
 		
 		this.focusable = content.focusable({
@@ -183,7 +176,6 @@ Glow.provide(function(glow) {
 		});
 		
 		width && this.container.width(width);
-		maxHeight && content.css('max-height', maxHeight);
 		
 		// call _build
 		this._bind();
@@ -202,13 +194,26 @@ Glow.provide(function(glow) {
 		}).defaultPrevented();
 	}
 	
+	/**
+		@private
+		@function
+		@description Listens for focus moving in the focusable.
+			'this' is the autoSuggest
+	*/
+	function focusableChildActivate(e) {
+		var item = e.item,
+			focusable = this.focusable;
+	}
+	
 	function returnFalse() { return false; }
 	
 	AutoSuggestProto._bind = function() {
-		var focusable = this.focusable.on('select', focusableSelectListener, this);
+		var focusable = this.focusable.on('select', focusableSelectListener, this)
+			.on('childActivate', focusableChildActivate, this);
+		
 		this._tie(focusable);
 		
-		// prevent 
+		// prevent focus moving on mouse down
 		this.container.on('mousedown', returnFalse);
 		
 		WidgetProto._bind.call(this);
@@ -527,8 +532,7 @@ Glow.provide(function(glow) {
 			listItem,
 			itemContent,
 			opts = autoSuggest._opts,
-			focusable = autoSuggest.focusable,
-			maxHeight = opts.maxHeight
+			focusable = autoSuggest.focusable;
 		
 		focusable.active(false);
 		
@@ -552,18 +556,6 @@ Glow.provide(function(glow) {
 			(typeof itemContent === 'string') ?
 				listItem.html(itemContent) :
 				listItem.append(itemContent);
-		}
-		
-		// fake maxHeight for IE6
-		if ( supportsMaxHeight === undefined ) {
-			supportsMaxHeight = (tmpDiv[0].style.maxHeight !== undefined);
-		}
-		if ( !supportsMaxHeight ) {
-			content.height('auto');
-			
-			if (content.height() > maxHeight) {
-				content.height(maxHeight);
-			}
 		}
 		
 		// Activate the focusable if we have results
@@ -680,7 +672,7 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong count] glow.ui.Autosuggest#hide expects 0 arguments, not ' + arguments.length + '.');
 			}
 		/*gubed!*/
-		clearTimeout(autoSuggest._inputTimeout);
+		clearTimeout(this._inputTimeout);
 		// generating empty output does the trick
 		generateOutput(this, [], '');
 		return this;

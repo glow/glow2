@@ -35,9 +35,9 @@ Glow.provide(function(glow) {
 	*/
 	function inputPress(e) {
 		var autoSuggest = this,
-			input = autoSuggest.input,
-			delim = autoSuggest._bindOpts.delim,
 			focusable = autoSuggest.focusable,
+			focusableActive,
+			focusableIndex = focusable.activeIndex,
 			childrenLength;
 			
 		// we only care about printable chars and keys that modify input
@@ -46,36 +46,27 @@ Glow.provide(function(glow) {
 			clearTimeout(autoSuggest._inputTimeout);
 			
 			autoSuggest._inputTimeout = setTimeout(function() {
-				var val = input.val(),
-					lastDelimPos,
-					caretPos;
-				
-				// deal with delims
-				if (delim) {
-					caretPos = getCaretPosition(autoSuggest);
-					// get the text before the caret
-					val = val.slice(0, caretPos);
-					// is there a delimiter before the caret?
-					lastDelimPos = val.lastIndexOf(delim);
-					// if so, ignore the bits before the caret
-					if (lastDelimPos !== -1) {
-						val = val.slice( val.lastIndexOf(delim) + delim.length );
-					}
-				}
-				
-				val = glow.util.trim(val);
-				autoSuggest.find(val);
+				autoSuggest.find( getFindValue(autoSuggest) );
 			}, autoSuggest._bindOpts.delay * 1000);
 		}
 		else {
+			focusableActive = focusable.active();
 			switch (e.key) {
 				case 'escape':
 					autoSuggest.hide();
 					deleteSelectedText(autoSuggest);
 					return false;
 				case 'up':
+					// Is up being pressed on the first item?
+					if (focusableActive && !focusableIndex) {
+						// deactivate the focusable
+						focusable.active(false);
+						deleteSelectedText(autoSuggest);
+						return false;
+					}
+					// I'm deliberately not breaking here, want to capture both up & down keys in the next case
 				case 'down':
-					if ( !focusable._opts.activateFirst && !focusable.active() && (childrenLength = autoSuggest.content.children().length) ) {
+					if ( !focusableActive && (childrenLength = autoSuggest.content.children().length) ) {
 						// if the focusable isn't active, activate the first/last item
 						focusable.active(e.key == 'up' ? childrenLength - 1 : 0);
 						e.stopPropagation();
@@ -85,6 +76,36 @@ Glow.provide(function(glow) {
 		}
 	}
 	AutoSuggestProto._inputPress = inputPress;
+	
+	/**
+		@private
+		@function
+		@description Gets the value to find from the input.
+		@returns The value to find.
+			This is the same as the input value unless delimiters are used
+	*/
+	function getFindValue(autoSuggest) {
+		var input = autoSuggest.input,
+			delim = autoSuggest._bindOpts.delim,
+			val = input.val(),
+			lastDelimPos,
+			caretPos;
+		
+		// deal with delims
+		if (delim) {
+			caretPos = getCaretPosition(autoSuggest);
+			// get the text before the caret
+			val = val.slice(0, caretPos);
+			// is there a delimiter before the caret?
+			lastDelimPos = val.lastIndexOf(delim);
+			// if so, ignore the bits before the caret
+			if (lastDelimPos !== -1) {
+				val = val.slice( val.lastIndexOf(delim) + delim.length );
+			}
+		}
+		
+		return glow.util.trim(val);
+	}
 	
 	/**
 		@name glow.ui.AutoSuggest#_inputBlur
@@ -139,8 +160,9 @@ Glow.provide(function(glow) {
 			'this' is the AutoSuggest
 	*/
 	function focusablechildActivate(event) {
-		if (event.method == 'hover') { return; }
-		completeInput(this, event.item.data('as_data').name, true);
+		if (event.method !== 'hover') {
+			completeInput(this, event.item.data('as_data').name, true);
+		}
 	}
 	
 	/**
