@@ -282,6 +282,7 @@ Glow.provide(function(glow) {
 		this._gliderBrake = false;
 		this.moveTo(this.index+step, {callback: function() {
 			if (!that._gliderBrake) {
+				if (that._opts.loop || ( (backwards && that.index > 0) || (!backwards && that.index < that.items.length-1) ))
 				glide.call(that, backwards);
 			}
 		}});
@@ -303,7 +304,7 @@ Glow.provide(function(glow) {
 			that = this,
 			moveAnim,
 			wrapAt = offset + (backwards? -this.index * amount : (this.items.length-this.index) * amount);
-			
+		
 		swap.call(this, 'back');
 		
 		for (var i = 0, leni = this.items.length; i < leni; i += this._step) {
@@ -328,7 +329,7 @@ Glow.provide(function(glow) {
 			})
 			.on('complete', function() {
 				that.index += dir;
-				if (that._gliderBrake) {
+				if (that._gliderBrake || (!that._opts.loop && (that.index === that.items.length-1 || that.index === 0) ) ) {
 					glideStop.call(that);
 					that.fire('afterMove', {currentIndex: that.index});
 				}
