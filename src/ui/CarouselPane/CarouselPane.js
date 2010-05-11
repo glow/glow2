@@ -279,11 +279,14 @@ Glow.provide(function(glow) {
 			return false;
 		}
 		
-		if (this._step !== 1) {
-			throw new Error('Cannot call moveStart when step is not 1.');
-		}
+		/*!debug*/
+			if (this._opts.glide && this._step !== 1) {
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - Cannot call moveStart with opts.glide when step is not 1.');
+			}
+		/*gubed!*/
 		
-		var step = (backwards? -1 : 1),
+		
+		var step = (backwards? -1 * this._step : this._step),
 			that = this;
 		
 		this._gliderBrake = false;
@@ -293,7 +296,8 @@ Glow.provide(function(glow) {
 					that._opts.loop ||
 					( (backwards && that.index > 0) || (!backwards && that.index + that._spot.capacity < that.items.length) )
 				) {
-					glide.call(that, backwards);
+					if (that._opts.glide && that._step === 1) { glide.call(that, backwards); }
+					else { that.moveStart(backwards); }
 				}
 			}
 		}});
