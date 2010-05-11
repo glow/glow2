@@ -470,17 +470,22 @@ Glow.provide(function(glow) {
 		if null then no animation, if a string then use the named tween.
 	 */
 	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*///console.log('moveTo('+itemIndex+')');
+		var willMove;
+		
 		if (this._inMotion) {
 			return false;
 		}
 		opts = opts || {};
+		
+		willMove = canGo.call(this, itemIndex);
 		
 		if (opts.tween !== null) { // don't announce jumps
 			var e = new glow.events.Event({
 				currentIndex: this.index,
 				moveBy: (this.index < itemIndex)? (itemIndex - this.index) : (-Math.abs(this.index - itemIndex))
 			});
-			if ( this.fire('move', e).defaultPrevented() ) {
+			
+			if (willMove && this.fire('move', e).defaultPrevented() ) {
 				return this;
 			}
 			else {
@@ -506,7 +511,7 @@ Glow.provide(function(glow) {
 			
 			this._inMotion = false;
 		}
-		else if (canGo.call(this, itemIndex)) {
+		else if (willMove) {
 			this._inMotion = true;
 			
 			anim = this.content.anim(
@@ -523,7 +528,6 @@ Glow.provide(function(glow) {
 			var that = this;
 
 			anim.on('complete', function() {
-
 				that._inMotion = false;
 				
 				jump.call(that);
