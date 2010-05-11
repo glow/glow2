@@ -291,7 +291,7 @@ Glow.provide(function(glow) {
 			if (!that._gliderBrake) {
 				if (
 					that._opts.loop ||
-					( (backwards && that.index > 0) || (!backwards && that.index < that.items.length-1) )
+					( (backwards && that.index > 0) || (!backwards && that.index + that._spot.capacity < that.items.length) )
 				) {
 					glide.call(that, backwards);
 				}
@@ -340,7 +340,8 @@ Glow.provide(function(glow) {
 			})
 			.on('complete', function() {
 				that.index += dir;
-				if (that._gliderBrake || (!that._opts.loop && (that.index === that.items.length-1 || that.index === 0) ) ) {
+
+				if (that._gliderBrake || (!that._opts.loop && (that.index + that._spot.capacity === that.items.length || that.index === 0) ) ) {
 					glideStop.call(that);
 					that.fire('afterMove', {currentIndex: that.index});
 				}
@@ -372,7 +373,7 @@ Glow.provide(function(glow) {
 		return this.index;
 	}
 	
-	function glideStop() {
+	function glideStop() { /*debug*///console.log('glideStop()');
 		this._glider.stop();
 		this._glider.destroy();
 		

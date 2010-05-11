@@ -67,7 +67,7 @@
 		<li>example</li>
 	</ol>
 	
-	<div class="testarea" style="width: 100%;">
+	<div class="testarea" style="width: 550px;">
 	
 		<ol id="myCarousel">
 			<li><img src="images/1.jpg" alt="Scouting For Girls"></li>
@@ -105,16 +105,16 @@
 // 				,duration: 0.4
 // 				//,tween: 'elasticOut'
 // 			};
-			var c = new glow.ui.CarouselPane('#myCarousel', {loop: 1, step: 2, spotlight: 3, duration: 0.6, page: 1});
+			var c = new glow.ui.CarouselPane('#myCarousel'/*, {loop: 0, step: 1, spotlight: 3, duration: 0.6, page: 1}*/);
 			c.on('move', function(e) {
-				console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
+				//console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
 				//if (e.moveBy < 0 && e.currentIndex < 1) { return false; }
 				
 				//if (e.currentIndex >= 4) { return false; }
 			});
 			
 			c.on('afterMove', function(e) {
-				console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
+				//console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
 				//console.log( 'move complete: '+ e.currentIndex );
 			});
 			//c.moveBy(-1);
@@ -124,6 +124,7 @@
 			
 			glow('#glideNext').on('mousedown', function() {
 				c.moveStart();
+				return false;
 			}).on('mouseup', function() {
 				c.moveStop();
 			});
