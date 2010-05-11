@@ -58,10 +58,10 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong count] glow.ui.CarouselPane - argument "container" is required.');
 				return;
 			}
-			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step) {
+			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step && opts.step !== true) {
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be greater than opts.spotlight ('+ opts.spotlight + ').');
 			}
-			if (opts && opts.spotlight && opts.step && opts.page && opts.spotlight !== opts.step) {
+			if (opts && opts.spotlight && opts.step && opts.page && opts.spotlight !== opts.step && opts.step !== true) {
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be different than opts.spotlight ('+ opts.spotlight + ') if opts.page is true.');
 			}
 		
@@ -93,7 +93,7 @@ Glow.provide(function(glow) {
 		}
 		
 		if (opts.page) {
-			opts.spotlight = opts.step;
+//			opts.spotlight = opts.step;
 		}
 
 		glow.ui.Widget.call(this, 'CarouselPane', opts);
@@ -174,6 +174,7 @@ Glow.provide(function(glow) {
 		*/
 		this._spot = CarouselPane._getSpot(this._viewport.width(), this.items, this._itemDimensions, this._opts);
 		this._gap = getGap.apply(this);
+
 		if (this._opts.step === true) {
 			this._step = this._spot.capacity;
 		}
@@ -183,9 +184,19 @@ Glow.provide(function(glow) {
 			/*gubed!*/
 			
 			this._step = this._spot.capacity;
-			this._gap = getGap.apply(this); 
+			 
 		}
 		
+		if (this._opts.page && this._step !== this._spot.capacity) {
+			/*!debug*/
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + this._opts.step +') cannot be differt than the spotlight ('+ this._spot.capacity + ') when opts.page is true.');
+			/*gubed!*/
+			
+			this._step = this._spot.capacity;
+		}
+		
+		this._gap = getGap.apply(this);
+
 		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100}); // [wing][stage[spot]stage][wing]
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
@@ -674,7 +685,6 @@ Glow.provide(function(glow) {
 				spot.capacity = Math.floor( viewportWidth / itemDimensions.width );
 			}
 		
-
 			spot.width = spot.capacity * itemDimensions.width;
 			spot.height = itemDimensions.height
 			
