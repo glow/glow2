@@ -56,12 +56,20 @@ Glow.provide(function(glow) {
 			position: 'belowLast'
 		}, opts);
 		
-		this._pageNav = glow('<div class="carousel-pageNav"></div>')
+		var className = 'Carousel-pageNav';
+		
+		if (opts.useNumbers) {
+			className += 'Numbers';
+		}
+		
+		this._pageNav = glow('<div class="' + className + '"></div>')
 			.delegate('click', 'div', pageNavClick, this);
 		
 		this._pageNavOpts = opts;
 		
-		positionPageNav(this);
+		initPageNav(this);
+		
+		return this;
 	};
 	
 	/**
@@ -71,7 +79,6 @@ Glow.provide(function(glow) {
 			'this' is the carousel
 	*/
 	function pageNavClick(event) {
-		// TODO: event.attachedTo - does this give us the inner div or the page nav?
 		var targetPage = Number( glow(event.attachedTo).text() ) - 1;
 		this.moveTo(targetPage);
 	}
@@ -87,9 +94,12 @@ Glow.provide(function(glow) {
 			position = carousel._pageNavOpts.position,
 			positionY = position.slice(0,5),
 			positionX = position.slice(5),
-			// TODO: get this number from somewhere
-			numberOfPages = 5,
+			pane = carousel._pane,
+			numberOfPages = 1 + Math.ceil( (carousel.items.length - pane._spot.capacity) / pane._step ),
 			htmlStr = '';
+		
+		// this can be less than one if there's less than 1 page worth or items
+		numberOfPages = Math.max(numberOfPages, 0);
 		
 		// either append or prepend the page nav, depending on option
 		carousel.container[ (positionY === 'below') ? 'append' : 'prepend' ](pageNav);
@@ -104,7 +114,7 @@ Glow.provide(function(glow) {
 		}
 		// move it under the last item for *Last positions
 		else if (positionX === 'Last') {
-			pageNav.css( 'margin-left', carousel._nextBtn.width() )
+			pageNav.css( 'margin-right', carousel._nextBtn.width() )
 		}
 		
 		// build the html string
@@ -113,8 +123,7 @@ Glow.provide(function(glow) {
 		} while (--numberOfPages);
 		
 		pageNav.html(htmlStr);
-		// TODO: pick the right page to activate
-		updatePageNav(carousel, 0);
+		carousel._updateNav( pane.index / pane._step );
 	}
 	
 	/**

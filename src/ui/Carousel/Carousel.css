@@ -45,3 +45,53 @@
 	.glowCSSVERSION-Carousel .Carousel-next-disabled .Carousel-btnIcon {
 		background-position: 0 -31px;
 	}
+	
+/* Page nav */
+	.glowCSSVERSION-Carousel .Carousel-pageNav {
+		height: 8px;
+		margin: 4px 0;
+	}
+	.glowCSSVERSION-Carousel .Carousel-pageNav div {
+		display: inline-block;
+		height: 8px;
+		width: 8px;
+		overflow: hidden;
+		color: #ccc;
+		background: #ccc;
+		margin: 0 0 0 4px;
+		cursor: pointer;
+		font-size: medium;
+		vertical-align: top;
+		/* inline-block for IE */
+		*display: inline;
+		zoom: 1;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-pageNav div.active {
+		color: #333;
+		background: #333;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-pageNavNumbers {
+		margin: 4px 0;
+		color: #333;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-pageNavNumbers div {
+		display: inline;
+		cursor: pointer;
+		font-size: medium;
+		margin: 0 0 0 4px;
+	}
+	
+	.glowCSSVERSION-Carousel .Carousel-pageNavNumbers div.active {
+		font-weight: bold;
+	}
+/* item titles */
+	.glowCSSVERSION-Carousel .Carousel-titles {
+		position: relative;
+	}
+	.glowCSSVERSION-Carousel .Carousel-title {
+		position: absolute;
+		background: #ccc;
+	}

@@ -99,8 +99,8 @@ Glow.provide(function(glow) {
 		
 		opts = this._opts;
 		
+		// convert the options for CarouselPane
 		if (opts.page) {
-			// todo: need to work out how to make step the same as resulting spotlight
 			opts.step = opts.page;
 			opts.page = true;
 		}
@@ -142,7 +142,7 @@ Glow.provide(function(glow) {
 		@description Element acting as next button
 	*/
 	/**
-		@name glow.ui.Carousel#_itemTiles
+		@name glow.ui.Carousel#_itemTitles
 		@type glow.NodeList
 		@description Item title boxes, one per item.
 			If any items don't have a title box, an empty div will be created.
@@ -153,7 +153,7 @@ Glow.provide(function(glow) {
 		@name glow.ui.Carousel#_titlesHolder
 		@type glow.NodeList
 		@description Container of item titles.
-			Items from _itemTiles will be added & removed to/from this element.
+			Items from _itemTitles will be added & removed to/from this element.
 	*/
 	
 	/**
@@ -175,18 +175,31 @@ Glow.provide(function(glow) {
 	};
 	
 	CarouselProto._build = function () {
-		// TODO: check the size of the wings, if they're too small reduce the spotlight accordingly
-		
 		var content,
-			titleBoxes = this._titleBoxes = getItemTitles(this),
-			pane = this._pane = new glow.ui.CarouselPane(this.itemContainer, this._opts),
-			spot = pane._spot;
+			itemContainer = this.itemContainer,
+			itemTitles,
+			titlesHolder,
+			pane,
+			items,
+			spot;
 		
-		WidgetProto._build.call( this, pane.container.wrap('<div></div>').parent() );
-		
+		WidgetProto._build.call( this, itemContainer.wrap('<div></div>').parent() );
 		content = this.content;
-		this.items = pane.items;
+		
+		// add titles item
+		titlesHolder = this._titlesHolder = glow('<div class="Carousel-titles"></div>').appendTo(content);
+		// get titles and remove them from their items
+		itemTitles = this._itemTitles = getItemTitles(this);
+		// set the holder to the same height as the items
+		titlesHolder.height( itemTitles[0].style.height );
+		
+		pane = this._pane = new glow.ui.CarouselPane(itemContainer, this._opts);
+		spot = pane._spot
+		items = this.items = pane.items;
 		this.itemContainer = pane.itemContainer;
+		
+		// set the item titles to be the same size as the items
+		itemTitles.width( items.width() );
 		
 		pane.moveTo(0, {
 			tween: null
@@ -195,17 +208,15 @@ Glow.provide(function(glow) {
 		// add next & prev buttons, autosizing them
 		this._prevBtn = glow('<div class="Carousel-prev"><div class="Carousel-btnIcon"></div></div>').prependTo(content).css({
 			width: spot.offset.left,
-			height: spot.height,
-			'line-height': spot.height
+			height: spot.height
 		});
 		this._nextBtn = glow('<div class="Carousel-next"><div class="Carousel-btnIcon"></div></div>').prependTo(content).css({
 			width: spot.offset.right,
-			height: spot.height,
-			'line-height': spot.height
+			height: spot.height
 		});
-		this._titlesHolder = glow('<div class="Carousel-titles"></div>').appendTo(content);
 		
 		updateButtons(this);
+		showTitles(this);
 		
 		this._bind();
 	};
@@ -275,10 +286,11 @@ Glow.provide(function(glow) {
 		@description Listener for CarouselPane's 'move' event.
 			'this' is the Carousel
 	*/
-	function paneMove(event) {	
+	function paneMove(event) {
+		var pane = this._pane;
+		
 		if ( !this.fire('move', event).defaultPrevented() ) {
-			// TODO: pick the right page to activate
-			this._updateNav(0);
+			this._updateNav( (pane.index + event.moveBy) / pane._step );
 			hideTitles(this);
 		}
 	}
@@ -290,7 +302,7 @@ Glow.provide(function(glow) {
 	*/
 	function hideTitles(carousel) {
 		var currentTitles = carousel._titlesHolder.children();
-		currentTitles.fadeOut(carousel._opts.duration);
+		currentTitles.fadeOut(carousel._pane._opts.duration);
 	}
 	
 	/**
@@ -302,7 +314,7 @@ Glow.provide(function(glow) {
 	function paneAfterMove(event) {
 		if ( !this.fire('afterMove', event).defaultPrevented() ) {
 			updateButtons(this);
-			showTitles(this);
+			showTitles(this, true);
 		}
 	}
 	
@@ -311,13 +323,13 @@ Glow.provide(function(glow) {
 		@function
 		@description Show the titles for the currently displayed items
 	*/
-	function showTitles(carousel) {
+	function showTitles(carousel, animate) {
 		// bail if no item titles
-		if (!carousel._itemTiles) { return; }
+		if (!carousel._itemTitles) { return; }
 		
 		var indexes = carousel.spotlightIndexes(),
 			carouselItems = carousel.spotlightItems(),
-			itemTitles = carousel._itemTiles,
+			itemTitles = carousel._itemTitles,
 			titlesHolder = carousel._titlesHolder.empty(),
 			titlesHolderOffset = titlesHolder.offset().left,
 			titlesToShow = glow();
@@ -329,11 +341,11 @@ Glow.provide(function(glow) {
 					// add it to the holder
 					.appendTo(titlesHolder)
 					// position it
-					.css( 'left', titlesHolderOffset - carouselItems.item(i).offset().left )
+					.css( 'left', carouselItems.item(i).offset().left - titlesHolderOffset )
 			);
 		}
 		
-		titlesToShow.fadeIn(carousel._opts.duration);
+		titlesToShow.css('opacity', 0).fadeIn(carousel._pane._opts.duration * !!animate);
 	}
 	
 	/**
@@ -444,7 +456,7 @@ Glow.provide(function(glow) {
 	*/
 	function prevNext(direction) {
 		return function() {
-			this._pane.moveBy(this._opts.step * direction);
+			this._pane.moveBy(this._pane._step * direction);
 			return this;
 		}
 	}

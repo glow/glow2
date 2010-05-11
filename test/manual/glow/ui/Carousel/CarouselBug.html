@@ -48,15 +48,40 @@
 			<li><img src="../CarouselPane/images/7.jpg" alt="" width="100" height="100" /></li>
 			<li><img src="../CarouselPane/images/8.jpg" alt="" width="100" height="100" /></li>
 			<li><img src="../CarouselPane/images/9.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/1.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/2.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/3.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/4.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/5.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/6.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/7.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/8.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/9.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/1.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/2.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/3.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/4.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/5.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/6.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/7.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/8.jpg" alt="" width="100" height="100" /></li>
+			<li><img src="../CarouselPane/images/9.jpg" alt="" width="100" height="100" /></li>
 		</ol>
 	</div>
 	
+	<p><a href="#" id="moveStart">moveStart()</a> - doesn't glide</p>
+	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			window.myCarouselPane = new glow.ui.CarouselPane('#carousel1', {
-				step: true
-			});
+			window.myCarouselPane = new glow.ui.CarouselPane('#carousel1');
+			
+			glow('#moveStart').on('click', function() {
+				myCarouselPane.moveStart();
+				return false;
+			})
 		});
+		
+		
 	</script>
 
 	
