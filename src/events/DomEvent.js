@@ -423,22 +423,21 @@ Glow.provide(function(glow) {
 			node,
 			r = [];
 		
-		// call delegated listeners
+		// get delegated listeners
 		if ( delegates[id] && ( selectorCounts = delegates[id][eventName] ) ) {
 			for (selector in selectorCounts) {
-				node = event.source
+				node = event.source;
 				// if the source matches the selector
-				while (node) {
+				while (node && node !== element) {
 					if (glow._sizzle.matches( selector, [node] ).length) {
 						r.push( [node, selector] );
+						break;
 					}
 					
-					if (node === element) { break; } // don't check parents above the attachTo
 					node = node.parentNode;
 				}
 			}
 		}
-		
 		return r;
 	}
 	
@@ -461,10 +460,12 @@ Glow.provide(function(glow) {
 		
 		// call delegated listeners
 		for (var i = 0, leni = delegateMatches.length; i < leni; i++) {
+			event.attachedTo = delegateMatches[i][0];
 			_callListeners( element, eventName + '/' + delegateMatches[i][1], event, delegateMatches[i][0] );
 		}
 		
 		// call non-delegated listeners
+		event.attachedTo = element;
 		_callListeners(element, eventName, event);
 		
 		return event;
