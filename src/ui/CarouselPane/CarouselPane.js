@@ -61,6 +61,9 @@ Glow.provide(function(glow) {
 			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step) {
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be greater than opts.spotlight ('+ opts.spotlight + ').');
 			}
+			if (opts && opts.spotlight && opts.step && opts.page && opts.spotlight !== opts.step) {
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be different than opts.spotlight ('+ opts.spotlight + ') if opts.page is true.');
+			}
 		
 			if (glow(container).length === 0) {
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - "'+container+'" is not a valid element specifier for the container.');
@@ -87,6 +90,10 @@ Glow.provide(function(glow) {
 		
 		if (opts.loop === false && opts.step !== 1) {
 			opts.page = true;
+		}
+		
+		if (opts.page) {
+			opts.spotlight = opts.step;
 		}
 
 		glow.ui.Widget.call(this, 'CarouselPane', opts);
@@ -282,8 +289,12 @@ Glow.provide(function(glow) {
 		this._gliderBrake = false;
 		this.moveTo(this.index+step, {callback: function() {
 			if (!that._gliderBrake) {
-				if (that._opts.loop || ( (backwards && that.index > 0) || (!backwards && that.index < that.items.length-1) ))
-				glide.call(that, backwards);
+				if (
+					that._opts.loop ||
+					( (backwards && that.index > 0) || (!backwards && that.index < that.items.length-1) )
+				) {
+					glide.call(that, backwards);
+				}
 			}
 		}});
 		
@@ -383,7 +394,7 @@ Glow.provide(function(glow) {
 		var indexes = [],
 			findex = calculateIndex.call(this),
 			index,
-			maxi = (this._opts.loop)? this._spot.capacity : this.items.length;
+			maxi = this._spot.capacity;
 		
 		// takes into account gaps and wraps
 		for (var i = 0; i < maxi; i++) {
@@ -504,7 +515,6 @@ Glow.provide(function(glow) {
 				
 				// force index to be a number from 0 to items.length
 				that.index = that.index % (that.items.length  + that._gap.count);
-				//that.index = (that.index < 0)? that.index + that.items.length : that.index;
 				
 				that.fire('afterMove', {currentIndex: that.index});
 				if (opts.callback) { opts.callback(); }
@@ -585,7 +595,6 @@ Glow.provide(function(glow) {
 		this.moveTo(this.index + amount);
 		return this;
 	}
-	
 	
 	/**
 		@name glow.ui.CarouselPane#next

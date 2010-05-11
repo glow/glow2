@@ -40,8 +40,8 @@
 		*/
 		
 		#myCarousel li img {
-			width: 200px;
-			height: 200px;
+			width: 150px;
+			height: 150px;
 		}
 		
 		#spotlight { border: 1px #FF4B00 dashed; }
@@ -75,11 +75,11 @@
 			<li><img src="images/3.jpg" alt="One of the Boys"></li>
 			<li><img src="images/4.jpg" alt="Monkey Business"></li>
 			<li><img src="images/5.jpg" alt="Shake a Bone"></li>
-			<li><img src="images/6.jpg" alt="MeatLoaf"></li>
-<!--			<li><img src="images/7.jpg" alt="Britteny"></li>
+<!--			<li><img src="images/6.jpg" alt="MeatLoaf"></li>
+			<li><img src="images/7.jpg" alt="Britteny"></li>
 			<li><img src="images/8.jpg" alt="Mumford"></li>
 			<li><img src="images/9.jpg" alt="Kate Nash"></li>
- -->
+-->
 		</ol>
 	</div>
 	
@@ -105,16 +105,16 @@
 // 				,duration: 0.4
 // 				//,tween: 'elasticOut'
 // 			};
-			var c = new glow.ui.CarouselPane('#myCarousel', {loop: 1, spotlight: 2, duration: 0.6});
+			var c = new glow.ui.CarouselPane('#myCarousel', {loop: 1, step: 2, spotlight: 3, duration: 0.6, page: 1});
 			c.on('move', function(e) {
-				//console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
+				console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
 				//if (e.moveBy < 0 && e.currentIndex < 1) { return false; }
 				
 				//if (e.currentIndex >= 4) { return false; }
 			});
 			
 			c.on('afterMove', function(e) {
-				//console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
+				console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
 				//console.log( 'move complete: '+ e.currentIndex );
 			});
 			//c.moveBy(-1);
