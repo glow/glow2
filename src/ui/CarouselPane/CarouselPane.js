@@ -478,7 +478,7 @@ Glow.provide(function(glow) {
 		
 		// invalid itemIndex value?
 		if (!this._opts.loop && itemIndex >= this.items.length) {
-			itemIndex = this.items.length-1;
+			itemIndex = this.items.length - this._spot.capacity + this._gap.count;
 		}
 		else if (!this._opts.loop && itemIndex < 0) {
 			itemIndex = 0;
