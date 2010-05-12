@@ -37,5 +37,7 @@
 }
 
 .glowCSSVERSION-AutoSuggest-loading {
-	background: #fcc;
+	background-image: url(images/AutoSuggest/spinner.gif);
+	background-position: right center;
+	background-repeat: no-repeat;
 }
