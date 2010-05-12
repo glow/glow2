@@ -301,6 +301,11 @@ Glow.provide(function(glow) {
 		@private
 		@function
 		@description Process the data into an acceptable format for #_data.
+		@param {glow.ui.AutoSuggest} autoSuggest
+		@param {Object[]|string[]|glow.net.Response} data
+			Array of strings will be converted into an array of objects like {name: val}
+			
+			glow.net.Response will be converted into Object[]|string[] via .json
 	*/
 	function populateData(autoSuggest, data) {
 		var i,
@@ -324,6 +329,16 @@ Glow.provide(function(glow) {
 				}
 				data = tmpData;
 			}
+			
+			/*!debug*/
+				if ( !data.push ) {
+					glow.debug.warn('[wrong type] glow.ui.Autosuggest data expected to be array, not ' + typeof data + '.');
+				}
+				else if (data.length && typeof data[0] !== 'object') {
+					glow.debug.warn('[wrong type] glow.ui.Autosuggest data expected to be array of objects, not array of ' + typeof data[0] + '.');
+				}
+			/*gubed!*/
+			
 			autoSuggest._data = data;
 		}
 	}
@@ -367,6 +382,7 @@ Glow.provide(function(glow) {
 		@private
 		@function
 		@description Creates a data function to load a single url once.
+		@param url With no {val} placeholder.
 	*/
 	function singleLoadUrl(url) {
 		var dataFetched,
@@ -393,6 +409,7 @@ Glow.provide(function(glow) {
 		@private
 		@function
 		@description Creates a data function to load from a url each time a search is made.
+		@param url With {val} placeholder.
 	*/
 	function multiLoadUrl(url) {
 		var currentRequest;
@@ -412,19 +429,19 @@ Glow.provide(function(glow) {
 		@name glow.ui.AutoSuggest#data
 		@function
 		@description Set the data or datasource to search.
-			This give the AutoSuggest the data to search, or the means to fetch
+			This gives the AutoSuggest the data to search, or the means to fetch
 			the data to search.
 			
-		@param {string|string[]|Object[]|glow.net.Response|function} data Data or datasource
+		@param {string|string[]|Object[]|glow.net.Response|function} data Data or datasource.
 		
 			<p><strong>String URL</strong></p>
 			
 			A URL on the same domain can be provided, eg 'results.json?search={val}', where {val} is replaced
-			with the search term. If {val} is used, the URL if fetched on each search, otherwide it is only fetched
+			with the search term. If {val} is used, the URL if fetched on each search, otherwise it is only fetched
 			once on the first search.
 			
 			The result is a {@link glow.net.Response}, by default this is decoded as json. Use
-			the 'data' event to convert your incomming data from other types (such as XML).
+			the 'data' event to convert your incoming data from other types (such as XML).
 			
 			<p><strong>glow.net.Response</strong></p>
 			
@@ -435,20 +452,24 @@ Glow.provide(function(glow) {
 			An Array of strings can be provided. Each string will be converted to {name: theString}, leaving
 			you with an array of objects.
 			
-			An Array of Objects can be provided, each object is an object that can be matched. By default
+			An Array of objects can be provided, each object is an object that can be matched. By default
 			the 'name' property of these objects is searched to determine a match, but {@link glow.ui.AutoSuggest#filter filter} can
 			be used to change this.
 			
 			<p><strong>function</strong></p>
 			
-			A function can be provided, this is passed two arguments, the first is the search string, the 2nd is
-			a callback.
+			Providing a function means you have total freedom over fetching the data
+			for your autoSuggest, sync or async.
 			
-			'this' inside the function refers to the AutoSuggest instance.
+			Your function will be called by the AutoSuggest whenever a {@link glow.ui.AutoSuggest#find find}
+			is performed, and will be passed 2 arguments: the search
+			string and a callback.
 			
-			Once your data has arrived, call the callback passing in your data as the first
-			param, or call the callback with no params to continue with the previous dataset. Until the
-			callback is called, the AutoSuggest remains in a 'loading' state.
+			You can fetch the data however you wish. Once you have the data, pass it
+			to the callback to complete the {@link glow.ui.AutoSuggest#find find}.
+			Until the callback is called, the AutoSuggest remains in a 'loading' state.
+			
+			`this` inside the function refers to the AutoSuggest instance.
 			
 			Your function will be called multiple times, ensure you cancel any existing
 			requests before starting a new one.
@@ -471,14 +492,13 @@ Glow.provide(function(glow) {
 			
 		@example
 			// Getting the data via jsonp
-			// TODO: update this for new glow.net
-			
 			var request;
+			
 			myAutoSuggest.data(function(val, callback) {
 				// abort previous request
 				request && request.abort();
 				
-				glow.net.loadScript('http://blah.com/data?callback={callback}&val=' + val)
+				request = glow.net.getJsonp('http://blah.com/data?callback={callback}&val=' + val)
 					.on('load', function(data) {
 						callback(data);
 					})
@@ -494,7 +514,7 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		if (typeof data === 'string') {
 			// look for urls without {val}, they get their data once & once only
-			if (data.indexOf('{val}') == -1) {
+			if (data.indexOf('{val}') === -1) {
 				// replace data with function
 				data = singleLoadUrl(data);
 			}
