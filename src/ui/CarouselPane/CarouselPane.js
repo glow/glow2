@@ -410,7 +410,7 @@ Glow.provide(function(glow) {
 		var indexes = [],
 			findex = calculateIndex.call(this),
 			index,
-			maxi = this._spot.capacity;
+			maxi = (this._opts.loop)? this._spot.capacity : Math.min(this._spot.capacity, this.items.length);
 		
 		// takes into account gaps and wraps
 		for (var i = 0; i < maxi; i++) {
