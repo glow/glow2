@@ -15,6 +15,8 @@ Glow.provide(function(glow) {
 		@function
 		@description This is called on each interval
 			This set the properties of each animation per frame.
+			
+			This is the drill sgt of the Anim world.
 	*/
 	function onInterval() {
 		var dateNum = new Date().valueOf(),
@@ -45,12 +47,12 @@ Glow.provide(function(glow) {
 					// destroy the anim if needed
 					anim.destroyOnComplete && anim.destroy();
 				}
-				continue;
 			}
-			
-			// set up the value and render a frame
-			anim.value = anim.tween( anim.position / anim.duration );
-			anim.fire('frame');
+			else {
+				// set up the value and render a frame
+				anim.value = anim.tween( anim.position / anim.duration );
+				anim.fire('frame');
+			}
 		}
 	}
 	
@@ -64,8 +66,7 @@ Glow.provide(function(glow) {
 		if (!activeAnimsLen) {
 			animInterval = setInterval(onInterval, 13);
 		}
-		activeAnims[activeAnimsLen] = anim;
-		activeAnimsLen++;
+		activeAnims[ activeAnimsLen++ ] = anim;
 		anim.playing = true;
 	}
 	
@@ -75,7 +76,8 @@ Glow.provide(function(glow) {
 		@description Stops calling 'frame' on an animation on an interval
 	*/
 	function deactivateAnim(anim) {
-		// decided to search forward, animations ending are more likely to be older & at the start of the array
+		// decided to search forward, animations ending are more likely to be older & at the start of the array.
+		// This mutates activeAnims
 		for (var i = 0, leni = activeAnims.length; i < leni; i++) {
 			if (activeAnims[i] === anim) {
 				activeAnims.splice(i, 1);
@@ -94,8 +96,8 @@ Glow.provide(function(glow) {
 		@name glow.anim.Anim
 		@extends glow.events.Target
 		@class
-		@description Animate an object
-			To animate CSS properties, see {@link glow.NodeList#anim}
+		@description Animate an object.
+			To animate CSS properties, see {@link glow.NodeList#anim}.
 			
 			Once you have an Anim instance, the {@link glow.anim.Anim#prop} method
 			can be used to easily animate object properties from one value to another.
@@ -103,19 +105,21 @@ Glow.provide(function(glow) {
 			over time.
 			
 		@param {number} duration Length of the animation in seconds.
-		@param {Object} opts Object of options.
-		@param {function|string} [opts.tween='easeBoth'] The way the value moves through time.
-			Strings are treated as properties of {@link glow.tweens}, although
+		@param {Object} [opts] Object of options.
+		@param {function|string} [opts.tween='easeBoth'] The way the value changes over time.
+			Strings are treated as properties of {@link glow.tweens} (eg 'bounceOut'), although
 			a tween function can be provided.
-			
+
 			The default is an {@link glow.tweens.easeBoth easeBoth} tween.
-		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops)
+			Looped animations will fire a 'complete' event on each loop.
+		@param {boolean} [opts.destroyOnComplete=true] Destroy the animation once it completes (unless it loops).
 			Shortcut for {@link glow.anim.Anim#destroyOnComplete}.
 		@param {boolean} [opts.loop=false] Loop the animation.
 			Shortcut for setting {@link glow.anim.Anim#loop}.
 			
 		@example
 			// Using glow.anim.Anim to animate an SVG blur over 5 seconds, with an easeOut tween
+			// feGaussianBlurElm is a reference to an <feGaussianBlur /> element.
 			new glow.anim.Anim(5, {
 				tween: 'easeOut'
 			}).target(feGaussianBlurElm).prop('stdDeviation', {
@@ -129,7 +133,7 @@ Glow.provide(function(glow) {
 			var styleObject = glow('#nav').prop('style');
 			
 			new glow.anim.Anim(10).target(styleObject).prop('background', {
-				// the question-mark in the template is replaced with the animate value
+				// the question-mark in the template is replaced with the animated value
 				template: '-moz-linear-gradient(?deg, red, blue)'
 				from: 0,
 				to: 360
@@ -168,22 +172,22 @@ Glow.provide(function(glow) {
 				progressBar.text('[' + barStr + '] ' + Math.floor(this.value * 100) + '%');
 			}).start();
 
-		@see {@link glow.NodeList#anim} - shortcut for animating CSS values on an element
+		@see {@link glow.NodeList#anim} - shortcut for animating CSS values on an element.
 	*/
 	
 	function Anim(duration, opts) {
 		/*!debug*/
-			if (arguments.length > 2) {
+			if (arguments.length < 1 || arguments.length > 2) {
 				glow.debug.warn('[wrong count] glow.anim.Anim expects 1 or 2 arguments, not ' + arguments.length + '.');
 			}
-			if (typeof duration !== 'number') {
+			if ( isNaN(duration) ) {
 				glow.debug.warn('[wrong type] glow.anim.Anim expects number as "duration" argument, not ' + typeof duration + '.');
 			}
 			if (opts !== undefined && typeof opts !== 'object') {
 				glow.debug.warn('[wrong type] glow.anim.Anim expects object as "opts" argument, not ' + typeof opts + '.');
 			}
 			if ( opts && typeof opts.tween === 'string' && !glow.tweens[opts.tween] ) {
-				glow.debug.warn('[wrong value] glow.anim.Anim - tween ' + opts.tween + ' does not exist');
+				glow.debug.warn('[unexpected value] glow.anim.Anim - tween ' + opts.tween + ' does not exist');
 			}
 		/*gubed!*/
 		
@@ -194,15 +198,16 @@ Glow.provide(function(glow) {
 		
 		this.destroyOnComplete = opts.destroyOnComplete;
 		
+
 		if (typeof opts.tween === 'string') {
 			this.tween = glow.tweens[opts.tween]();
 		}
-		else {
-			this.tween = opts.tween || this.tween;
+		else if (opts.tween) {
+			this.tween = opts.tween;
 		}
 		
 		this.loop = !!opts.loop;
-		this.duration = duration;
+		this.duration = +duration;
 		// defined & used in prop.js
 		this._targets = [];
 	};
@@ -224,16 +229,15 @@ Glow.provide(function(glow) {
 		@private
 		@type number
 		@description The position the animation was stopped at
-			This is set on .stop() and used to resume from
-			the same place on .start()
+			This is set on `.stop()` and used to resume from
+			the same place on `.start()`
 	*/
 	
 	/**
 		@name glow.anim.Anim#duration
 		@type number
-		@description Length of the animation in seconds
+		@description Length of the animation in seconds.
 	*/
-	AnimProto.duration = 0;
 	
 	/**
 		@name glow.anim.Anim#tween
@@ -244,15 +248,17 @@ Glow.provide(function(glow) {
 	
 	/**
 		@name glow.anim.Anim#position
+		@readOnly
 		@type number
-		@description Position of the animation in seconds
+		@description Position of the animation in seconds.
 	*/
 	AnimProto.position = 0;
 	
 	/**
 		@name glow.anim.Anim#playing
+		@readOnly
 		@type boolean
-		@description true if the animation is playing.
+		@description `true` if the animation is playing.
 	*/
 	AnimProto.playing = false;
 	
@@ -262,13 +268,13 @@ Glow.provide(function(glow) {
 		@description Loop the animation?
 			This value can be changed while an animation is playing.
 			
-			Looped animations will fire a 'complete' event on each loop.
+			Looped animations will fire a 'complete' event at the end of each loop.
 	*/
 	
 	/**
 		@name glow.anim.Anim#destroyOnComplete
 		@type boolean
-		@description Destroy the animation once it completes (unless it loops)?
+		@description Destroy the animation once it completes (unless it loops).
 			This will free any DOM references the animation may have created. Once
 			the animation is destroyed, it cannot be started again.
 	*/
@@ -276,6 +282,7 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.anim.Anim#value
 		@type number
+		@readOnly
 		@description Current tweened value of the animation, usually between 0 & 1.
 			This can be used in frame events to change values between their start
 			and end value.
@@ -315,7 +322,7 @@ Glow.provide(function(glow) {
 		if ( !this.playing && !this.fire('start').defaultPrevented() ) {
 			// we set 'playing' here so goTo knows
 			this.playing = true;
-			this.goTo(position || this._stopPos || 0);
+			this.goTo(position === undefined ? (this._stopPos || 0) : position);
 			activateAnim(this);
 		}
 		return this;

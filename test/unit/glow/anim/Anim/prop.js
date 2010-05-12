@@ -245,8 +245,8 @@ test('Multiple ?, range & round', 3, function() {
 		testPropLogStr = testPropLog.join('');
 		
 		// look for negative values for 'disallowNeg'
-		ok(/\-[\d\.]+allowNeg/.test(testPropLogStr), 'First value has negatives');
-		ok(!/\-[\d\.]+disallowNeg/.test(testPropLogStr), 'Second value has no negatives');
+		ok(/-[\d.]+allowNeg/.test(testPropLogStr), 'First value has negatives');
+		ok(!/-[\d.]+disallowNeg/.test(testPropLogStr), 'Second value has no negatives');
 		// look for fractional values
 		ok(testPropLogStr.indexOf('.') === -1, 'Values are rounded');
 		

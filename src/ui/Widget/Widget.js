@@ -412,12 +412,12 @@ Glow.provide(function(glow) {
 			if (arguments.length !== 0) {
 				glow.debug.warn('[wrong count] glow.ui.Widget#destroy expects 0 arguments, not '+arguments.length+'.');
 			}
-		/*gubed!*/	
+		/*gubed!*/
 		if ( !this.fire('destroy').defaultPrevented() ) {
+			glow.events.removeAllListeners( [this] );
 			this.container.destroy();
 			this.phase = 'destroyed';
 		}
-		
 		return this;
 	}
 

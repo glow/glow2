@@ -7,6 +7,8 @@ test('Creating animation instances', 11, function() {
 	var anim = new glow.anim.Anim(3);
 	
 	equal(anim.constructor, glow.anim.Anim, 'Constructor creates instance');
+	
+	// testing defaults
 	equal(typeof anim.tween, 'function', 'Tween set');
 	strictEqual(anim.position, 0, 'Position set');
 	strictEqual(anim.playing, false, 'playing set');

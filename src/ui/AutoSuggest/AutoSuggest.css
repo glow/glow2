@@ -1,0 +1,43 @@
+.glowCSSVERSION-AutoSuggest {
+	overflow: hidden;
+	font-size: medium;
+}
+
+.glowCSSVERSION-AutoSuggest .AutoSuggest-content {
+	overflow: auto;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	background: #f9fafc;
+	border-right: 1px solid #ceced0;
+	border-left: 1px solid #d2d2d2;
+	border-top: 1px solid #ceced0;
+}
+
+.glowCSSVERSION-AutoSuggest .AutoSuggest-item {
+	margin: 0;
+	padding: 4px 16px;
+	display: block;
+	border-bottom: 1px solid #ceced0;
+	color: #000;
+}
+
+.glowCSSVERSION-AutoSuggest .active {
+	background: #3a3a3c;
+	color: #fff;
+}
+
+.glowCSSVERSION-AutoSuggest .AutoSuggest-match {
+	font-style: normal;
+	text-decoration: underline;
+}
+
+.glowCSSVERSION-AutoSuggest .AutoSuggest-item:focus {
+	outline: none;
+}
+
+.glowCSSVERSION-AutoSuggest-loading {
+	background-image: url(images/AutoSuggest/spinner.gif);
+	background-position: right center;
+	background-repeat: no-repeat;
+}

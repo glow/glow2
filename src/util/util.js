@@ -171,7 +171,7 @@ Glow.provide(function(glow) {
 			};
 			function MyOtherClass(arg) {
 				//call the base class's constructor
-				arguments.callee.base.apply(this, arguments);
+				MyOtherClass.base.apply(this, arguments);
 			}
 			glow.util.extend(MyOtherClass, MyClass, {
 				setProp: function(newProp) {
@@ -503,7 +503,7 @@ Glow.provide(function(glow) {
 	*/
 	util.trim = function(str) {
 		//this optimisation from http://blog.stevenlevithan.com/archives/faster-trim-javascript
-		return str.replace(/^\s*((?:[\S\s]*\S)?)\s*$/, '$1');
+		return str.trim ? str.trim() : str.replace(/^\s*((?:[\S\s]*\S)?)\s*$/, '$1');
 	};
 	
 	/**
