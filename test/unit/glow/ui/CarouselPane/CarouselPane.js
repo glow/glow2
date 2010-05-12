@@ -16,7 +16,7 @@ module('ui/CarouselPane');
 		
 		testdiv.innerHTML = '<div id="div1" style="width: 100px; height: 50px; border: 1px solid #999;">hello</div>'
 		+ '<div id="div2" style="width: 50px; height: 100px; border: 1px solid #999;"><span id="inner">world</span></div>'
-		+ '<div style="border: 1px solid #999;">!</div></div>';
+		+ '<div style="border: 1px solid #999;">!</div>';
 	}
 	
 	test('ui/CarouselPane:API', 16, function() {
@@ -63,6 +63,7 @@ module('ui/CarouselPane');
  		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
  		equal(typeof myCarouselPane.items, 'object', 'glow.ui.CarouselPane#items is defined.');
  		equal(myCarouselPane.items.length, 3, 'glow.ui.CarouselPane#items length is 3.');
+ 		
  		myCarouselPane.destroy();
 	});
  	
@@ -98,7 +99,7 @@ module('ui/CarouselPane');
   		myCarouselPane.destroy();
   	});
   	
-  	test('ui/CarouselPane:opts:defaults', 7, function() {
+  	test('ui/CarouselPane:opts:defaults', 6, function() {
   		resetTestDiv();
   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
   		
@@ -108,7 +109,6 @@ module('ui/CarouselPane');
   		equal(myCarouselPane._opts.step, 1, 'glow.ui.CarouselPane#_opts.step defaults to 1.');
   		equal(myCarouselPane._opts.loop, false, 'glow.ui.CarouselPane#_opts.loop defaults to false.');
   		equal(myCarouselPane._opts.page, false, 'glow.ui.CarouselPane#_opts.page defaults to false.');
-  		equal(myCarouselPane._opts.glide, false, 'glow.ui.CarouselPane#_opts.glide defaults to false.');
   		
   		myCarouselPane.destroy();
   	});

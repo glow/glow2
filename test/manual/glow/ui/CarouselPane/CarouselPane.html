@@ -79,7 +79,7 @@
 			<li><img src="images/7.jpg" alt="Britteny"></li>
 			<li><img src="images/8.jpg" alt="Mumford"></li>
 			<li><img src="images/9.jpg" alt="Kate Nash"></li>
-<!-- -->
+ <!-- -->
 		</ol>
 	</div>
 	
@@ -97,7 +97,7 @@
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel', {step: 1, spotlight: 2, Xpage: 1, loop: 1, glide: true});
+			var c = new glow.ui.CarouselPane('#myCarousel'/*, {step: 1, spotlight: 1, page: 1, loop: 1, glide: true, duration: 0.9}*/);
 			c.on('move', function(e) {
 				//console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
 				//if (e.moveBy < 0 && e.currentIndex < 1) { return false; }
@@ -109,7 +109,7 @@
 				//console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
 				//console.log( 'move complete: '+ e.currentIndex );
 			});
-			c.moveTo(1);
+			//c.moveTo(1);
 			//c.moveBy(-99);
 			
 			glow('#prev').on('click', function() { c.prev(); });
@@ -129,19 +129,19 @@
 			});
 	
 			// make carousel's spotlight easier to see
-			var spot = glow('<div id="spotlight"><\/div>');
-			glow(document.body).append(spot);
-			function showSpotlight(c) {
-				spot.css({
-					width: c._spot.width,
-					height: c._spot.height + 10,
-					position: 'absolute',
-					top: c.container.offset().top + c._spot.top - 5,
-					left: c.container.offset().left + c._spot.left + c._spot.offset.left
-				});
-			}
-			showSpotlight(c);
-			c.on('updateUi', function() { showSpotlight(c); });
+ 			var spot = glow('<div id="spotlight"><\/div>');
+ 			glow(document.body).append(spot);
+ 			function showSpotlight(c) {
+ 				spot.css({
+ 					width: c._spot.width,
+ 					height: c._spot.height + 10,
+ 					position: 'absolute',
+ 					top: c.container.offset().top + c._spot.top - 5,
+ 					left: c.container.offset().left + c._spot.left + c._spot.offset.left
+ 				});
+ 			}
+ 			showSpotlight(c);
+ 			c.on('updateUi', function() { showSpotlight(c); });
 			
 			/* TODO
 				runtime changes to items

@@ -41,10 +41,6 @@ Glow.provide(function(glow) {
 				the width of the container. Any remaining width will be used to partially
 				show the previous/next item.
 				
-			@param {boolean} [opts.glide=false] Slide the carousel continuiously?
-				This is initiated by the {@link glow.ui.CarouselPane#moveStart}
-				function and is only valid for carousels where the step is set to 1.
-				
 		@example
 			new glow.ui.CarouselPane('#carouselItems', {
 				duration: 0.4,
@@ -78,7 +74,6 @@ Glow.provide(function(glow) {
 			tween: 'easeBoth',
 			step: 1,
 			loop: false,
-			glide: false,
 			page: false, // add a gap?
 			axis: 'x'    // either 'x' or 'y'
 		}, opts || {});
@@ -188,7 +183,7 @@ Glow.provide(function(glow) {
 		
 		if (this._opts.page && this._step !== this._spot.capacity) {
 			/*!debug*/
-				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + this._opts.step +') cannot be differt than the spotlight ('+ this._spot.capacity + ') when opts.page is true.');
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + this._opts.step +') cannot be different than the spotlight ('+ this._spot.capacity + ') when opts.page is true.');
 			/*gubed!*/
 			
 			this._step = this._spot.capacity;
@@ -211,7 +206,7 @@ Glow.provide(function(glow) {
 	function getGap() { /*debug*///console.log('getGap()');
 		var gap = { size: 0, count: 0 };
 	
-		if (this._opts.page) {
+		if (this._opts.page && this._step > 1) {
 			gap.count = 
 				this._spot.capacity -
 				(
@@ -289,13 +284,6 @@ Glow.provide(function(glow) {
 			return false;
 		}
 		
-		/*!debug*/
-			if (this._opts.glide && this._step !== 1) {
-				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - Cannot call moveStart with opts.glide when step is not 1.');
-			}
-		/*gubed!*/
-		
-		
 		var step = (backwards? -1 * this._step : this._step),
 			that = this;
 		
@@ -306,7 +294,7 @@ Glow.provide(function(glow) {
 					that._opts.loop ||
 					( (backwards && that.index > 0) || (!backwards && that.index + that._spot.capacity < that.items.length) )
 				) {
-					if (that._opts.glide && that._step === 1) { glide.call(that, backwards); }
+					if (that._step === 1) { glide.call(that, backwards); }
 					else { that.moveStart(backwards); }
 				}
 			}
@@ -331,7 +319,9 @@ Glow.provide(function(glow) {
 			wrapAt = offset + (backwards? -this.index * amount : (this.items.length-this.index) * amount);
 		
 		swap.call(this, 'back');
-		
+
+		//console.log('that.content[0].scrollLeft is '+that.content[0].scrollLeft);
+
 		for (var i = 0, leni = this.items.length; i < leni; i += this._step) {
 			from = offset + dir * i * amount;
 			to = offset + dir * (i + this._step) * amount;
@@ -339,7 +329,9 @@ Glow.provide(function(glow) {
 			if ((backwards && from === wrapAt) || (!backwards && to === wrapAt)) {
 				offset -= dir * this.items.length * amount;
 			}
-			
+
+			//console.log('from: '+from+', to: '+to);
+
 			moveAnim = that.content.anim(
 				that._opts.duration,
 				{scrollLeft: [from, to]},
@@ -355,10 +347,10 @@ Glow.provide(function(glow) {
 			.on('complete', function() {
 				that.index += dir;
 
-				if (that._gliderBrake || (!that._opts.loop && (that.index + that._spot.capacity === that.items.length || that.index === 0) ) ) {
-					glideStop.call(that);
-					that.fire('afterMove', {currentIndex: that.index});
-				}
+ 				if (that._gliderBrake || (!that._opts.loop && (that.index + that._spot.capacity === that.items.length || that.index === 0) ) ) {
+ 					glideStop.call(that);
+ 					that.fire('afterMove', {currentIndex: that.index});
+ 				}
 			});
 			
 			moves.push(moveAnim);
