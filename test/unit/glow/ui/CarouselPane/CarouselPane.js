@@ -114,7 +114,7 @@ module('ui/CarouselPane');
   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
   		var indexes = myCarouselPane.spotlightIndexes();
 
-  		same(indexes, [0, 1], 'glow.ui.CarouselPane#spotlightIndexes is 0, 1 when looping is off.');
+  		same(indexes, [0, 1], 'glow.ui.CarouselPane#spotlightIndexes is [0, 1] when looping is off.');
   		myCarouselPane.destroy();
   	});
 	
@@ -122,7 +122,59 @@ module('ui/CarouselPane');
    		resetTestDiv();
    		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0', {loop: true});
    		var indexes = myCarouselPane.spotlightIndexes();
-   		same(indexes, [0, 1], 'glow.ui.CarouselPane#index is 0.');
-   		//myCarouselPane.destroy();
+   		same(indexes, [0, 1], 'glow.ui.CarouselPane indexes is [0, 1] when looping is on.');
+   		myCarouselPane.destroy();
    	});
+   	
+   	test('ui/CarouselPane:moveByAboveMax', 2, function() {
+   		resetTestDiv();
+   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0', {spotlight: 1});
+   		
+   		same(myCarouselPane.spotlightIndexes(), [0], 'Before next glow.ui.CarouselPane indexes is [0].');
+   		stop(5000);
+   		myCarouselPane.moveBy(2);
+   		setTimeout(
+   			function() {
+   				same(myCarouselPane.spotlightIndexes(), [1], 'After moveBy above max glow.ui.CarouselPane indexes is at max [1].');
+   				start();
+   				myCarouselPane.destroy();
+   			},
+   			500
+   		);
+   	});
+   	
+   	test('ui/CarouselPane:moveByBelowMin', 2, function() {
+   		resetTestDiv();
+   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0', {spotlight: 1});
+   		
+   		same(myCarouselPane.spotlightIndexes(), [0], 'Before next glow.ui.CarouselPane indexes is [0].');
+   		stop(5000);
+   		myCarouselPane.moveBy(-2);
+   		setTimeout(
+   			function() {
+   				same(myCarouselPane.spotlightIndexes(), [0], 'After moveBy below min glow.ui.CarouselPane indexes is at min [0].');
+   				start();
+   				myCarouselPane.destroy();
+   			},
+   			500
+   		);
+   	});
+   	
+   	test('ui/CarouselPane:prevBelow0', 2, function() {
+   		resetTestDiv();
+   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0', {spotlight: 1});
+   		
+   		same(myCarouselPane.spotlightIndexes(), [0], 'Before prev glow.ui.CarouselPane indexes is [0].');
+   		stop(5000);
+   		myCarouselPane.prev();
+   		setTimeout(
+   			function() {
+   				same(myCarouselPane.spotlightIndexes(), [0], 'After prev glow.ui.CarouselPane indexes is still [0].');
+   				start();
+   				myCarouselPane.destroy();
+   			},
+   			500
+   		);
+   	});
+   	
 })();

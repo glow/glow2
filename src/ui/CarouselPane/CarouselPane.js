@@ -476,7 +476,15 @@ Glow.provide(function(glow) {
 		}
 		opts = opts || {};
 		
-		willMove = canGo.call(this, itemIndex);
+		// invalid itemIndex value?
+		if (!this._opts.loop && itemIndex >= this.items.length) {
+			itemIndex = this.items.length-1;
+		}
+		else if (!this._opts.loop && itemIndex < 0) {
+			itemIndex = 0;
+		}
+		
+		willMove = itemIndex !== this.index && canGo.call(this, itemIndex);
 		
 		if (opts.tween !== null) { // don't announce jumps
 			var e = new glow.events.Event({
@@ -492,7 +500,8 @@ Glow.provide(function(glow) {
 			}
 		}
 		
-		// invalid itemIndex value?
+
+		
 		if (itemIndex > this.items.length + this._step || itemIndex < 0 - this._step) { // moving more than 1 step
 			/*!debug*/
 				glow.debug.warn('[wrong value]  glow.ui.CarouselPane#moveTo - Trying to moveTo an item ('+itemIndex+') that is more than 1 step (' + this._step +' items) away is not possible now.');
