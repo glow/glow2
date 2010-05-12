@@ -184,7 +184,6 @@ Glow.provide(function(glow) {
 			/*gubed!*/
 			
 			this._step = this._spot.capacity;
-			 
 		}
 		
 		if (this._opts.page && this._step !== this._spot.capacity) {
@@ -679,7 +678,10 @@ Glow.provide(function(glow) {
 		if (!itemDimensions) { itemDimensions = getDimensions(items); }
 		
 		if (opts.axis = 'x') {
-			if (opts.spotlight) {
+			if (items.length === 0) {
+				spot.capacity = 0;
+			}
+			else if (opts.spotlight) {
 				if (opts.spotlight > items.length) {
 					throw new Error('spotlight cannot be larger than item count.');
 				}
@@ -688,7 +690,11 @@ Glow.provide(function(glow) {
 			else {
 				spot.capacity = Math.floor( viewportWidth / itemDimensions.width );
 			}
-		
+
+			if (spot.capacity > items.length) {
+				spot.capacity = items.length;
+			}
+
 			spot.width = spot.capacity * itemDimensions.width;
 			spot.height = itemDimensions.height
 			

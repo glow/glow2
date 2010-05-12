@@ -71,6 +71,44 @@ module('ui/CarouselPane');
   		myCarouselPane.destroy();
   	});
   	
+  	test('ui/CarouselPane:_getSpot', 5, function() {
+  		resetTestDiv();
+  		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
+  		glow('#testElmsContainer0').css('width', 150);
+  		var spot = glow.ui.CarouselPane._getSpot(
+  			glow('#testElmsContainer0').width(),
+  			glow('#testElmsContainer0 div')
+  		);
+  		equal(1, spot.capacity, 'glow.ui.CarouselPane._getSpot()#capacity is 1 when parent element width is 150.');
+  		equal(spot.offset.left+spot.offset.right+spot.width, glow('#testElmsContainer0').width(), 'glow.ui.CarouselPane._getSpot()#offset.left + #width + #offset.right sums to be the parent elements width.');
+  		
+  		equal(spot.offset.left, 23, 'glow.ui.CarouselPane._getSpot()#offset.left is correct.');
+  		equal(spot.offset.right, 23, 'glow.ui.CarouselPane._getSpot()#offset.right is correct.');
+  		equal(spot.width, 104, 'glow.ui.CarouselPane._getSpot()#offset.right is correct.');
+  		
+  		myCarouselPane.destroy();
+  	});
+  	
+  	test('ui/CarouselPane:opts.spotlight:tooLarge', 1, function() {
+  		resetTestDiv();
+  		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0', {spotlight: 4});
+  		glow('#testElmsContainer0').css('width', 500);
+  		
+  		equal(myCarouselPane._spot.capacity, 2, 'glow.ui.CarouselPane#_spot.capacity is 1 capacity is same as items.length even when opts.spotlight is larger.');
+  			
+  		myCarouselPane.destroy();
+  	});
+  	
+  	test('ui/CarouselPane:_spot.capacity:tooLargeNoOpt', 1, function() {
+  		resetTestDiv();
+  		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
+  		glow('#testElmsContainer0').css('width', 500);
+  		
+  		equal(myCarouselPane._spot.capacity, 2, 'glow.ui.CarouselPane#_spot.capacity is 1 capacity is same as items.length even when carousel pane width is larger.');
+  			
+  		myCarouselPane.destroy();
+  	});
+  	
   	test('ui/CarouselPane:spotlightIndexesNonlooping', 1, function() {
   		resetTestDiv();
   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
@@ -79,12 +117,12 @@ module('ui/CarouselPane');
   		same(indexes, [0, 1], 'glow.ui.CarouselPane#spotlightIndexes is 0, 1 when looping is off.');
   		myCarouselPane.destroy();
   	});
-  	
-  	test('ui/CarouselPane:spotlightIndexesLooping', 1, function() {
-  		resetTestDiv();
-  		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0', {loop: true, spotlight: 2});
-  		var indexes = myCarouselPane.spotlightIndexes();
-  		same(indexes, [0, 1], 'glow.ui.CarouselPane#index is 0.');
-  		myCarouselPane.destroy();
-  	});
+	
+   	test('ui/CarouselPane:spotlightIndexesLooping', 1, function() {
+   		resetTestDiv();
+   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0', {loop: true});
+   		var indexes = myCarouselPane.spotlightIndexes();
+   		same(indexes, [0, 1], 'glow.ui.CarouselPane#index is 0.');
+   		//myCarouselPane.destroy();
+   	});
 })();
