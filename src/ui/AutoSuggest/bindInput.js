@@ -176,7 +176,7 @@ Glow.provide(function(glow) {
 	*/
 	function completeInput(autoSuggest, newVal, select) {
 		deleteSelectedText(autoSuggest);
-		
+
 		var input = autoSuggest.input,
 			oldVal = input.val(),
 			caretPos = getCaretPosition(autoSuggest),
@@ -196,7 +196,6 @@ Glow.provide(function(glow) {
 			rangeEnd = newVal.length;
 			newVal += oldVal.slice(caretPos);
 		}
-		
 		input.val(newVal);
 		select && makeSelection(autoSuggest, rangeStart, rangeEnd);
 	}
@@ -240,7 +239,7 @@ Glow.provide(function(glow) {
 		var inputElm = autoSuggest.input[0],
 			r;
 		
-		if (document.selection) { // IE
+		if (glow.env.ie) { // IE
 			range = document.selection.createRange();
 			range.collapse();
 			range.setEndPoint( 'StartToStart', inputElm.createTextRange() );
@@ -264,7 +263,7 @@ Glow.provide(function(glow) {
 			val = inputElm.value,
 			selectionStart;
 		
-		if (document.selection) { // IE
+		if (glow.env.ie) { // IE
 			document.selection.createRange().text = '';
 		}
 		else { // others

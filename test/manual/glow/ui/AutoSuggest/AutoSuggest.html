@@ -185,14 +185,11 @@
 			
 			test('Now type "add" and select "addClass"', function(results) {
 				autoSuggest.on('select', function(e) {
-					if (part === 2) {
+					if (part === 2) {						
 						results.ok(
 							this.input.val() === 'elasticOut, addClass, '
 						);
 					}
-					setTimeout(function() {
-						part = 3;
-					}, 0);
 				});
 			});
 		})();
