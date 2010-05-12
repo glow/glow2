@@ -110,11 +110,14 @@ Glow.provide(function(glow) {
 		var objIdent = item[eventKey],
 			listenersForEvent,
 			returnedVal;			
-
+		
+		// set the attachedTo value for this event
+		event.attachedTo = event.attachedTo || item;
+		
 		if (!objIdent || !eventListeners[objIdent]) {
 			return event;
 		}
-				
+		
 		listenersForEvent = eventListeners[objIdent][eventName];
 			
 		if (!listenersForEvent) {
@@ -520,20 +523,8 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.events.Event#attachedTo
 	@type {Object}
-	@description The object the listener was attached to.
-		If null, this value will be populated by {@link glow.events.Target#fire}
+	@description The object the listener was attached or delegated to.
 	*/
-		
-	/**
-	@name glow.events.Event#source
-	@type Element
-	@description The actual object/element that the event originated from.
-			
-		For example, you could attach a listener to an 'ol' element to 
-		listen for clicks. If the user clicked on an 'li' the source property 
-		would be the 'li' element, and 'attachedTo' would be the 'ol'.
-	*/
-		
 
 		
 	/**
