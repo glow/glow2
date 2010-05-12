@@ -27,7 +27,7 @@ Glow.provide(function(glow) {
 			
 			@param {number} [opts.step=1] Number of items to move at a time.
 			@param {boolean} [opts.loop=false] Loop the carousel from the last item to the first.
-			@param {boolean} [opts.page] Keep pages in sync by adding space to the end of the carousel.
+			@param {boolean} [opts.page=false] Keep pages in sync by adding space to the end of the carousel.
 				Spaces don't exist as physical HTML elements, but simply a gap from the last item
 				to the end.
 			
@@ -89,7 +89,7 @@ Glow.provide(function(glow) {
 		}
 		
 		if (opts.loop === false && opts.step !== 1) {
-			opts.page = true;
+//			opts.page = true;
 		}
 		
 		if (opts.page) {
@@ -476,9 +476,10 @@ Glow.provide(function(glow) {
 		}
 		opts = opts || {};
 		
-		// invalid itemIndex value?
-		if (!this._opts.loop && itemIndex >= this.items.length) {
-			itemIndex = this.items.length - this._spot.capacity + this._gap.count;
+		// will the last item be in the spotlight?
+		if (!this._opts.loop && itemIndex >= this.items.length - this._spot.capacity) {
+			// if opts.page is on then allow a gap at the end, otherwise don't include gap
+			itemIndex = this.items.length - this._spot.capacity + (this._opts.page? this._gap.count : 0);
 		}
 		else if (!this._opts.loop && itemIndex < 0) {
 			itemIndex = 0;
@@ -499,9 +500,14 @@ Glow.provide(function(glow) {
 				itemIndex = this.index + e.moveBy;
 			}
 		}
+		else {
+			// force items to stay in step when page is on
+			if (this._opts.page) {
+				itemIndex = Math.floor(itemIndex / this._step) * this._step;
+			}
+		}
 		
-
-		
+		// invalid itemIndex value?
 		if (itemIndex > this.items.length + this._step || itemIndex < 0 - this._step) { // moving more than 1 step
 			/*!debug*/
 				glow.debug.warn('[wrong value]  glow.ui.CarouselPane#moveTo - Trying to moveTo an item ('+itemIndex+') that is more than 1 step (' + this._step +' items) away is not possible now.');
