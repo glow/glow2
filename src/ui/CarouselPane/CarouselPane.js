@@ -25,7 +25,8 @@ Glow.provide(function(glow) {
 			@param {string|function} [opts.tween='easeBoth'] Tween to use for animations.
 				This can be a property name of {@link glow.tweens} or a tweening function.
 			
-			@param {number} [opts.step=1] Number of items to move at a time.
+			@param {boolean | number} [opts.step=1] Number of items to move at a time.
+				If true, the step will be the same size as the spotlight.
 			@param {boolean} [opts.loop=false] Loop the carousel from the last item to the first.
 			@param {boolean} [opts.page=false] Keep pages in sync by adding space to the end of the carousel.
 				Spaces don't exist as physical HTML elements, but simply a gap from the last item
@@ -54,16 +55,18 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong count] glow.ui.CarouselPane - argument "container" is required.');
 				return;
 			}
-			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step && opts.step !== true) {
-				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be greater than opts.spotlight ('+ opts.spotlight + ').');
-			}
-			if (opts && opts.spotlight && opts.step && opts.page && opts.spotlight !== opts.step && opts.step !== true) {
-				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be different than opts.spotlight ('+ opts.spotlight + ') if opts.page is true.');
-			}
-		
+			
 			if (glow(container).length === 0) {
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - "'+container+'" is not a valid element specifier for the container.');
 				return;
+			}
+			
+			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step && opts.step !== true) {
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be greater than opts.spotlight ('+ opts.spotlight + ').');
+			}
+			
+			if (opts && opts.spotlight && opts.step && opts.page && opts.spotlight !== opts.step && opts.step !== true) {
+				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + opts.step +') cannot be different than opts.spotlight ('+ opts.spotlight + ') if opts.page is true.');
 			}
 		/*gubed!*/
 		
@@ -77,19 +80,6 @@ Glow.provide(function(glow) {
 			page: false, // add a gap?
 			axis: 'x'    // either 'x' or 'y'
 		}, opts || {});
-		
-		// TODO move to bind?
-		this._resizeHandler = function(e) {
-			that.updateUi();
-		}
-		
-		if (opts.loop === false && opts.step !== 1) {
-//			opts.page = true;
-		}
-		
-		if (opts.page) {
-//			opts.spotlight = opts.step;
-		}
 
 		glow.ui.Widget.call(this, 'CarouselPane', opts);
 		this._init(container, opts);
@@ -99,7 +89,7 @@ Glow.provide(function(glow) {
 	glow.util.extend(CarouselPane, glow.events.Target); // CarouselPane is a Target
 	CarouselPaneProto = CarouselPane.prototype;         // shortcut
 	
-	CarouselPaneProto._init = function(container) {  /*debug*///console.log('CarouselPaneProto._init');
+	CarouselPaneProto._init = function(container) { /*debug*///console.log('CarouselPaneProto._init');
 		WidgetProto._init.call(this);
 		
 		// used value vs configured value (they may not be the same).
@@ -107,12 +97,12 @@ Glow.provide(function(glow) {
 		
 		this._geom = (this._opts.axis === 'y')? ['height', 'top'] : ['width', 'left'];
 		
-		if (!this.stage) {
-			this.stage = glow(container).item(0);
-			
-			this._viewport = glow('<div class="CarouselPane-viewport"></div>');
-			glow(this.stage).wrap(this._viewport);
-		}
+		this.stage = glow(container).item(0);
+
+		this.stage.focusable( {children: '> .carousel-item', loop: true} );
+
+		this._viewport = glow('<div class="CarouselPane-viewport"></div>');
+		glow(this.stage).wrap(this._viewport);
 		
 		/**
 			@name glow.ui.CarouselPane#items
@@ -129,7 +119,7 @@ Glow.provide(function(glow) {
 			this._opts.spotlight = this.items.length;
 		}
 		
-		this.index = 0;
+		this._index = 0;
 		
 		this._build();
 	}
@@ -137,11 +127,16 @@ Glow.provide(function(glow) {
 	CarouselPaneProto._build = function() { /*debug*///console.log('CarouselPaneProto._build');
 		WidgetProto._build.call(this, this._viewport, this._opts);
 		
+		this.stage.css({
+			margin: 0,
+			listStyleType: 'none' // useful when content is a list
+		});
+		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
 			this.items.item(i).css({position: 'absolute', 'z-index': 2});
 		}
 		
-		this._itemDimensions = getDimensions(this.items);
+		this._itemDimensions = getDimensions(this.items); // get after setting position absolute
 
 		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
 		
@@ -156,11 +151,6 @@ Glow.provide(function(glow) {
 			height:  this._opts.axis === 'y'? '100%' : this._itemDimensions.height
 		});
 		
-		this.stage.css({
-			margin: 0,
-			listStyleType: 'none' // useful when content is a list
-		});
-		
 		/**
 			@private
 			@name glow.ui.CarouselPane#_spot
@@ -168,7 +158,6 @@ Glow.provide(function(glow) {
 			@description Information about the spotlight area.
 		*/
 		this._spot = CarouselPane._getSpot(this._viewport.width(), this.items, this._itemDimensions, this._opts);
-		this._gap = getGap.apply(this);
 
 		if (this._opts.step === true) {
 			this._step = this._spot.capacity;
@@ -180,7 +169,7 @@ Glow.provide(function(glow) {
 			
 			this._step = this._spot.capacity;
 		}
-		
+
 		if (this._opts.page && this._step !== this._spot.capacity) {
 			/*!debug*/
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.step (' + this._opts.step +') cannot be different than the spotlight ('+ this._spot.capacity + ') when opts.page is true.');
@@ -189,8 +178,8 @@ Glow.provide(function(glow) {
 			this._step = this._spot.capacity;
 		}
 		
-		this._gap = getGap.apply(this);
-
+		this._gap = getGap(this);
+		
 		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100}); // [wing][stage[spot]stage][wing]
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
@@ -203,27 +192,33 @@ Glow.provide(function(glow) {
 	}
 	
 	
-	function getGap() { /*debug*///console.log('getGap()');
-		var gap = { size: 0, count: 0 };
+	function getGap(carouselPane) { /*debug*///console.log('getGap()');
+		var gap = { size: 0, count: 0 },
+			danglingItemCount = carouselPane.items.length % carouselPane._step;
 	
-		if (this._opts.page && this._step > 1) {
-			gap.count = 
-				this._spot.capacity -
-				(
-					this.items.length -
-					Math.floor(this.items.length / this._step) * this._step
-				);
-			
-			gap.size = gap.count * this._itemDimensions[this._geom[0]];
+		if (carouselPane._opts.page && carouselPane._step > 1) {
+			gap.count = danglingItemCount? carouselPane._spot.capacity - danglingItemCount : 0;
+			gap.size = gap.count * carouselPane._itemDimensions[carouselPane._geom[0]];
 		}
 	
 		return gap;
 	}
 	
 	CarouselPaneProto._bind = function() { /*debug*///console.log('CarouselPaneProto._bind');
+		var that = this;
+		
 		WidgetProto._bind.call(this);
 		
+		this._resizeHandler = function(e) {
+			that.updateUi();
+		}
 		glow(window).on('resize', this._resizeHandler);
+		
+		this._focusHandler = function() {
+			var itemNumber = glow(this).data('carouselItem');
+			that.moveTo(itemNumber);
+		}
+		glow(this.items).on('focus', this._focusHandler);
 	}
 	
 	CarouselPaneProto.updateUi = function() { /*debug*///console.log('updateUi');
@@ -239,7 +234,7 @@ Glow.provide(function(glow) {
 		
 		layout.call(this);
 		
-		this.index = 0;
+		this._index = 0;
 		this.fire('updateUi', {});
 	}
 	
@@ -252,7 +247,7 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	CarouselPaneProto.moveStop = function() {
+	CarouselPaneProto.moveStop = function() { /*debug*/console.log('moveStop()');
 		// set temporary flag to signal the next animation in the timeline to stop
 		// note that this is asynchronous: it is almost certain that this method
 		// will return before the carousel actually stops
@@ -288,17 +283,36 @@ Glow.provide(function(glow) {
 			that = this;
 		
 		this._gliderBrake = false;
-		this.moveTo(this.index+step, {callback: function() {
+		this.moveTo(this._index+step, {callback: function() {
 			if (!that._gliderBrake) {
 				if (
 					that._opts.loop ||
-					( (backwards && that.index > 0) || (!backwards && that.index + that._spot.capacity < that.items.length) )
+					( (backwards && that._index > 0) || (!backwards && that._index + that._spot.capacity < that.items.length) )
 				) {
 					if (that._step === 1) { glide.call(that, backwards); }
 					else { that.moveStart(backwards); }
 				}
 			}
 		}});
+		
+		return this;
+	}
+	
+	/**
+		@name glow.ui.CarouselPane#moveToggle
+		@function
+		@description If this CarouselPane is currently moving via moveStart, will call moveStop,
+		otherwise will call moveStart.
+		@param {boolean} [backwards=false] When calling moveStart, move backwards?
+		@returns this
+	 */
+	CarouselPaneProto.moveToggle = function(backwards) { /*debug*///console.log('moveToggle()');
+		if (this._inMotion && !this._gliderBrake) {
+			this.moveStop();
+		}
+		else {
+			this.moveStart(backwards);
+		}
 		
 		return this;
 	}
@@ -316,7 +330,7 @@ Glow.provide(function(glow) {
 			to,
 			that = this,
 			moveAnim,
-			wrapAt = offset + (backwards? -this.index * amount : (this.items.length-this.index) * amount);
+			wrapAt = offset + (backwards? -this._index * amount : (this.items.length-this._index) * amount);
 		
 		swap.call(this, 'back');
 
@@ -340,16 +354,16 @@ Glow.provide(function(glow) {
 			.on('start', function() {
 				indexMoveTo.call(that);
 					
-				if ( that.fire('move', { moveBy: dir, currentIndex: that.index }).defaultPrevented() ) {
+				if ( that.fire('move', { moveBy: dir, currentIndex: that._index }).defaultPrevented() ) {
 					glideStop.call(that);
 				}
 			})
 			.on('complete', function() {
-				that.index += dir;
+				that._index += dir;
 
- 				if (that._gliderBrake || (!that._opts.loop && (that.index + that._spot.capacity === that.items.length || that.index === 0) ) ) {
+ 				if (that._gliderBrake || (!that._opts.loop && (that._index + that._spot.capacity === that.items.length || that._index === 0) ) ) {
  					glideStop.call(that);
- 					that.fire('afterMove', {currentIndex: that.index});
+ 					that.fire('afterMove', {currentIndex: that._index});
  				}
 			});
 			
@@ -364,19 +378,19 @@ Glow.provide(function(glow) {
 	}
 	
 	function indexMoveTo(index) {
-		if (index !== undefined) { this.index = index; }
+		if (index !== undefined) { this._index = index; }
 		
 		// force index to be a number from 0 to items.length
-		this.index = this.index % this.items.length;
-		this.index = (this.index < 0)? this.index + this.items.length : this.index;
+		this._index = this._index % this.items.length;
+		this._index = (this._index < 0)? this._index + this.items.length : this._index;
 		
-		return this.index;
+		return this._index;
 	}
 	
 	function indexMoveBy(delta) {
-		indexMoveTo.call(this, this.index += delta);
+		indexMoveTo.call(this, this._index += delta);
 		
-		return this.index;
+		return this._index;
 	}
 	
 	function glideStop() { /*debug*///console.log('glideStop()');
@@ -384,7 +398,7 @@ Glow.provide(function(glow) {
 		this._glider.destroy();
 		
 		this._inMotion = false;
-		this.index = calculateIndex.call(this);
+		this._index = calculateIndex.call(this);
 		jump.call(this);
 		swap.call(this);
 	}
@@ -469,27 +483,27 @@ Glow.provide(function(glow) {
 		opts = opts || {};
 		
 		// will the last item be in the spotlight?
-		if (!this._opts.loop && itemIndex >= this.items.length - this._spot.capacity) {
+		if (!this._opts.loop && itemIndex > this.items.length - this._spot.capacity) {
 			// if opts.page is on then allow a gap at the end, otherwise don't include gap
 			itemIndex = this.items.length - this._spot.capacity + (this._opts.page? this._gap.count : 0);
 		}
 		else if (!this._opts.loop && itemIndex < 0) {
 			itemIndex = 0;
 		}
-		
-		willMove = itemIndex !== this.index && canGo.call(this, itemIndex);
+
+		willMove = itemIndex !== this._index && canGo.call(this, itemIndex);
 		
 		if (opts.tween !== null) { // don't announce jumps
 			var e = new glow.events.Event({
-				currentIndex: this.index,
-				moveBy: (this.index < itemIndex)? (itemIndex - this.index) : (-Math.abs(this.index - itemIndex))
+				currentIndex: this._index,
+				moveBy: (this._index < itemIndex)? (itemIndex - this._index) : (-Math.abs(this._index - itemIndex))
 			});
 			
 			if (willMove && this.fire('move', e).defaultPrevented() ) {
 				return this;
 			}
 			else {
-				itemIndex = this.index + e.moveBy;
+				itemIndex = this._index + e.moveBy;
 			}
 		}
 		else {
@@ -504,16 +518,16 @@ Glow.provide(function(glow) {
 			/*!debug*/
 				glow.debug.warn('[wrong value]  glow.ui.CarouselPane#moveTo - Trying to moveTo an item ('+itemIndex+') that is more than 1 step (' + this._step +' items) away is not possible now.');
 			/*gubed!*/
-			itemIndex = this.index + (this.index < itemIndex)? -this._step : this._step;
+			itemIndex = this._index + (this._index < itemIndex)? -this._step : this._step;
 		}
 
 		var destination = this._wingSize + this.container[0].scrollLeft + itemIndex * this._itemDimensions.width,
 			anim;
-	
+
 		swap.call(this, 'back');
 		if (opts.tween === null) {
 			this.content[0].scrollLeft = destination;
-			this.index = itemIndex;
+			this._index = itemIndex;
 			
 			this._inMotion = false;
 		}
@@ -529,7 +543,7 @@ Glow.provide(function(glow) {
 					tween: opts.tween || this._opts.tween
 				}
 			);
-			this.index = itemIndex;
+			this._index = itemIndex;
 			
 			var that = this;
 
@@ -540,9 +554,9 @@ Glow.provide(function(glow) {
 				swap.call(that);
 				
 				// force index to be a number from 0 to items.length
-				that.index = that.index % (that.items.length  + that._gap.count);
+				that._index = that._index % (that.items.length  + that._gap.count);
 				
-				that.fire('afterMove', {currentIndex: that.index});
+				that.fire('afterMove', {currentIndex: that._index});
 				if (opts.callback) { opts.callback(); }
 			});
 		}
@@ -558,11 +572,11 @@ Glow.provide(function(glow) {
 		the current set of items.
 	 */
 	function jump() {
-		if (this.index < 0) {
-			this.moveTo(this.items.length + this._gap.count + this.index, {tween: null});
+		if (this._index < 0) {
+			this.moveTo(this.items.length + this._gap.count + this._index, {tween: null});
 		}
-		else if (this.index >= this.items.length) {
-			this.moveTo(this.index - (this.items.length + this._gap.count), {tween: null});
+		else if (this._index >= this.items.length) {
+			this.moveTo(this._index - (this.items.length + this._gap.count), {tween: null});
 		}
 	}
 	
@@ -592,11 +606,11 @@ Glow.provide(function(glow) {
 		}
 		
 		for (var i = 0, leni = this._spot.capacity - this._gap.count; i < leni; i++) {
-			if (this.index + i >= this.items.length) {
-				var swapperPos = (this.index + i)%this.items.length;
+			if (this._index + i >= this.items.length) {
+				var swapperPos = (this._index + i)%this.items.length;
 				swapper = this.items.item(swapperPos);
 				swapper.data('carousel-position', swapperPos);
-				var swapTo = offset +((this.index + i +this._gap.count)*amount);
+				var swapTo = offset +((this._index + i +this._gap.count)*amount);
 				swapper.css(styleName, swapTo);
 			}
 		}
@@ -618,7 +632,7 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	CarouselPaneProto.moveBy = function(amount) { /*debug*///console.log('moveBy('+amount+')');
-		this.moveTo(this.index + amount);
+		this.moveTo(this._index + amount);
 		return this;
 	}
 	
@@ -629,7 +643,7 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	CarouselPaneProto.next = function() { /*debug*///console.log('next()');
-		this.moveTo(this.index + this._step);
+		this.moveTo(this._index + this._step);
 		return this;
 	}
 	
@@ -640,20 +654,20 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	CarouselPaneProto.prev = function() { /*debug*///console.log('prev()');
-		this.moveTo(this.index - this._step);
+		this.moveTo(this._index - this._step);
 		return this;
 	}
 	
 	// can the carousel go to that index?
-	function canGo(itemIndex) {
+	function canGo(itemIndex) { /*debug*///console.log('canGo('+itemIndex+')');
 		if (this._opts.loop) { return true; }
 		
 		// too far prev
 		if (itemIndex < 0) { return false; }
-		
+
 		// too far next
 		if (itemIndex - this._step >= this.items.length - this._spot.capacity ) { return false; }
-		
+		9 - 3 >= 9 - 3
 		return true;
 	}
 	
@@ -725,15 +739,18 @@ Glow.provide(function(glow) {
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
 			this.items.item(i).css(styleName, offset + i * amount);
+this.items.item(i).addClass('carousel-item');			
+this.items.item(i).data('carouselItem', i);
 		}
 		
 		if (this._opts.loop) {
 			// kill any old clones
 			this.stage.get('.clone').remove();
 			
+			// under clones are visible when the real item gets swapped out
 			for (var i = 0, leni = this.items.length; i < leni; i++) {
-				// under clones are visible when the real item gets swapped out
 				clone = this.items.item(i).copy();
+glow(clone).removeClass('carousel-item');
 				this.stage[0].appendChild(clone[0]); // TODO
 				clone.css(styleName, offset + i * amount);
 				clone.addClass('clone');
@@ -748,14 +765,17 @@ Glow.provide(function(glow) {
 				while (i--) {
 					// add clones to prev side
 					clone = this.items.item(i).copy();
+glow(clone).removeClass('carousel-item');
 					this.stage[0].appendChild(clone[0]); // TODO
+
 					clone.css(styleName, offset - reps*this._gap.size - (reps*this.items.length - i) * amount);
 					clone.addClass('clone');
 					clone.css('z-index', 1);
 					
 					// add clones to next side
-					clone = clone.copy();
+					clone = clone.clone();
 					this.stage[0].appendChild(clone[0]);
+
 					clone.css(styleName, offset + reps*this._gap.size + (reps*this.items.length + i) * amount);
 					clone.css('z-index', 1);
 				}
@@ -767,6 +787,7 @@ Glow.provide(function(glow) {
 		// TODO remove added node data?
 		// TODO remove cloned items?
 		glow(window).detach('resize', this._resizeHandler);
+		glow(this.items).detach('focus', this._focusHandler);
 		WidgetProto.destroy.call(this);
 	};
 	

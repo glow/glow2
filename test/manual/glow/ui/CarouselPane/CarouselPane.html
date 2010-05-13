@@ -39,94 +39,101 @@
 		
 		*/
 		
-		#myCarousel li img {
+		.carousel-content li img {
 			width: 150px;
 			height: 150px;
+			margin: 1px;
 		}
 		
 		#spotlight { border: 1px #FF4B00 dashed; }
 		
 		.clone
 		{
-			filter: alpha(opacity=60);
-			-moz-opacity: 0.6;
-			-khtml-opacity: 0.6;
-			opacity: 0.6;
+			filter: alpha(opacity=80);
+			-moz-opacity: 0.8;
+			-khtml-opacity: 0.8;
+			opacity: 0.8;
 		}
 		
 		.CarouselPane-viewport { border: 1px solid #666; }
 	</style>
+	
+	<script type="text/javascript">
+		carouselItems = '<li><img src="images/1.jpg" alt="Scouting For Girls"></li>\n<li><img src="images/2.jpg" alt="The Fame Monster"></li>\n<li><img src="images/3.jpg" alt="One of the Boys"></li>\n<li><img src="images/4.jpg" alt="Monkey Business"></li>\n<li><img src="images/5.jpg" alt="Shake a Bone"></li>\n<li><img src="images/6.jpg" alt="MeatLoaf"></li>\n<li><img src="images/7.jpg" alt="Britteny"></li>\n<li><img src="images/8.jpg" alt="Mumford"></li>\n<li><img src="images/9.jpg" alt="Kate Nash"></li>\n<li><img src="images/10.jpg" alt="Roll Deep"></li>\n<li><img src="images/11.jpg" alt="Rihanna"></li>\n<li><img src="images/12.jpg" alt="Plan B"></li>'
+			.split('\n');
+		
+		function makeCarouselContent(howmanyItems, idToAdd) {
+			howmanyItems = parseInt(howmanyItems) || 0;
+			howmanyItems = Math.min(howmanyItems, 11);
+			document.write('<ol class="carousel-content" ' + (idToAdd? ' id="' + idToAdd + '"' : '') + '>');
+			for (var i = 0, leni =howmanyItems; i < howmanyItems; i++) {
+				document.write(carouselItems[i]);
+			}
+			document.write('<'+'/ol>');
+		}
+		
+		function addControls(carouselPane) {
+			var controlContainer = document.createElement('DIV'),
+				next = document.createElement('BUTTON'),
+				prev = document.createElement('BUTTON');
+				
+			next.type = 'button';
+			next.innerText = 'next';
+			next.onclick = function(e) {
+				if (e.shiftKey) { carouselPane.moveToggle() } else { carouselPane.next() }
+				return false;
+			}
+			
+			prev.type = 'button';
+			prev.innerText = 'prev';
+			prev.onclick = function(e) {
+				if (e.shiftKey) { carouselPane.moveToggle(1) } else { carouselPane.prev() }
+				return false;
+			}
+			
+			controlContainer.appendChild(prev);
+			controlContainer.appendChild(document.createTextNode(' | '));
+			controlContainer.appendChild(next);
+			
+			var carouselContainer = carouselPane.container[0];
+			
+			if (carouselContainer.nextSibling) {
+				carouselContainer.parentNode.insertBefore(controlContainer, carouselContainer.nextSibling);
+			}
+			else {
+				carouselContainer.parentNode.appendChild(controlContainer);
+			}
+		}
+	</script>
 </head>
 
 <body>
 	<h1>glow.ui.CarouselPane</h1>
 	
-	<h2>Construct Horizontal</h2>
+	<h2>Horizontal Non-looping</h2>
 	
-	<ol>
-		<li>example</li>
-	</ol>
-	
-	<div class="testarea" style="width: 550px;">
-	
-		<ol id="myCarousel">
-			<li><img src="images/1.jpg" alt="Scouting For Girls"></li>
-			<li><img src="images/2.jpg" alt="The Fame Monster"></li>
-			<li><img src="images/3.jpg" alt="One of the Boys"></li>
-			<li><img src="images/4.jpg" alt="Monkey Business"></li>
-			<li><img src="images/5.jpg" alt="Shake a Bone"></li>
-			<li><img src="images/6.jpg" alt="MeatLoaf"></li>
-			<li><img src="images/7.jpg" alt="Britteny"></li>
-			<li><img src="images/8.jpg" alt="Mumford"></li>
-			<li><img src="images/9.jpg" alt="Kate Nash"></li>
- <!-- -->
-		</ol>
-	</div>
-	
-	<div style="margin-top: 12px">
-		<button type="button" id="glidePrev">&nbsp;&lt;&lt;&nbsp;</button>
-		|
-		<button type="button" id="prev">&nbsp;&lt;&nbsp;</button>
-		|
-		<button type="button" id="next">&nbsp;&gt;&nbsp;</button>
-		|
-		<button type="button" id="glideNext">&nbsp;&gt;&gt;&nbsp;</button>
+	<div class="testarea" style="width: 500px;">
+		<script type="text/javascript">
+			makeCarouselContent(5, 'myCarousel');
+		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel'/*, {step: 1, spotlight: 1, page: 1, loop: 1, glide: true, duration: 0.9}*/);
-			c.on('move', function(e) {
-				//console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
-				//if (e.moveBy < 0 && e.currentIndex < 1) { return false; }
-				
-				//if (e.currentIndex >= 4) { return false; }
-			});
+			var c = new glow.ui.CarouselPane('#myCarousel');
+			addControls(c);
 			
-			c.on('afterMove', function(e) {
-				//console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
-				//console.log( 'move complete: '+ e.currentIndex );
-			});
+ 			c.on('move', function(e) {
+ 			//	console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
+ 			})
+ 			.on('afterMove', function(e) {
+ 			//	console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
+ 			});
 			//c.moveTo(1);
-			//c.moveBy(-99);
-			
-			glow('#prev').on('click', function() { c.prev(); });
-			glow('#next').on('click', function() { c.next(); });
-			
-			glow('#glideNext').on('mousedown', function() {
-				c.moveStart();
-				return false;
-			}).on('mouseup', function() {
-				c.moveStop();
-			});
-			
-			glow('#glidePrev').on('mousedown', function() {
-				c.moveStart('backwards');
-			}).on('mouseup', function() {
-				c.moveStop();
-			});
+			//c.moveBy(-99);		
+
 	
 			// make carousel's spotlight easier to see
  			var spot = glow('<div id="spotlight"><\/div>');
@@ -145,9 +152,6 @@
 			
 			/* TODO
 				runtime changes to items
-				fire events
-				API conformance/integrate with Carousel widget
-				tests
 				css in a separate sheet/different themes
 				prevent interaction with clones (even during animation)
 				vertical carousel
@@ -158,6 +162,44 @@
 			*/
 		});
 	</script>
+	
+	<h2>Horizontal Looping</h2>
+	
+	<div class="testarea" style="width: 700px;">
+		<script type="text/javascript">
+			makeCarouselContent(5, 'myCarousel2');
+		</script>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var c = new glow.ui.CarouselPane('#myCarousel2', {loop: true, step: true});
+			addControls(c);
+		});
+	</script>
+	
+
+	
+	<h2>Paging</h2>
+	
+	<p>
+	The same 3 items should always be visible together: [0, 1, 2] and [3, _, _]
+	</p>
+	
+	<div class="testarea" style="width: 600px;">
+		<script type="text/javascript">
+			makeCarouselContent(4, 'myCarousel3');
+		</script>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var c = new glow.ui.CarouselPane('#myCarousel3', {loop: true, spotlight: 3, step: true, page: true});
+			addControls(c);
+		});
+	</script>
+	
+
 	
 	<script type="text/javascript">
 		// make scripts visible in the page...
