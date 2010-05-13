@@ -92,15 +92,21 @@ Glow.provide(function(glow) {
 	CarouselPaneProto._init = function(container) { /*debug*///console.log('CarouselPaneProto._init');
 		WidgetProto._init.call(this);
 		
-		// used value vs configured value (they may not be the same).
+		// used value vs configured value (they may not be the same). Might be set to spotlight capacity, in _build.
 		this._step = this._opts.step;
 		
 		this._geom = (this._opts.axis === 'y')? ['height', 'top'] : ['width', 'left'];
 		
+		/**
+			@name glow.ui.CarouselPane#stage
+			@type glow.NodeList
+			@description The container passed in to the constructor for glow.ui.CarouselPane.
+		*/
 		this.stage = glow(container).item(0);
 
 		this.stage.focusable( {children: '> .carousel-item', loop: true} );
-
+		
+		// what would have been the "content" of this widget is named "viewport"
 		this._viewport = glow('<div class="CarouselPane-viewport"></div>');
 		glow(this.stage).wrap(this._viewport);
 		
@@ -119,6 +125,7 @@ Glow.provide(function(glow) {
 			this._opts.spotlight = this.items.length;
 		}
 		
+		// track what the offset of the leftmost spotlighted item is
 		this._index = 0;
 		
 		this._build();
@@ -137,7 +144,6 @@ Glow.provide(function(glow) {
 		}
 		
 		this._itemDimensions = getDimensions(this.items); // get after setting position absolute
-
 		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
 		
 		this._viewport.css({
@@ -158,7 +164,13 @@ Glow.provide(function(glow) {
 			@description Information about the spotlight area.
 		*/
 		this._spot = CarouselPane._getSpot(this._viewport.width(), this.items, this._itemDimensions, this._opts);
-
+		
+		/**
+			@private
+			@name glow.ui.CarouselPane#_step
+			@type number
+			@description How far to move when going next or prev.
+		*/
 		if (this._opts.step === true) {
 			this._step = this._spot.capacity;
 		}
@@ -178,6 +190,14 @@ Glow.provide(function(glow) {
 			this._step = this._spot.capacity;
 		}
 		
+		/**
+			@private
+			@name glow.ui.CarouselPane#_gap
+			@type Object
+			@description Information about the gap at the end of the items.
+			@property size
+			@property count
+		*/
 		this._gap = getGap(this);
 		
 		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100}); // [wing][stage[spot]stage][wing]
@@ -191,7 +211,13 @@ Glow.provide(function(glow) {
 		calculateIndex.call(this);
 	}
 	
-	
+	/**
+		@private
+		@name getGap
+		@description Calculate the size of the empty space at the end of the items
+			which may be required to enforce paging.
+		@param {glow.ui.CarouselPane} carouselPane
+	 */
 	function getGap(carouselPane) { /*debug*///console.log('getGap()');
 		var gap = { size: 0, count: 0 },
 			danglingItemCount = carouselPane.items.length % carouselPane._step;
@@ -318,8 +344,10 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
-		Move continuously using a linear tween.
 		@private
+		@name glide
+		@description Move continuously using a linear tween.
+		@param {boolean} backwards
 	 */
 	var glide = function(backwards) { /*debug*///console.log('glide('+backwards+')');
 		var dir = (backwards? -1 : 1),
@@ -335,7 +363,6 @@ Glow.provide(function(glow) {
 		swap.call(this, 'back');
 
 		//console.log('that.content[0].scrollLeft is '+that.content[0].scrollLeft);
-
 		for (var i = 0, leni = this.items.length; i < leni; i += this._step) {
 			from = offset + dir * i * amount;
 			to = offset + dir * (i + this._step) * amount;
@@ -377,6 +404,13 @@ Glow.provide(function(glow) {
 		this._glider.start();
 	}
 	
+	/**
+		@private
+		@name indexMoveTo
+		@description Calculate what the new index would be and set this._index to that.
+		@param {number} index The destination index.
+		@returns this._index
+	 */
 	function indexMoveTo(index) {
 		if (index !== undefined) { this._index = index; }
 		
@@ -387,12 +421,24 @@ Glow.provide(function(glow) {
 		return this._index;
 	}
 	
+	/**
+		@private
+		@name indexMoveBy
+		@description Calculate what the new index would be and set this._index to that.
+		@param {number} delta The amount to change the index by.
+		@returns this._index
+	 */
 	function indexMoveBy(delta) {
 		indexMoveTo.call(this, this._index += delta);
 		
 		return this._index;
 	}
 	
+	/**
+		@private
+		@name glideStop
+		@description Reset this CarouselPane after a glide is finished.
+	 */
 	function glideStop() { /*debug*///console.log('glideStop()');
 		this._glider.stop();
 		this._glider.destroy();
@@ -408,6 +454,7 @@ Glow.provide(function(glow) {
 		@function
 		@description Gets an array of spotlighted indexes.
 			These are the indexes of the nodes within {@link glow.ui.CarouselPane#items}.
+			Only item indexes currently visible in the spotlight will be included.
 		
 		@returns {number[]}
 	*/
@@ -433,7 +480,7 @@ Glow.provide(function(glow) {
 		@name glow.ui.CarouselPane#spotlightItems
 		@function
 		@description Get the currently spotlighted items.
-		
+		Only items currently visible in the spotlight will be included.
 		@returns {glow.NodeList}
 	*/
 	CarouselPaneProto.spotlightItems = function() { /*debug*///console.log('CarouselPaneProto.spotlightItems()');
@@ -448,7 +495,12 @@ Glow.provide(function(glow) {
 		return items;
 	}
 	
-	// calculate the index of the leftmost item in the spotlight
+	/**
+		@private
+		@name calculateIndex
+		@description Calculate the index of the leftmost item in the spotlight.
+		@returns {number}
+	 */
 	function calculateIndex() {
 		var cindex = this.content[0].scrollLeft - (this._wingSize +this._spot.offset.left);
 		
@@ -658,7 +710,13 @@ Glow.provide(function(glow) {
 		return this;
 	}
 	
-	// can the carousel go to that index?
+	/**
+		@private
+		@name canGo
+		@description Determine if the CarouselPane can go to the desired index.
+		@param {number} itemIndex The desired index.
+		@returns {boolean}
+	 */
 	function canGo(itemIndex) { /*debug*///console.log('canGo('+itemIndex+')');
 		if (this._opts.loop) { return true; }
 		
@@ -667,13 +725,15 @@ Glow.provide(function(glow) {
 
 		// too far next
 		if (itemIndex - this._step >= this.items.length - this._spot.capacity ) { return false; }
-		9 - 3 >= 9 - 3
 		return true;
 	}
 	
 	/**
-		Calculate the bounds to use for every item in the carousel.
 		@private
+		@name getDimensions
+		@description Calculate the max height and width of all the items.
+		@param {glow.NodeList} items
+		@returns {Object} With properties `width` and 'height`.
 	 */
 	function getDimensions(items) {
 		var el,
@@ -689,7 +749,9 @@ Glow.provide(function(glow) {
 	}
 	
 	/**
-		Calculate the bounds for the spotlighted area, within the viewport.
+		@private
+		@name _getSpot
+		@description Calculate the bounds for the spotlighted area, within the viewport.
 		@private
 	 */
 	CarouselPane._getSpot = function(viewportWidth, items, itemDimensions, opts) {/*debug*///console.log('CarouselPane._getSpot()');
@@ -739,8 +801,10 @@ Glow.provide(function(glow) {
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
 			this.items.item(i).css(styleName, offset + i * amount);
-this.items.item(i).addClass('carousel-item');			
-this.items.item(i).data('carouselItem', i);
+			// the original items will have the carousel-item class and data
+			// to indicate its position in the item series -- used by keyboard nav
+			this.items.item(i).addClass('carousel-item');			
+			this.items.item(i).data('carouselItem', i);
 		}
 		
 		if (this._opts.loop) {
@@ -750,7 +814,8 @@ this.items.item(i).data('carouselItem', i);
 			// under clones are visible when the real item gets swapped out
 			for (var i = 0, leni = this.items.length; i < leni; i++) {
 				clone = this.items.item(i).copy();
-glow(clone).removeClass('carousel-item');
+				// clones are not included in keyboard nav
+				glow(clone).removeClass('carousel-item');
 				this.stage[0].appendChild(clone[0]); // TODO
 				clone.css(styleName, offset + i * amount);
 				clone.addClass('clone');
@@ -765,7 +830,8 @@ glow(clone).removeClass('carousel-item');
 				while (i--) {
 					// add clones to prev side
 					clone = this.items.item(i).copy();
-glow(clone).removeClass('carousel-item');
+					// clones are not included in keyboard nav
+					glow(clone).removeClass('carousel-item');
 					this.stage[0].appendChild(clone[0]); // TODO
 
 					clone.css(styleName, offset - reps*this._gap.size - (reps*this.items.length - i) * amount);
