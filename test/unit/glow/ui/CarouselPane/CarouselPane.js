@@ -67,10 +67,10 @@ module('ui/CarouselPane');
  		myCarouselPane.destroy();
 	});
  	
- 	test('ui/CarouselPane:index', 1, function() {
+ 	test('ui/CarouselPane:_index', 1, function() {
   		resetTestDiv();
   		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
-  		equal(myCarouselPane.index, 0, 'glow.ui.CarouselPane#index is 0.');
+  		equal(myCarouselPane._index, 0, 'glow.ui.CarouselPane#_index is 0.');
   		myCarouselPane.destroy();
   	});
   	
@@ -190,7 +190,7 @@ module('ui/CarouselPane');
    		
    		same(myCarouselPane.spotlightIndexes(), [0, 1], 'Before next glow.ui.CarouselPane indexes is [0, 1].');
    		stop(5000);
-   		myCarouselPane.moveTo(1);
+   		myCarouselPane.moveTo(2);
    		setTimeout(
    			function() {
    				same(myCarouselPane.spotlightIndexes(), [2], 'After moveBy out of step, with page glow.ui.CarouselPane indexes is [2].');

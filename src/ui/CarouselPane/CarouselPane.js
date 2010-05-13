@@ -56,9 +56,8 @@ Glow.provide(function(glow) {
 				return;
 			}
 			
-			if (glow(container).length === 0) {
+			if (!container || glow(container).length === 0) {
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - "'+container+'" is not a valid element specifier for the container.');
-				return;
 			}
 			
 			if (opts && opts.spotlight && opts.step && opts.spotlight < opts.step && opts.step !== true) {
@@ -82,7 +81,9 @@ Glow.provide(function(glow) {
 		}, opts || {});
 
 		glow.ui.Widget.call(this, 'CarouselPane', opts);
-		this._init(container, opts);
+		
+		
+		if (glow(container).length > 0) { this._init(container, opts); }
 	};
 	
 	glow.util.extend(CarouselPane, glow.ui.Widget);     // CarouselPane is a Widget
@@ -242,7 +243,9 @@ Glow.provide(function(glow) {
 		
 		this._focusHandler = function() {
 			var itemNumber = glow(this).data('carouselItem');
+			
 			that.moveTo(itemNumber);
+			return false;
 		}
 		glow(this.items).on('focus', this._focusHandler);
 	}
@@ -558,11 +561,10 @@ Glow.provide(function(glow) {
 				itemIndex = this._index + e.moveBy;
 			}
 		}
-		else {
-			// force items to stay in step when page is on
-			if (this._opts.page) {
-				itemIndex = Math.floor(itemIndex / this._step) * this._step;
-			}
+
+		// force items to stay in step when opts.page is on
+		if (this._opts.page) {
+			itemIndex = Math.floor(itemIndex / this._step) * this._step;
 		}
 		
 		// invalid itemIndex value?
@@ -623,7 +625,7 @@ Glow.provide(function(glow) {
 		@description Quickly move forward or back to a new set of items that look the same as
 		the current set of items.
 	 */
-	function jump() {
+	function jump() { /*debug*///console.log('jump()');
 		if (this._index < 0) {
 			this.moveTo(this.items.length + this._gap.count + this._index, {tween: null});
 		}
