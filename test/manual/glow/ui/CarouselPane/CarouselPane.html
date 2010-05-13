@@ -163,7 +163,8 @@
 		});
 	</script>
 	
-	<h2>Horizontal Looping</h2>
+	
+	<h2>Looping</h2>
 	
 	<div class="testarea" style="width: 700px;">
 		<script type="text/javascript">
@@ -178,7 +179,6 @@
 		});
 	</script>
 	
-
 	
 	<h2>Paging</h2>
 	
@@ -200,6 +200,24 @@
 	</script>
 	
 
+	<h2>Gliding</h2>
+	
+	<p>
+	Shift-click the next/prev buttons to glide.
+	</p>
+	
+	<div class="testarea" style="width: 600px;">
+		<script type="text/javascript">
+			makeCarouselContent(11, 'myCarousel4');
+		</script>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var c = new glow.ui.CarouselPane('#myCarousel4', {loop: true, glide: true});
+			addControls(c);
+		});
+	</script>
 	
 	<script type="text/javascript">
 		// make scripts visible in the page...

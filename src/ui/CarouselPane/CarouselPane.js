@@ -247,7 +247,7 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
-	CarouselPaneProto.moveStop = function() { /*debug*/console.log('moveStop()');
+	CarouselPaneProto.moveStop = function() { /*debug*///console.log('moveStop()');
 		// set temporary flag to signal the next animation in the timeline to stop
 		// note that this is asynchronous: it is almost certain that this method
 		// will return before the carousel actually stops
