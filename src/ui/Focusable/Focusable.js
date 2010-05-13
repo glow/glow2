@@ -406,8 +406,7 @@ Glow.provide(function(glow) {
 		}
 		else {
 			index = Math.max( Math.min(index, childrenLen - 1), 0);
-		}
-console.log('focusable index is '+index+' (out of '+childrenLen+')');		
+		}		
 		
 		focusable.activeIndex = index;
 		focusable.activeChild = glow( children[index] );
