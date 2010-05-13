@@ -240,7 +240,7 @@ test('glow.NodeList#eq with NodeList arg', 8, function() {
 	strictEqual(nodeListTwo.eq(nodeListOne), false, 'Empty NodeLists are not equal to populated ones');
 });
 
-test('glow.NodeList#eq with NodeList arg', 4, function() {
+test('glow.NodeList#eq with NodeList arg 2', 4, function() {
 	var myNodeList = new glow.NodeList('#innerDiv1');
 	
 	strictEqual(myNodeList.eq( byId('innerDiv1') ), true, 'NodeList equals same node');
