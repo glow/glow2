@@ -60,7 +60,7 @@ if (glow.debug) test('glow.NodeList#addClass debug', 6, function() {
 	equal(error.type, 'wrong type', 'Passing more than 1 argument logs an error of type "type".');
 });
 
-test('glow.NodeList#attr', 31, function() {
+test('glow.NodeList#attr', 32, function() {
 		
 	// test this: getting an attribute value
 	var myNodeList = new glow.NodeList(
@@ -155,6 +155,10 @@ test('glow.NodeList#attr', 31, function() {
     equal(title, 'go home', 'Getting an attribute with a different case.');
 	equal(title2, 'index page', 'Setting an attribute with a different case.');
     
+    // test this: getting href value of an anchor in page
+	myNodeList = glow('#testanchor'); // will fail on IE 6 & 7 when the A node is generated with glow.dom.create()
+	equal(myNodeList.attr('href'), 'index.html', 'Get a href attribute from an anchor has value as set.');
+
 	// test this: some attribute names are special or case-sensitive in the borken browsers
 	myNodeList = new glow.NodeList('<label for="email" class="my-class">Email</label><input name="email" id="email" type="text" maxlength="42" />');
 	equal(myNodeList.attr('for'), 'email', 'Getting an attribute with a special name, like "for", returns the correct value.');

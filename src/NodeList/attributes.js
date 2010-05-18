@@ -184,9 +184,9 @@ Glow.provide(function(glow) {
 				return (argsLen > 1)? this : undef;
 			}
 
-			if (argsLen === 1) { // GETting value from name
+			if (argsLen === 1) { // GETting value from name. see http://reference.sitepoint.com/javascript/Element/getAttribute
 				if ( glow.env.ie && (name === 'href' || name === 'src') ) {
-					value = node.getAttribute(name, 2);
+					value = node.getAttribute(name, 2); // IE flags, 0: case-insensitive + 2: exactly as set
 					return (value === null)? '' : value;
 				}
 				else if (node.attributes[name]) { // in IE node.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
@@ -197,7 +197,7 @@ Glow.provide(function(glow) {
 					return (attrNode === null)? '' : attrNode.value;
 				}
 				else {
-					value = node.getAttribute(name, 0, 2); // IE flags, 0: case-insensitive, 2: as string
+					value = node.getAttribute(name, 2); // IE flags, 0: case-insensitive + 2: exactly as set
 					return (value === null)? '' : value;
 				}	
 			}
