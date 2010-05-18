@@ -27,22 +27,20 @@
 			list-style-type: none;
 			height: 200px;
 		}
-		
-		#myCarousel li
-		{
-			width: 200px;
-			height: 200px;
-			padding-right: 2px;
-			padding-left: 2px;
-		}
-		
-		
 		*/
+		.carousel-content li
+		{
+			padding: 3px;
+			border-width: 0 3px 0 3px;
+			border-color: #AD89C1;
+			border-style: solid;
+			margin-right: 5px;
+		}
 		
 		.carousel-content li img {
 			width: 150px;
 			height: 150px;
-			margin: 1px;
+			display: block; /* prevent white space after image */
 		}
 		
 		.carousel-content li.active { background-color: #FFF890; }
@@ -79,16 +77,18 @@
 				next = document.createElement('BUTTON'),
 				prev = document.createElement('BUTTON');
 				
-			next.type = 'button';
-			next.innerText = 'next';
+			next.setAttribute('type', 'button');
+			next.innerHTML = 'next';
 			next.onclick = function(e) {
+				if (!e) var e = window.event;
 				if (e.shiftKey) { carouselPane.moveToggle() } else { carouselPane.next() }
 				return false;
 			}
 			
-			prev.type = 'button';
-			prev.innerText = 'prev';
+			prev.setAttribute('type', 'button');
+			prev.innerHTML = 'prev';
 			prev.onclick = function(e) {
+				if (!e) var e = window.event;
 				if (e.shiftKey) { carouselPane.moveToggle(1) } else { carouselPane.prev() }
 				return false;
 			}
@@ -116,7 +116,7 @@
 	
 	<div class="testarea" style="width: 500px;">
 		<script type="text/javascript">
-			makeCarouselContent(5, 'myCarousel');
+			makeCarouselContent(8, 'myCarousel');
 		</script>
 	</div>
 	
@@ -124,7 +124,7 @@
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel');
+			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5});
 			addControls(c);
 			
  			c.on('move', function(e) {

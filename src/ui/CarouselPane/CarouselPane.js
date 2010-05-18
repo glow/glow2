@@ -105,9 +105,9 @@ Glow.provide(function(glow) {
 		*/
 		this.stage = glow(container).item(0);
 
-		this.stage.focusable( {children: '> .carousel-item', loop: true} );
+		this._focusable = this.stage.focusable( {children: '> .carousel-item', loop: true, setFocus: false} );
 		
-		// what would have been the "content" of this widget is named "viewport"
+		// what would have been the "content" of this widget, is named "viewport"
 		this._viewport = glow('<div class="CarouselPane-viewport"></div>');
 		glow(this.stage).wrap(this._viewport);
 		
@@ -126,7 +126,7 @@ Glow.provide(function(glow) {
 			this._opts.spotlight = this.items.length;
 		}
 		
-		// track what the offset of the leftmost spotlighted item is
+		// track what the offset of the current leftmost spotlighted item is
 		this._index = 0;
 		
 		this._build();
@@ -155,7 +155,7 @@ Glow.provide(function(glow) {
 			padding: 0,
 			margin: 0,
 			width: this._opts.axis === 'x'? '100%' : this._itemDimensions.width,
-			height:  this._opts.axis === 'y'? '100%' : this._itemDimensions.height
+			height: this._opts.axis === 'y'? '100%' : this._itemDimensions.height
 		});
 		
 		/**
@@ -204,7 +204,7 @@ Glow.provide(function(glow) {
 		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100}); // [wing][stage[spot]stage][wing]
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
-			this.items.item(i).css({position: 'absolute', 'z-index': 2, width: this._itemDimensions.width, height: this._itemDimensions.height});
+			this.items.item(i).css({position: 'absolute', 'z-index': 2, width: this._itemDimensions.innerWidth, height: this._itemDimensions.innerHeight});
 		}
 		layout.call(this);		
 		this._bind();
@@ -241,13 +241,28 @@ Glow.provide(function(glow) {
 		}
 		glow(window).on('resize', this._resizeHandler);
 		
-		this._focusHandler = function() {
-			var itemNumber = glow(this).data('carouselItem');
-			
-			that.moveTo(itemNumber);
-			return false;
+		this._recentActive = null;
+		this._childActivateHandler = function(e) { // keep a ref so we can detach it in destroy
+			var itemNumber = e.itemIndex;
+//console.log('key from '+that._recentActive+', key to '+itemNumber);
+//console.log('activeChild is '+that._focusable.activeChild.data('carouselItem'));
+			if (that._inMotion) { return false; } // TODO: This doesn't seem to stop the child from becoming active
+			else if (itemNumber !== undefined) {
+// TODO: need to know which ket was pressed from the activeChild event, left or right arrow?
+				if (that._opts.loop  && itemNumber === 0 && that._recentActive === that.items.length - 1 /*&& arrow right?*/) {
+					that.moveTo(that._recentActive + 1 + that._gap.count);
+				}
+				else if (that._opts.loop  && itemNumber === that.items.length - 1 && that._recentActive === 0 /*&& arrow left?*/) {
+					that.moveTo(-1);
+				}
+				else {
+					that.moveTo(itemNumber);
+				}
+				that._recentActive = itemNumber;
+				
+			}
 		}
-		glow(this.items).on('focus', this._focusHandler);
+		that._focusable.on('childActivate', this._childActivateHandler);
 	}
 	
 	CarouselPaneProto.updateUi = function() { /*debug*///console.log('updateUi');
@@ -739,15 +754,21 @@ Glow.provide(function(glow) {
 	 */
 	function getDimensions(items) {
 		var el,
+			maxInnerWidth = 0,
+			maxInnerHeight = 0,
 			maxWidth = 0,
 			maxHeight = 0;
 			
 		items.each(function() {
+			el = glow(this);
 			maxHeight = Math.max(this.offsetHeight, maxHeight);
-			maxWidth = Math.max(this.offsetWidth,  maxWidth);
+			maxWidth = Math.max(this.offsetWidth + parseInt(el.css('margin-right')), maxWidth);
+			maxInnerWidth = Math.max(el.width(), maxInnerWidth);
+			maxInnerHeight = Math.max(el.height(), maxInnerHeight);
+//console.log( '>>> el.css("margin-right") is ' + parseInt(el.css('margin-right')) );			
 		});
 		
-		return { width: maxWidth, height: maxHeight };
+		return { width: maxWidth, height: maxHeight, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight };
 	}
 	
 	/**
@@ -794,11 +815,11 @@ Glow.provide(function(glow) {
 	}
 	
 	function layout() {
-		var clone;
-		
-		var styleName = this._geom[1],
+		var clone,
+			styleName = this._geom[1],
 			amount = this._itemDimensions[this._geom[0]],
 			offset = this._spot.offset.left + this._wingSize;
+			
 			this.content[0].scrollLeft = this._wingSize;
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
@@ -855,7 +876,7 @@ Glow.provide(function(glow) {
 		// TODO remove added node data?
 		// TODO remove cloned items?
 		glow(window).detach('resize', this._resizeHandler);
-		glow(this.items).detach('focus', this._focusHandler);
+		glow(this.items).detach('childActivate', this._childActivateHandler);
 		WidgetProto.destroy.call(this);
 	};
 	
