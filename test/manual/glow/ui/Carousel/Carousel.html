@@ -15,15 +15,22 @@
 	</script>
 	
 	<style type="text/css">
-		#carousel1Outer {
+		#carousel1Outer, #carousel2Outer {
 			width: 550px;
+			font-size: small;
 		}
-		#carousel1 {
+		#carousel1, #carousel2 {
 			margin: 0; padding: 0;
 			list-style: none;
+			
 		}
-		#carousel1 img {
+		#carousel1 img,
+		#carousel2 img {
 			display: block;
+		}
+		.itemTitle {
+			padding: 5px 0;
+			background: #ccc;
 		}
 	</style>
 </head>
@@ -41,40 +48,40 @@
 	<div class="testarea" id="carousel1Outer">
 		<ol id="carousel1">
 			<li>
-				<img src="../CarouselPane/images/1.jpg" alt="" width="100" height="100" />
-				<div>Title 0</div>
+				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Leonardo</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/2.jpg" alt="" width="100" height="100" />
-				<div>Title 1</div>
+				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Michelangelo</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/3.jpg" alt="" width="100" height="100" />
-				<div>Title 2</div>
+				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Donatello</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/4.jpg" alt="" width="100" height="100" />
-				<div>Title 3</div>
+				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Raphael</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/5.jpg" alt="" width="100" height="100" />
-				<div>Title 4</div>
+				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Master Splinter</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/6.jpg" alt="" width="100" height="100" />
-				<div>Title 5</div>
+				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Shredder</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/7.jpg" alt="" width="100" height="100" />
-				<div>Title 6</div>
+				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">April O'Neil</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/8.jpg" alt="" width="100" height="100" />
-				<div>Title 7</div>
+				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Krang</div>
 			</li>
 			<li>
-				<img src="../CarouselPane/images/9.jpg" alt="" width="100" height="100" />
-				<div>Title 8</div>
+				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Technodrome</div>
 			</li>
 		</ol>
 	</div>
@@ -82,8 +89,55 @@
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
 			window.myCarousel = new glow.ui.Carousel('#carousel1', {
-				itemTitles: 'div'
+				itemTitles: '.itemTitle'
 			});
+		});
+	</script>
+	
+	<div class="testarea" id="carousel2Outer">
+		<ol id="carousel2">
+			<li>
+				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Leonardo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Michelangelo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Donatello</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Raphael</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Master Splinter</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Shredder</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">April O'Neil</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Krang</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Technodrome</div>
+			</li>
+		</ol>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			window.myCarousel2 = new glow.ui.Carousel('#carousel2');
 		});
 	</script>
 

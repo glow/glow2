@@ -96,7 +96,8 @@ Glow.provide(function(glow) {
 			positionX = position.slice(5),
 			pane = carousel._pane,
 			numberOfPages = 1 + Math.ceil( (carousel.items.length - pane._spot.capacity) / pane._step ),
-			htmlStr = '';
+			htmlStr = '',
+			itemTitles = carousel._itemTitles;
 		
 		// this can be less than one if there's less than 1 page worth or items
 		numberOfPages = Math.max(numberOfPages, 0);
@@ -108,9 +109,9 @@ Glow.provide(function(glow) {
 		pageNav.css('text-align', (positionX == 'Middle') ? 'center' : 'right');
 		
 		// cater for 'belowNext' when we have title boxes
-		if (position === 'belowNext' && carousel._opts.itemTitles) {
+		if (position === 'belowNext' && itemTitles) {
 			// TODO: move up by the height of the title boxes (negative margin-top)
-			pageNav.width( carousel._nextBtn.width() );
+			pageNav.width( carousel._nextBtn.width() ).css( 'margin-top', parseInt( pageNav.css('margin-top') ) - itemTitles.height() );
 		}
 		// move it under the last item for *Last positions
 		else if (positionX === 'Last') {

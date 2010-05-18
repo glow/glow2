@@ -49,7 +49,8 @@
 /* Page nav */
 	.glowCSSVERSION-Carousel .Carousel-pageNav {
 		height: 8px;
-		margin: 4px 0;
+		margin: 4px 0 4px auto;
+		position: relative;
 	}
 	.glowCSSVERSION-Carousel .Carousel-pageNav div {
 		display: inline-block;
@@ -94,4 +95,5 @@
 	.glowCSSVERSION-Carousel .Carousel-title {
 		position: absolute;
 		background: #ccc;
+		overflow: hidden;
 	}

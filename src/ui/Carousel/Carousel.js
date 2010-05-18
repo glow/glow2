@@ -191,7 +191,7 @@ Glow.provide(function(glow) {
 		// get titles and remove them from their items
 		itemTitles = this._itemTitles = getItemTitles(this);
 		// set the holder to the same height as the items
-		titlesHolder.height( itemTitles[0].style.height );
+		itemTitles && titlesHolder.height( itemTitles[0].style.height );
 		
 		pane = this._pane = new glow.ui.CarouselPane(itemContainer, this._opts);
 		spot = pane._spot
@@ -199,7 +199,7 @@ Glow.provide(function(glow) {
 		this.itemContainer = pane.itemContainer;
 		
 		// set the item titles to be the same size as the items
-		itemTitles.width( items.width() );
+		itemTitles && itemTitles.width( items.width() );
 		
 		pane.moveTo(0, {
 			tween: null
@@ -332,7 +332,8 @@ Glow.provide(function(glow) {
 			itemTitles = carousel._itemTitles,
 			titlesHolder = carousel._titlesHolder.empty(),
 			titlesHolderOffset = titlesHolder.offset().left,
-			titlesToShow = glow();
+			titlesToShow = glow(),
+			animDuration = carousel._pane._opts.duration * !!animate;
 			
 		for (var i = 0, leni = indexes.length; i < leni; i++) {
 			titlesToShow.push(
@@ -345,7 +346,9 @@ Glow.provide(function(glow) {
 			);
 		}
 		
-		titlesToShow.css('opacity', 0).fadeIn(carousel._pane._opts.duration * !!animate);
+		titlesToShow.css('height', 0).fadeIn(animDuration).slideOpen(animDuration, {
+			lockToBottom: true
+		});
 	}
 	
 	/**
