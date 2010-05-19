@@ -145,6 +145,7 @@ Glow.provide(function(glow) {
 		}
 		
 		this._itemDimensions = getDimensions(this.items); // get after setting position absolute
+
 		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
 		
 		this._viewport.css({
@@ -206,7 +207,12 @@ Glow.provide(function(glow) {
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
 			this.items.item(i).css({position: 'absolute', 'z-index': 2, width: this._itemDimensions.innerWidth, height: this._itemDimensions.innerHeight});
 		}
-		layout.call(this);		
+		layout.call(this);
+		
+		this.items.css({
+			margin: 0,
+		});
+		
 		this._bind();
 		
 		calculateIndex.call(this);
@@ -656,19 +662,19 @@ Glow.provide(function(glow) {
 		@private
 		@param {boolean} back If not a falsey value, will move the real items back.
 	 */
-	function swap(back) {
+	function swap(back) {/*debug*///console.log('swap('+back+')');
 		var styleName = this._geom[1],
 			offset = this._spot.offset.left + this._wingSize,
-			amount = this._itemDimensions[this._geom[0]],
+			amount = this._itemDimensions.width,
 			swapper = null;
 		
 		if (back) {
 			for (var i = 0, leni = this.items.length; i < leni; i++) {
-				var backTo;
-			var swapBacker = this.items.item(i)
-			backTo = swapBacker.data('carousel-position')
+				var swapBackItem = this.items.item(i),
+					backTo = swapBackItem.data('carousel-position');
+				
 				if (backTo !== undefined) {
-					swapBacker.css(styleName, offset + backTo * amount);
+					swapBackItem.css(styleName, getPosition.call(this, backTo).left);//offset + backTo * amount);
 				}
 			}
 			return;
@@ -679,7 +685,7 @@ Glow.provide(function(glow) {
 				var swapperPos = (this._index + i)%this.items.length;
 				swapper = this.items.item(swapperPos);
 				swapper.data('carousel-position', swapperPos);
-				var swapTo = offset +((this._index + i +this._gap.count)*amount);
+				var swapTo =  getPosition.call(this, this._index + i +this._gap.count).left;
 				swapper.css(styleName, swapTo);
 			}
 		}
@@ -757,7 +763,8 @@ Glow.provide(function(glow) {
 			maxInnerWidth = 0,
 			maxInnerHeight = 0,
 			maxWidth = 0,
-			maxHeight = 0;
+			maxHeight = 0,
+			marginLeft = 0;
 			
 		items.each(function() {
 			el = glow(this);
@@ -765,10 +772,11 @@ Glow.provide(function(glow) {
 			maxWidth = Math.max(this.offsetWidth + parseInt(el.css('margin-right')), maxWidth);
 			maxInnerWidth = Math.max(el.width(), maxInnerWidth);
 			maxInnerHeight = Math.max(el.height(), maxInnerHeight);
-//console.log( '>>> el.css("margin-right") is ' + parseInt(el.css('margin-right')) );			
+			marginLeft = Math.max(parseInt(el.css('margin-left')), marginLeft);
+			
 		});
 		
-		return { width: maxWidth, height: maxHeight, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight };
+		return { width: maxWidth+marginLeft, height: maxHeight, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight, marginLeft: marginLeft };
 	}
 	
 	/**
@@ -814,16 +822,28 @@ Glow.provide(function(glow) {
 		return spot;
 	}
 	
-	function layout() {
-		var clone,
-			styleName = this._geom[1],
-			amount = this._itemDimensions[this._geom[0]],
-			offset = this._spot.offset.left + this._wingSize;
+	function getPosition(itemIndex) { /*debug*///console.log('getPosition('+itemIndex+')');
+		position = { top: 0, left: null };
+		
+		// TODO: memoise?
+		var size = this._itemDimensions.width,
+			offset = this._spot.offset.left + this._wingSize + this._itemDimensions.marginLeft
 			
+			position.left = offset + (itemIndex * size)
+				+ (this._opts.page && itemIndex >= this.items.length? this._gap.count * size : 0)
+				- (this._opts.page && itemIndex < 0? this._gap.count * size : 0);		
+			return position;
+	}
+	
+	function layout() {/*debug*///console.log('layout()');
+		var clone,
+			styleName = this._geom[1];
+					
 			this.content[0].scrollLeft = this._wingSize;
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
-			this.items.item(i).css(styleName, offset + i * amount);
+			var pos = getPosition.call(this, i);		
+			this.items.item(i).css(styleName, pos.left);
 			// the original items will have the carousel-item class and data
 			// to indicate its position in the item series -- used by keyboard nav
 			this.items.item(i).addClass('carousel-item');			
@@ -832,43 +852,46 @@ Glow.provide(function(glow) {
 		
 		if (this._opts.loop) {
 			// kill any old clones
-			this.stage.get('.clone').remove();
+			this.stage.get('.carousel-clone').remove();
 			
 			// under clones are visible when the real item gets swapped out
 			for (var i = 0, leni = this.items.length; i < leni; i++) {
+				var pos = getPosition.call(this, i);
 				clone = this.items.item(i).copy();
 				// clones are not included in keyboard nav
 				glow(clone).removeClass('carousel-item');
-				this.stage[0].appendChild(clone[0]); // TODO
-				clone.css(styleName, offset + i * amount);
-				clone.addClass('clone');
-				clone.css('z-index', 9);
+				this.stage[0].appendChild(clone[0]);
+				clone.css(styleName, pos.left);
+				clone.addClass('carousel-clone');
+				clone.css('z-index', 2);
+				clone.css({ margin: 0 });
 			}
 			
 			// how many sets of clones (on each side) are needed to fill the off-spotlight portions of the stage?
-			var repsMax =  1 + Math.ceil(this._spot.offset.left / (this._itemDimensions.width*this.items.length + this._gap.size));
-			
+			var repsMax =  1 + Math.ceil(this._spot.offset.left / (this._itemDimensions.width*this.items.length + this._gap.size));	
 			for (var reps = 1; reps <= repsMax; reps++) {
 				i = this.items.length;
 				while (i--) {
-					// add clones to prev side
-					clone = this.items.item(i).copy();
-					// clones are not included in keyboard nav
-					glow(clone).removeClass('carousel-item');
-					this.stage[0].appendChild(clone[0]); // TODO
-
-					clone.css(styleName, offset - reps*this._gap.size - (reps*this.items.length - i) * amount);
-					clone.addClass('clone');
+ 					// add clones to prev side
+ 					clone = this.items.item(i).copy();
+ 					// clones are not included in keyboard nav
+ 					glow(clone).removeClass('carousel-item');
+ 					
+ 					clone.css('left', getPosition.call(this, 0 - (reps*this.items.length - i)).left);//offset - reps*this._gap.size - (reps*this.items.length - i) * amount);
+ 					clone.addClass('carousel-clone');
+ 					this.stage[0].appendChild(clone[0]);
 					clone.css('z-index', 1);
-					
-					// add clones to next side
-					clone = clone.clone();
-					this.stage[0].appendChild(clone[0]);
-
-					clone.css(styleName, offset + reps*this._gap.size + (reps*this.items.length + i) * amount);
-					clone.css('z-index', 1);
-				}
-			}
+					clone.css({ margin: 0 });
+ 					
+ 					// add clones to next side
+ 					clone = clone.clone();
+ 					this.stage[0].appendChild(clone[0]);
+ 
+ 					clone.css(styleName, getPosition.call(this, reps*this.items.length + i).left);
+ 					clone.css('z-index', 1);
+ 					clone.css({ margin: 0 });
+ 				}
+ 			}
 		}
 	}
 	

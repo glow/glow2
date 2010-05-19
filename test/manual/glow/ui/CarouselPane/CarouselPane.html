@@ -31,10 +31,12 @@
 		.carousel-content li
 		{
 			padding: 3px;
-			border-width: 0 3px 0 3px;
+			border-width: 3px 3px 4px 3px;
 			border-color: #AD89C1;
 			border-style: solid;
-			margin-right: 5px;
+			margin-right: 10px;
+			margin-left: 10px;
+			
 		}
 		
 		.carousel-content li img {
@@ -47,7 +49,7 @@
 		
 		#spotlight { border: 1px #FF4B00 dashed; }
 		
-		.clone
+		.carousel-clone
 		{
 			filter: alpha(opacity=80);
 			-moz-opacity: 0.8;
@@ -114,7 +116,7 @@
 	
 	<h2>Horizontal Non-looping</h2>
 	
-	<div class="testarea" style="width: 500px;">
+	<div class="testarea" style="width: 800px;">
 		<script type="text/javascript">
 			makeCarouselContent(8, 'myCarousel');
 		</script>
@@ -124,7 +126,7 @@
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5});
+			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5, loop: false, spotlight: 1, loop: true});
 			addControls(c);
 			
  			c.on('move', function(e) {
@@ -176,7 +178,7 @@
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel2', {loop: true, step: true});
+			var c = new glow.ui.CarouselPane('#myCarousel2', {loop: true, step: true, spotlight: 2});
 			addControls(c);
 		});
 	</script>
@@ -210,7 +212,7 @@
 	
 	<div class="testarea" style="width: 600px;">
 		<script type="text/javascript">
-			makeCarouselContent(11, 'myCarousel4');
+			makeCarouselContent(2, 'myCarousel4');
 		</script>
 	</div>
 	
