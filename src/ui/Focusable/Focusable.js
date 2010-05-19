@@ -107,8 +107,9 @@ Glow.provide(function(glow) {
 	function hoverListener(event) {
 		// set the _activeMethod so this can be passed onto the event
 		this._activeMethod = 'hover';
+		this._activeEvent = event;
 		this.active(event.source);
-		this._activeMethod = undefined;
+		this._activeEvent = this._activeMethod = undefined;
 	}
 	
 	/**
@@ -118,12 +119,13 @@ Glow.provide(function(glow) {
 			This allows the _activeMethod to be passed to the event.
 	*/
 	function activeMethodWrap(focusable, methodName, func) {
-		return function() {
+		return function(event) {
 			var returnVal;
 			
 			focusable._activeMethod = methodName;
+			focusable._activeEvent = event;
 			returnVal = func.apply(this, arguments);
-			focusable._activeMethod = undefined;
+			focusable._activeEvent = focusable._activeMethod = undefined;
 			return returnVal;
 		}
 	}
@@ -302,6 +304,11 @@ Glow.provide(function(glow) {
 		@name glow.ui.Focusable#_activeMethod
 		@type string
 		@description The last method used to activate a child element
+	*/
+	/**
+		@name glow.ui.Focusable#_activeEvent
+		@type string
+		@description The event object accociated with _activeMethod
 	*/
 	/**
 		@name glow.ui.Focusable#activeChild
@@ -528,7 +535,8 @@ Glow.provide(function(glow) {
 			focusable.fire('childActivate', {
 				item: focusable.activeChild,
 				itemIndex: focusable.activeIndex,
-				method: focusable._activeMethod || 'api'
+				method: focusable._activeMethod || 'api',
+				methodEvent: focusable._activeEvent
 			});
 		}
 		
@@ -757,7 +765,11 @@ Glow.provide(function(glow) {
 		@param {glow.NodeList} event.item Item activated.
 		@param {number} event.itemIndex The index of the activated item in {@link glow.ui.Focusable#children}.
 		@param {string} event.method Either 'key', 'hover' or 'api' depending on how the item was activated.
-			This allows you to react to activations only if activated via a certain method
+			This allows you to react to certain kinds of activation.
+		@param {glow.events.DomEvent} [event.methodEvent] An event object for the 'key' or 'hover' event.
+			For 'key' methods this will be a more specific {@link glow.events.KeyboardEvent}.
+			
+			If the method was neither 'key' or 'hover', methodEvent will be undefined.
 	*/
 	
 	/**
