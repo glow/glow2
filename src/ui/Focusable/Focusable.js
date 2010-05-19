@@ -50,7 +50,7 @@ Glow.provide(function(glow) {
 			// activate / deactivate the focusable depending on where focus is.
 			// This calls active(), passing in either the element focused (within the Focusable container) or false.
 			// The 2 mentions of 'focused' is deliberate.
-			instances[i].active( focused && instances[i].container.contains(focused) && focused );
+			instances[i].active( (focused && instances[i].container.contains(focused) && focused) || false );
 		}
 	}
 	
@@ -107,8 +107,9 @@ Glow.provide(function(glow) {
 	function hoverListener(event) {
 		// set the _activeMethod so this can be passed onto the event
 		this._activeMethod = 'hover';
+		this._activeEvent = event;
 		this.active(event.source);
-		this._activeMethod = undefined;
+		this._activeEvent = this._activeMethod = undefined;
 	}
 	
 	/**
@@ -118,12 +119,13 @@ Glow.provide(function(glow) {
 			This allows the _activeMethod to be passed to the event.
 	*/
 	function activeMethodWrap(focusable, methodName, func) {
-		return function() {
+		return function(event) {
 			var returnVal;
 			
 			focusable._activeMethod = methodName;
+			focusable._activeEvent = event;
 			returnVal = func.apply(this, arguments);
-			focusable._activeMethod = undefined;
+			focusable._activeEvent = focusable._activeMethod = undefined;
 			return returnVal;
 		}
 	}
@@ -304,6 +306,11 @@ Glow.provide(function(glow) {
 		@description The last method used to activate a child element
 	*/
 	/**
+		@name glow.ui.Focusable#_activeEvent
+		@type string
+		@description The event object accociated with _activeMethod
+	*/
+	/**
 		@name glow.ui.Focusable#activeChild
 		@type glow.NodeList
 		@description The active child item.
@@ -374,22 +381,25 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
-		@description Focus the active child or container if focusing is enabled.
-	*/
-	function focusActive(focusable) {
-		focusable._opts.setFocus && ( focusable.activeChild[0] || focusable.container[0] ).focus();
-	}
-	
-	/**
-		@private
-		@function
 		@description Update activeChild and activeIndex according to an index.
 	*/
 	function activateChildIndex(focusable, index) {
-		var children = focusable.children,
-			childrenLen = children.length,
-			prevActiveChild = focusable.activeChild[0],
-			activeChildClass = focusable._opts.activeChildClass;
+		var prevActiveChild = focusable.activeChild[0],
+			activeChildClass = focusable._opts.activeChildClass,
+			activeChild = focusable.activeChild = glow( focusable.children[index] ),
+			eventData = {
+				item: activeChild,
+				itemIndex: index,
+				method: focusable._activeMethod || 'api',
+				methodEvent: focusable._activeEvent
+			};
+		
+		focusable.activeIndex = index;
+		
+		// have we changed child focus?
+		if ( prevActiveChild === activeChild || focusable.fire('childActivate', eventData).defaultPrevented() ) {
+			return;
+		}
 		
 		// take the current active item out of the tab order
 		if (prevActiveChild) {
@@ -397,41 +407,32 @@ Glow.provide(function(glow) {
 			glow(prevActiveChild).removeClass(activeChildClass);
 		}
 		
-		// ensure the index is within children range
-		if (focusable._opts.loop) {
-			index = index % childrenLen;
-			if (index < 0) {
-				index = childrenLen + index;
-			}
-		}
-		else {
-			index = Math.max( Math.min(index, childrenLen - 1), 0);
-		}		
-		
-		focusable.activeIndex = index;
-		focusable.activeChild = glow( children[index] );
-		
 		// put the current active item into the tab order
 		focusable.activeChild[0].tabIndex = 0;
 		focusable.activeChild.addClass(activeChildClass);
+		
+		// give physical focus to the new item
+		focusable._opts.setFocus && focusable.activeChild[0].focus();
 	}
 	
 	/**
 		@private
 		@function
-		@description Update activeChild and activeIndex according to an element
-			Will also activate if child is inside one of the focusable's children.
-			If child isn't inside any of the Focusable's children, orChild will be used instead
+		@description Get the focusable child index of an element.
+			The element may also be an element within the focusable's child items.
+		@param {glow.ui.Focusable} focusable
+		@param {glow.NodeList} child Element to get the index from.
+		
+		@returns {number} Index or -1 if element is not (and is not within) any of the focusable's child items.
 	*/
-	function activateChildElm(focusable, child, orChild) {
+	function getIndexFromElement(focusable, child) {
 		var i,
 			children = focusable.children,
-			prevActiveChild = focusable.activeChild[0],
 			firstChild = children[0];
 		
 		// just exit if there are no child items
 		if ( !firstChild ) {
-			return;
+			return -1;
 		}
 		
 		child = glow(child).item(0);
@@ -443,16 +444,39 @@ Glow.provide(function(glow) {
 			// see if it's in the current child set
 			while (i--) {
 				if ( glow( children[i] ).contains(child) ) {
-					activateChildIndex(focusable, i);
-					return;
+					return i;
 				}
 			}
-			
-			// if we failed to select a child & one wasn't already active, fall back
-			if ( !focusable.activeChild[0] ) {
-				return activateChildElm( focusable, orChild || firstChild );
+		}
+		return -1;
+	}
+	
+	/**
+		@private
+		@function
+		@description Ensure an index is within the range of indexes for this focusable.
+		@param {glow.ui.Focusable} focusable
+		@param {number} index Index to keep within range
+		
+		@returns {number} The index within range.
+			If the focusable can loop, the index will be looped. Otherwise
+			the index will be limited to its maximum & minimum
+	*/
+	function assertIndexRange(focusable, index) {
+		var childrenLen = focusable.children.length;
+		
+		// ensure the index is within children range
+		if (focusable._opts.loop) {
+			index = index % childrenLen;
+			if (index < 0) {
+				index = childrenLen + index;
 			}
 		}
+		else {
+			index = Math.max( Math.min(index, childrenLen - 1), 0);
+		}
+		
+		return index;
 	}
 	
 	/**
@@ -494,7 +518,7 @@ Glow.provide(function(glow) {
 	*/
 	function activate(focusable, toActivate) {
 		var _active = focusable._active,
-			previousActiveChild = focusable.activeChild[0];
+			indexToActivate = -1;
 		
 		// if currently inactive...
 		if (!_active) {
@@ -505,34 +529,33 @@ Glow.provide(function(glow) {
 			focusable._active = true;
 			// start listening to the keyboard
 			documentNodeList.on('keypress', focusable._keyHandler, focusable).on('keydown', keySelectListener, focusable);
+			// give focus to the container - a child element may steal focus in activateChildIndex
+			focusable._opts.setFocus && focusable.container[0].focus();
 		}
 		
-		// simply activating
-		if (toActivate === true) {
-			// we don't care if we're already active
-			if (_active) { return; }
-			// focus the last active child, first child, or container
-			activateChildElm( focusable, focusable._lastActiveChild || focusable.children[0] );
+		// Work out what child item to focus.
+		// We avoid doing this if we were 
+		if ( focusable.children[0] ) {
+			// activating by index
+			if (typeof toActivate === 'number') {
+				indexToActivate = assertIndexRange(focusable, toActivate);
+			}
+			// activating by element
+			else if (typeof toActivate !== 'boolean') {
+				indexToActivate = getIndexFromElement(focusable, toActivate);
+			}
+			
+			// still no index to activate? If we were previously inactive, try the last active item
+			if (indexToActivate === -1 && !_active) {
+				indexToActivate = getIndexFromElement(focusable, focusable._lastActiveChild);
+				indexToActivate = indexToActivate !== -1 ? indexToActivate : 0;
+			}
+			
+			// If we have an item to activate, let's go for it
+			if (indexToActivate !== -1) {
+				activateChildIndex(focusable, indexToActivate);
+			}
 		}
-		// activating by index
-		else if (typeof toActivate === 'number') {
-			activateChildIndex(focusable, toActivate);
-		}
-		// activating by element
-		else if (toActivate) {
-			activateChildElm(focusable, toActivate, focusable._lastActiveChild);
-		}
-		
-		// have we changed child focus?
-		if ( previousActiveChild !== focusable.activeChild[0] ) {
-			focusable.fire('childActivate', {
-				item: focusable.activeChild,
-				itemIndex: focusable.activeIndex,
-				method: focusable._activeMethod || 'api'
-			});
-		}
-		
-		focusActive(focusable);
 	}
 	
 	/**
@@ -757,7 +780,11 @@ Glow.provide(function(glow) {
 		@param {glow.NodeList} event.item Item activated.
 		@param {number} event.itemIndex The index of the activated item in {@link glow.ui.Focusable#children}.
 		@param {string} event.method Either 'key', 'hover' or 'api' depending on how the item was activated.
-			This allows you to react to activations only if activated via a certain method
+			This allows you to react to certain kinds of activation.
+		@param {glow.events.DomEvent} [event.methodEvent] An event object for the 'key' or 'hover' event.
+			For 'key' methods this will be a more specific {@link glow.events.KeyboardEvent}.
+			
+			If the method was neither 'key' or 'hover', methodEvent will be undefined.
 	*/
 	
 	/**

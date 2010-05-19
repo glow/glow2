@@ -172,6 +172,8 @@
 			glow('#testTable2').focusable({
 				children: ' > tbody > tr',
 				activateOnHover: true
+			}).on('childActivate', function(e) {
+				//return false;
 			});
 		});
 	</script>
@@ -230,7 +232,10 @@
 			});
 			
 			glow('#testInput').on('focus', function() {
-				focusable.active(true);
+				setTimeout(function() {
+					focusable.active(true);
+				}, 0)
+				
 			})
 		});
 	</script>
