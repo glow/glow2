@@ -512,7 +512,7 @@ Glow.provide(function(glow) {
 		@function
 		@description This function generates the various anim shortcut functions
 	*/
-	function animShortcut(animName, animReverseName, animPropsFunc, defaultTween, onComplete) {
+	function animShortcut(animName, animReverseName, animPropsFunc, defaultTween, onComplete, additionalFunc) {
 		return function(duration, opts) {
 			/*!debug*/
 				if (arguments.length > 2) {
@@ -532,6 +532,7 @@ Glow.provide(function(glow) {
 				reverseAnim,
 				currentAnim,
 				calcDuration,
+				anim,
 				i = this.length;
 				
 			opts.tween = opts.tween || defaultTween;
@@ -558,8 +559,10 @@ Glow.provide(function(glow) {
 				}
 				
 				item.data('glow_' + animName,
-					item.anim( calcDuration, animPropsFunc(item), opts ).on('complete', onComplete, item)
+					anim = item.anim( calcDuration, animPropsFunc(item), opts ).on('complete', onComplete, item)
 				);
+				
+				additionalFunc && additionalFunc(anim, item, opts);
 			}
 			
 			return this;
@@ -594,7 +597,7 @@ Glow.provide(function(glow) {
 		item.css('display', 'block');
 		return {opacity: 1};
 	}, 'easeOut', function() {
-		// on comlpete
+		// on complete
 		// we remove the filter from IE to bring back cleartype
 		if (glow.env.ie) {
 			this[0].style.filter = '';
@@ -695,9 +698,11 @@ Glow.provide(function(glow) {
 		
 		@param {number} [duration=1] Duration in seconds
 		@param {Object} [opts] Options object
-		@param {function|string} [opts.tween='easeBoth'] The motion of the animation.
-			Strings are treated as properties of {@link glow.tweens}, although
-			a tween function can be provided.
+			@param {function|string} [opts.tween='easeBoth'] The motion of the animation.
+				Strings are treated as properties of {@link glow.tweens}, although
+				a tween function can be provided.
+			@param {boolean} [opts.lockToBottom=false] Lock the bottom of the content to the bottom of the element.
+				This means the bottom of the content is shown first, rather than the top.
 			
 		@returns {glow.NodeList}
 		
@@ -728,8 +733,8 @@ Glow.provide(function(glow) {
 		item.css('height', currentHeight);
 		return {height: fullHeight}
 	}, 'easeBoth', function() {
-		this.css('height', 'auto');
-	});
+		this.css('height', 'auto').scrollTop(0);
+	}, lockToBottom);
 	
 	/**
 		@name glow.NodeList#slideShut
@@ -742,9 +747,11 @@ Glow.provide(function(glow) {
 		
 		@param {number} [duration=1] Duration in seconds
 		@param {Object} [opts] Options object
-		@param {function|string} [opts.tween='easeBoth'] The motion of the animation.
-			Strings are treated as properties of {@link glow.tweens}, although
-			a tween function can be provided.
+			@param {function|string} [opts.tween='easeBoth'] The motion of the animation.
+				Strings are treated as properties of {@link glow.tweens}, although
+				a tween function can be provided.
+			@param {boolean} [opts.lockToBottom=false] Lock the bottom of the content to the bottom of the element.
+				This means the top of the content is hidden first, rather than the bottom.
 			
 		@returns {glow.NodeList}
 		
@@ -762,7 +769,26 @@ Glow.provide(function(glow) {
 			item.css('overflow', 'hidden');
 		}
 		return {height: 0}
-	}, 'easeBoth', function() {});
+	}, 'easeBoth', function() {}, lockToBottom);
+	
+	/**
+		@private
+		@function
+		@description Add frame listener to lock content to the bottom of an item.
+		@param {glow.anim.Anim} anim Anim to alter
+		@param {glow.NodeList} element Element being animated
+		@param {Object} opts Options from slide[Open|Shut|Toggle]
+	*/
+	function lockToBottom(anim, element, opts) {
+		var node = element[0],
+			scrollHeight = node.scrollHeight;
+		
+		if (opts.lockToBottom) {
+			anim.on('frame', function() {
+				element.scrollTop( scrollHeight - node.offsetHeight );
+			});
+		}
+	}
 	
 	/**
 		@name glow.NodeList#slideToggle
@@ -778,9 +804,11 @@ Glow.provide(function(glow) {
 		
 		@param {number} [duration=1] Duration in seconds
 		@param {Object} [opts] Options object
-		@param {function|string} [opts.tween='easeBoth'] The motion of the animation.
-			Strings are treated as properties of {@link glow.tweens}, although
-			a tween function can be provided.
+			@param {function|string} [opts.tween='easeBoth'] The motion of the animation.
+				Strings are treated as properties of {@link glow.tweens}, although
+				a tween function can be provided.
+			@param {boolean} [opts.lockToBottom=false] Lock the bottom of the content to the bottom of the element.
+				This means the top of the content is hidden first & shown last.
 			
 		@returns {glow.NodeList}
 		
