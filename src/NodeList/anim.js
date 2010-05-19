@@ -725,9 +725,14 @@ Glow.provide(function(glow) {
 			glow('<div>' + newContent + '</div>').appendTo('#content').height(0).slideOpen();
 			
 	*/
-	NodeListProto.slideOpen = animShortcut('slideOpen', 'slideShut', function(item) {
+	NodeListProto.slideOpen = animShortcut('slideOpen', 'slideShut', function(item) {		
 		var currentHeight = item.css('height'),
 			fullHeight;
+		
+		if ( item.css('overflow') === 'visible' ) {
+			item.css('overflow', 'hidden');
+		}
+		
 		item.css('height', 'auto');
 		fullHeight = item.height();
 		item.css('height', currentHeight);
