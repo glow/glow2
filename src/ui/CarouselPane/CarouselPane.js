@@ -764,8 +764,11 @@ Glow.provide(function(glow) {
 			maxInnerHeight = 0,
 			maxWidth = 0,
 			maxHeight = 0,
+			margin = 0,
 			marginRight = 0,
-			marginLeft = 0;
+			marginLeft = 0,
+			marginTop = 0,
+			marginBottom = 0;
 			
 		items.each(function() {
 			el = glow(this);
@@ -775,12 +778,14 @@ Glow.provide(function(glow) {
 			maxInnerHeight = Math.max(el.height(), maxInnerHeight);
 			marginRight = Math.max(parseInt(el.css('margin-right')), marginRight);
 			marginLeft = Math.max(parseInt(el.css('margin-left')), marginLeft);
+			marginTop = Math.max(parseInt(el.css('margin-top')), marginTop);
+			marginBottom = Math.max(parseInt(el.css('margin-bottom')), marginBottom);
 		});
 		
 		// simulate margin collapsing. see: http://www.howtocreate.co.uk/tutorials/css/margincollapsing
-		var margin = Math.max(marginLeft, marginRight); // the larger of: the largest left matgin and the largest right margin
+		margin = Math.max(marginLeft, marginRight); // the larger of: the largest left matgin and the largest right margin
 
-		return { width: maxWidth+margin, height: maxHeight, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight, marginLeft: marginLeft, marginRight: marginRight};
+		return { width: maxWidth+margin, height: maxHeight+marginTop+marginBottom, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight, marginLeft: marginLeft, marginRight: marginRight, marginTop: marginTop, marginBottom: marginBottom };
 	}
 	
 	/**
@@ -827,7 +832,7 @@ Glow.provide(function(glow) {
 	}
 	
 	function getPosition(itemIndex) { /*debug*///console.log('getPosition('+itemIndex+')');
-		position = { top: 0, left: null };
+		position = { top: 0, left: 0 };
 		
 		// TODO: memoise?
 		var size = this._itemDimensions.width,
@@ -835,7 +840,9 @@ Glow.provide(function(glow) {
 			
 			position.left = offset + (itemIndex * size)
 				+ (this._opts.page && itemIndex >= this.items.length? this._gap.count * size : 0)
-				- (this._opts.page && itemIndex < 0? this._gap.count * size : 0);		
+				- (this._opts.page && itemIndex < 0? this._gap.count * size : 0);
+			position.top = this._itemDimensions.marginTop;
+//console.log('position.top is '+position.top);
 			return position;
 	}
 	
@@ -847,7 +854,9 @@ Glow.provide(function(glow) {
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
 			var pos = getPosition.call(this, i);		
-			this.items.item(i).css(styleName, pos.left);
+			this.items.item(i).css('left', pos.left);
+			this.items.item(i).css('top', pos.top);
+			
 			// the original items will have the carousel-item class and data
 			// to indicate its position in the item series -- used by keyboard nav
 			this.items.item(i).addClass('carousel-item');			
