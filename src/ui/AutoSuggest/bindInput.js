@@ -428,21 +428,19 @@ Glow.provide(function(glow) {
 	function altSlideAnim(isShow, callback) {
 		var anim,
 			container = this.container,
-			fullHeight = container.height('auto').height();
-			
-		function frame() {
-			container.scrollTop( fullHeight - container.height() );
-		}
+			animOpts = {
+				lockToBottom: true
+			};
 		
 		if (isShow) {
 			container.height(0);
-			anim = container.slideOpen(0.5).data('glow_slideOpen')
+			anim = container.slideOpen(0.5, animOpts).data('glow_slideOpen')
 		}
 		else {
-			anim = container.slideShut(0.5).data('glow_slideShut');
+			anim = container.slideShut(0.5, animOpts).data('glow_slideShut');
 		}
 		
-		anim.on('frame', frame).on('complete', callback);
+		anim.on('complete', callback);
 	}
 	
 	/**
