@@ -30,13 +30,13 @@
 		*/
 		.carousel-content li
 		{
-			padding: 3px;
-			border-width: 3px 3px 4px 3px;
-			border-color: #AD89C1;
-			border-style: solid;
-			margin-right: 10px;
-			margin-left: 10px;
-			
+			x-padding: 3px;
+			x-border-width: 3px 3px 4px 3px;
+			x-border-color: #AD89C1;
+			x-border-style: solid;
+			margin-right: 1px;
+			margin-left: 2px;
+			x-margin: 13px;
 		}
 		
 		.carousel-content li img {
@@ -61,6 +61,7 @@
 	</style>
 	
 	<script type="text/javascript">
+		<!--
 		carouselItems = '<li><img src="images/1.jpg" alt="Scouting For Girls"></li>\n<li><img src="images/2.jpg" alt="The Fame Monster"></li>\n<li><img src="images/3.jpg" alt="One of the Boys"></li>\n<li><img src="images/4.jpg" alt="Monkey Business"></li>\n<li><img src="images/5.jpg" alt="Shake a Bone"></li>\n<li><img src="images/6.jpg" alt="MeatLoaf"></li>\n<li><img src="images/7.jpg" alt="Britteny"></li>\n<li><img src="images/8.jpg" alt="Mumford"></li>\n<li><img src="images/9.jpg" alt="Kate Nash"></li>\n<li><img src="images/10.jpg" alt="Roll Deep"></li>\n<li><img src="images/11.jpg" alt="Rihanna"></li>\n<li><img src="images/12.jpg" alt="Plan B"></li>'
 			.split('\n');
 		
@@ -108,6 +109,7 @@
 				carouselContainer.parentNode.appendChild(controlContainer);
 			}
 		}
+		//-->
 	</script>
 </head>
 
@@ -126,7 +128,7 @@
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5, loop: false, spotlight: 1, loop: true});
+			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5, loop: false, spotlight: 3, loop: 1});
 			addControls(c);
 			
  			c.on('move', function(e) {

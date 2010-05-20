@@ -674,7 +674,7 @@ Glow.provide(function(glow) {
 					backTo = swapBackItem.data('carousel-position');
 				
 				if (backTo !== undefined) {
-					swapBackItem.css(styleName, getPosition.call(this, backTo).left);//offset + backTo * amount);
+					swapBackItem.css(styleName, getPosition.call(this, backTo).left);
 				}
 			}
 			return;
@@ -764,19 +764,23 @@ Glow.provide(function(glow) {
 			maxInnerHeight = 0,
 			maxWidth = 0,
 			maxHeight = 0,
+			marginRight = 0,
 			marginLeft = 0;
 			
 		items.each(function() {
 			el = glow(this);
 			maxHeight = Math.max(this.offsetHeight, maxHeight);
-			maxWidth = Math.max(this.offsetWidth + parseInt(el.css('margin-right')), maxWidth);
+			maxWidth = Math.max(this.offsetWidth, maxWidth);
 			maxInnerWidth = Math.max(el.width(), maxInnerWidth);
 			maxInnerHeight = Math.max(el.height(), maxInnerHeight);
+			marginRight = Math.max(parseInt(el.css('margin-right')), marginRight);
 			marginLeft = Math.max(parseInt(el.css('margin-left')), marginLeft);
-			
 		});
 		
-		return { width: maxWidth+marginLeft, height: maxHeight, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight, marginLeft: marginLeft };
+		// simulate margin collapsing. see: http://www.howtocreate.co.uk/tutorials/css/margincollapsing
+		var margin = Math.max(marginLeft, marginRight); // the larger of: the largest left matgin and the largest right margin
+
+		return { width: maxWidth+margin, height: maxHeight, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight, marginLeft: marginLeft, marginRight: marginRight};
 	}
 	
 	/**
@@ -809,7 +813,7 @@ Glow.provide(function(glow) {
 				spot.capacity = items.length;
 			}
 
-			spot.width = spot.capacity * itemDimensions.width;
+			spot.width = spot.capacity * itemDimensions.width + Math.min(itemDimensions.marginLeft, itemDimensions.marginRight);
 			spot.height = itemDimensions.height
 			
 			spot.offset.left = Math.floor( (viewportWidth - spot.width) / 2 );
@@ -877,7 +881,7 @@ Glow.provide(function(glow) {
  					// clones are not included in keyboard nav
  					glow(clone).removeClass('carousel-item');
  					
- 					clone.css('left', getPosition.call(this, 0 - (reps*this.items.length - i)).left);//offset - reps*this._gap.size - (reps*this.items.length - i) * amount);
+ 					clone.css('left', getPosition.call(this, 0 - (reps*this.items.length - i)).left);
  					clone.addClass('carousel-clone');
  					this.stage[0].appendChild(clone[0]);
 					clone.css('z-index', 1);

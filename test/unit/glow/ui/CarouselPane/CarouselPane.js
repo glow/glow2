@@ -14,9 +14,9 @@ module('ui/CarouselPane');
 			document.body.appendChild(testdiv);
 		}
 		
-		testdiv.innerHTML = '<div id="div1" style="width: 100px; height: 50px; border: 1px solid #999;">hello</div>'
-		+ '<div id="div2" style="width: 50px; height: 100px; border: 1px solid #999;"><span id="inner">world</span></div>'
-		+ '<div style="border: 1px solid #999;">!</div>';
+		testdiv.innerHTML = '<div id="div1" style="width: 100px; height: 50px; background-color: #c99; margin-left: 1px;">1 one</div>'
+		+ '<div id="div2" style="width: 50px; height: 100px;  background-color: #9c9;"><span id="inner">2 two</span></div>'
+		+ '<div style=" background-color: #99c;">3 three</div>';
 	}
 	
 	test('ui/CarouselPane:API', 16, function() {
@@ -85,9 +85,9 @@ module('ui/CarouselPane');
   		equal(1, spot.capacity, 'glow.ui.CarouselPane._getSpot()#capacity is 1 when parent element width is 150.');
   		equal(spot.offset.left+spot.offset.right+spot.width, glow('#testElmsContainer0').width(), 'glow.ui.CarouselPane._getSpot()#offset.left + #width + #offset.right sums to be the parent elements width.');
   		
-  		equal(spot.offset.left, 23, 'glow.ui.CarouselPane._getSpot()#offset.left is correct.');
-  		equal(spot.offset.right, 23, 'glow.ui.CarouselPane._getSpot()#offset.right is correct.');
-  		equal(spot.width, 104, 'glow.ui.CarouselPane._getSpot()#offset.right is correct.');
+  		equal(spot.offset.left, 25, 'glow.ui.CarouselPane._getSpot()#offset.left is correct.');
+  		equal(spot.offset.right, 25, 'glow.ui.CarouselPane._getSpot()#offset.right is correct.');
+  		equal(spot.width, 100, 'glow.ui.CarouselPane._getSpot()#offset.right is correct.');
   		
   		myCarouselPane.destroy();
   	});
