@@ -290,7 +290,7 @@ Glow.provide(function(glow) {
 		var pane = this._pane;
 		
 		if ( !this.fire('move', event).defaultPrevented() ) {
-			this._updateNav( (pane.index + event.moveBy) / pane._step );
+			this._updateNav( (pane._index + event.moveBy) % this.items.length / pane._step );
 			hideTitles(this);
 		}
 	}
@@ -491,7 +491,8 @@ Glow.provide(function(glow) {
 		@returns undefined
 	*/
 	CarouselProto.destroy = function() {
-		// TODO: Ensure the carousel items are not destroyed
+		// Move the pane outside our widget
+		this._pane.container.insertBefore(this.container);
 		WidgetProto.destroy.call(this);
 	};
 	

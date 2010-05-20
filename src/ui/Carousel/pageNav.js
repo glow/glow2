@@ -86,6 +86,27 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
+		@description Calculate the number of pages this carousel has
+	*/
+	function getNumberOfPages(carousel) {
+		var pane = carousel._pane,
+			itemsLength = carousel.items.length,
+			step = pane._step;
+		
+		if (carousel._opts.loop) {
+			r = Math.ceil( itemsLength / step );
+		}
+		else {
+			r = 1 + Math.ceil( (itemsLength - pane._spot.capacity) / step );
+		}
+		
+		// this can be less than one if there's less than 1 page worth or items
+		return Math.max(r, 0);
+	}
+	
+	/**
+		@private
+		@function
 		@description Position & populate the page nav.
 			Its position may need refreshed after updating the carousel ui.
 	*/
@@ -95,12 +116,9 @@ Glow.provide(function(glow) {
 			positionY = position.slice(0,5),
 			positionX = position.slice(5),
 			pane = carousel._pane,
-			numberOfPages = 1 + Math.ceil( (carousel.items.length - pane._spot.capacity) / pane._step ),
+			numberOfPages = getNumberOfPages(carousel),
 			htmlStr = '',
 			itemTitles = carousel._itemTitles;
-		
-		// this can be less than one if there's less than 1 page worth or items
-		numberOfPages = Math.max(numberOfPages, 0);
 		
 		// either append or prepend the page nav, depending on option
 		carousel.container[ (positionY === 'below') ? 'append' : 'prepend' ](pageNav);
@@ -124,7 +142,7 @@ Glow.provide(function(glow) {
 		} while (--numberOfPages);
 		
 		pageNav.html(htmlStr);
-		carousel._updateNav( pane.index / pane._step );
+		carousel._updateNav( pane._index / pane._step );
 	}
 	
 	/**

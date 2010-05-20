@@ -15,21 +15,22 @@
 	</script>
 	
 	<style type="text/css">
-		#carousel1Outer {
+		#carousel1Outer, #carousel2Outer {
 			width: 550px;
+			font-size: small;
 		}
-		#carousel1 {
+		#carousel1, #carousel2 {
 			margin: 0; padding: 0;
 			list-style: none;
+			
 		}
-		
-		img {
+		#carousel1 img,
+		#carousel2 img {
 			display: block;
 		}
 		.itemTitle {
 			padding: 5px 0;
 			background: #ccc;
-			font-size: small;
 		}
 	</style>
 </head>
@@ -37,15 +38,11 @@
 <body>
 	<h1>glow.ui.Carousel</h1>
 	
-	<h2>Carousel with titles and page nav</h2>
+	<h2>Basic carousel</h2>
 	
 	<ol>
-		<li>Below should be a carousel showing 3 items, with one image partially visible behind the next (right) button.</li>
-		<li>Below each of the 4 fully visible images should be a title beneath each.</li>
-		<li>Clicking the left and right arrows should move the carousel one step at a time</li>
-		<li>Page naviagation should be shown below the last item in the carousel</li>
-		<li>Clicking the page naviagtion should move the carousel to that page</li>
-		<li>The page navigation block representing the active page should be a darker grey than the others.</li>
+		<li>Below should be a carousel showing 4 items, with one image partially visible behind the next (right) button.</li>
+		<li>Below each of the 4 fully visible images should be a title.</li>
 	</ol>
 	
 	<div class="testarea" id="carousel1Outer">
@@ -93,17 +90,11 @@
 		glow.ready(function() {
 			window.myCarousel = new glow.ui.Carousel('#carousel1', {
 				itemTitles: '.itemTitle'
-			}).addPageNav();
+			});
 		});
 	</script>
 	
-	<h2>Carousel with titles and page nav</h2>
-	
-	<ol>
-		<li></li>
-	</ol>
-	
-	<div class="testarea" style="width:800px">
+	<div class="testarea" id="carousel2Outer">
 		<ol id="carousel2">
 			<li>
 				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
@@ -146,11 +137,7 @@
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			window.myCarousel2 = new glow.ui.Carousel('#carousel2', {
-				itemTitles: '.itemTitle',
-				spotlight: 4,
-				loop: true
-			}).addPageNav('belowNext');
+			window.myCarousel2 = new glow.ui.Carousel('#carousel2');
 		});
 	</script>
 
