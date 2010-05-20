@@ -79,7 +79,7 @@ Glow.provide(function(glow) {
 			'this' is the carousel
 	*/
 	function pageNavClick(event) {
-		var targetPage = Number( glow(event.attachedTo).text() ) - 1;
+		var targetPage = ( glow(event.attachedTo).text() - 1 ) * this._pane._step;
 		this.moveTo(targetPage);
 	}
 	
@@ -128,7 +128,7 @@ Glow.provide(function(glow) {
 		
 		// cater for 'belowNext' when we have title boxes
 		if (position === 'belowNext' && itemTitles) {
-			// TODO: move up by the height of the title boxes (negative margin-top)
+			// move up by the height of the title boxes (negative margin-top)
 			pageNav.width( carousel._nextBtn.width() ).css( 'margin-top', parseInt( pageNav.css('margin-top') ) - itemTitles.height() );
 		}
 		// move it under the last item for *Last positions

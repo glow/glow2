@@ -496,7 +496,7 @@ Glow.provide(function(glow) {
 		WidgetProto.destroy.call(this);
 	};
 	
-	/**
+	/*
 		@name glow.ui.Carousel#updateUi
 		@function
 		@description Refresh the carousel after moving/adding/removing items.

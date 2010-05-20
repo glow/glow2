@@ -41,8 +41,9 @@
 	
 	<ol>
 		<li>Below should be a carousel showing 3 items, with one image partially visible behind the next (right) button.</li>
-		<li>Below each of the 4 fully visible images should be a title beneath each.</li>
+		<li>Below each of the 3 fully visible images should be a title beneath each.</li>
 		<li>Clicking the left and right arrows should move the carousel one step at a time</li>
+		<li>The next/previous buttons should be disabled when at the end/start of the carousel</li>
 		<li>Page naviagation should be shown below the last item in the carousel</li>
 		<li>Clicking the page naviagtion should move the carousel to that page</li>
 		<li>The page navigation block representing the active page should be a darker grey than the others.</li>
@@ -97,10 +98,16 @@
 		});
 	</script>
 	
-	<h2>Carousel with titles and page nav</h2>
+	<h2>Carousel with looping</h2>
 	
 	<ol>
-		<li></li>
+		<li>Below should be a carousel showing 4 items, with one image partially visible behind the next (right) button.</li>
+		<li>Below each of the 4 fully visible images should be a title beneath each.</li>
+		<li>Clicking the left and right arrows should move the carousel one step at a time</li>
+		<li>The carousel should loop from the last item back to the first</li>
+		<li>Page naviagation should be shown below carousel, centred</li>
+		<li>Clicking the page naviagtion should move the carousel to that page</li>
+		<li>The page navigation block representing the active page should be a darker grey than the others.</li>
 	</ol>
 	
 	<div class="testarea" style="width:800px">
@@ -150,7 +157,68 @@
 				itemTitles: '.itemTitle',
 				spotlight: 4,
 				loop: true
-			}).addPageNav('belowNext');
+			}).addPageNav({
+				position: 'belowMiddle'
+			});
+		});
+	</script>
+	
+	<h2>Carousel with looping</h2>
+	
+	<ol>
+		<li>Below should be a carousel showing 4 items, with one image partially visible behind the next (right) button.</li>
+		<li>Clicking the left and right arrows should move the carousel 4 items at a time</li>
+		<li>The final page should contain 1 item only</li>
+		<li>The carousel should loop from the last item back to the first</li>
+		<li>Page naviagation should be shown below the next button</li>
+		<li>Clicking the page naviagtion should move the carousel to that page</li>
+		<li>The page navigation block representing the active page should be a darker grey than the others.</li>
+	</ol>
+	
+	<div class="testarea" style="width:800px">
+		<ol id="carousel3">
+			<li>
+				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
+			</li>
+		</ol>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			window.myCarousel2 = new glow.ui.Carousel('#carousel3', {
+				duration: 0.5,
+				spotlight: 4,
+				page: true,
+				loop: true
+			}).addPageNav({
+				position: 'belowNext'
+			}).on('select', function() {
+				alert('hi');
+			})
 		});
 	</script>
 
