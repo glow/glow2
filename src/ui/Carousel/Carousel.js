@@ -346,7 +346,10 @@ Glow.provide(function(glow) {
 			);
 		}
 		
-		titlesToShow.css('height', 0).fadeIn(animDuration).slideOpen(animDuration, {
+		titlesToShow.css({
+			height: 0,
+			opacity: 0
+		}).fadeIn(animDuration).slideOpen(animDuration, {
 			lockToBottom: true
 		});
 	}

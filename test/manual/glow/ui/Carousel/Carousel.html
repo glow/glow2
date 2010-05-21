@@ -9,14 +9,14 @@
 	<script src="../../../../unit/lib/testhelper.js?base=../../../../../" type="text/javascript"></script>
 	
 	<script type="text/javascript">
-		testHelper.addScript('core.js');
-		testHelper.addScript('ui.js');
+		testHelper.addScript('core.debug.js');
+		testHelper.addScript('ui.debug.js');
 		testHelper.addCss('ui.css');
 	</script>
 	
 	<style type="text/css">
 		#carousel1Outer {
-			width: 550px;
+			width: 580px;
 		}
 		#carousel1 {
 			margin: 0; padding: 0;
@@ -30,6 +30,10 @@
 			padding: 5px 0;
 			background: #ccc;
 			font-size: small;
+		}
+		
+		li {
+			margin: 0 2px;
 		}
 		
 		#animTest li {
@@ -98,7 +102,11 @@
 		glow.ready(function() {
 			window.myCarousel = new glow.ui.Carousel('#carousel1', {
 				itemTitles: '.itemTitle'
-			}).addPageNav();
+			}).addPageNav().on('move', function() {
+				console.log('move!');
+			}).on('afterMove', function() {
+				console.log('afterMove!');
+			})
 		});
 	</script>
 	
@@ -222,6 +230,10 @@
 				position: 'belowNext'
 			}).on('select', function() {
 				alert('hi');
+			}).on('move', function() {
+				console.log('move!');
+			}).on('afterMove', function() {
+				console.log('afterMove!');
 			})
 		});
 	</script>
