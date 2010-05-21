@@ -133,7 +133,7 @@ Glow.provide(function(glow) {
 		}
 		// move it under the last item for *Last positions
 		else if (positionX === 'Last') {
-			pageNav.css( 'margin-right', carousel._nextBtn.width() )
+			pageNav.css( 'margin-right', carousel._nextBtn.width() + pane._itemDimensions.marginRight )
 		}
 		
 		// build the html string

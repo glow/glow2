@@ -31,6 +31,10 @@
 			background: #ccc;
 			font-size: small;
 		}
+		
+		#animTest li {
+			margin: 0 5px;
+		}
 	</style>
 </head>
 
@@ -163,7 +167,7 @@
 		});
 	</script>
 	
-	<h2>Carousel with looping</h2>
+	<h2>Carousel with paging</h2>
 	
 	<ol>
 		<li>Below should be a carousel showing 4 items, with one image partially visible behind the next (right) button.</li>
@@ -222,6 +226,59 @@
 		});
 	</script>
 
+	<h2>Anim test</h2>
+	
+	<div class="testarea" style="width:650px">
+		<ol id="animTest">
+			<li>
+				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Leonardo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Michelangelo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Donatello</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Raphael</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Master Splinter</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Shredder</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">April O'Neil</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Krang</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Technodrome</div>
+			</li>
+		</ol>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			window.myCarousel2 = new glow.ui.Carousel('#animTest', {
+				duration: 0.35,
+				itemTitles: '.itemTitle',
+				spotlight: 3,
+				page: true
+			}).addPageNav();
+		});
+	</script>
 	
 	<script type="text/javascript">
 		// make scripts visible in the page...
