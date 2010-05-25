@@ -4,54 +4,54 @@ Glow.provide(function(glow) {
 		net = glow.net,
 		emptyFunc = function(){},
 		events = glow.events,
-		/**
-			 * @name scriptElements
-			 * @private
-			 * @description Script elements that have been added via {@link glow.net.getJsonp getJsonp}
-			 * @type HTMLElement[]
-			 */
-			scriptElements = [],
-			/**
-			 * @name callbackPrefix
-			 * @private
-			 * @description Callbacks in _jsonCbs will be named this + a number
-			 * @type string
-			 */
-			callbackPrefix = 'c',
-			/**
-			 * @name globalObjectName
-			 * @private
-			 * @description Name of the global object used to store getJsonp callbacks
-			 * @type string
-			 */
-			globalObjectName = '_' + glow.UID + 'loadScriptCbs';
 	/**
-		@name glow.net.getJsonp
-		@function
-		@description Loads data by adding a script element to the end of the page
-			This can be used cross domain, but should only be used with trusted
-			sources as any javascript included in the script will be executed.
+	@name scriptElements
+	@private
+	@description Script elements that have been added via {@link glow.net.getJsonp getJsonp}
+	@type HTMLElement[]
+	 */
+	scriptElements = [],
+	/**
+	@name callbackPrefix
+	@private
+	@description Callbacks in _jsonCbs will be named this + a number
+	@type string
+	*/
+	callbackPrefix = 'c',
+	/**
+	@name globalObjectName
+	@private
+	@description Name of the global object used to store getJsonp callbacks
+	@type string
+	*/
+	globalObjectName = '_' + glow.UID + 'loadScriptCbs';
+	/**
+	@name glow.net.getJsonp
+	@function
+	@description Loads data by adding a script element to the end of the page
+		This can be used cross domain, but should only be used with trusted
+		sources as any javascript included in the script will be executed.
  
-		@param {string} url
-			Url of the script. "{callback}" must be added to the the querystring to ensure this method functions properly.
-		@param {object} [opts]
-			@param {number} [opts.timeout] Time to allow for the request in seconds
-			@param {string} [opts.charset] Charset attribute value for the script
+	@param {string} url
+		Url of the script. "{callback}" must be added to the the querystring to ensure this method functions properly.
+	@param {object} [opts]
+		@param {number} [opts.timeout] Time to allow for the request in seconds
+		@param {string} [opts.charset] Charset attribute value for the script
 			
  
-		@returns {glow.net.Response}
+	@returns {glow.net.Response}
  
-		@example
-			// load script with a callback specified
-			glow.net.getJsonp("http://www.server.com/json/tvshows.php?jsoncallback={callback}")
-			.on('load'), 
-				function(data){
-					// use data
-				});
-		*/
+	@example
+		// load script with a callback specified
+		glow.net.getJsonp("http://www.server.com/json/tvshows.php?jsoncallback={callback}")
+		.on('load'), 
+			function(data){
+				// use data
+			});
+	*/
 	net.getJsonp = function(url, opts) {
 		
-		//id of the request
+	//id of the request
 		var newIndex = scriptElements.length,
 			//script element that gets inserted on the page
 			script,
@@ -68,34 +68,34 @@ Glow.provide(function(glow) {
 
 			
 			
-				globalObject[callbackName] = function() {
+			globalObject[callbackName] = function() {
 			
-					//clear the timeout
-					request._timeout && clearTimeout(request._timeout);
-					//set as completed
-					request.completed = true;
-					
-					
-					request.data = arguments;
+				//clear the timeout
+				request._timeout && clearTimeout(request._timeout);
+				//set as completed
+				request.completed = true;
 				
-					script = globalObject[callbackName] = undefined;
-					delete globalObject[callbackName];
-			
-					var loadListeners = glow.events._getListeners(request).load;
+					
+				request.data = arguments;
 				
-					if(loadListeners){
-						loadListeners = loadListeners.slice(0);
-						var i = loadListeners.length;
-						while(i--){
-							loadListeners[i][0].apply(loadListeners[i][1], arguments);
-						}
-						
+				script = globalObject[callbackName] = undefined;
+				delete globalObject[callbackName];
+		
+				var loadListeners = glow.events._getListeners(request).load;
+				
+				if(loadListeners){
+					loadListeners = loadListeners.slice(0);
+					var i = loadListeners.length;
+					while(i--){
+						loadListeners[i][0].apply(loadListeners[i][1], arguments);
 					}
 					
+			}
+					
 				
 					
-				};
-				url = glow.util.interpolate(url, {callback: globalObjectName + '.' + callbackName});
+			};
+			url = glow.util.interpolate(url, {callback: globalObjectName + '.' + callbackName});
 			
 
 			
@@ -106,49 +106,49 @@ Glow.provide(function(glow) {
 			}
 
 
-			glow.ready(function() {
-				//sort out the timeout
-				if (opts.timeout) {
-					request._timeout = setTimeout(function() {
-						glow.net.abortRequest(request);
+		glow.ready(function() {
+			//sort out the timeout
+			if (opts.timeout) {
+				request._timeout = setTimeout(function() {
+					glow.net.abortRequest(request);
+					
+					var callbackIndex = request._callbackIndex;
+					if (callbackIndex) {
+						//clear callback
+						window[globalObjectName][callbackPrefix + callbackIndex] = emptyFunc;
+						//remove script element
+						glow(scriptElements[callbackIndex]).destroy();
 						
-						var callbackIndex = request._callbackIndex;
-						if (callbackIndex) {
-							//clear callback
-							window[globalObjectName][callbackPrefix + callbackIndex] = emptyFunc;
-							//remove script element
-							glow(scriptElements[callbackIndex]).destroy();
-							
-						}
-						request.fire('error');
-					}, opts.timeout * 1000);
-					request.fire('abort');
-				}
+					}
+					request.fire('error');
+				}, opts.timeout * 1000);
+				request.fire('abort');
+			}
 				
-				script.src = url;
-				
-				//add script to page
-				document.body.appendChild(script);
+			script.src = url;
+			
+			//add script to page
+			document.body.appendChild(script);
 				
 				
-			});
+		});
 
-			return request;
-		};
+		return request;
+	};
 		
 	/**
-		@name glow.net.JsonpRequest
-		@description Returned by {@link glow.net.getResources }
-		@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
+	@name glow.net.JsonpRequest
+	@description Returned by {@link glow.net.getResources }
+	@glowPrivateConstructor There is no direct constructor, since {@link glow.net.getResources} creates the instances.
 	*/
 	 
 	function JsonpRequest(request, opts) {
 		/**
 		@private
 		@description timeout ID. This is set by makeXhrRequest or loadScript
-			 * @type Number
-			 */
-			this._timeout = null;
+		@type Number
+		*/
+		this._timeout = null;
 			
 			
 			
@@ -166,61 +166,59 @@ Glow.provide(function(glow) {
 				
 		@type Boolean
 		*/
-			this.complete = false;
+		this.complete = false;
 
 
-				/**
-				 * @name glow.net.JsonpRequest#_callbackIndex
-				 * @private
-				 * @description Index of the callback in glow.net._jsonCbs
-				 *   This is only relavent for requests made via loadscript using the
-				 *   {callback} placeholder
-				 * @type Number
-				 */
-				this._callbackIndex = request;
+		/**
+		@name glow.net.JsonpRequest#_callbackIndex
+		@private
+		@description Index of the callback in glow.net._jsonCbs
+			This is only relavent for requests made via loadscript using the
+			{callback} placeholder
+			@type Number
+		*/
+		this._callbackIndex = request;
 			
 	 
 	
 	}
 	
 	/**
-		@name glow.net.JsonpRequest#event:load
-		@event
-		@param {glow.events.Event} event Event Object
-		@description Fired when the request is sucessful
-			
+	@name glow.net.JsonpRequest#event:load
+	@event
+	@param {glow.events.Event} event Event Object
+	@description Fired when the request is sucessful
+		
 	*/
  
 	/**
-		@name glow.net.JsonpRequest#event:abort
-		@event
-		@param {glow.events.Event} event Event Object
-		@description Fired when the request is aborted
-
-
+	@name glow.net.JsonpRequest#event:abort
+	@event
+	@param {glow.events.Event} event Event Object
+	@description Fired when the request is aborted
 	*/
  
 	/**
-		@name glow.net.JsonpRequest#event:error
-		@event
-		@param {glow.events.Event} event Event Object
-		@description Fired when the request times out
-			getJsonp calls will fire 'error' only if the request times out.
+	@name glow.net.JsonpRequest#event:error
+	@event
+	@param {glow.events.Event} event Event Object
+	@description Fired when the request times out
+		getJsonp calls will fire 'error' only if the request times out.
 	*/
 	
 	glow.util.extend(JsonpRequest, glow.events.Target);
 	JsonpRequestProto = JsonpRequest.prototype;
 	
 	/**
-		@name glow.net.JsonpRequest#abort
-		@function
-		@description Will attempt to abort the request
+	@name glow.net.JsonpRequest#abort
+	@function
+	@description Will attempt to abort the request
 			
 	*/
 	JsonpRequestProto.abort = function() {
-			glow.net.abortRequest(this);
-			this.fire('abort')
-		};
+		glow.net.abortRequest(this);
+		this.fire('abort')
+	};
 	
 	
 	glow.net.JsonpRequest = JsonpRequest;

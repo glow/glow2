@@ -6,7 +6,7 @@ Glow.provide(function(glow) {
 		emptyFunc = function(){},
 		events = glow.events,
 	
-		// Private (x-domain request)
+
 
 		/**
 		@name CrossDomainRequest
