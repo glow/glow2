@@ -130,7 +130,7 @@ Glow.provide(function(glow) {
 	@private
 	@function
 	@description Aborts the request
-			Doesn't trigger any events
+		Doesn't trigger any events
 		
 	@param {glow.net.Request} req Request Object
 	@returns this

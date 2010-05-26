@@ -4,7 +4,7 @@ Glow.provide(function(glow) {
 	/**
 	@name glow.net.Response
 	@class
-	@extends glow.event.Event
+	@extends glow.events
 	@description Provided in callbacks to {@link glow.net.post glow.net.post}, {@link glow.net.get glow.net.get}, {@link glow.net.put glow.net.put} and {@link glow.net.delete glow.net.delete} and glow.net.Requests load and error events.
 
  

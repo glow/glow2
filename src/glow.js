@@ -38,8 +38,8 @@
 			base = opts.base || defaultBase;
 
 		glowMap = {
-			versions: ['2.0.0', 'src'],
-			'2.0.0': {
+			versions: ['2.0.0b1', 'src'],
+			'2.0.0b1': {
 				'core': ['core'+debug+'.js'],
 				'ui':   ['core', 'ui'+debug+'.js', 'ui'+debug+'.css']
 			}
