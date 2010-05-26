@@ -178,7 +178,6 @@ Glow.provide(function(glow) {
 				This is the same as `myCarouselPane.stage.children()`
 		*/
 		this.items = this.stage.children();
-		
 		this._itemList = new ItemList(this.items);
 		
 		if (this._opts.spotlight > this.items.length) {
@@ -313,15 +312,13 @@ Glow.provide(function(glow) {
 		this._recentActive = null;
 		this._childActivateHandler = function(e) { // keep a ref so we can detach it in destroy
 			var itemNumber = e.itemIndex,
-				indexes = that.spotlightIndexes(),
+				indexes = that.spotlightIndexes(true),
 				isVisible = (' '+indexes.join(' ')+' ').indexOf(' '+itemNumber+' ') > -1;
-glow.debug.log('itemNumber is '+itemNumber);
+
 			if (itemNumber !== undefined && !isVisible) {
 				that.moveTo(itemNumber, {tween: null});
 				this._index = itemNumber;
 			}
-			
-			return true;
 		}
 		that._focusable.on('childActivate', this._childActivateHandler);
 	}
@@ -531,10 +528,10 @@ glow.debug.log('itemNumber is '+itemNumber);
 		@description Gets an array of spotlighted indexes.
 			These are the indexes of the nodes within {@link glow.ui.CarouselPane#items}.
 			Only item indexes currently visible in the spotlight will be included.
-		
+		@private-param {boolean} _real Return only indexes of real items, regardless of what clones are visible.
 		@returns {number[]}
 	*/
-	CarouselPaneProto.spotlightIndexes = function() { /*debug*///console.log('CarouselPaneProto.spotlightIndexes()');
+	CarouselPaneProto.spotlightIndexes = function(_real) { /*debug*///console.log('CarouselPaneProto.spotlightIndexes()');
 		var indexes = [],
 			findex = calculateIndex.call(this),
 			index,
@@ -542,7 +539,7 @@ glow.debug.log('itemNumber is '+itemNumber);
 		
 		// takes into account gaps and wraps
 		for (var i = 0; i < maxi; i++) {
-			index = (findex + i)%(this.items.length + this._gap.count);
+			index = _real? (findex + i) : (findex + i)%(this.items.length + this._gap.count);
 			// skip gaps
 			if (index >= this.items.length || index < 0) {
 				continue; // or maybe keep gaps? index = NaN;
@@ -602,7 +599,7 @@ glow.debug.log('itemNumber is '+itemNumber);
 		@param {undefined|null|string} opts.tween If undefined, use the default animation,
 		if null then no animation, if a string then use the named tween.
 	 */
-	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*/glow.debug.log('moveTo('+itemIndex+')');
+	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*///glow.debug.log('moveTo('+itemIndex+')');
 		var willMove;
 		
 		if (this._inMotion) {
@@ -618,7 +615,7 @@ glow.debug.log('itemNumber is '+itemNumber);
 		else if (!this._opts.loop && itemIndex < 0) {
 			itemIndex = 0;
 		}
-glow.debug.log('itemIndex is '+itemIndex);
+
 		willMove = itemIndex !== this._index && canGo.call(this, itemIndex);
 		
 		if (opts.tween !== null) { // don't announce jumps
@@ -894,7 +891,7 @@ glow.debug.log('itemIndex is '+itemIndex);
 			cloneOffset;
 					
 		this.content[0].scrollLeft = this._wingSize;
-		
+
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
 			// items were already added in ItemList constructor, just add meta now
 			this._itemList.addMeta(i, {offset:getPosition.call(this, i).left, isClone:false});
@@ -911,7 +908,7 @@ glow.debug.log('itemIndex is '+itemIndex);
 				while (i--) {
  					// add clones to prev side
  					clone = this.items.item(i).copy();
- 					clone.addClass('carousel-clone').css({ 'z-index': 1, margin: 0 });
+ 					clone.removeClass('carousel-item').addClass('carousel-clone').css({ 'z-index': 1, margin: 0 });
 					
  					cloneOffset = getPosition.call(this, 0 - (reps * this.items.length - i)).left;
  					this._itemList.addItem(0 - (reps * this.items.length - i), clone, {isClone:true, offset:cloneOffset});
