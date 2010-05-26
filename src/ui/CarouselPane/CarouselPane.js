@@ -165,7 +165,7 @@ Glow.provide(function(glow) {
 		*/
 		this.stage = glow(container).item(0);
 
-		this._focusable = this.stage.focusable( {children: '> .carousel-item', loop: true, setFocus: false} );
+		this._focusable = this.stage.focusable( {children: '> .carousel-item', loop: true, setFocus: true} );
 		
 		// what would have been the "content" of this widget, is named "viewport"
 		this._viewport = glow('<div class="CarouselPane-viewport"></div>');
@@ -312,11 +312,16 @@ Glow.provide(function(glow) {
 		
 		this._recentActive = null;
 		this._childActivateHandler = function(e) { // keep a ref so we can detach it in destroy
-			var itemNumber = e.itemIndex;
-			
-			if (itemNumber !== undefined) {
+			var itemNumber = e.itemIndex,
+				indexes = that.spotlightIndexes(),
+				isVisible = (' '+indexes.join(' ')+' ').indexOf(' '+itemNumber+' ') > -1;
+glow.debug.log('itemNumber is '+itemNumber);
+			if (itemNumber !== undefined && !isVisible) {
 				that.moveTo(itemNumber, {tween: null});
+				this._index = itemNumber;
 			}
+			
+			return true;
 		}
 		that._focusable.on('childActivate', this._childActivateHandler);
 	}
@@ -597,7 +602,7 @@ Glow.provide(function(glow) {
 		@param {undefined|null|string} opts.tween If undefined, use the default animation,
 		if null then no animation, if a string then use the named tween.
 	 */
-	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*///console.log('moveTo('+itemIndex+')');
+	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*/glow.debug.log('moveTo('+itemIndex+')');
 		var willMove;
 		
 		if (this._inMotion) {
@@ -613,7 +618,7 @@ Glow.provide(function(glow) {
 		else if (!this._opts.loop && itemIndex < 0) {
 			itemIndex = 0;
 		}
-
+glow.debug.log('itemIndex is '+itemIndex);
 		willMove = itemIndex !== this._index && canGo.call(this, itemIndex);
 		
 		if (opts.tween !== null) { // don't announce jumps

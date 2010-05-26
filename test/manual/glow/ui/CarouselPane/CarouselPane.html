@@ -31,6 +31,7 @@
 		.carousel-content li
 		{
 			x-padding: 3px;
+			border: 3px solid #999;
 			x-border-width: 3px 3px 4px 3px;
 			x-border-color: #AD89C1;
 			x-border-style: solid;
@@ -47,17 +48,17 @@
 			display: block; /* prevent white space after image */
 		}
 		
-		.carousel-content li.active { background-color: #FFA21D; }
+		li.active { border-color: #ED00FF; }
 		
 		#spotlight { border: 1px #FF4B00 dashed; }
 		
 		.carousel-clone
 		{
-			filter: alpha(opacity=50);
-			-moz-opacity: 0.5;
-			-khtml-opacity: 0.5;
-			opacity: 0.5;
-			background-color: #FF05EC !important;
+			filter: alpha(opacity=90);
+			-moz-opacity: 0.9;
+			-khtml-opacity: 0.9;
+			opacity: 0.9;
+			border: 3px solid #ccc !important;
 		}
 		
 		.CarouselPane-viewport { border: 1px solid #666; }
@@ -222,13 +223,13 @@
 	
 	<div class="testarea" style="width: 600px;">
 		<script type="text/javascript">
-			makeCarouselContent(4, 'myCarousel_margins');
+			makeCarouselContent(10, 'myCarousel_margins');
 		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel_margins', {loop: true});
+			var c = new glow.ui.CarouselPane('#myCarousel_margins', {loop: true, step: 3});
 			addControls(c);
 
 			//c._itemList.dump(c);
