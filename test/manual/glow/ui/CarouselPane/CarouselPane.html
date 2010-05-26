@@ -38,12 +38,12 @@
 			x-margin-left: 5px;
 			x-margin-top: 5px;
 			x-margin-bottom: 5px;
-			margin: 10px;
+			x-margin: 10px;
 		}
 		
 		.carousel-content li img {
-			width: 150px;
-			height: 150px;
+			width: 100px;
+			height: 100px;
 			display: block; /* prevent white space after image */
 		}
 		
@@ -53,10 +53,11 @@
 		
 		.carousel-clone
 		{
-			filter: alpha(opacity=80);
-			-moz-opacity: 0.8;
-			-khtml-opacity: 0.8;
-			opacity: 0.8;
+			filter: alpha(opacity=50);
+			-moz-opacity: 0.5;
+			-khtml-opacity: 0.5;
+			opacity: 0.5;
+			background-color: #FF05EC !important;
 		}
 		
 		.CarouselPane-viewport { border: 1px solid #666; }
@@ -118,11 +119,11 @@
 <body>
 	<h1>glow.ui.CarouselPane</h1>
 	
-	<h2>Horizontal Non-looping</h2>
+	<h2>Horizontal, Non-looping, Out-of-sync</h2>
 	
 	<div class="testarea" style="width: 800px;">
 		<script type="text/javascript">
-			makeCarouselContent(8, 'myCarousel');
+			makeCarouselContent(6, 'myCarousel');
 		</script>
 	</div>
 	
@@ -130,9 +131,11 @@
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5, loop: false, spotlight: 3, step: 2, loop: 1, duration: 1});
+			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5, spotlight: 3, step: 2, duration: 1});
 			addControls(c);
-			
+
+			//c._itemList.dump(c);
+
  			c.on('move', function(e) {
  			//	console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
  			})
@@ -204,6 +207,8 @@
 		glow.ready(function() {
 			var c = new glow.ui.CarouselPane('#myCarousel3', {loop: true, spotlight: 3, step: true, page: true});
 			addControls(c);
+
+			//c._itemList.dump(c);
 		});
 	</script>
 	
@@ -214,15 +219,15 @@
 	Shift-click the next/prev buttons to glide.
 	</p>
 	
-	<div class="testarea" style="width: 600px;">
+	<div class="testarea" style="width: 800px;">
 		<script type="text/javascript">
-			makeCarouselContent(2, 'myCarousel4');
+			makeCarouselContent(3, 'myCarousel4');
 		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel4', {loop: true, glide: true});
+			var c = new glow.ui.CarouselPane('#myCarousel4', {duration:1.5, loop: 1, spotlight: 3, step: 1, glide: 0});
 			addControls(c);
 		});
 	</script>

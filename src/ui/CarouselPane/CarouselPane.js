@@ -90,6 +90,66 @@ Glow.provide(function(glow) {
 	glow.util.extend(CarouselPane, glow.events.Target); // CarouselPane is a Target
 	CarouselPaneProto = CarouselPane.prototype;         // shortcut
 	
+	
+	
+	/**
+		Tracks the order and location of all items, including cloned items.
+		@private
+		@constructor
+		@param {glow.NodeList} nodeList The real items to track.
+	 */
+	function ItemList(nodeList) {
+		var thisMeta;
+		
+		this.range = {min: 0, max: 0};
+		this.items = {};
+		this.meta = {};
+		
+		for (var i = 0, leni = nodeList.length; i < leni; i++) {
+			this.addItem(i, nodeList.item(i));
+		}
+	}
+	
+	ItemList.prototype.addItem = function(index, item, meta) {/*debug*///console.log('ItemList.prototype.addItem('+index+')');
+		this.range.min = Math.min(this.range.min, index);
+		this.range.max = Math.max(this.range.max, index);
+		
+		this.items[index] = item;
+		this.meta[index] = meta || {};
+	}
+	
+	ItemList.prototype.addMeta = function(index, meta) {/*debug*///console.log('ItemList.prototype.addMeta('+index+', '+meta.offset+')');
+		if (this.meta[index]) {
+			this.meta[index] = glow.util.apply(this.meta[index], meta);
+		}
+	}
+	
+	ItemList.prototype.place = function(top, left) {
+		// TODO styleName = this._geom[1]
+		for (var p in this.items) {
+			if (top !== undefined ) this.items[p].css('top', top);
+			this.items[p].css('left', (left === undefined)? this.meta[p].offset : left);
+		}
+	}
+	
+	ItemList.prototype.dump = function(c) {
+		if (typeof console !== 'undefined') {
+			for (var i = c._itemList.range.min, maxi = c._itemList.range.max; i <= maxi; i++) {
+				if (c._itemList.meta[i]) {
+					console.log('>> '+ i + ': ' + (c._itemList.meta[i].isClone? 'clone':'real') + ' at ' + c._itemList.meta[i].offset + ' ' + c._itemList.items[i][0].children[0].alt);
+				}
+				else {
+					console.log('>> '+ i + ': ' + c._itemList.meta[i]);
+				}
+			}
+		}
+	}
+	
+	ItemList.prototype.swap = function(index1, index2) { /*debug*///console.log('ItemList.prototype.swap('+index1+', '+index2+')');
+		this.items[index1].css('left', this.meta[index2].offset);
+		this.items[index2].css('left', this.meta[index1].offset);
+	}
+	
 	CarouselPaneProto._init = function(container) { /*debug*///console.log('CarouselPaneProto._init');
 		WidgetProto._init.call(this);
 		
@@ -119,6 +179,8 @@ Glow.provide(function(glow) {
 		*/
 		this.items = this.stage.children();
 		
+		this._itemList = new ItemList(this.items);
+		
 		if (this._opts.spotlight > this.items.length) {
 			/*!debug*/
 				glow.debug.warn('[invalid configuration] glow.ui.CarouselPane - opts.spotlight (' + this._opts.spotlight +') cannot be greater than the number of items ('+ this.items.length + ').');
@@ -147,7 +209,7 @@ Glow.provide(function(glow) {
 		this._itemDimensions = getDimensions(this.items); // get after setting position absolute
 
 		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
-		
+
 		this._viewport.css({
 			overflow: 'scroll',
 			overflowX: 'hidden', // hide scroll bars
@@ -210,7 +272,7 @@ Glow.provide(function(glow) {
 		layout.call(this);
 		
 		this.items.css({
-			margin: 0,
+			margin: 0
 		});
 		
 		this._bind();
@@ -250,22 +312,9 @@ Glow.provide(function(glow) {
 		this._recentActive = null;
 		this._childActivateHandler = function(e) { // keep a ref so we can detach it in destroy
 			var itemNumber = e.itemIndex;
-//console.log('key from '+that._recentActive+', key to '+itemNumber);
-//console.log('activeChild is '+that._focusable.activeChild.data('carouselItem'));
-			if (that._inMotion) { return false; } // TODO: This doesn't seem to stop the child from becoming active
-			else if (itemNumber !== undefined) {
-// TODO: need to know which ket was pressed from the activeChild event, left or right arrow?
-				if (that._opts.loop  && itemNumber === 0 && that._recentActive === that.items.length - 1 /*&& arrow right?*/) {
-					that.moveTo(that._recentActive + 1 + that._gap.count);
-				}
-				else if (that._opts.loop  && itemNumber === that.items.length - 1 && that._recentActive === 0 /*&& arrow left?*/) {
-					that.moveTo(-1);
-				}
-				else {
-					that.moveTo(itemNumber);
-				}
-				that._recentActive = itemNumber;
-				
+			
+			if (itemNumber !== undefined) {
+				that.moveTo(itemNumber, {tween: null});
 			}
 		}
 		that._focusable.on('childActivate', this._childActivateHandler);
@@ -386,7 +435,6 @@ Glow.provide(function(glow) {
 		
 		swap.call(this, 'back');
 
-		//console.log('that.content[0].scrollLeft is '+that.content[0].scrollLeft);
 		for (var i = 0, leni = this.items.length; i < leni; i += this._step) {
 			from = offset + dir * i * amount;
 			to = offset + dir * (i + this._step) * amount;
@@ -395,12 +443,10 @@ Glow.provide(function(glow) {
 				offset -= dir * this.items.length * amount;
 			}
 
-			//console.log('from: '+from+', to: '+to);
-
 			moveAnim = that.content.anim(
 				that._opts.duration,
 				{scrollLeft: [from, to]},
-				{tween: 'linear'}
+				{tween: 'linear', startNow: false}
 			)
 			.on('start', function() {
 				indexMoveTo.call(that);
@@ -662,31 +708,18 @@ Glow.provide(function(glow) {
 		@private
 		@param {boolean} back If not a falsey value, will move the real items back.
 	 */
-	function swap(back) {/*debug*///console.log('swap('+back+')');
-		var styleName = this._geom[1],
-			offset = this._spot.offset.left + this._wingSize,
-			amount = this._itemDimensions.width,
-			swapper = null;
+	function swap(back) { /*debug*///console.log('swap('+back+')');
+		var swapItemIndex;
 		
 		if (back) {
-			for (var i = 0, leni = this.items.length; i < leni; i++) {
-				var swapBackItem = this.items.item(i),
-					backTo = swapBackItem.data('carousel-position');
-				
-				if (backTo !== undefined) {
-					swapBackItem.css(styleName, getPosition.call(this, backTo).left);
-				}
-			}
-			return;
+			this._itemList.place();
 		}
-		
-		for (var i = 0, leni = this._spot.capacity - this._gap.count; i < leni; i++) {
-			if (this._index + i >= this.items.length) {
-				var swapperPos = (this._index + i)%this.items.length;
-				swapper = this.items.item(swapperPos);
-				swapper.data('carousel-position', swapperPos);
-				var swapTo =  getPosition.call(this, this._index + i +this._gap.count).left;
-				swapper.css(styleName, swapTo);
+		else {
+			for (var i = 0, leni = this._spot.capacity - this._gap.count; i < leni; i++) {
+				swapItemIndex = (this._index + i);
+				if (swapItemIndex >= this.items.length) { // a clone needs to have a real item swapped-in
+					this._itemList.swap(swapItemIndex, swapItemIndex % this.items.length);
+				}
 			}
 		}
 	}
@@ -842,70 +875,50 @@ Glow.provide(function(glow) {
 				+ (this._opts.page && itemIndex >= this.items.length? this._gap.count * size : 0)
 				- (this._opts.page && itemIndex < 0? this._gap.count * size : 0);
 			position.top = this._itemDimensions.marginTop;
-//console.log('position.top is '+position.top);
+
 			return position;
 	}
 	
 	function layout() {/*debug*///console.log('layout()');
 		var clone,
-			styleName = this._geom[1];
+			cloneOffset;
 					
-			this.content[0].scrollLeft = this._wingSize;
+		this.content[0].scrollLeft = this._wingSize;
 		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
-			var pos = getPosition.call(this, i);		
-			this.items.item(i).css('left', pos.left);
-			this.items.item(i).css('top', pos.top);
-			
-			// the original items will have the carousel-item class and data
-			// to indicate its position in the item series -- used by keyboard nav
-			this.items.item(i).addClass('carousel-item');			
-			this.items.item(i).data('carouselItem', i);
+			// items were already added in ItemList constructor, just add meta now
+			this._itemList.addMeta(i, {offset:getPosition.call(this, i).left, isClone:false});
 		}
 		
-		if (this._opts.loop) {
-			// kill any old clones
-			this.stage.get('.carousel-clone').remove();
-			
-			// under clones are visible when the real item gets swapped out
-			for (var i = 0, leni = this.items.length; i < leni; i++) {
-				var pos = getPosition.call(this, i);
-				clone = this.items.item(i).copy();
-				// clones are not included in keyboard nav
-				glow(clone).removeClass('carousel-item');
-				this.stage[0].appendChild(clone[0]);
-				clone.css(styleName, pos.left);
-				clone.addClass('carousel-clone');
-				clone.css('z-index', 2);
-				clone.css({ margin: 0 });
-			}
+		if (this._opts.loop) { // send in the clones
+			this.stage.get('.carousel-clone').remove(); // kill any old clones
 			
 			// how many sets of clones (on each side) are needed to fill the off-spotlight portions of the stage?
 			var repsMax =  1 + Math.ceil(this._spot.offset.left / (this._itemDimensions.width*this.items.length + this._gap.size));	
+
 			for (var reps = 1; reps <= repsMax; reps++) {
 				i = this.items.length;
 				while (i--) {
  					// add clones to prev side
  					clone = this.items.item(i).copy();
- 					// clones are not included in keyboard nav
- 					glow(clone).removeClass('carousel-item');
- 					
- 					clone.css('left', getPosition.call(this, 0 - (reps*this.items.length - i)).left);
- 					clone.addClass('carousel-clone');
+ 					clone.addClass('carousel-clone').css({ 'z-index': 1, margin: 0 });
+					
+ 					cloneOffset = getPosition.call(this, 0 - (reps * this.items.length - i)).left;
+ 					this._itemList.addItem(0 - (reps * this.items.length - i), clone, {isClone:true, offset:cloneOffset});
  					this.stage[0].appendChild(clone[0]);
-					clone.css('z-index', 1);
-					clone.css({ margin: 0 });
- 					
+					
  					// add clones to next side
  					clone = clone.clone();
- 					this.stage[0].appendChild(clone[0]);
- 
- 					clone.css(styleName, getPosition.call(this, reps*this.items.length + i).left);
- 					clone.css('z-index', 1);
- 					clone.css({ margin: 0 });
+ 					cloneOffset = getPosition.call(this, reps*this.items.length + i).left;
+ 					this._itemList.addItem(reps*this.items.length + i, clone, {isClone:true, offset:cloneOffset});
+					this.stage[0].appendChild(clone[0]);
  				}
  			}
 		}
+		
+		this.items.addClass('carousel-item');
+		// apply positioning to all items and clones
+ 		this._itemList.place(this._itemDimensions.marginTop, undefined);
 	}
 	
 	CarouselPaneProto.destroy = function() {

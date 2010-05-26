@@ -66,6 +66,22 @@ module('ui/CarouselPane');
  		
  		myCarouselPane.destroy();
 	});
+	
+	test('ui/CarouselPane:classes', 1, function() {
+ 		resetTestDiv();
+ 		
+ 		var myCarouselPane = new glow.ui.CarouselPane('#testElmsContainer0');
+		
+		var classes = [];
+		for (var i = 0, leni = myCarouselPane.items.length; i < leni; i++) {
+			classes.push(myCarouselPane.items[i].className);
+		}
+		classes = classes.join(', ');
+
+		equal(classes, 'carousel-item, carousel-item, carousel-item', 'glow.ui.CarouselPane items have the class name "carousel-item".');
+		
+		myCarouselPane.destroy();
+	});
  	
  	test('ui/CarouselPane:_index', 1, function() {
   		resetTestDiv();
