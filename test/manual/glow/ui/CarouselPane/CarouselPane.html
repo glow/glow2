@@ -61,6 +61,10 @@
 		}
 		
 		.CarouselPane-viewport { border: 1px solid #666; }
+		
+		#myCarousel_margins li {
+			margin: 10px;
+		}
 	</style>
 	
 	<script type="text/javascript">
@@ -179,13 +183,13 @@
 	
 	<div class="testarea" style="width: 700px;">
 		<script type="text/javascript">
-			makeCarouselContent(5, 'myCarousel2');
+			makeCarouselContent(5, 'myCarousel_looping');
 		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel2', {loop: true, step: true, spotlight: 2});
+			var c = new glow.ui.CarouselPane('#myCarousel_looping', {loop: true, step: true, spotlight: 2});
 			addControls(c);
 		});
 	</script>
@@ -199,19 +203,37 @@
 	
 	<div class="testarea" style="width: 600px;">
 		<script type="text/javascript">
-			makeCarouselContent(4, 'myCarousel3');
+			makeCarouselContent(4, 'myCarousel_paging');
 		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel3', {loop: true, spotlight: 3, step: true, page: true});
+			var c = new glow.ui.CarouselPane('#myCarousel_paging', {loop: true, spotlight: 3, step: true, page: true});
+			addControls(c);
+		});
+	</script>
+	
+	<h2>Margins</h2>
+	
+	<p>
+	All items should have the same margins.
+	</p>
+	
+	<div class="testarea" style="width: 600px;">
+		<script type="text/javascript">
+			makeCarouselContent(4, 'myCarousel_margins');
+		</script>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var c = new glow.ui.CarouselPane('#myCarousel_margins', {loop: true});
 			addControls(c);
 
 			//c._itemList.dump(c);
 		});
 	</script>
-	
 
 	<h2>Gliding</h2>
 	
@@ -221,13 +243,13 @@
 	
 	<div class="testarea" style="width: 800px;">
 		<script type="text/javascript">
-			makeCarouselContent(3, 'myCarousel4');
+			makeCarouselContent(3, 'myCarousel_gliding');
 		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel4', {duration:1.5, loop: 1, spotlight: 3, step: 1, glide: 0});
+			var c = new glow.ui.CarouselPane('#myCarousel_gliding', {duration:1.5, loop: 1, spotlight: 3, step: 1, glide: 0});
 			addControls(c);
 		});
 	</script>

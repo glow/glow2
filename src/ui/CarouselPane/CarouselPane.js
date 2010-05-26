@@ -201,9 +201,10 @@ Glow.provide(function(glow) {
 			margin: 0,
 			listStyleType: 'none' // useful when content is a list
 		});
-		
+
+//TODO		
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
-			this.items.item(i).css({position: 'absolute', 'z-index': 2});
+			this.items.item(i).css({position: 'absolute', 'z-index': 2, 'zoom': 1});
 		}
 		
 		this._itemDimensions = getDimensions(this.items); // get after setting position absolute
@@ -809,16 +810,20 @@ Glow.provide(function(glow) {
 			maxWidth = Math.max(this.offsetWidth, maxWidth);
 			maxInnerWidth = Math.max(el.width(), maxInnerWidth);
 			maxInnerHeight = Math.max(el.height(), maxInnerHeight);
-			marginRight = Math.max(parseInt(el.css('margin-right')), marginRight);
-			marginLeft = Math.max(parseInt(el.css('margin-left')), marginLeft);
-			marginTop = Math.max(parseInt(el.css('margin-top')), marginTop);
-			marginBottom = Math.max(parseInt(el.css('margin-bottom')), marginBottom);
+			marginRight = Math.max(autoToValue(el.css('margin-right')), marginRight);
+			marginLeft = Math.max(autoToValue(el.css('margin-left')), marginLeft);
+			marginTop = Math.max(autoToValue(el.css('margin-top')), marginTop);
+			marginBottom = Math.max(autoToValue(el.css('margin-bottom')), marginBottom);
 		});
 		
 		// simulate margin collapsing. see: http://www.howtocreate.co.uk/tutorials/css/margincollapsing
 		margin = Math.max(marginLeft, marginRight); // the larger of: the largest left matgin and the largest right margin
-
 		return { width: maxWidth+margin, height: maxHeight+marginTop+marginBottom, innerWidth: maxInnerWidth, innerHeight: maxInnerHeight, marginLeft: marginLeft, marginRight: marginRight, marginTop: marginTop, marginBottom: marginBottom };
+	}
+	
+	function autoToValue(v) {
+		if (v === 'auto') return 0;
+		else return parseInt(v);
 	}
 	
 	/**
