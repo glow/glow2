@@ -31,7 +31,7 @@
 		.carousel-content li
 		{
 			x-padding: 3px;
-			border: 3px solid #999;
+			border: 3px #91B07E solid;
 			x-border-width: 3px 3px 4px 3px;
 			x-border-color: #AD89C1;
 			x-border-style: solid;
@@ -48,9 +48,13 @@
 			display: block; /* prevent white space after image */
 		}
 		
-		li.active { border-color: #ED00FF; }
+		li.active { border-color: #E6AE00; }
 		
-		#spotlight { border: 1px #FF4B00 dashed; }
+		.spotlight
+		{
+			border: 1px #D3A600 dashed;
+			z-index: 0;
+		}
 		
 		.carousel-clone
 		{
@@ -117,6 +121,19 @@
 				carouselContainer.parentNode.appendChild(controlContainer);
 			}
 		}
+		
+		function showSpotlight(c) {
+			var spot = glow('<div class="spotlight"><\/div>');
+			glow(document.body).append(spot);
+			
+			spot.css({
+				width: c._spot.width,
+				height: c._spot.height + 10,
+				position: 'absolute',
+				top: c.container.offset().top + c._spot.top - 5,
+				left: c.container.offset().left + c._spot.left + c._spot.offset.left
+			});
+		}
 		//-->
 	</script>
 </head>
@@ -124,20 +141,23 @@
 <body>
 	<h1>glow.ui.CarouselPane</h1>
 	
+
 	<h2>Horizontal, Non-looping, Out-of-sync</h2>
 	
 	<div class="testarea" style="width: 800px;">
 		<script type="text/javascript">
-			makeCarouselContent(6, 'myCarousel');
+			makeCarouselContent(4, 'myCarousel');
 		</script>
+		<div id="dots" style="border: 1px solid #ccc; width: 80px; text-align: center;">...</div>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5, spotlight: 3, step: 2, duration: 1});
+			var c = new glow.ui.CarouselPane('#myCarousel', {duration: 0.5, spotlight: 3, step: true, duration: 1, tween: 'bounceOut', loop: true, page: false});
 			addControls(c);
+			showSpotlight(c);
 
 			//c._itemList.dump(c);
 
@@ -145,25 +165,15 @@
  			//	console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );
  			})
  			.on('afterMove', function(e) {
- 			//	console.log( 'move complete: '+ c.spotlightIndexes().join(', ') );
+ 				glow('#dots').html( c.spotlightIndexes().join(', ') );
  			});
 			//c.moveTo(1);
 			//c.moveBy(-99);		
 
 	
 			// make carousel's spotlight easier to see
- 			var spot = glow('<div id="spotlight"><\/div>');
- 			glow(document.body).append(spot);
- 			function showSpotlight(c) {
- 				spot.css({
- 					width: c._spot.width,
- 					height: c._spot.height + 10,
- 					position: 'absolute',
- 					top: c.container.offset().top + c._spot.top - 5,
- 					left: c.container.offset().left + c._spot.left + c._spot.offset.left
- 				});
- 			}
- 			showSpotlight(c);
+ 			
+ 			
  			c.on('updateUi', function() { showSpotlight(c); });
 			
 			/* TODO
@@ -177,6 +187,8 @@
 				destroy
 			*/
 		});
+		
+		
 	</script>
 	
 	
@@ -192,6 +204,7 @@
 		glow.ready(function() {
 			var c = new glow.ui.CarouselPane('#myCarousel_looping', {loop: true, step: true, spotlight: 2});
 			addControls(c);
+			showSpotlight(c);
 		});
 	</script>
 	
@@ -199,22 +212,45 @@
 	<h2>Paging</h2>
 	
 	<p>
-	The same 3 items should always be visible together: [0, 1, 2] and [3, _, _]
+	The same 2 items should always be visible together: [0, 1] and [2, _]
 	</p>
 	
-	<div class="testarea" style="width: 600px;">
+	<div class="testarea" style="width: 900px;">
 		<script type="text/javascript">
-			makeCarouselContent(4, 'myCarousel_paging');
+			makeCarouselContent(3, 'myCarousel_paging');
 		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel_paging', {loop: true, spotlight: 3, step: true, page: true});
+			var c = new glow.ui.CarouselPane('#myCarousel_paging', {loop: true, spotlight: 2, step: true, page: true, duration: 1});
 			addControls(c);
+			showSpotlight(c);
+			//c._itemList.dump(c);
 		});
 	</script>
 	
+	<h2>Paging with larger gaps</h2>
+	
+	<p>
+		The same 3 items should always be visible together: [0, 1, 2] and [3, _, _]
+	</p>
+	
+	<div class="testarea" style="width: 900px;">
+		<script type="text/javascript">
+			makeCarouselContent(4, 'myCarousel_paging2');
+		</script>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			var c = new glow.ui.CarouselPane('#myCarousel_paging2', {loop: true, spotlight: 3, step: true, page: true, duration: 1});
+			addControls(c);
+			showSpotlight(c);
+			//c._itemList.dump(c);
+		});
+	</script>
+
 	<h2>Margins</h2>
 	
 	<p>
@@ -231,7 +267,7 @@
 		glow.ready(function() {
 			var c = new glow.ui.CarouselPane('#myCarousel_margins', {loop: true, step: 3});
 			addControls(c);
-
+			showSpotlight(c);
 			//c._itemList.dump(c);
 		});
 	</script>
@@ -244,14 +280,15 @@
 	
 	<div class="testarea" style="width: 800px;">
 		<script type="text/javascript">
-			makeCarouselContent(3, 'myCarousel_gliding');
+			makeCarouselContent(1, 'myCarousel_gliding');
 		</script>
 	</div>
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			var c = new glow.ui.CarouselPane('#myCarousel_gliding', {duration:1.5, loop: 1, spotlight: 3, step: 1, glide: 0});
+			var c = new glow.ui.CarouselPane('#myCarousel_gliding', {duration:1.5, loop: 1, spotlight: 1, step: 1, glide: 0});
 			addControls(c);
+			showSpotlight(c);
 		});
 	</script>
 	

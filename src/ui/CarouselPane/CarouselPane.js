@@ -167,6 +167,7 @@ Glow.provide(function(glow) {
 
 		this._focusable = this.stage.focusable( {children: '> .carousel-item', loop: true, setFocus: true} );
 		
+		
 		// what would have been the "content" of this widget, is named "viewport"
 		this._viewport = glow('<div class="CarouselPane-viewport"></div>');
 		glow(this.stage).wrap(this._viewport);
@@ -201,12 +202,13 @@ Glow.provide(function(glow) {
 			listStyleType: 'none' // useful when content is a list
 		});
 
-//TODO		
-		for (var i = 0, leni = this.items.length; i < leni; i++) {
-			this.items.item(i).css({position: 'absolute', 'z-index': 2, 'zoom': 1});
-		}
-		
-		this._itemDimensions = getDimensions(this.items); // get after setting position absolute
+		this.items.css( {position:'absolute', 'z-index':2} );
+		this._itemDimensions = getDimensions(this.items); // get this *after* setting position to absolute
+		this.items.css({
+			margin: 0,
+			width: this._itemDimensions.innerWidth,
+			height: this._itemDimensions.innerHeight
+		});
 
 		this._wingSize = Math.ceil(this.items.length * this._itemDimensions[this._geom[0]] * 1.5);
 
@@ -264,16 +266,9 @@ Glow.provide(function(glow) {
 		*/
 		this._gap = getGap(this);
 		
-		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: 100}); // [wing][stage[spot]stage][wing]
+		this.stage.css({width: this.stage.width() + this._wingSize * 2}); // [wing][stage[spot]stage][wing]
 		
-		for (var i = 0, leni = this.items.length; i < leni; i++) {
-			this.items.item(i).css({position: 'absolute', 'z-index': 2, width: this._itemDimensions.innerWidth, height: this._itemDimensions.innerHeight});
-		}
 		layout.call(this);
-		
-		this.items.css({
-			margin: 0
-		});
 		
 		this._bind();
 		
@@ -316,7 +311,7 @@ Glow.provide(function(glow) {
 				isVisible = (' '+indexes.join(' ')+' ').indexOf(' '+itemNumber+' ') > -1;
 
 			if (itemNumber !== undefined && !isVisible) {
-				that.moveTo(itemNumber, {tween: null});
+				that.moveTo(itemNumber, {jump: true});
 				this._index = itemNumber;
 			}
 		}
@@ -325,7 +320,6 @@ Glow.provide(function(glow) {
 	
 	CarouselPaneProto.updateUi = function() { /*debug*///console.log('updateUi');
 		WidgetProto._updateUi.call(this);
-		
 		
 		this.stage.css({width: this._viewport.width() + this._wingSize * 2, height: '100%'});
 		this._spot = CarouselPane._getSpot(this._viewport.width(), this.items, this._itemDimensions, this._opts);
@@ -345,14 +339,13 @@ Glow.provide(function(glow) {
 		@function
 		@description Stop moving the carousel.
 			The current animation will end, leaving the carousel
-			in step.
+			in step. Note that this is asynchronous: expect this method
+			to return before the carousel actually stops.
 			
 		@returns this
 	*/
 	CarouselPaneProto.moveStop = function() { /*debug*///console.log('moveStop()');
 		// set temporary flag to signal the next animation in the timeline to stop
-		// note that this is asynchronous: it is almost certain that this method
-		// will return before the carousel actually stops
 		this._gliderBrake = true;
 	}
 	
@@ -360,14 +353,11 @@ Glow.provide(function(glow) {
 		@name glow.ui.CarouselPane#moveStart
 		@function
 		@description Start moving the carousel in a particular direction.
-			If opts.slide is false this has the effect of calling
-			moveBy(opts.step) or moveBy(-opts.step) continually.
-			
-			TODO: get clarification of opts.slide.
 		
-		@param {boolean} [backwards=false] Move backwards?
+		@param {boolean} [backwards=false] True to move backwards, otherwise move forwards.
 		
 		@returns this
+		@see glow.ui.CarouselPane#moveStop
 		
 		@example
 			nextBtn.on('mousedown', function() {
@@ -377,27 +367,42 @@ Glow.provide(function(glow) {
 			});
 	*/
 	CarouselPaneProto.moveStart = function(backwards) { /*debug*///console.log('moveStart('+backwards+')');
-		if (this._inMotion) {
-			return false;
+		/*!debug*/
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.ui.moveStart - too many arguments, must be 1 or 0, not '+arguments.length+'.');
+				return;
+			}
+		/*gubed!*/
+		
+		var step = (backwards? -1 : 1) * this._step,
+			carouselPane = this;
+		
+		if (!carouselPane._inMotion) {
+			carouselPane._gliderBrake = false;
+			
+			carouselPane.moveTo(
+				carouselPane._index + step,
+				{
+					callback: function() {
+						if (!carouselPane._gliderBrake) {
+							if ( // if looping or if there's room to go in the given direction 
+								carouselPane._opts.loop ||
+								( (backwards && carouselPane._index > 0) || (!backwards && carouselPane._index + carouselPane._spot.capacity < carouselPane.items.length) )
+							) {
+								if (carouselPane._step === 1) {
+									glide.call(carouselPane, backwards);
+								}
+								else {
+									carouselPane.moveStart(backwards); // recursive
+								}
+							}
+						}
+					}
+				}
+			);
 		}
 		
-		var step = (backwards? -1 * this._step : this._step),
-			that = this;
-		
-		this._gliderBrake = false;
-		this.moveTo(this._index+step, {callback: function() {
-			if (!that._gliderBrake) {
-				if (
-					that._opts.loop ||
-					( (backwards && that._index > 0) || (!backwards && that._index + that._spot.capacity < that.items.length) )
-				) {
-					if (that._step === 1) { glide.call(that, backwards); }
-					else { that.moveStart(backwards); }
-				}
-			}
-		}});
-		
-		return this;
+		return carouselPane;
 	}
 	
 	/**
@@ -409,6 +414,13 @@ Glow.provide(function(glow) {
 		@returns this
 	 */
 	CarouselPaneProto.moveToggle = function(backwards) { /*debug*///console.log('moveToggle()');
+		/*!debug*/
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.ui.moveToggle - too many arguments, must be 1 or 0, not '+arguments.length+'.');
+				return;
+			}
+		/*gubed!*/
+		
 		if (this._inMotion && !this._gliderBrake) {
 			this.moveStop();
 		}
@@ -422,32 +434,35 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@name glide
-		@description Move continuously using a linear tween.
-		@param {boolean} backwards
+		@function
+		@description Move this using an animation that is continuous, with a linear tween.
+		@param {boolean} backwards Glide in a previous-direction?
 	 */
 	var glide = function(backwards) { /*debug*///console.log('glide('+backwards+')');
 		var dir = (backwards? -1 : 1),
 			moves = [],
-			offset = this.content[0].scrollLeft,
-			amount = this._itemDimensions[this._geom[0]],
+			offset = this.content[0].scrollLeft, // from where is the move starting?
+			amount = this._itemDimensions[this._geom[0]], // how many pixels are we moving by?
 			from,
 			to,
 			that = this,
 			moveAnim,
-			wrapAt = offset + (backwards? -this._index * amount : (this.items.length-this._index) * amount);
+			// when to loop back to where we started?
+			wrapAt = offset + (backwards? -this._index * amount : (this.items.length - this._index) * amount);
 		
 		swap.call(this, 'back');
 
 		for (var i = 0, leni = this.items.length; i < leni; i += this._step) {
+			// calculate the start and end points of the next move
 			from = offset + dir * i * amount;
-			to = offset + dir * (i + this._step) * amount;
+			to   = offset + dir * (i + this._step) * amount;
 
-			if ((backwards && from === wrapAt) || (!backwards && to === wrapAt)) {
-				offset -= dir * this.items.length * amount;
+			if ( (backwards && from === wrapAt) || (!backwards && to === wrapAt) ) {
+				offset -= dir * this.items.length * amount; // wrap
 			}
 
-			moveAnim = that.content.anim(
-				that._opts.duration,
+			moveAnim = this.content.anim(
+				this._opts.duration,
 				{scrollLeft: [from, to]},
 				{tween: 'linear', startNow: false}
 			)
@@ -459,11 +474,15 @@ Glow.provide(function(glow) {
 				}
 			})
 			.on('complete', function() {
-				that._index += dir;
+				that._index += dir; // assumes move amount will be +/- 1
 
- 				if (that._gliderBrake || (!that._opts.loop && (that._index + that._spot.capacity === that.items.length || that._index === 0) ) ) {
+ 				if (
+ 					that._gliderBrake
+ 					||
+ 					( !that._opts.loop && (that._index + that._spot.capacity === that.items.length || that._index === 0) )
+ 				) {
  					glideStop.call(that);
- 					that.fire('afterMove', {currentIndex: that._index});
+ 					that.fire( 'afterMove', {currentIndex: that._index} );
  				}
 			});
 			
@@ -472,6 +491,7 @@ Glow.provide(function(glow) {
 		
 		this._glider = new glow.anim.Timeline({loop: true});
 		glow.anim.Timeline.prototype.track.apply(this._glider, moves);
+		
 		this._inMotion = true;
 		this._gliderBrake = false;
 		this._glider.start();
@@ -480,16 +500,21 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@name indexMoveTo
+		@function
 		@description Calculate what the new index would be and set this._index to that.
 		@param {number} index The destination index.
 		@returns this._index
+		@example
+			// items.length is 3
+			var newIndex = indexMoveTo(10);
+			// newIndex is 1
 	 */
 	function indexMoveTo(index) {
 		if (index !== undefined) { this._index = index; }
 		
 		// force index to be a number from 0 to items.length
 		this._index = this._index % this.items.length;
-		this._index = (this._index < 0)? this._index + this.items.length : this._index;
+		while (this._index < 0) { this._index += this.items.length; }
 		
 		return this._index;
 	}
@@ -497,14 +522,18 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@name indexMoveBy
+		@function
 		@description Calculate what the new index would be and set this._index to that.
-		@param {number} delta The amount to change the index by.
+		@param {number} delta The amount to change the index by, can be positive or negative.
 		@returns this._index
+		@example
+			// items.length is 3
+			// currentIndex is 1
+			var newIndex = indexMoveBy(100);
+			// newIndex is 2
 	 */
 	function indexMoveBy(delta) {
-		indexMoveTo.call(this, this._index += delta);
-		
-		return this._index;
+		return indexMoveTo.call(this, this._index += delta);
 	}
 	
 	/**
@@ -517,7 +546,9 @@ Glow.provide(function(glow) {
 		this._glider.destroy();
 		
 		this._inMotion = false;
-		this._index = calculateIndex.call(this);
+		this._index = calculateIndex.call(this); // where did we end up?
+		
+		// in case our clones are showing
 		jump.call(this);
 		swap.call(this);
 	}
@@ -562,7 +593,7 @@ Glow.provide(function(glow) {
 		
 		// takes into account gaps and wraps
 		for (var i = 0, leni = indexes.length; i < leni; i++) {
-			items.push(this.items[indexes[i]]);
+			items[i] = this.items[ indexes[i] ];
 		}
 		
 		return items;
@@ -571,6 +602,7 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@name calculateIndex
+		@function
 		@description Calculate the index of the leftmost item in the spotlight.
 		@returns {number}
 	 */
@@ -593,14 +625,19 @@ Glow.provide(function(glow) {
 		
 		@param {number} itemIndex Item index to move to.
 		
+		@param opts
+		@param {undefined|string} opts.tween If undefined, use the default animation,
+		if empty string then no animation, if non-empty string then use the named tween.
+		@privateParam {Function} opts.callback Called when move animation is complete.
+		@privateParam {boolean} opts.jump Move without animation and without events.
+		
 		@returns this
 	*/
-	/*?
-		@param {undefined|null|string} opts.tween If undefined, use the default animation,
-		if null then no animation, if a string then use the named tween.
-	 */
 	CarouselPaneProto.moveTo = function(itemIndex, opts) { /*debug*///glow.debug.log('moveTo('+itemIndex+')');
-		var willMove;
+		var willMove, // trying to move to the same place we already are?
+			destination, // in pixels
+			tween,
+			anim;
 		
 		if (this._inMotion) {
 			return false;
@@ -616,15 +653,16 @@ Glow.provide(function(glow) {
 			itemIndex = 0;
 		}
 
-		willMove = itemIndex !== this._index && canGo.call(this, itemIndex);
+		willMove = ( itemIndex !== this._index && canGo.call(this, itemIndex) );
 		
-		if (opts.tween !== null) { // don't announce jumps
+		// move event
+		if (!opts.jump) { // don't fire move event for jumps
 			var e = new glow.events.Event({
 				currentIndex: this._index,
 				moveBy: (this._index < itemIndex)? (itemIndex - this._index) : (-Math.abs(this._index - itemIndex))
 			});
 			
-			if (willMove && this.fire('move', e).defaultPrevented() ) {
+			if ( willMove && this.fire('move', e).defaultPrevented() ) {
 				return this;
 			}
 			else {
@@ -640,18 +678,32 @@ Glow.provide(function(glow) {
 		// invalid itemIndex value?
 		if (itemIndex > this.items.length + this._step || itemIndex < 0 - this._step) { // moving more than 1 step
 			/*!debug*/
-				glow.debug.warn('[wrong value]  glow.ui.CarouselPane#moveTo - Trying to moveTo an item ('+itemIndex+') that is more than 1 step (' + this._step +' items) away is not possible now.');
+				glow.debug.warn('[wrong value]  glow.ui.CarouselPane#moveTo - Trying to moveTo an item ('+itemIndex+') that is more than 1 step (' + this._step +' items) away is not possible.');
 			/*gubed!*/
 			itemIndex = this._index + (this._index < itemIndex)? -this._step : this._step;
 		}
 
-		var destination = this._wingSize + this.container[0].scrollLeft + itemIndex * this._itemDimensions.width,
-			anim;
+		destination = this._wingSize + itemIndex * this._itemDimensions.width;
 
 		swap.call(this, 'back');
-		if (opts.tween === null) {
+		
+		tween = opts.tween || this._opts.tween;
+		
+		var that = this;
+		if (opts.jump === true || tween === '') { // jump
 			this.content[0].scrollLeft = destination;
+			
 			this._index = itemIndex;
+			// in case our clones are showing
+			jump.call(this);
+			swap.call(this);
+			
+			// force index to be a number from 0 to items.length
+			this._index = this._index % (this.items.length  + this._gap.count);
+			
+			if (tween !== null && willMove) {
+				this.fire('afterMove', {currentIndex: this._index});
+			}
 			
 			this._inMotion = false;
 		}
@@ -667,13 +719,14 @@ Glow.provide(function(glow) {
 					tween: opts.tween || this._opts.tween
 				}
 			);
+			
 			this._index = itemIndex;
 			
-			var that = this;
-
+			
 			anim.on('complete', function() {
 				that._inMotion = false;
 				
+				// in case our clones are showing
 				jump.call(that);
 				swap.call(that);
 				
@@ -681,11 +734,18 @@ Glow.provide(function(glow) {
 				that._index = that._index % (that.items.length  + that._gap.count);
 				
 				that.fire('afterMove', {currentIndex: that._index});
-				if (opts.callback) { opts.callback(); }
+				
+				if (opts.callback) {
+					opts.callback();
+				}
 			});
 		}
 		
 		return this;
+	}
+	
+	function afterMoveTo(carouselPane, itemIndex) {
+	
 	}
 	
 	/**
@@ -697,10 +757,10 @@ Glow.provide(function(glow) {
 	 */
 	function jump() { /*debug*///console.log('jump()');
 		if (this._index < 0) {
-			this.moveTo(this.items.length + this._gap.count + this._index, {tween: null});
+			this.moveTo(this.items.length + this._gap.count + this._index, {jump: true});
 		}
 		else if (this._index >= this.items.length) {
-			this.moveTo(this._index - (this.items.length + this._gap.count), {tween: null});
+			this.moveTo(this._index - (this.items.length + this._gap.count), {jump: true});
 		}
 	}
 	
@@ -709,7 +769,7 @@ Glow.provide(function(glow) {
 		put the real items back again.
 		@name swap
 		@private
-		@param {boolean} back If not a falsey value, will move the real items back.
+		@param {boolean} back If a truthy value, will move the real items back.
 	 */
 	function swap(back) { /*debug*///console.log('swap('+back+')');
 		var swapItemIndex;
@@ -780,10 +840,14 @@ Glow.provide(function(glow) {
 		if (this._opts.loop) { return true; }
 		
 		// too far prev
-		if (itemIndex < 0) { return false; }
+		if (itemIndex < 0) {
+			return false;
+		}
 
 		// too far next
-		if (itemIndex - this._step >= this.items.length - this._spot.capacity ) { return false; }
+		if (itemIndex - this._step >= this.items.length - this._spot.capacity ) {
+			return false;
+		}
 		return true;
 	}
 	
@@ -876,11 +940,17 @@ Glow.provide(function(glow) {
 		
 		// TODO: memoise?
 		var size = this._itemDimensions.width,
-			offset = this._spot.offset.left + this._wingSize + this._itemDimensions.marginLeft
+			offset = this._spot.offset.left + this._wingSize + this._itemDimensions.marginLeft,
+			gap = 0;
 			
-			position.left = offset + (itemIndex * size)
-				+ (this._opts.page && itemIndex >= this.items.length? this._gap.count * size : 0)
-				- (this._opts.page && itemIndex < 0? this._gap.count * size : 0);
+			if (this._opts.page && itemIndex < 0) {
+				gap = -(1 + Math.floor( Math.abs(itemIndex+this._gap.count) / this.items.length)) * this._gap.count * size;
+			}
+			else if (this._opts.page && itemIndex >= this.items.length) {
+				gap = Math.floor(itemIndex / this.items.length) * this._gap.count * size;
+			}
+
+			position.left = offset + (itemIndex * size) + gap;
 			position.top = this._itemDimensions.marginTop;
 
 			return position;
@@ -915,9 +985,9 @@ Glow.provide(function(glow) {
  					this.stage[0].appendChild(clone[0]);
 					
  					// add clones to next side
- 					clone = clone.clone();
+ 					clone = clone.copy();
  					cloneOffset = getPosition.call(this, reps*this.items.length + i).left;
- 					this._itemList.addItem(reps*this.items.length + i, clone, {isClone:true, offset:cloneOffset});
+ 					this._itemList.addItem(reps*this.items.length + i + this._gap.count, clone, {isClone:true, offset:cloneOffset});
 					this.stage[0].appendChild(clone[0]);
  				}
  			}
@@ -929,12 +999,24 @@ Glow.provide(function(glow) {
 	}
 	
 	CarouselPaneProto.destroy = function() {
-		// TODO remove added node data?
-		// TODO remove cloned items?
+		this.stage.get('.carousel-clone').remove();
 		glow(window).detach('resize', this._resizeHandler);
 		glow(this.items).detach('childActivate', this._childActivateHandler);
 		WidgetProto.destroy.call(this);
 	};
+//TODO	
+	/**
+		@name glow.ui.Carousel#event:select
+		@event
+		@description Fires when a carousel item is selected.
+			Items are selected by clicking, or pressing enter when a child is in the spotlight.
+		
+			Canceling this event prevents the default click/key action.
+		
+		@param {glow.events.Event} event Event Object
+		@param {glow.NodeList} event.item Item selected
+		@param {number} event.itemIndex The index of the selected item in {@link glow.ui.Carousel#items}.
+	*/
 	
 	/**
 		@name glow.ui.CarouselPane#event:move
