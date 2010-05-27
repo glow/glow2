@@ -6,7 +6,8 @@ Glow.provide(function(glow) {
 		focused,
 		// we use this to track the modal focusable, also to ensure there's only one
 		modalFocusable,
-		documentNodeList = glow(document);
+		documentNodeList = glow(document),
+		ignoreFocus = false;
 	
 	// keep track of what element has focus
 	documentNodeList.on('blur', function(event) {
@@ -22,9 +23,29 @@ Glow.provide(function(glow) {
 			( modalFocusable.activeChild[0] || modalFocusable.container[0] ).focus();
 			return false;
 		}
+		
 		focused = event.source;
+		
+		if (ignoreFocus) {
+			return;
+		}
+		
+		ignoreFocus = true;
+		
 		activateFocusables();
+		
+		setTimeout(stopIgnoringFocus, 0);
 	});
+	
+	/**
+		@private
+		@function
+		@description Wot it sez on da tin.
+			(used to cater for browsers that fire multiple focuses per click)
+	*/
+	function stopIgnoringFocus() {
+		ignoreFocus = false;
+	}
 	
 	/**
 		@private
@@ -250,8 +271,8 @@ Glow.provide(function(glow) {
 		// populate #children
 		updateChildren(this);
 		
-		// create initial focal point, container or first child
-		( this.children[0] || this.container[0] ).tabIndex = 0;
+		// create initial focal point
+		this.container[0].tabIndex = 0;
 		
 		// Add listener for activateOnHover
 		if (opts.activateOnHover) {
@@ -518,6 +539,7 @@ Glow.provide(function(glow) {
 	*/
 	function activate(focusable, toActivate) {
 		var _active = focusable._active,
+			focusContainerIfChildNotFound,
 			indexToActivate = -1;
 		
 		// if currently inactive...
@@ -525,12 +547,13 @@ Glow.provide(function(glow) {
 			if ( focusable.fire('activate').defaultPrevented() ) {
 				return;
 			}
+			
 			updateChildren(focusable);
 			focusable._active = true;
 			// start listening to the keyboard
 			documentNodeList.on('keypress', focusable._keyHandler, focusable).on('keydown', keySelectListener, focusable);
 			// give focus to the container - a child element may steal focus in activateChildIndex
-			focusable._opts.setFocus && focusable.container[0].focus();
+			focusContainerIfChildNotFound = true;
 		}
 		
 		// Work out what child item to focus.
@@ -552,8 +575,11 @@ Glow.provide(function(glow) {
 			}
 			
 			// If we have an item to activate, let's go for it
-			if (indexToActivate !== -1) {
+			if (indexToActivate !== -1 && indexToActivate !== focusable.activeIndex) {
 				activateChildIndex(focusable, indexToActivate);
+			}
+			else if (focusContainerIfChildNotFound) {
+				focusable._opts.setFocus && focusable.container[0].focus();
 			}
 		}
 	}
