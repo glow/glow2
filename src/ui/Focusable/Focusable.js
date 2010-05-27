@@ -575,7 +575,7 @@ Glow.provide(function(glow) {
 			}
 			
 			// If we have an item to activate, let's go for it
-			if (indexToActivate !== -1) {
+			if (indexToActivate !== -1 && indexToActivate !== focusable.activeIndex) {
 				activateChildIndex(focusable, indexToActivate);
 			}
 			else if (focusContainerIfChildNotFound) {
