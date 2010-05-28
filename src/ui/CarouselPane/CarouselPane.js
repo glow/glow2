@@ -297,25 +297,61 @@ Glow.provide(function(glow) {
 	CarouselPaneProto._bind = function() { /*debug*///console.log('CarouselPaneProto._bind');
 		var that = this;
 		
-		WidgetProto._bind.call(this);
+		WidgetProto._bind.call(that);
 		
-		this._resizeHandler = function(e) {
+		attachEvent(that, glow(window), 'resize', function(e) {
 			that.updateUi();
-		}
-		glow(window).on('resize', this._resizeHandler);
+		});
 		
-		this._recentActive = null;
-		this._childActivateHandler = function(e) { // keep a ref so we can detach it in destroy
+		attachEvent(that, that._focusable, 'childActivate', function(e) {
 			var itemNumber = e.itemIndex,
 				indexes = that.spotlightIndexes(true),
 				isVisible = (' '+indexes.join(' ')+' ').indexOf(' '+itemNumber+' ') > -1;
 
 			if (itemNumber !== undefined && !isVisible) {
 				that.moveTo(itemNumber, {jump: true});
-				this._index = itemNumber;
+				that._index = itemNumber;
 			}
+		});
+		
+		attachEvent(that, this._focusable, 'select', function(e) {
+			that.fire('select', e);
+		});
+	}
+	
+	/**
+		@private
+		@name attachEvent
+		@function
+		@decription Add an event listener and handler to a node related to this carouselpane.
+		Stores a reference to that transaction so each handler can easily be detached later.
+		@see glow.ui.CarouselPane-detachEvents
+		@param {glow.ui.CarouselPane} carouselPane
+		@param {glow.EventTarget} target
+		@param {string} name The name of the event to listen for.
+		@param {Function} handler
+	*/
+	function attachEvent(carouselPane, target, name, handler) {
+		target.on(name, handler);
+		carouselPane._addedEvents = carouselPane._addedEvents || [];
+		carouselPane._addedEvents.push( {target:target, name:name, handler:handler} );
+	}
+	
+	/**
+		@private
+		@name detachEvents
+		@function
+		@decription Remove all events add via the {@link glow.ui.CarouselPane-attachEvent}.
+		@see glow.ui.CarouselPane-removeEvents
+		@param {glow.ui.CarouselPane} carouselPane
+	*/
+	function detachEvents(carouselPane) {
+		var i = carouselPane._addedEvents? carouselPane._addedEvents.length : 0,
+			e;
+		while (i--) {
+			e = carouselPane._addedEvents[i];
+			e.target.detach(e.name, e.handler);
 		}
-		that._focusable.on('childActivate', this._childActivateHandler);
 	}
 	
 	CarouselPaneProto.updateUi = function() { /*debug*///console.log('updateUi');
@@ -998,13 +1034,22 @@ Glow.provide(function(glow) {
  		this._itemList.place(this._itemDimensions.marginTop, undefined);
 	}
 	
+	/**
+		@name glow.ui.CarouselPane#destroy
+		@function
+		@description Remove listeners and added HTML Elements from this instance.
+			CarouselPane items will not be destroyed.
+			
+		@returns undefined
+	*/
 	CarouselPaneProto.destroy = function() {
 		this.stage.get('.carousel-clone').remove();
-		glow(window).detach('resize', this._resizeHandler);
-		glow(this.items).detach('childActivate', this._childActivateHandler);
+		detachEvents(this);
+		//TODO remove added positioning CSS?
+		//TODO? this.stage.insertBefore(this.container);
 		WidgetProto.destroy.call(this);
 	};
-//TODO	
+	
 	/**
 		@name glow.ui.Carousel#event:select
 		@event
