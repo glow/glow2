@@ -146,7 +146,7 @@
 	
 	<div class="testarea" style="width: 800px;">
 		<script type="text/javascript">
-			makeCarouselContent(4, 'myCarousel');
+			makeCarouselContent(5, 'myCarousel');
 		</script>
 		<div id="dots" style="border: 1px solid #ccc; width: 80px; text-align: center;">...</div>
 	</div>
@@ -155,13 +155,13 @@
 		glow.ready(function() {
 			//glow.ui.CarouselPane._getSpot(720, glow('#myCarousel li'))
 
-			var c = new glow.ui.CarouselPane('#myCarousel', {spotlight: 3, duration: 1, tween: 'bounceOut'});
+			var c = new glow.ui.CarouselPane('#myCarousel', {step: true, spotlight: 2, duration: 1, tween: 'bounceOut'});
 			addControls(c);
 			showSpotlight(c);
 
 			//c._itemList.dump(c);
 			c.on('select', function(e) {
-				glow('#dots').html( e.itemIndex );
+				glow('#dots').html( '<b>' + e.itemIndex + '</b>' );
 			});
 
  			c.on('move', function(e) {

@@ -306,7 +306,7 @@ Glow.provide(function(glow) {
 				isVisible = (' '+indexes.join(' ')+' ').indexOf(' '+itemNumber+' ') > -1;
 
 			if (itemNumber !== undefined && !isVisible) {
-				that.moveTo(itemNumber, {jump: true});
+				that.moveTo(itemNumber, {tween: ''});
 				that._index = itemNumber;
 			}
 		});
@@ -726,7 +726,7 @@ Glow.provide(function(glow) {
 		tween = opts.tween || this._opts.tween;
 		
 		var that = this;
-		if (opts.jump === true || tween === '') { // jump
+		if (opts.jump === true || opts.tween === '') { // jump
 			this.content[0].scrollLeft = destination;
 			
 			this._index = itemIndex;
@@ -805,6 +805,8 @@ Glow.provide(function(glow) {
 	 */
 	function swap(back) { /*debug*///console.log('swap('+back+')');
 		var swapItemIndex;
+		
+		if (!this._opts.loop) { return; } // no clones, so no swap possible
 		
 		if (back) {
 			this._itemList.place();
