@@ -122,25 +122,26 @@
 	<!-- pass configuration values in on the query string, like runall.html?from=build&debug=true -->
 	<script type="text/javascript">
 		var testpages = {
-			glow: 'glow.html',
-			util: 'util/util.html',
-			attributes: 'NodeList/attributes.html',
-			nodelist: 'NodeList/NodeList.html',
-			manipulation: 'NodeList/manipulation.html',
-			traversal: 'NodeList/traversal.html',
-			appearance: 'NodeList/appearance.html',
-			nodeListAnim: 'NodeList/anim.html',
-			events: 'events/events.html',
-			env: 'env/env.html',
-			tweens: 'tweens/tweens.html',
-			anim: 'anim/Anim/Anim.html',
-			animMutation: 'anim/Anim/mutation.html',
-			animProp: 'anim/Anim/prop.html',
-			timeline: 'anim/Timeline/Timeline.html',
-			net: 'net/net.html',
-			widget: 'ui/Widget/Widget.html',
-			focusable: 'ui/Focusable/Focusable.html',
-			overlay: 'ui/overlay/overlay.html'
+ 			glow: 'glow.html',
+ 			util: 'util/util.html',
+ 			attributes: 'NodeList/attributes.html',
+ 			nodelist: 'NodeList/NodeList.html',
+ 			manipulation: 'NodeList/manipulation.html',
+ 			traversal: 'NodeList/traversal.html',
+ 			appearance: 'NodeList/appearance.html',
+ 			nodeListAnim: 'NodeList/anim.html',
+ 			events: 'events/events.html',
+ 			env: 'env/env.html',
+ 			tweens: 'tweens/tweens.html',
+ 			anim: 'anim/Anim/Anim.html',
+ 			animMutation: 'anim/Anim/mutation.html',
+ 			animProp: 'anim/Anim/prop.html',
+ 			timeline: 'anim/Timeline/Timeline.html',
+ 			net: 'net/net.html',
+ 			widget: 'ui/Widget/Widget.html',
+ 			focusable: 'ui/Focusable/Focusable.html',
+ 			overlay: 'ui/overlay/overlay.html',
+			carouselPane: 'ui/CarouselPane/CarouselPane.html'
 		};
 		
 		// modify testpages urls, based on configurations in GET params
@@ -277,7 +278,7 @@
 				params = {}, // GET params to add to the src URL
 				query = (window.location.search || '?').substring(1);
 			
-			iframe.width = '200px';
+			iframe.width = '600px';
 			iframe.height = '200px';
 			iframe.style.border = 'none';
 			iframe.id = name;
