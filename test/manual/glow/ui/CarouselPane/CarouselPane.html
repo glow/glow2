@@ -160,6 +160,9 @@
 			showSpotlight(c);
 
 			//c._itemList.dump(c);
+			c.on('select', function(e) {
+				glow('#dots').html( e.itemIndex );
+			});
 
  			c.on('move', function(e) {
  			//	console.log( 'index: '+e.currentIndex+' move: by '+ e.moveBy );

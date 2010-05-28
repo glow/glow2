@@ -311,7 +311,8 @@ Glow.provide(function(glow) {
 			}
 		});
 		
-		attachEvent(that, this._focusable, 'select', function(e) {
+		this._focusable.on('select', function(e) {
+			e.itemIndex = e.item.data('itemIndex');
 			that.fire('select', e);
 		});
 	}
@@ -996,6 +997,8 @@ Glow.provide(function(glow) {
 		for (var i = 0, leni = this.items.length; i < leni; i++) {
 			// items were already added in ItemList constructor, just add meta now
 			this._itemList.addMeta(i, {offset:getPosition.call(this, i).left, isClone:false});
+
+			this.items.item(i).data('itemIndex', +i);
 		}
 		
 		if (this._opts.loop) { // send in the clones
