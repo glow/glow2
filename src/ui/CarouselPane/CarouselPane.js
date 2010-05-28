@@ -266,7 +266,8 @@ Glow.provide(function(glow) {
 		*/
 		this._gap = getGap(this);
 		
-		this.stage.css({width: this.stage.width() + this._wingSize * 2}); // [wing][stage[spot]stage][wing]
+		// must set height to anything other than 0, else FF won't *ever* render the stage
+		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: '100%'}); // [wing][stage[spot]stage][wing]
 		
 		layout.call(this);
 		
@@ -357,7 +358,9 @@ Glow.provide(function(glow) {
 	CarouselPaneProto.updateUi = function() { /*debug*///console.log('updateUi');
 		WidgetProto._updateUi.call(this);
 		
-		this.stage.css({width: this._viewport.width() + this._wingSize * 2, height: '100%'});
+		// must set height to anything other than 0, else FF won't *ever* render the stage
+		this.stage.css({width: this.stage.width() + this._wingSize * 2, height: '100%'}); // [wing][stage[spot]stage][wing]
+		
 		this._spot = CarouselPane._getSpot(this._viewport.width(), this.items, this._itemDimensions, this._opts);
 		
 		if (this._opts.step === true) {
@@ -629,7 +632,7 @@ Glow.provide(function(glow) {
 		
 		// takes into account gaps and wraps
 		for (var i = 0, leni = indexes.length; i < leni; i++) {
-			items[i] = this.items[ indexes[i] ];
+			items.push( this.items[ indexes[i] ] );
 		}
 		
 		return items;
@@ -778,10 +781,6 @@ Glow.provide(function(glow) {
 		}
 		
 		return this;
-	}
-	
-	function afterMoveTo(carouselPane, itemIndex) {
-	
 	}
 	
 	/**
