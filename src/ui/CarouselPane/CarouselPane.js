@@ -299,11 +299,7 @@ Glow.provide(function(glow) {
 		var that = this;
 		
 		WidgetProto._bind.call(that);
-		
-		attachEvent(that, glow(window), 'resize', function(e) {
-			that.updateUi();
-		});
-		
+
 		attachEvent(that, that._focusable, 'childActivate', function(e) {
 			var itemNumber = e.itemIndex,
 				indexes = that.spotlightIndexes(true),
