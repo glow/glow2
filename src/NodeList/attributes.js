@@ -264,7 +264,7 @@ Glow.provide(function(glow) {
 			keyvals = key, // like: data({key: val}) or data(key, val)
 			index,
 			node;
-		
+			
 		/*!debug*/
 			if (arguments.length === 2 && typeof arguments[0] !== 'string') {glow.debug.warn('[wrong type] glow.NodeList#data expects name argument to be of type string.'); }
 			else if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) {glow.debug.warn('[wrong type] glow.NodeList#data expects argument 1 to be of type string or an instance of Object.'); }
@@ -277,7 +277,8 @@ Glow.provide(function(glow) {
 				node = this[i];
 				if (node.nodeType !== 1) { continue; }
 				
-				index = node[dataPropName];
+				index = node[''+dataPropName];
+
 				if (!index) { // assumes index is always > 0
 					index = dataIndex++;
 					
@@ -316,8 +317,8 @@ Glow.provide(function(glow) {
 			if ( !(index = node[dataPropName]) ) {
 				return undef;
 			}
-			
-			if (key) {
+
+			if (key !== undef) {
 				return dataCache[index][key];
 			}
 			

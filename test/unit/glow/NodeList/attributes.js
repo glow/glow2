@@ -529,7 +529,7 @@ test('glow.NodeList#toggleClass', 4, function() {
 // 	}
 // });
 
-test('glow.NodeList#data', 9, function() {
+test('glow.NodeList#data', 11, function() {
 	var myNodeList = new glow.NodeList('' +
 		'<div id="dataTest"></div>' +
 		'<p id="para1">' +
@@ -563,6 +563,12 @@ test('glow.NodeList#data', 9, function() {
 	equal(myNodeList.data('size'), 'grande', 'Can set multiple key:vals at once.');
 	equal(myNodeList.data('count'), 8, 'All the multiple key:vals are set.');
 	ok((myNodeList === self), 'The call to multiple key:val is chainable.');
+	
+	myNodeList.data(0, 'zero');
+	equal(myNodeList.data(0), 'zero', 'Can use falsey key.');
+	
+	myNodeList.data('nada', 0);
+	equal(myNodeList.data('nada'), 0, 'Can use falsey val.');
 });
 
 // if (glow.debug) test('glow.NodeList#data debug', 2, function() {
