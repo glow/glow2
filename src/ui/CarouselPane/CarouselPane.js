@@ -698,7 +698,7 @@ Glow.provide(function(glow) {
 				moveBy: (this._index < itemIndex)? (itemIndex - this._index) : (-Math.abs(this._index - itemIndex))
 			});
 			
-			if ( willMove && this.fire('move', e).defaultPrevented() ) {
+			if (!opts.jump && willMove && this.fire('move', e).defaultPrevented() ) {
 				return this;
 			}
 			else {
@@ -737,7 +737,7 @@ Glow.provide(function(glow) {
 			// force index to be a number from 0 to items.length
 			this._index = this._index % (this.items.length  + this._gap.count);
 			
-			if (tween !== null && willMove) {
+			if (!opts.jump && willMove) {
 				this.fire('afterMove', {currentIndex: this._index});
 			}
 			
