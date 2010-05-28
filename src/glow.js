@@ -1,4 +1,7 @@
 (function() {
+	// there can be only one
+	if (window.Glow) { return; }
+	
 	var glowMap,
 		defaultBase,
 		document = window.document,
