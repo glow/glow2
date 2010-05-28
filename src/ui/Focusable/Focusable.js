@@ -573,14 +573,14 @@ Glow.provide(function(glow) {
 				indexToActivate = getIndexFromElement(focusable, focusable._lastActiveChild);
 				indexToActivate = indexToActivate !== -1 ? indexToActivate : 0;
 			}
-			
-			// If we have an item to activate, let's go for it
-			if (indexToActivate !== -1 && indexToActivate !== focusable.activeIndex) {
-				activateChildIndex(focusable, indexToActivate);
-			}
-			else if (focusContainerIfChildNotFound) {
-				focusable._opts.setFocus && focusable.container[0].focus();
-			}
+		}
+		
+		// If we have an item to activate, let's go for it
+		if (indexToActivate !== -1 && indexToActivate !== focusable.activeIndex) {
+			activateChildIndex(focusable, indexToActivate);
+		}
+		else if (focusContainerIfChildNotFound) {
+			focusable._opts.setFocus && focusable.container[0].focus();
 		}
 	}
 	
