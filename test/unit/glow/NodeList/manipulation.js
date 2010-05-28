@@ -1616,7 +1616,7 @@ test('glow.dom.NodeList#html setting simple text', 2, function() {
 	equal(myNodeList.html().toLowerCase(), 'hello', 'sets html');
 });
 
-test('glow.dom.NodeList#html edge cases', 5, function() {
+test('glow.dom.NodeList#html edge cases', 7, function() {
 	var emptyList = new glow.NodeList(),
 		populatedList = new glow.NodeList('<div>hello</div>');
 	
@@ -1626,7 +1626,9 @@ test('glow.dom.NodeList#html edge cases', 5, function() {
 	
 	populatedList = new glow.NodeList('<div>hello</div>');
 	
-	strictEqual(populatedList.html(null).html(), '', 'Null param treated like empty string');
+	strictEqual(populatedList.html(null).html(), 'null', 'Null param treated like "null" string');
+	strictEqual(populatedList.html(0).html(), '0', '0 param treated like "0" string');
+	strictEqual(populatedList.html(undefined).html(), '', 'undefined param treated like empty string');
 	equal(populatedList.html(42).html(), '42', 'Number param treated like string');
 });
 

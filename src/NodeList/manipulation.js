@@ -596,7 +596,7 @@ Glow.provide(function(glow) {
 			node;
 		
 		// normalise the string
-		htmlString = htmlString ? String(htmlString): '';
+		htmlString = htmlString === undefined? '' : String(htmlString);
 		
 		while (i--) {
 			node = this[i];
