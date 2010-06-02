@@ -39,10 +39,6 @@
 		</js>
 		<css></css>
 	</core>
-	<more>
-		<js></js>
-		<css></css>
-	</more>
 	<ui>
 		<js>
 			<file>src/header/license.txt</file>

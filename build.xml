@@ -135,6 +135,7 @@
 		
 		<replace dir="${BUILDSRC_DIR}" includes="**/*.js,**/*.css">
 		   <replacefilter token="@SRC@" value="${VERSION}" />
+		   <replacefilter token="CSSVERSION" value="${CSSVERSION}" />
 		</replace>
 	</target>
 	
