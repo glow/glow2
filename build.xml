@@ -139,6 +139,13 @@
 		</replace>
 	</target>
 	
+	<target name="copyimgs" depends="clean,setup">
+		<copy todir="${BUILDSRC_DIR}/images">
+			<fileset dir="src" includes="**/images/**" />
+			<regexpmapper from="/images/(.*)$" to="\1" handledirsep="true" />
+		</copy>
+	</target>
+	
 	<target name="apidocs" depends="filter">
 		<echo message="Generating API documentation from JsDoc: ${JSDOC_DIR}" />
 		
@@ -198,13 +205,10 @@
 			<fileset dir="${ROOT_DIR}" includes="CONTRIBUTORS,LICENCE,README,CHANGES" />
 		</copy>
 		
-		<echo message="Copying minified files to dist folder" />
+		<echo message="Copying files to dist folder" />
 		
 		<copy todir="${DISTSRC_DIR}" >
-			<fileset dir="${BUILDSRC_DIR}">
-				<include name="**/*.js" />
-				<include name="**/*.css" />
-			</fileset>
+			<fileset dir="${BUILDSRC_DIR}" />
 		</copy>
 		
 		<echo message="Creating distribution zip &amp; tar.gz files" />
@@ -216,7 +220,7 @@
 			compression="gzip" />
 	</target>
 	
-	<target name="all" depends="clean, setup, meta, knit, filter, apidocs, debug, minify, dist">
+	<target name="all" depends="clean, setup, meta, knit, copyimgs, filter, apidocs, debug, minify, dist">
 		<echo message="" />
 		<echo message="**************************************" />
 		<echo message="Glow version ${VERSION} build complete" />
