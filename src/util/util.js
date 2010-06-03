@@ -64,24 +64,32 @@ Glow.provide(function(glow) {
 	*/
 	function _getType(object) {
 		var typeOfObject = typeof object,
-			constructorStr;
-		
-		if (object === null) {
-			return 'null';
-		}
-		
-		if (typeOfObject === 'object') {
-			if (object.constructor.name) {
-				return object.constructor.name;
+			constructorStr,
+			type;
+
+		if (object === null) { return 'null'; } // warn: won't work across frames?
+		else if (isFunction(object)) { return 'Function'; }
+		else if (isArray(object)) { return 'Array'; }
+		else if (typeOfObject === 'object') {
+			
+			constructorStr = object.constructor.toString();
+
+			if ( /^function (\S+?)\(/.test(constructorStr) ) {
+				type = RegExp.$1;
+				if (type === 'Object') { return 'object'; }
+				else { return type; }
 			}
-			else {
-				constructorStr = object.constructor.toString();
-				return constructorStr.slice( constructorStr.indexOf('function ') + 9, constructorStr.indexOf('(') );
-			}
 		}
-		else {
-			return typeOfObject;
-		}
+
+		return typeOfObject;
+	}
+
+	function isArray(o) {
+		return {}.toString.call(o) === '[object Array]';
+	}
+	
+	function isFunction(o) {
+		return {}.toString.call(o) === '[object Function]';
 	}
 
 	/**
@@ -94,10 +102,13 @@ Glow.provide(function(glow) {
 		@param {Object} object Object to get the type of.
 			
 		@example
+			glow.util.getType( null ); // 'null'
+			glow.util.getType( undefined ); // 'undefined'
 			glow.util.getType('Hello'); // 'string'
 			glow.util.getType( {} ); // 'Object'
 			glow.util.getType(12); // 'number'
 			glow.util.getType( [] ); // 'Array'
+			glow.util.getType( function(){} ); // 'Function'
 			glow.util.getType( glow('#whatever') ); // 'NodeList'
 			
 		@example
@@ -264,6 +275,7 @@ Glow.provide(function(glow) {
 		
 		for (var key in object) {
 			type = _getType( object[key] );
+
 			/*!debug*/
 				if (type !== 'Array' || type !== 'string') {
 					glow.debug.warn('[wrong type] glow.util.encodeUrl expected Array or String value for "' + key + '", not ' + type + '.');

@@ -79,6 +79,19 @@ test("extend", 12, function() {
 	equals(SubClass.base, BaseClass, "sub.base property set");
 });
 
+test('getType', 10, function() {
+	equal(typeof glow.util.getType, 'function', 'getType is function');
+	equal(glow.util.getType(null), 'null', 'detect null');
+	equal(glow.util.getType(undefined), 'undefined', 'detect undefined');
+	equal(glow.util.getType('Hello'), 'string', 'detect string');
+	equal(glow.util.getType({}), 'object', 'detect object');
+	equal(glow.util.getType(new Object()), 'object', 'detect Object');
+	equal(glow.util.getType(12), 'number', 'detect number');
+	equal(glow.util.getType([]), 'Array', 'detect Array literal');
+	equal(glow.util.getType(new Array()), 'Array', 'detect Array object');
+	equal(glow.util.getType(glow('#whatever')), 'NodeList', 'detect NodeList');
+});
+
 test('escapeRegex', 2, function() {
 	equal(typeof glow.util.escapeRegex, 'function', 'escapeRegex is function');
 	equal(
