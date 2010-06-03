@@ -21,10 +21,8 @@
 		
 		test('resolveVersion', 6, function() {
 			var testMap = {
-				versions: ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0', 'src'],
-				'2.0.0 rc-1': {
-					'core': ['core.js']
-				}
+				versions: ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0', '2.0.0b1', 'src'],
+				'2.0.0 rc-1': { core: ['core.js'] }
 			};
 			
 			var glow = Glow('2', {_map: testMap, _noload: true});

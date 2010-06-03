@@ -76,21 +76,30 @@
 		@name getVersion
 		@function
 		@param {string} version A (possibly imprecise) version identifier, like "2".
-		@description Find the most recent, available version of glow that matches.
+		@param {boolean} exact Force this function to only return exact matches for the requested version.
+		@description Finds the most recent, available version of glow that matches the requested version.
+		Versions that contain characters other than numbers and dots are never returned
+		unless you ask for then exactly.
+		@returns {string} The version identifier that best matches the given version.
+		For example, given 2.1 this function could return 2.1.5 as the best match. 
 	 */
-	var getVersion = function(version) { /*debug*///log.info('getVersion("'+version+'")');
+	var getVersion = function(version, forceExact) { /*debug*///console.info('getVersion("'+version+'")');
 		var versions = glowMap.versions,
-			matchThis = version + '.';
-		
-		// TODO: an empty version means: the very latest version
+			matchThis = version + '.',
+			findExactMatch = forceExact || /[^0-9.]/.test(version); // like 1.1-alpha7
+
+		// TODO: an empty version means: the very latest version?
 		
 		var i = versions.length;
 		while (i--) {
-			if ( ( versions[i] + '.').indexOf(matchThis) === 0 ) {
+			if (findExactMatch) {
+				if (versions[i] === version) { return versions[i]; }
+			}
+			else if ( (versions[i] + '.').indexOf(matchThis) === 0 && !/[^0-9.]/.test(versions[i]) ) {
 				return versions[i];
 			}
 		}
-		
+
 		throw new Error('Version "'+version+'" does not exist');
 	}
 	
