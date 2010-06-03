@@ -148,7 +148,7 @@ Glow.provide(function(glow) {
 		@function
 		@description Specify a group of widgets that should stay in _sync with this one.
 			These synced widgets can listen for a '_sync' event on themselves, defining their own handler for the provided event.
-			The disabled and locale methods automatically synchronize with their synced child widgets.
+			The disabled and destroy methods automatically synchronize with their synced child widgets.
 		
 		@param {glow.ui.Widget} ... Child widgets to synchronize with.
 		
@@ -414,6 +414,9 @@ Glow.provide(function(glow) {
 			}
 		/*gubed!*/
 		if ( !this.fire('destroy').defaultPrevented() ) {
+			this._sync({
+				destroy: 1
+			});
 			glow.events.removeAllListeners( [this] );
 			this.container.destroy();
 			this.phase = 'destroyed';
