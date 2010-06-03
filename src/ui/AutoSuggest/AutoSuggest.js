@@ -162,7 +162,7 @@ Glow.provide(function(glow) {
 	}
 	
 	AutoSuggestProto._build = function() {
-		WidgetProto._build.call(this, '<ol></ol>', this._opts);
+		WidgetProto._build.call(this, '<ol></ol>');
 		
 		var opts = this._opts,
 			width = opts.width
