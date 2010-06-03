@@ -194,7 +194,7 @@ Glow.provide(function(glow) {
 	}
 	
 	CarouselPaneProto._build = function() { /*debug*///console.log('CarouselPaneProto._build');
-		WidgetProto._build.call(this, this._viewport, this._opts);
+		WidgetProto._build.call(this, this._viewport);
 		
 		this.stage.css({
 			margin: 0,
