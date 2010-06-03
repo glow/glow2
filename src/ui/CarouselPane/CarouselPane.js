@@ -1045,8 +1045,7 @@ Glow.provide(function(glow) {
 	CarouselPaneProto.destroy = function() {
 		this.stage.get('.carousel-clone').remove();
 		detachEvents(this);
-		//TODO remove added positioning CSS?
-		//TODO? this.stage.insertBefore(this.container);
+		this.stage.insertBefore(this.container).children().css('position', '');
 		WidgetProto.destroy.call(this);
 	};
 	
