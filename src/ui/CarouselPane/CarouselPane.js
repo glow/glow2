@@ -86,9 +86,8 @@ Glow.provide(function(glow) {
 		if (glow(container).length > 0) { this._init(container, opts); }
 	};
 	
-	glow.util.extend(CarouselPane, glow.ui.Widget);     // CarouselPane is a Widget
-	glow.util.extend(CarouselPane, glow.events.Target); // CarouselPane is a Target
-	CarouselPaneProto = CarouselPane.prototype;         // shortcut
+	glow.util.extend(CarouselPane, glow.ui.Widget); // CarouselPane is a Widget
+	CarouselPaneProto = CarouselPane.prototype;     // shortcut
 	
 	
 	
