@@ -73,7 +73,7 @@ Glow.provide(function(glow) {
 		@name glow.net.XhrResponse#text
 		@function
 		@description Gets the body of the response as plain text
-		@returns {string} XhrResponse as text
+		@returns {string}
 	*/
 
 	XhrResponseProto.text = function() {
@@ -113,7 +113,7 @@ Glow.provide(function(glow) {
 		@function
 		@description Gets the body of the response as a JSON object.
 		
-		@param {Boolean} [safeMode=false]
+		@param {boolean} [safeMode=false]
 			If true, the response will be parsed using a string parser which
 			will filter out non-JSON javascript, this will be slower but
 			recommended if you do not trust the data source.

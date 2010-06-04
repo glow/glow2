@@ -1,7 +1,8 @@
 Glow.provide(function(glow) {
 	var undefined,
 		XhrRequestProto,
-		events = glow.events;
+		events = glow.events,
+		removeAllListeners = events.removeAllListeners;
 	
 	/**
 		@private
@@ -63,16 +64,16 @@ Glow.provide(function(glow) {
 		@param {Object} [opts] Options object
 			@param {Object} [opts.headers] A hash of headers to send along with the request.
 				eg `{'Accept-Language': 'en-gb'}`
-			@param {Boolean} [opts.cacheBust=false] Prevent the browser returning a cached response.
+			@param {boolean} [opts.cacheBust=false] Prevent the browser returning a cached response.
 				If true, a random number is added to the query string to ensure a
 				fresh version of the file is being fetched.
-			@param {Number} [opts.timeout] Time to allow for the request in seconds.
+			@param {number} [opts.timeout] Time to allow for the request in seconds.
 				No timeout is set by default. Once the time is reached, the error
 				event will fire with a '408' status code.
-			@param {Boolean} [opts.forceXml=false] Treat the response as XML.
-				This will allow you to use {@link glow.net.Response#xml response.xml()}
+			@param {boolean} [opts.forceXml=false] Treat the response as XML.
+				This will allow you to use {@link glow.net.XhrResponse#xml response.xml()}
 				even if the response has a non-XML mime type.
-			@param {Object|String} [opts.data] Data to send.
+			@param {Object|string} [opts.data] Data to send.
 				This can be either a JSON-style object or a urlEncoded string.
 				
 		@description Create an XHR request.
@@ -109,7 +110,7 @@ Glow.provide(function(glow) {
 		}
 		
 		// force the reponse to be treated as xml
-		// IE doesn't support overrideMineType, we need to deal with that in {@link glow.net.Response#xml}
+		// IE doesn't support overrideMineType, we need to deal with that in {@link glow.net.XhrResponse#xml}
 		if (opts.forceXml && nativeRequest.overrideMimeType) {
 			nativeRequest.overrideMimeType('application/xml');
 		}
@@ -136,12 +137,13 @@ Glow.provide(function(glow) {
 				
 				// prevent parent scopes leaking (cross-page) in IE
 				nativeRequest.onreadystatechange = new Function();
+				removeAllListeners(request);
 			}
 		};
 		
 		nativeRequest.send(opts.data || null);
 	}
-	glow.util.extend(XhrRequest, glow.events.Target);
+	glow.util.extend(XhrRequest, events.Target);
 	XhrRequestProto = XhrRequest.prototype;
 	
 	/**
@@ -194,6 +196,7 @@ Glow.provide(function(glow) {
 		if ( !this.completed && !this.fire('abort').defaultPrevented() ) {
 			clearTimeout(this._timeout);
 			this.nativeRequest.onreadystatechange = new Function();
+			removeAllListeners(this);
 		}
 		return this;
 	};
@@ -201,10 +204,9 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.net.XhrRequest#event:load
 		@event
-		@param {glow.net.Response} Response Net Response object
+		@param {glow.net.XhrResponse} response
 		@description Fired when the request is sucessful
-			For a get / post request, this will be fired when request returns
-			with an HTTP code of 2xx. 
+			This will be fired when request returns with an HTTP code of 2xx. 
 	*/
  
 	/**
@@ -214,21 +216,16 @@ Glow.provide(function(glow) {
 		@description Fired when the request is aborted
 			If you cancel the default (eg, by returning false) the request
 			will continue.
-		
-		glowPrivateConstructor There is no direct constructor, since {@link glow.net.post glow.net.post} and {@link glow.net.get glow.net.get} create the instances.
 	*/
  
 	/**
 		@name glow.net.XhrRequest#event:error
 		@event
-		@param {glow.events.Event} event Event Object
+		@param {glow.net.XhrResponse} response
 		@description Fired when the request is unsucessful
-			For a get/post/put/delete request, this will be fired when request returns
-			with an HTTP code which isn't 2xx or the request times out. loadScript
-			calls will fire 'error' only if the request times out.
+			This will be fired when request returns with an HTTP code which
+			isn't 2xx or the request times out.
 	*/
-	
-	
 	
 	glow.net.XhrRequest = XhrRequest;
 });
