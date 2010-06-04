@@ -464,14 +464,11 @@ test("glow.net.del", function() {
 
 test("glow.net.crossDomainRequest", function () {
     expect(1);
-	stop();
-
-    var crossdomainrequest = glow.net.crossDomainGet('xhr/xdomain/windowdotname.html?search',
-							{_fullBlankUrl: 'xhr/xdomain/blank.html'}).on('load', 
-       function (response) {		
+	stop(5000);
+	
+    glow.net.crossDomainGet(window.location.href.replace(/net\.html.*$/, '') + 'xhr/xdomain/windowdotname.html?search')
+		.on('load', function (response) {		
             equal(response.text(), 'test response', 'get xDomainResponse');
             start();
-	   });
-	stop(5000);
-
+		});
 });
