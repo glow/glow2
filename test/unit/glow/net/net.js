@@ -6,7 +6,7 @@ module('glow.net');
 	});
 		
 	test('Basic net.get', function(){
-		expect(8);
+		expect(7);
 		stop();	
 		
 		var getRequest = glow.net.get("xhr/basictext.txt")
@@ -28,7 +28,6 @@ module('glow.net');
 
 		equal(typeof getRequest.abort, 'function', 'Return object has abort method');
 		equal(typeof getRequest.on, 'function', 'Return object has on method');
-		equal(typeof getRequest.destroy, 'function', 'Return object has destroy method');
 		
 		stop(5000);
 	});
@@ -132,33 +131,32 @@ module('glow.net');
 		stop(5000);
 	});
 	
-	// below happens on all current version of IE 6, 7, 8
-	if(!glow.env.ie){
-		test("glow.net.abort", function() {
-			expect(2);		
-			
-			stop();
-			var aborted = true;
-			var abortableRequest = glow.net.get("xhr/large.txt").on("load", 
-				function(response){
-					aborted = false;
-				})
-			.on("error",
-				function(response){
-					aborted = false;
-				})
-			.on("abort",
-				function(response){
-					ok(true, "Abort event fired");
-					start();
-				});
-			
-			abortableRequest.abort();
-	
-			ok(aborted, "Request aborted");	
-			stop(5000);
-		});
-	}
+	test("glow.net.abort", function() {
+		expect(2);		
+		
+		stop();
+		var aborted = true;
+		var abortableRequest = glow.net.get("xhr/large.txt", {
+			cacheBust: true
+		}).on("load", 
+			function(response){
+				aborted = false;
+			})
+		.on("error",
+			function(response){
+				aborted = false;
+			})
+		.on("abort",
+			function(response){
+				ok(true, "Abort event fired");
+				start();
+			});
+		
+		abortableRequest.abort();
+
+		ok(aborted, "Request aborted");	
+		stop(5000);
+	});
 	
 	
 	test("glow.net.post async string", function() {

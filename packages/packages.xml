@@ -17,8 +17,8 @@
 			<file>src/events/DomEvent.js</file>
 			<file>src/events/KeyboardEvent.js</file>
 			<file>src/net/net.js</file>
-			<file>src/net/Request/Request.js</file>
-			<file>src/net/Response/Response.js</file>
+			<file>src/net/XhrRequest/XhrRequest.js</file>
+			<file>src/net/XhrResponse/XhrResponse.js</file>
 			<file>src/net/Jsonp.js</file>
 			<file>src/net/Resource.js</file>
 			<file>src/net/Crossdomain.js</file>
