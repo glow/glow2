@@ -250,29 +250,6 @@ Glow.provide(function(glow) {
 		}
 		return r;
 	}
-		
-	/**
-		@private
-		@function
-		@description Set element's width or height
-		@param {glow.NodeList} elements
-		@param {number} newSize
-		@param {string} type 'width' or 'height'
-	*/
-	function setDimension(elms, val, type) {
-		var i = elms.length;
-		
-		// add px onto the end if needed
-		if ( !isNaN(val) ) {
-			val += 'px';
-		}
-		
-		while (i--) {
-			if (elms[i].nodeType === 1) {
-				elms[i].style[type] = val;
-			}
-		}
-	}
 	
 	/**
 		@private
@@ -367,7 +344,7 @@ Glow.provide(function(glow) {
 				if (this[i].nodeType === 1) {
 					thisStyle = this[i].style;
 						
-					if ( typeof val == 'number' && hasUnits.test(prop) ) {
+					if ( !isNaN(val) && hasUnits.test(prop) ) {
 						val += 'px';
 					}
 					
@@ -427,8 +404,7 @@ Glow.provide(function(glow) {
 		if (height === undefined) {
 			return getDimension(this[0], 'Height');
 		}
-		setDimension(this, height, 'height');
-		return this;	
+		return this.css('height', height);	
 	};
 	
 	/**
@@ -467,8 +443,7 @@ Glow.provide(function(glow) {
 		if (width === undefined) {
 			return getDimension(this[0], 'Width');
 		}
-		setDimension(this, width, 'width');
-		return this;
+		return this.css('width', width);
 	};
 	
 	/**

@@ -86,9 +86,8 @@ Glow.provide(function(glow) {
 		if (glow(container).length > 0) { this._init(container, opts); }
 	};
 	
-	glow.util.extend(CarouselPane, glow.ui.Widget);     // CarouselPane is a Widget
-	glow.util.extend(CarouselPane, glow.events.Target); // CarouselPane is a Target
-	CarouselPaneProto = CarouselPane.prototype;         // shortcut
+	glow.util.extend(CarouselPane, glow.ui.Widget); // CarouselPane is a Widget
+	CarouselPaneProto = CarouselPane.prototype;     // shortcut
 	
 	
 	
@@ -195,7 +194,7 @@ Glow.provide(function(glow) {
 	}
 	
 	CarouselPaneProto._build = function() { /*debug*///console.log('CarouselPaneProto._build');
-		WidgetProto._build.call(this, this._viewport, this._opts);
+		WidgetProto._build.call(this, this._viewport);
 		
 		this.stage.css({
 			margin: 0,
@@ -1045,8 +1044,7 @@ Glow.provide(function(glow) {
 	CarouselPaneProto.destroy = function() {
 		this.stage.get('.carousel-clone').remove();
 		detachEvents(this);
-		//TODO remove added positioning CSS?
-		//TODO? this.stage.insertBefore(this.container);
+		this.stage.insertBefore(this.container).children().css('position', '');
 		WidgetProto.destroy.call(this);
 	};
 	

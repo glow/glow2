@@ -67,19 +67,37 @@ module('glow.ui.Widget base class');
 		equal(myWidget.container[0].id, 'addedId', 'MyWidget container has added id.');
 	});
 	
-	test('Tie and sync', 2, function() {
+	test('Tie and sync', 4, function() {
 		var syncCallback = function() {
-			ok(true, 'Sync event fired.');
-			equal(w2.value, 3, 'Can sync new value.');
+			w2SyncCalled = true;
 		}
 		
 		var w1 = new MyWidget(1),
-			w2 = new MyWidget(2, {syncCallback: syncCallback});
+			w2 = new MyWidget(2, {syncCallback: syncCallback}),
+			w2SyncCalled = false,
+			w2DisabledCalled = false,
+			w2DestroyCalled = false;
+		
+		w2.disabled = function() {
+			w2DisabledCalled = true;
+		}
+		
+		w2.destroy = function() {
+			w2DestroyCalled = true;
+		}
 		
 		w1._tie(w2);
 		
 		w1.value = 3;
 		w1._sync({newValue: 3});
+		
+		ok(w2SyncCalled, 'synced event fired');
+		equal(w2.value, 3, 'Can sync new value.');
+		
+		w1.disabled(true).destroy();
+		
+		ok(w2DisabledCalled, 'disabled() synced');
+		ok(w2DestroyCalled, 'destroy() synced');
 	});
 	
 	test('tie() locale(), disable() and enable()', 5, function() {
