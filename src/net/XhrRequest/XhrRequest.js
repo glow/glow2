@@ -132,7 +132,6 @@ Glow.provide(function(glow) {
 				
 				//set as completed
 				request.completed = true;
-				
 				request.fire(response.successful ? 'load' : 'error', response);
 				
 				// prevent parent scopes leaking (cross-page) in IE
@@ -141,7 +140,10 @@ Glow.provide(function(glow) {
 			}
 		};
 		
-		nativeRequest.send(opts.data || null);
+		// make sure it doesn't complete before listeners are attached
+		setTimeout(function() {
+			nativeRequest.send(opts.data || null);
+		}, 0);
 	}
 	glow.util.extend(XhrRequest, events.Target);
 	XhrRequestProto = XhrRequest.prototype;

@@ -88,15 +88,16 @@ Glow.provide(function(glow) {
 	*/
 	
 	XhrResponseProto.xml = function() {
-		var nativeResponse = this.nativeResponse;
+		var nativeResponse = this.nativeResponse,
+			contentType = this.header("Content-Type");
 		
 		if (
 			// IE 6 & 7 fail to recognise Content-Types ending +xml (eg application/rss+xml)
 			// Files from the filesystem don't have a content type, but could be xml files, parse them to be safe
 			glow.env.ie && (
-				response.header("Content-Type").slice(-4) === '+xml' ||
+				contentType.slice(-4) === '+xml' ||
 				contentType === '' ||
-				this._request._forceXml
+				this._request._opts.forceXml
 			)
 		) {
 			var doc = new ActiveXObject("Microsoft.XMLDOM");
