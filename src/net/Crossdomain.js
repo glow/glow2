@@ -57,8 +57,8 @@ Glow.provide(function(glow) {
 			}, timeout * 1000);
 		}
 		
-		addIframe(this);
-		buildAndSubmitForm(this, method, url);
+		addIframe(request);
+		buildAndSubmitForm(request, method, url);
 	}
 	glow.util.extend(CrossDomainRequest, Target);
 	CrossDomainRequestProto = CrossDomainRequest.prototype;
@@ -93,7 +93,7 @@ Glow.provide(function(glow) {
 	function addIframe(request) {
 		var iframe = request._iframe = glow(
 			'<iframe style="visibility: hidden; position: absolute; height: 0;"></iframe>'
-		).on('load', handleResponse, request).appendTo(document.body);
+		).appendTo(document.body);
 	};
 		
 	/**
@@ -107,7 +107,8 @@ Glow.provide(function(glow) {
 		@param {string} url The URL to request.
 	*/
 	function buildAndSubmitForm(request, method, url) {
-		var win = request._iframe[0].contentWindow,
+		var iframe = request._iframe,
+			win = iframe[0].contentWindow,
 			doc = win.document,
 			form,
 			data = request._opts.data;
@@ -144,6 +145,9 @@ Glow.provide(function(glow) {
 		win.setTimeout(function () {
 			form.submit();
 		}, 0);
+		
+		// listen for form submitting
+		iframe.on('load', handleResponse, request);
 	}
 
 	/**
