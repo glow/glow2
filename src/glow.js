@@ -1,14 +1,28 @@
 (function() {
+
 	// there can be only one
 	if (window.Glow) { return; }
+	window.Glow = true;
 	
 	var glowMap,
 		defaultBase,
 		document = window.document,
-		thisScriptSrc = ( document.body || document.getElementsByTagName('head')[0] ).lastChild.src;
+		scripts = document.getElementsByTagName('script'),
+		thisScriptSrc = '';
 	
+	// we need to be very explicit to defend against some browser
+	// extensions which add elements to the document unexpectedly
+	for (var i = scripts.length; i--;) { // find the most recent script tag for glow
+		if ( /\bglow\b/.test(scripts[i].src || '') ) {
+			thisScriptSrc = scripts[i].src;
+			break;
+		}
+	}
+		
 	// get default base from last script element
-	defaultBase = thisScriptSrc.slice( 0, thisScriptSrc.lastIndexOf('/') ) + '/../';
+	defaultBase = thisScriptSrc? 
+		thisScriptSrc.slice( 0, thisScriptSrc.lastIndexOf('/') +1 ) + '../'
+		: '';
 		
 	// track when document is ready, must run before the page is finished loading
 	if (!document.readyState) {
