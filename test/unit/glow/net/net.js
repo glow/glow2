@@ -1,287 +1,272 @@
 module('glow.net');
-	test('Checks public interface', function() {			
-        expect(1);				
-        ok( (glow.net !== undefined), 'my instance of glow has the net module defined.' );
-		
-	});
-		
-	test('Basic net.get', function(){
-		expect(7);
-		stop();	
-		
-		var getRequest = glow.net.get("xhr/basictext.txt")
-		.on("load", 
-			function(response){
-				
-				ok(true, 'correct callback used');
-				equal(response.status, 200, 'Status code');
-				equal(response.nativeResponse.status, 200, 'Native response found');
-				ok(response.statusText(), 'Status returned: ' + response.statusText());
-				equal(response.header('Content-Type'), 'text/plain', 'Content-Type header');
-				start();
-			})
-		.on('error',
-			function(response){
-				ok(false, 'correct callback used');
-				start();
-			});
-
-		equal(typeof getRequest.abort, 'function', 'Return object has abort method');
-		equal(typeof getRequest.on, 'function', 'Return object has on method');
-		
-		stop(5000);
-	});
+test('Checks public interface', function() {			
+	expect(1);				
+	ok( (glow.net !== undefined), 'my instance of glow has the net module defined.' );
 	
+});
 	
+test('Basic net.get', function(){
+	expect(7);
+	stop();	
 	
-	test('glow.net.get async header setting', function() {
-		expect(5);
-		stop();
-		
-		
-		var request = glow.net.get('xhr/requestheaderdump.php',
-			{headers: {
-				'Custom-Header': 'thisisatest',
-				'Content-Type': 'image/png'
-			}})
-		.on('load', 
-			function(response){
-				ok(true, 'correct callback used');
-				ok(/^REQUEST_METHOD: GET/m.test(response.text()), 'Using get method');
-				ok(/^HTTP_CUSTOM_HEADER: thisisatest/m.test(response.text()), "Custom Header Sent");
-				ok(/^HTTP_X_REQUESTED_WITH: XMLHttpRequest/m.test(response.text()), "X-Requested-With default set");
-				ok(/^CONTENT_TYPE: image\/png/m.test(response.text()), "Content-type Changed");
-				start();
-			})
-		.on("error",
-			function(response){
-				ok(false, "correct callback used");
-				start();
-			});
-		stop(5000);	
-	});
-
-	
-	test("glow.net.get async xml", function() {
-		expect(3);
-		stop();
-		
-		var getXml = glow.net.get("xhr/xml.xml").on("load", 
-			function(response){
-				ok(true, "correct callback used");
-				var xml = response.xml();
-				ok(xml, "xml returned");
-				equal(xml.getElementsByTagName("foo").length, 3, "3 elements of foo");
-				start();
-			})
-		.on("error",
-			function(response){
-				ok(false, "correct callback used");
-				start();
-			});			
-		stop(5000);
-	});
-	
-	
-	test("glow.net.get force xml", function() {
-		expect(5);
-		stop();
-		
-		var getXml = glow.net.get("xhr/xml.txt", {
-			forceXml: true})
-		.on("load", 
-			function(response){
-				ok(true, "correct callback used");
-				var xml = response.xml();
-				ok(xml, "xml returned");
-				equal(xml.getElementsByTagName("hello").length, 1, "1 element of hello");
-				equal(xml.getElementsByTagName("world").length, 1, "1 element of world");
-				equal(xml.getElementsByTagName("world")[0].childNodes[0].nodeValue, 'Yey for XML', "Got text node value");
-				start();
-			})
-		.on("error",
-			function(response){
-				ok(false, "correct callback used");
-				start();
-			});	
-		stop(5000);
-	});
-
-	// need decodeJson method
-	test("glow.net.get async json", function() {
-		expect(4);
-		stop();
-		
-		var getRequest = glow.net.get("xhr/json.txt", 
-			{some:"postData", blah:["something", "somethingElse"]})
-		.on("load", 
-			function(response){
-				ok(true, "correct callback used");
-				var json = response.json();
-				ok(json, "json returned");
-				equal(json.hello, "world", "Returned correct value for 'hello'");
-				equal(json.something, 3, "Returned correct value for 'something'");
-				start();
-			})
-		.on("error",
-			function(response){
-				ok(false, "correct callback used");
-				start();
-			});
-		stop(5000);
-	});
-	
-	test("glow.net.abort", function() {
-		expect(2);		
-		
-		stop();
-		var aborted = true;
-		var abortableRequest = glow.net.get("xhr/large.txt", {
-			cacheBust: true
-		}).on("load", 
-			function(response){
-				aborted = false;
-			})
-		.on("error",
-			function(response){
-				aborted = false;
-			})
-		.on("abort",
-			function(response){
-				ok(true, "Abort event fired");
-				start();
-			});
-		
-		abortableRequest.abort();
-
-		ok(aborted, "Request aborted");	
-		stop(5000);
-	});
-	
-	
-	test("glow.net.post async string", function() {
-		expect(3);
-		stop();
-		var postRequest = glow.net.post("xhr/requestheaderdump.php",
-					"some=postData&blah=hurrah")
-		.on("load",
-			function(response){					
-				ok(true, "correct callback used");
-				equal( (/^REQUEST_METHOD: (\w+)/m.exec(response.text()) || [,,])[1], "POST", "Using post method" );
-				equal( (/^CONTENT_LENGTH: (\d+)/m.exec(response.text()) || [,,])[1], "25",   "Correct content length" );
-				start();
-			})
-		.on("error",
-			function(response){
-				ok(false, "correct callback used");
-				start();
-			});
-		stop(5000);
-	});
-	
-	test("glow.net.post aync json", function() {
-		expect(3);
-		stop();
-		
-		var postRequest = glow.net.post("xhr/requestheaderdump.php",
-					{some:"postData", blah:["something", "somethingElse"]}).on("load",
-			function(response){				
-				ok(true, "correct callback used");
-				equal( (/^REQUEST_METHOD: (\w+)/m.exec(response.text()) || [,,])[1], "POST", "Using post method" );
-				equal( (/^CONTENT_LENGTH: (\d+)/m.exec(response.text()) || [,,])[1], "47",   "Correct content length" );
-				start();
-			})
-		.on("error",
-			function(response){
-				ok(false, "correct callback used");
-				start();
-			});
-		stop(5000);
-	});
-
-
-
-	test("glow.net.get timeout cancelling", function() {
-		expect(2);
-		stop(5000);
-		
-		var noError = true;
-		
-		var getRequest = glow.net.get("xhr/morebasictext.txt",
-				{timeout: 2}).on("load",
-			function(response){
-				ok(true, "load called");
-				start();
-			})
-		.on("error",
-			function(response){
-				noError = false;
-			});
-		
-		
-		ok(noError, "error (timeout) not called");		
-	
-		
-		
-		
-	});
-
-
-	test("glow.net.getJsonp general", function() {
-		expect(3);
-		stop();
-		var timeoutCancelled = true;
-		
-		var jsonpRequest = glow.net.getJsonp("xhr/jsoncallback.js?callback={callback}",
-						   {timeout: 2}).on('load',
-			function(data) {
-				ok(true, "Callback called");
-				equal(data.hello, "world", "Data returned");
-				start();
-			}).on('error',
-				function() {
-					timeoutCancelled = false;
-					
-				});
-	
-	
-			ok(timeoutCancelled, "error (timeout) not called")
+	var getRequest = glow.net.get("xhr/basictext.txt")
+	.on("load", 
+		function(response){
 			
-	
-		stop(5000);
-		
-	});
+			ok(true, 'correct callback used');
+			equal(response.status, 200, 'Status code');
+			equal(response.nativeResponse.status, 200, 'Native response found');
+			ok(response.statusText(), 'Status returned: ' + response.statusText());
+			equal(response.header('Content-Type'), 'text/plain', 'Content-Type header');
+			start();
+		})
+	.on('error',
+		function(response){
+			ok(false, 'correct callback used');
+			start();
+		});
 
-test("glow.net.getJsonp timeout and charset", function() {
+	equal(typeof getRequest.abort, 'function', 'Return object has abort method');
+	equal(typeof getRequest.on, 'function', 'Return object has on method');
+	
+	stop(5000);
+});
+
+
+
+test('glow.net.get async header setting', function() {
+	expect(5);
+	stop();
+	
+	
+	var request = glow.net.get('xhr/requestheaderdump.php',
+		{headers: {
+			'Custom-Header': 'thisisatest',
+			'Content-Type': 'image/png'
+		}})
+	.on('load', 
+		function(response){
+			ok(true, 'correct callback used');
+			ok(/^REQUEST_METHOD: GET/m.test(response.text()), 'Using get method');
+			ok(/^HTTP_CUSTOM_HEADER: thisisatest/m.test(response.text()), "Custom Header Sent");
+			ok(/^HTTP_X_REQUESTED_WITH: XMLHttpRequest/m.test(response.text()), "X-Requested-With default set");
+			ok(/^CONTENT_TYPE: image\/png/m.test(response.text()), "Content-type Changed");
+			start();
+		})
+	.on("error",
+		function(response){
+			ok(false, "correct callback used");
+			start();
+		});
+	stop(5000);	
+});
+
+
+test("glow.net.get async xml", function() {
+	expect(3);
+	stop();
+	
+	var getXml = glow.net.get("xhr/xml.xml").on("load", 
+		function(response){
+			ok(true, "correct callback used");
+			var xml = response.xml();
+			ok(xml, "xml returned");
+			equal(xml.getElementsByTagName("foo").length, 3, "3 elements of foo");
+			start();
+		})
+	.on("error",
+		function(response){
+			ok(false, "correct callback used");
+			start();
+		});			
+	stop(5000);
+});
+
+
+test("glow.net.get force xml", function() {
+	expect(5);
+	stop();
+	
+	var getXml = glow.net.get("xhr/xml.txt", {
+		forceXml: true})
+	.on("load", 
+		function(response){
+			ok(true, "correct callback used");
+			var xml = response.xml();
+			ok(xml, "xml returned");
+			equal(xml.getElementsByTagName("hello").length, 1, "1 element of hello");
+			equal(xml.getElementsByTagName("world").length, 1, "1 element of world");
+			equal(xml.getElementsByTagName("world")[0].childNodes[0].nodeValue, 'Yey for XML', "Got text node value");
+			start();
+		})
+	.on("error",
+		function(response){
+			ok(false, "correct callback used");
+			start();
+		});	
+	stop(5000);
+});
+
+// need decodeJson method
+test("glow.net.get async json", function() {
+	expect(4);
+	stop();
+	
+	var getRequest = glow.net.get("xhr/json.txt", 
+		{some:"postData", blah:["something", "somethingElse"]})
+	.on("load", 
+		function(response){
+			ok(true, "correct callback used");
+			var json = response.json();
+			ok(json, "json returned");
+			equal(json.hello, "world", "Returned correct value for 'hello'");
+			equal(json.something, 3, "Returned correct value for 'something'");
+			start();
+		})
+	.on("error",
+		function(response){
+			ok(false, "correct callback used");
+			start();
+		});
+	stop(5000);
+});
+
+test("glow.net.abort", function() {
+	expect(2);		
+	
+	stop();
+	var aborted = true;
+	var abortableRequest = glow.net.get("xhr/large.txt", {
+		cacheBust: true
+	}).on("load", 
+		function(response){
+			aborted = false;
+		})
+	.on("error",
+		function(response){
+			aborted = false;
+		})
+	.on("abort",
+		function(response){
+			ok(true, "Abort event fired");
+			start();
+		});
+	
+	abortableRequest.abort();
+
+	ok(aborted, "Request aborted");	
+	stop(5000);
+});
+
+
+test("glow.net.post async string", function() {
+	expect(3);
+	stop();
+	var postRequest = glow.net.post("xhr/requestheaderdump.php",
+				"some=postData&blah=hurrah")
+	.on("load",
+		function(response){					
+			ok(true, "correct callback used");
+			equal( (/^REQUEST_METHOD: (\w+)/m.exec(response.text()) || [,,])[1], "POST", "Using post method" );
+			equal( (/^CONTENT_LENGTH: (\d+)/m.exec(response.text()) || [,,])[1], "25",   "Correct content length" );
+			start();
+		})
+	.on("error",
+		function(response){
+			ok(false, "correct callback used");
+			start();
+		});
+	stop(5000);
+});
+
+test("glow.net.post aync json", function() {
+	expect(3);
+	stop();
+	
+	var postRequest = glow.net.post("xhr/requestheaderdump.php",
+				{some:"postData", blah:["something", "somethingElse"]}).on("load",
+		function(response){				
+			ok(true, "correct callback used");
+			equal( (/^REQUEST_METHOD: (\w+)/m.exec(response.text()) || [,,])[1], "POST", "Using post method" );
+			equal( (/^CONTENT_LENGTH: (\d+)/m.exec(response.text()) || [,,])[1], "47",   "Correct content length" );
+			start();
+		})
+	.on("error",
+		function(response){
+			ok(false, "correct callback used");
+			start();
+		});
+	stop(5000);
+});
+
+
+
+test("glow.net.get timeout cancelling", function() {
+	expect(2);
+	stop(5000);
+	
+	var noError = true;
+	
+	var getRequest = glow.net.get("xhr/morebasictext.txt",
+			{timeout: 2}).on("load",
+		function(response){
+			ok(true, "load called");
+			start();
+		})
+	.on("error",
+		function(response){
+			noError = false;
+		});
+	
+	
+	ok(noError, "error (timeout) not called");		
+	
+});
+
+
+test("glow.net.jsonp general", 2, function() {
+	stop(5000);
+	
+	var jsonpRequest = glow.net.jsonp("xhr/jsoncallback.js?callback={callback}", {
+		timeout: 2
+	}).on('load', function(data) {
+		ok(true, "load called");
+		equal(data.hello, "world", "Data returned");
+		start();
+	}).on('error', function() {
+		ok(false, "error callback not called");
+	});
+});
+
+test("glow.net.jsonp timeout and charset", function() {
 	expect(3);
 	stop();
 	
 	var onLoadCalled = false;
 	
 	//this script doesn't actually callback, so it'll timeout
-	var jsonpRequest = glow.net.getJsonp("xhr/loadscriptfail.js?callback={callback}",
-					  {timeout: 2,
-						charset: "utf-8"}).on('load', 
-		function(data) {
-			onLoadCalled = true;
-		}).on('error',
-		function() {
-			ok(!onLoadCalled, "load not called");
-			ok(true, "error (timeout) called");
-			start();
-		});
+	var jsonpRequest = glow.net.jsonp("xhr/loadscriptfail.js?callback={callback}", {
+		timeout: 2,
+		charset: "utf-8"
+	}).on('load', function(data) {
+		onLoadCalled = true;
+	}).on('error', function() {
+		ok(!onLoadCalled, "load not called");
+		ok(true, "error (timeout) called");
+		start();
+	});
 
-	equals(glow(document.body.lastChild).attr("charset"), "utf-8", "Charset set");
+	equals( glow('script').attr("charset"), "utf-8", "Charset set" );
 	stop(5000);
 });
 
-test("glow.net.getJsonp aborting", function() {	
+test("glow.net.jsonp aborting", function() {	
 	stop();
 	var onLoadCalled = false;
 	var onErrorCalled = false;
 	var onAbortCalled = false;
 	
-	var jsonpRequest = glow.net.getJsonp("testdata/xhr/jsoncallback.js?callback={callback}",
+	var jsonpRequest = glow.net.jsonp("testdata/xhr/jsoncallback.js?callback={callback}",
 									{timeout: 2}).on('load', 
 		function(data) {
 			onLoadCalled = true;			
