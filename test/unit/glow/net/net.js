@@ -9,22 +9,17 @@ test('Basic net.get', function(){
 	expect(7);
 	stop();	
 	
-	var getRequest = glow.net.get("xhr/basictext.txt")
-	.on("load", 
-		function(response){
-			
-			ok(true, 'correct callback used');
-			equal(response.status, 200, 'Status code');
-			equal(response.nativeResponse.status, 200, 'Native response found');
-			ok(response.statusText(), 'Status returned: ' + response.statusText());
-			equal(response.header('Content-Type'), 'text/plain', 'Content-Type header');
-			start();
-		})
-	.on('error',
-		function(response){
-			ok(false, 'correct callback used');
-			start();
-		});
+	var getRequest = glow.net.get('xhr/basictext.txt').on("load", function(response) {
+		ok(true, 'correct callback used');
+		equal(response.status, 200, 'Status code');
+		equal(response.nativeResponse.status, 200, 'Native response found');
+		ok(response.statusText(), 'Status returned: ' + response.statusText());
+		equal(response.header('Content-Type'), 'text/plain', 'Content-Type header');
+		start();
+	}).on('error', function(response){
+		ok(false, 'correct callback used');
+		start();
+	});
 
 	equal(typeof getRequest.abort, 'function', 'Return object has abort method');
 	equal(typeof getRequest.on, 'function', 'Return object has on method');
@@ -296,119 +291,69 @@ test("glow.net.jsonp aborting", function() {
 
 
 test("glow.net.getResources single CSS", function() {
-	expect(4);
+	expect(5);
 	stop(5000);
-	var timeoutCancelled = true;
 	
-	var cssRequest = glow.net.getResources("xhr/resources/test.css").on('progress',
-		function(response){
-			ok(true, "Progress fired for single CSS file");
-		
-			}).on('load',
-		function(response) {
-			ok(true, "Load fired");
-			equal( response.completed, 1, "1 item completed" );
-			start();
-		}).on('error',
-			function() {
-				timeoutCancelled = false;
-			});
+	var cssRequest = glow.net.getResources("xhr/resources/test.css").on('progress', function(response) {
+		ok(true, "Progress fired for single CSS file");
+		equal(response.type, 'css', 'Correct type');
+		equal(response.resource[0].nodeName, 'LINK', 'Correct resource');
+		equal(response.url, 'xhr/resources/test.css', 'Correct url');
+	}).on('load', function(response) {
+		ok(true, "Load fired");
+		start();
+	});
 
-	ok(timeoutCancelled, "error (timeout) not called");
-	
-	
-	
 });
 
 test("glow.net.getResources single image", function() {
-	expect(4);
+	expect(5);
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var image = glow.net.getResources("xhr/resources/dragon.jpg")
-	.on('progress',
-		function(response){
-			ok(true, "Progress fired for single image (this should appear 1 time)");
-			
-			
-			}).on('load',
-		function(response) {
-			ok(true, "Load fired");
-			equal( response.completed, 1, "1 item completed" );
-			start();
-		}).on('error',
-			function() {
-				timeoutCancelled = false;
-				
-			});
-	
-	ok(timeoutCancelled, "error (timeout) not called")
-
-
+	var image = glow.net.getResources('xhr/resources/dragon.jpg').on('progress', function(response) {
+		ok(true, "Progress fired for single image (this should appear 1 time)");
+		equal(response.type, 'img', 'Correct type');
+		equal(response.resource[0].nodeName, 'IMG', 'Correct resource');
+		equal(response.url, 'xhr/resources/dragon.jpg', 'Correct url');
+	}).on('load', function(response) {
+		ok(true, "Load fired");
+		start();
+	});
 });
 
 test("glow.net.getResources multiple images", function() {
-	expect(5);
-
+	expect(3);
 	stop(5000);
 	var timeoutCancelled = true;
 	
-	var images = glow.net.getResources(["xhr/resources/glow_g.png", "xhr/resources/bunny.jpg"])
-	.on('progress',
-		function(response){
-			ok(true, "Progress fired (this should appear 2 times)");
-			})
-	.on('load',
-		function(response) {
-			ok(true, "Load fired");
-			equal( response.completed, 2, "2 items completed" );
-			start()
-		}).on('error',
-			function() {
-				timeoutCancelled = false;
-			
-			});
-	
-	
-	
-		ok(timeoutCancelled, "error (timeout) not called")
-		
-	
-
-	
-	
+	var images = glow.net.getResources([
+		'xhr/resources/glow_g.png', 'xhr/resources/bunny.jpg'
+	]).on('progress', function(response){
+		ok(true, "Progress fired (this should appear 2 times)");
+	}).on('load', function(response) {
+		ok(true, "Load fired");
+		start();
+	})
 });
-
 
 test("glow.net.getResources mixed images and css", function() {
 	expect(6);
 
 	stop(5000);
-	var timeoutCancelled = true;
 	
-	var imagesAndCss = glow.net.getResources(["xhr/resources/homebannerbg.png", "xhr/resources/gradientbg.png", "xhr/resources/test.css"],
-					   {timeout: 2}).on('progress',
-	function(response){
-			ok(true, "Progress fired (this should appear 3 times)");
-		
-			})
-	.on('load',
-		function(response) {
-			ok(true, "Load fired");
-			equal( response.completed, 3, "3 items completed" );
-			start();
-		})
-	.on('error',
-			function() {
-				timeoutCancelled = false;
-				start();
-		});
-	
-	ok(timeoutCancelled, "error (timeout) not called")
-		
-
-	
-	
+	var imagesAndCss = glow.net.getResources([
+		"xhr/resources/homebannerbg.png",
+		"xhr/resources/gradientbg.png",
+		"xhr/resources/test.css"
+	]).on('progress', function(response){
+		ok(true, "Progress fired (this should appear 3 times)");
+	}).on('load', function(response) {
+		ok(true, "Load fired");
+		equal(this.totalResources, 3, 'totalResources');
+		equal(this.totalLoaded, 3, 'totalLoaded');
+		start();
+	});
 });
 
 test("glow.net.put json", function() {
@@ -452,7 +397,7 @@ test("glow.net.crossDomainRequest", function () {
 	stop(5000);
 	
     glow.net.crossDomainGet(window.location.href.replace(/net\.html.*$/, '') + 'xhr/xdomain/windowdotname.html?search')
-		.on('load', function (response) {		
+		.on('load', function (response) {
             equal(response.text(), 'test response', 'get xDomainResponse');
             start();
 		});
