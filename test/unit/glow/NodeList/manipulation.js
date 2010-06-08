@@ -1644,7 +1644,7 @@ test('glow.dom.NodeList#text getting', 4, function() {
 	equal(new glow.NodeList( document.createTextNode('Hello') ).text(), 'Hello', 'Reading text from text nodes');
 });
 
-test('glow.dom.NodeList#text setting multiple elements', 3, function() {
+test('glow.dom.NodeList#text setting multiple elements', 5, function() {
 	var myNodeList = new glow.NodeList('#innerDiv1, #innerDiv2'),
 		returnNodeList;
 	
@@ -1652,8 +1652,10 @@ test('glow.dom.NodeList#text setting multiple elements', 3, function() {
 	
 	strictEqual(returnNodeList, myNodeList, 'Same nodelist returned');
 	
-	equal(myNodeList.item(0).html().toLowerCase(), '&lt;span&gt;abc&lt;/span&gt;', 'sets text');
-	equal(myNodeList.item(1).html().toLowerCase(), '&lt;span&gt;abc&lt;/span&gt;', 'sets text');
+	equal(myNodeList.item(0).text(), '<span>abc</span>', 'sets text');
+	equal(myNodeList.item(0).children().length, 0, 'hasn\'t created children');
+	equal(myNodeList.item(1).text(), '<span>abc</span>', 'sets text');
+	equal(myNodeList.item(1).children().length, 0, 'hasn\'t created children');
 });
 
 test('glow.dom.NodeList#text setting multiple mixed elements', 2, function() {

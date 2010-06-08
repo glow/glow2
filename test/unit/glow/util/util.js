@@ -164,7 +164,7 @@ test('interpolate', 2, function() {
 		escapeHtml: true
 	});
 	
-	equal(result, '<p>Hello, my name is Haxors!!1 &lt;script src="hackhackhack.js"&gt;&lt;/script&gt;</p>');
+	equal(glow(result).get('*').length, 0, 'HTML Correctly escaped');
 });
 
 test('cookie', 8, function() {
