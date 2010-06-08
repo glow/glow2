@@ -134,7 +134,7 @@ test('glow.NodeList#css border styles', 4, function() {
 	equal(nodes.css("border-left-style"), "solid", "border-left-style");
 });
 
-test('glow.NodeList#css floats, display and position', 21, function() {
+test('glow.NodeList#css floats, display and position', 18, function() {
 
 	//misc
 	nodes = new glow.NodeList("#cssTests div.containsWidth100Div");
@@ -175,13 +175,6 @@ test('glow.NodeList#css floats, display and position', 21, function() {
 	ok(/[^0-9]/.test(nodes.css("right")), "right (%) is a number value");
 	nodes = new glow.NodeList("#cssTests div.posTest7");
 	/*18*/equal(nodes.css("left"), "30px", "Using correct offset parent");
-	
-
-	nodes = new glow.NodeList("#cssTests div.posTest8");
-	/*19*/equal(nodes.css("width"), "60px", "width (em val display none)");
-	/*20*/equal(nodes.css("width"), "60px", "width (em val display none)");
-	/*21*/equal(nodes.css("height"), "30px", "height (px val display none)");
-
 
 });
 

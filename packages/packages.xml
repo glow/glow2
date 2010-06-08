@@ -16,12 +16,6 @@
 			<file>src/events/events.js</file>
 			<file>src/events/DomEvent.js</file>
 			<file>src/events/KeyboardEvent.js</file>
-			<file>src/net/net.js</file>
-			<file>src/net/Request/Request.js</file>
-			<file>src/net/Response/Response.js</file>
-			<file>src/net/Jsonp.js</file>
-			<file>src/net/Resource.js</file>
-			<file>src/net/Crossdomain.js</file>
 			<file>src/NodeList/NodeList.js</file>
 			<file>src/NodeList/attributes.js</file>
 			<file>src/NodeList/_sizzle/sizzle/sizzle.js</file>
@@ -30,6 +24,12 @@
 			<file>src/NodeList/appearance.js</file>
 			<file>src/NodeList/events.js</file>
 			<file>src/NodeList/anim.js</file>
+			<file>src/net/net.js</file>
+			<file>src/net/XhrRequest/XhrRequest.js</file>
+			<file>src/net/XhrResponse/XhrResponse.js</file>
+			<file>src/net/Jsonp.js</file>
+			<file>src/net/Resource.js</file>
+			<file>src/net/Crossdomain.js</file>
 			<file>src/tweens/tweens.js</file>
 			<file>src/anim/Anim/Anim.js</file>
 			<file>src/anim/Anim/prop.js</file>
