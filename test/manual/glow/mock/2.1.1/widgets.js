@@ -6,7 +6,7 @@ setTimeout(
 				if (!glow.more) { throw new Error('Cannot build widgets before more.'); }
 				
 				glow.widgets = {};
-				log.info(' [3] built widgets 2.1.1');
+				window.log.push(' [3] built widgets 2.1.1');
 			}
 		);
 		

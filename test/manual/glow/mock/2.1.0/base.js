@@ -11,7 +11,7 @@ setTimeout(
 				glow.base = glow.base || {};
 				
 				glow.base.isLoaded = true;
-				log.info(' [1] built base 2.1.0');
+				window.log.push(' [1] built base 2.1.0');
 			}
 		);
 		

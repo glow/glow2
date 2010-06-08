@@ -6,7 +6,7 @@ setTimeout(
 				glow.more = glow.more || {};
 				
 				glow.more.one = 1;
-				log.info(' [2] built more.one 2.1.0');
+				window.log.push(' [2] built more.one 2.1.0');
 			}
 		);
 		
@@ -15,7 +15,7 @@ setTimeout(
 				glow.more = glow.more || {};
 				
 				glow.more.two = 2;
-				log.info('     built more.two 2.1.0');
+				window.log.push('     built more.two 2.1.0');
 			}
 		);
 		

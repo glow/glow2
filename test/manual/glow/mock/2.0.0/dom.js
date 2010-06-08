@@ -6,7 +6,7 @@ setTimeout(
 				glow.dom = glow.dom || {};
 				
 				glow.dom.one = 1;
-				log.info(' (2) built dom.one 2.0.0');
+				window.log.push(' (2) built dom.one 2.0.0');
 			}
 		);
 		
@@ -15,7 +15,7 @@ setTimeout(
 				glow.dom = glow.dom || {};
 				
 				glow.dom.two = 2;
-				log.info('     built dom.two 2.0.0');
+				window.log.push('     built dom.two 2.0.0');
 			}
 		);
 		

@@ -4,31 +4,12 @@
 <head>
 	<title>Manual Test: Glow load</title>
 	
-	<script type="text/javascript" src="../lib/log4javascript.js"></script>
-	<script type="text/javascript" src="../lib/log.js"></script>
-	
+	<script src="../../unit/lib/testhelper.js?base=../../../" type="text/javascript"></script>
 	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
 	
 	<script type="text/javascript">
-		// configure the manual test...
-		window.conf = {
-			base: '../../../packages/',
-			version: 'src'
-		};
-	</script>
-	
-	<script type="text/javascript">
-		// include glow.js in the page...
-		(function() {
-			var glowSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/glow.js';
-			
-			log.info('Writing script tag for Glow at ' + glowSrc + '.');
-			
-			document.write(
-				'<script type="text/javascript" src="' + glowSrc + '"> \
-				<' + '/script>'
-			);
-		})();
+		testHelper.addScript('glow.js');
 	</script>
 </head>
 
@@ -38,76 +19,94 @@
 	<h2>Ordered loading events.</h2>
 	
 	<p>
-		This is provided as a manual test to ensure that Glow loading events happen in order.
+		This is manual test shows that Glow can load multiple versions of the library
+		at the same time and will eveluate all modules in the correct order.
 	</p>
 	
+	<div class="testarea" id="loadorder-test">
+		<ul>
+			<li>Wait a few seconds.</li>
+			<li>Do the numbered events appear in order?</li>
+			<li>Reload the page a few times, try it with a clean cache.</li>
+		</ul>
+	</div>
+	
 	<script type="text/javascript" class="showSrc">
-		var mockMap = {
-			versions: ['2.0.0', '2.1.0', '2.1.1', 'src'],
-			'2.0.0': {
-				'core':    ['core.js'],
-				'base':    ['core', 'base.js'],
-				'dom':     ['base', 'dom.js'],
-				'widgets': ['dom', 'widgets.js', 'widgets.css']
-			},
-			'2.1.0': {
-				'core':    ['core.js'],
-				'base':    ['core', 'base.js'],
-				'more':    ['base', 'more.js'],
-				'widgets': ['more', 'widgets.js', 'widgets.css']
-			}
-		};
+		module('Load Order');
 		
-		var glow200 = Glow('2.0.0', {_map: mockMap, base: './mock/', _noload: true});
-		var glow211 = Glow('2', {_map: mockMap, base: './mock/', _noload: true});
+		window.log = [];
 		
-		glow200.load('dom', 'widgets', 'base');
-		
-		glow211.load('more')
-		.loaded(function(glow) {
-			if (!glow.more) { throw new Error('Cannot run callback 1 for glow 2.1.1 before glow.more is loaded.'); }
+		test('Two different versions load together.', function(result) {
+			var mockMap = {
+				versions: ['2.0.0', '2.1.0', '2.1.1', 'src'],
+				'2.0.0': {
+					'core':    ['core.js'],
+					'base':    ['core', 'base.js'],
+					'dom':     ['base', 'dom.js'],
+					'widgets': ['dom', 'widgets.js', 'widgets.css']
+				},
+				'2.1.0': {
+					'core':    ['core.js'],
+					'base':    ['core', 'base.js'],
+					'more':    ['base', 'more.js'],
+					'widgets': ['more', 'widgets.js', 'widgets.css']
+				}
+			};
 			
-			log.info('____ ran onLoaded callback 1 for glow version 2.1.1');
-		})
-		.ready(function(glow) {
-			log.info('____ ran ready callback 1 for glow version 2.1.1');
-		});
-		
-		glow200.loaded(function(glow) {
-			if (!glow.widgets) { throw new Error('Cannot run callback 1 for glow 2.0.0 before widgets is loaded.'); }
+			var glow200 = Glow('2.0.0', {_map: mockMap, base: './mock/', _noload: true});
+			var glow211 = Glow('2', {_map: mockMap, base: './mock/', _noload: true});
 			
-			log.info('____ ran onLoaded callback 1 for glow version 2.0.0');
+			glow200.load('dom', 'widgets', 'base');
+			
+			glow211.load('more')
+			.loaded(function(glow) {
+				if (!glow.more) { throw new Error('Cannot run callback 1 for glow 2.1.1 before glow.more is loaded.'); }
+				
+				//log.info('____ ran onLoaded callback 1 for glow version 2.1.1');
+			})
+			.ready(function(glow) {
+				//log.info('____ ran ready callback 1 for glow version 2.1.1');
+			});
+			
+			glow200.loaded(function(glow) {
+				if (!glow.widgets) { throw new Error('Cannot run callback 1 for glow 2.0.0 before widgets is loaded.'); }
+				
+				//log.info('____ ran onLoaded callback 1 for glow version 2.0.0');
+			});
+			
+			//log.info('includes finished.');
+			
+			setTimeout(
+				function() {
+					glow211
+					.load('widgets')
+					.loaded(function(glow) {
+						if (!glow.widgets) { throw new Error('Cannot run callback 2 for glow 2.1.1 before widgets is loaded.'); }
+						
+						//log.info('____ ran onLoaded callback 2 for glow version 2.1.1');
+					})
+					.ready(function(glow) {
+						var logmsg = window.log.join('<br>');
+						document.getElementById('log').innerHTML = logmsg;
+						var order1 = /\[1\].+\[2\].+\[3\]/.test(logmsg),
+							order2 = /\(1\).+\(2\).+\(3\)/.test(logmsg);
+							
+						result.ok(order1 && order2, 'all modules load in order.');
+					});
+				},
+				2000
+			);
 		});
-		
-		log.info('includes finished.');
-		
-		setTimeout(
-			function() {
-				glow211
-				.load('widgets')
-				.loaded(function(glow) {
-					if (!glow.widgets) { throw new Error('Cannot run callback 2 for glow 2.1.1 before widgets is loaded.'); }
-					
-					log.info('____ ran onLoaded callback 2 for glow version 2.1.1');
-				})
-				.ready(function(glow) {
-					log.info('____ ran ready callback 2 for glow version 2.1.1');
-				});
-			},
-			2000
-		);
 	</script>
 	
-	<ul>
-		<li>Do the numbered events appear in order?</li>
-		<li>Reload the page a few times, try it with a clean cache.</li>
-	</ul>
+	<pre id="log"></pre>
+	
+	
 	
 	<script type="text/javascript">
 		// make scripts visible in the page...
 		manualTests.showSrc();
 	</script>
-	<div id="log-messages"></div>
 </body>
 </html>
 <span id="last-element"></span>
