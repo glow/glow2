@@ -113,7 +113,7 @@ test('minLength', 6, function() {
 test('caseSensitive', 3, function() {
 	var autoSuggest = new glow.ui.AutoSuggest().on('results', function(e) {
 		same(e.results, [
-			{name:"addClass",alias:"glow.dom.NodeList#addClass",memberOf:"glow.dom.NodeList",type:"Method",href:"glow.dom.nodelist.shtml#method:addclass"},
+			{name:"addClass",alias:"glow.dom.NodeList#addClass",memberOf:"glow.dom.NodeList",type:"Method",href:"glow.dom.nodelist.shtml#method:addclass"}
 		], 'Correct results found - case insensitive');
 	}).data(glow1Api)
 		.find('addclass')
@@ -131,7 +131,7 @@ test('caseSensitive', 3, function() {
 		caseSensitive: true
 	}).on('results', function(e) {
 		same(e.results, [
-			{name:"addClass",alias:"glow.dom.NodeList#addClass",memberOf:"glow.dom.NodeList",type:"Method",href:"glow.dom.nodelist.shtml#method:addclass"},
+			{name:"addClass",alias:"glow.dom.NodeList#addClass",memberOf:"glow.dom.NodeList",type:"Method",href:"glow.dom.nodelist.shtml#method:addclass"}
 		], 'Correct results found - case sensitive 2');
 	}).data(glow1Api)
 		.find('addClass')
@@ -163,7 +163,7 @@ test('Altering events', 2, function() {
 		e.val = 'ajax';
 	}).on('results', function(e) {
 		same(e.results, [
-			{name:"ajax",alias:"glow.forms.tests.ajax",memberOf:"glow.forms.tests",type:"Method",href:"glow.forms.tests.shtml#staticmethod:ajax"},
+			{name:"ajax",alias:"glow.forms.tests.ajax",memberOf:"glow.forms.tests",type:"Method",href:"glow.forms.tests.shtml#staticmethod:ajax"}
 		], 'Expected results - find overwritten');
 	}).data(glow1Api)
 		.find('abort')
@@ -195,7 +195,7 @@ test('Cancelling events', 2, function() {
 test('Custom filters', 1, function() {
 	var autoSuggest = new glow.ui.AutoSuggest().on('results', function(e) {
 		same(e.results, [
-			{name:"addScrollbar",alias:"glow.widgets.Timetable#addScrollbar",memberOf:"glow.widgets.Timetable",type:"Method",href:"glow.widgets.timetable.shtml#method:addscrollbar"},
+			{name:"addScrollbar",alias:"glow.widgets.Timetable#addScrollbar",memberOf:"glow.widgets.Timetable",type:"Method",href:"glow.widgets.timetable.shtml#method:addscrollbar"}
 		], 'Expected results');
 	}).setFilter(function(val, caseSensitive) {
 		var name = caseSensitive ? this.name : this.name.toLowerCase();
