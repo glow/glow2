@@ -62,10 +62,10 @@ Glow.provide(function(glow) {
 			// these wraps are in the format [depth to children, opening html, closing html]
 			tableWrap = [1, '<table>', '</table>'],
 			emptyWrap = [0, '', ''],
-			// webkit won't accept <link> elms to be the only child of an element,
+			// Easlier Webkits won't accept <link> & <style> elms to be the only child of an element,
 			// it steals them and hides them in the head for some reason. Using
 			// broken html fixes it for some reason
-			paddingWrap = [1, 'b<div>', '</div>'],
+			paddingWrap = glow.env.webkit < 526 ? [0, '', '</div>'] : [1, 'b<div>', '</div>'],
 			trWrap = [3, '<table><tbody><tr>', '</tr></tbody></table>'],
 			wraps = {
 				caption: tableWrap,
@@ -83,27 +83,27 @@ Glow.provide(function(glow) {
 				style: paddingWrap,
 				'!': paddingWrap
 			};
-		
+
 		function strToNodes(str) {
 			var r = [],
 				tagName = ( /^<([\w!]+)/.exec(str) || [] )[1],
 				// This matches str content with potential elements that cannot
 				// be a child of <div>.  elmFilter declared at top of page.
-				wrap = wraps[tagName] || emptyWrap, 
+				wrap = wraps[tagName] || emptyWrap,
 				nodeDepth = wrap[0],
 				childElm = tmpDiv,
 				exceptTbody,
 				rLen = 0,
 				firstChild;
-			
+
 			// Create the new element using the node tree contents available in filteredElm.
 			childElm.innerHTML = (wrap[1] + str + wrap[2]);
-			
+
 			// Strip newElement down to just the required elements' parent
 			while(nodeDepth--) {
 				childElm = childElm.lastChild;
 			}
-			
+
 			// pull nodes out of child
 			if (wrap === tableWrap && str.indexOf('<tbody') === -1) {
 				// IE7 (and earlier) sometimes gives us a <tbody> even though we didn't ask for one
@@ -119,10 +119,10 @@ Glow.provide(function(glow) {
 					r[rLen++] = childElm.removeChild(firstChild);
 				}
 			}
-			
+
 			return r;
 		}
-		
+
 		return strToNodes;
 	})();
 	
