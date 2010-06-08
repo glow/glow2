@@ -45,6 +45,10 @@
 		var elm1 = glow('#elementToTest3'),
 			focusable = elm1.focusable(),
 			focusListener = function(event) {
+				// ignore focuses on document, it's a funny thing Firefox 3.5 does
+				if (event.source === document) {
+					return;
+				}
 				ok(event.source === elm1[0], 'Focus event fired on correct source');
 			},
 			blurListener = function(event) {
