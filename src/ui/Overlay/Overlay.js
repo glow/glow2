@@ -76,19 +76,16 @@ Glow.provide(function(glow) {
 	OverlayProto._build = function(content) {
 		WidgetProto._build.call(this, content);
 		
-		// TODO: should the iframe always be added? would make styling more consistent across browsers
 		//add IE iframe hack if needed, wrap content in an iFrame to prevent certain elements below from showing through
-		//if (glow.env.ie < 7) { /*debug*///console.log('created iframe');
-			this._iframe = glow('<iframe src="javascript:\'\'" style="display:block;width:100%;height:1000px;margin:0;padding:0;border:none;position:absolute;top:0;left:0;filter:alpha(opacity=0);"></iframe>')
-			this._iframe.css('z-index', 0);
-			
-			this._iframe.insertBefore(this.content);
-			this.content
-				.css('z-index', 1)
-				.css('position', 'relative')
-				.css('top', 0)
-				.css('left', 0);
-		//}z
+		this._iframe = glow('<iframe src="javascript:\'\'" style="display:block;width:100%;height:1000px;margin:0;padding:0;border:none;position:absolute;top:0;left:0;filter:alpha(opacity=0);"></iframe>')
+		this._iframe.css('z-index', 0);
+		
+		this._iframe.insertBefore(this.content);
+		this.content
+			.css('z-index', 1)
+			.css('position', 'relative')
+			.css('top', 0)
+			.css('left', 0);
 		
 		this.container.css('z-index', this._opts.zIndex);
 
