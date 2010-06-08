@@ -4,39 +4,13 @@
 <head>
 	<title>Manual Test: Glow commando</title>
 	
-	<script type="text/javascript" src="../lib/log4javascript.js"></script>
-	<script type="text/javascript" src="../lib/log.js"></script>
-	
+	<script src="../../unit/lib/testhelper.js?base=../../../" type="text/javascript"></script>
 	<script type="text/javascript" src="../lib/manualtest.js"></script>
-	
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
+
 	<script type="text/javascript">
-		// configure the manual test...
-		window.conf = {
-			base: '../../../packages/',
-			version: 'src'
-		};
-	</script>
-	
-	<script type="text/javascript">
-		// include glow.js in the page...
-		(function() {
-			var coreSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/core.js';
-			var uiSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/ui.js';
-			
-			log.info('Writing script tag for core at ' + coreSrc + '.');
-			
-			document.write(
-				'<script type="text/javascript" src="' + coreSrc + '"> \
-				<' + '/script>'
-			);
-			
-			log.info('Writing script tag for ui at ' + uiSrc + '.');
-			
-			document.write(
-				'<script type="text/javascript" src="' + uiSrc + '"> \
-				<' + '/script>'
-			);
-		})();
+		testHelper.addScript('core.js');
+		testHelper.addScript('ui.js');
 	</script>
 </head>
 
@@ -49,31 +23,28 @@
 		This is provided as a manual test to ensure that pckages load correctly via script tags.
 	</p>
 	
-	<script type="text/javascript" class="showSrc">
-		if (glow) {
-			log.info('The glow instance is created '+glow+'.');
-		}
-		else {
-			log.error('The glow instance is not defined.');
-		}
+	<div class="testarea" id="commando-test">
+		<ul>
+			<li>Is glow defined?</li>
+			<li>Is glow.ui defined?</li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+		module('Commando Loading');
 		
-		if (glow.ui) {
-			log.info('The ui package is created '+glow.ui+'.');
-		}
-		else {
-			log.error('The ui package is not defined.');
-		}
+		test('File core.js is loaded, glow is defined.', function(result) {
+			result.ok(typeof glow != 'undefined', typeof glow);
+		});
+		
+		test('File ui.js is loaded, glow.ui is defined.', function(result) {
+			result.ok(typeof glow.ui != 'undefined', typeof glow.ui);
+		});
 	</script>
-	
-	<ul>
-		<li>Is glow defined?</li>
-		<li>Is glow.sidgets defined?</li>
-	</ul>
 	
 	<script type="text/javascript">
 		// make scripts visible in the page...
 		manualTests.showSrc();
 	</script>
-	<div id="log-messages"></div>
+	
 </body>
 </html>

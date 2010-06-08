@@ -4,36 +4,18 @@
 <head>
 	<title>Manual Test: Glow load</title>
 	
-	<script type="text/javascript" src="../lib/log4javascript.js"></script>
-	<script type="text/javascript" src="../lib/log.js"></script>
-	
+	<script src="../../unit/lib/testhelper.js?base=../../../" type="text/javascript"></script>
 	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
 	
 	<script type="text/javascript">
-		// configure the manual test...
-		window.conf = {
-			base: '../../../packages/',
-			version: 'src'
-		};
-	</script>
-	
-	<script type="text/javascript">
-		// include glow.js in the page...
-		(function() {
-			var glowSrc =  conf.base + (conf.version == 'src'? 'src' : conf.version) + '/glow.js';
-			
-			log.info('Writing script tag for Glow at ' + glowSrc + '.');
-			
-			document.write(
-				'<script type="text/javascript" src="' + glowSrc + '"> \
-				<' + '/script>'
-			);
-		})();
+		testHelper.addScript('glow.js');
 	</script>
 
 </head>
 
 <body>
+	
 	<h1>Glow load</h1>
 	
 	<h2>Loading packages into glow.</h2>
@@ -42,6 +24,50 @@
 		This is provided as a manual test to ensure that Glow correctly loads packages.
 	</p>
 	
+	<div class="testarea" id="load-test">
+		<ul>
+			<li>Does the loaded callback run?</li>
+			<li>Does the ready callback run?</li>
+			<li>Do the callbacks run in the right order: loaded then ready?</li>
+		</ul>
+	</div>
+	
+	<script type="text/javascript">
+		module('Glow Load');
+		
+		test('Glow is instantiated', function(result) {
+			try {
+				glow = new Glow('src');
+			}
+			catch(e) {}
+			
+			if (typeof glow !== 'undefined') {
+				result.ok(true, 'glow is: ' + typeof glow);
+			}
+			else {
+				 result.fail();
+			}
+		});
+		
+		test('Loaded callback runs when "ui" package is loaded', function(result) {
+			var onLoaded = function(glow) {
+				result.ok(true, 'The onloaded callback ran.');
+				window.loadedRan = true;
+			};
+			
+			var onReady = function(glow) {
+				var last = document.getElementById('last-element')
+				var order = last && !window.readyRan && window.loadedRan;
+				result.ok(order, 'The ready callback ran after the last element and after the loaded callback.');
+			};
+			
+			glow.load('ui')
+			.loaded(onLoaded)
+			.ready(onReady);
+		});
+	</script>
+
+<!--
 	<script type="text/javascript" class="showSrc">
 		
 		module('Load Events');
@@ -83,12 +109,7 @@
 
 	</script>
 	
-	<ul>
-		<li>Does the loaded callback run?</li>
-		<li>Does the ready callback run?</li>
-		<li>Do the callbacks run in the right order: loaded then ready?</li>
-	</ul>
-	
+-->	
 	<script type="text/javascript">
 		// make scripts visible in the page...
 		manualTests.showSrc();

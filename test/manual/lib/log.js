@@ -1,7 +1,8 @@
 // defines global log function
 (function () {
+	// see http://log4js.berlios.de/docu/users-guide.html
 	var log4jsLog,
-		logOutputElementId = "log-messages";
+		logOutputElementId = "log-messages"; // add this to your page
 	
 	if (logOutputElementId) { // in-page log
 		log4jsLog = log4javascript.getLogger("main");
@@ -12,5 +13,5 @@
 	}
 	
 	// exports
-	window.log = log4jsLog;
+	window.logger = log4jsLog;
 })();

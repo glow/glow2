@@ -202,7 +202,7 @@
 		currentList.appendChild(li);
 		
 		if (callback) {
-			if (glow) {
+			if (typeof glow !== 'undefined') {
 				glow.ready(function() {
 					callback(result);
 				})
