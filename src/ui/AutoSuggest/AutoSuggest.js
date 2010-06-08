@@ -302,10 +302,10 @@ Glow.provide(function(glow) {
 		@function
 		@description Process the data into an acceptable format for #_data.
 		@param {glow.ui.AutoSuggest} autoSuggest
-		@param {Object[]|string[]|glow.net.Response} data
+		@param {Object[]|string[]|glow.net.XhrResponse} data
 			Array of strings will be converted into an array of objects like {name: val}
 			
-			glow.net.Response will be converted into Object[]|string[] via .json
+			glow.net.XhrResponse will be converted into Object[]|string[] via .json
 	*/
 	function populateData(autoSuggest, data) {
 		var i,
@@ -315,9 +315,9 @@ Glow.provide(function(glow) {
 		if ( !event.defaultPrevented() ) {
 			// a listener may have altered the data
 			data = event.data;
-			
+
 			// if it's an XHR response, convert it to json
-			if (data instanceof glow.net.Response) {
+			if (data instanceof glow.net.XhrResponse) {
 				data = data.json();
 			}
 			
@@ -440,10 +440,10 @@ Glow.provide(function(glow) {
 			with the search term. If {val} is used, the URL if fetched on each search, otherwise it is only fetched
 			once on the first search.
 			
-			The result is a {@link glow.net.Response}, by default this is decoded as json. Use
+			The result is a {@link glow.net.XhrResponse}, by default this is decoded as json. Use
 			the 'data' event to convert your incoming data from other types (such as XML).
 			
-			<p><strong>glow.net.Response</strong></p>
+			<p><strong>glow.net.XhrResponse</strong></p>
 			
 			This will be treated as a json response and decoded to string[] or Object[], see below.
 			
@@ -756,7 +756,7 @@ Glow.provide(function(glow) {
 			
 		@example
 			myAutoSuggest.data('data.xml?search={val}').on('data', function(event) {
-				// When providing a url to .data(), event.data is a glow.net.response object 
+				// When providing a url to .data(), event.data is a glow.net.XhrResponse object 
 				// Note: xmlToJson is not a function defined by Glow
 				event.data = xmlToJson( event.data.xml() );
 			});
