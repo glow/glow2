@@ -514,28 +514,28 @@ test('slideOpen & slideShut - interrupt', 4, function() {
 		nodeList = glow( glow('#testElmsContainer2')[0].childNodes ),
 		slideTest1 = glow('#slideTest1'),
 		slideTest2 = glow('#slideTest2'),
-		fullHeight1 = parseFloat( slideTest1.css('height') ),
-		fullHeight2 = parseFloat( slideTest2.css('height') ),
+		fullHeight1 = slideTest1.height(),
+		fullHeight2 = slideTest2.height(),
 		lowestHeight1,
 		lowestHeight2;
-		
+	
 	nodeList.slideShut(1);
 	
 	slideTest2.data('glow_slideShut').on('frame', function() {
-		valueLog1.push( parseFloat( slideTest1.css('height') ) );
-		valueLog2.push( parseFloat( slideTest2.css('height') ) );
+		valueLog1.push( slideTest1.height() );
+		valueLog2.push( slideTest2.height() );
 		if (this.value > 0.5) {
-			lowestHeight1 = parseFloat( slideTest1.css('height') )
-			lowestHeight2 = parseFloat( slideTest2.css('height') )
+			lowestHeight1 = slideTest1.height();
+			lowestHeight2 = slideTest2.height();
 			
 			nodeList.slideOpen(1);
 			
 			slideTest2.data('glow_slideOpen').on('frame', function() {
-				valueLog1.push( parseFloat( slideTest1.css('height') ) );
-				valueLog2.push( parseFloat( slideTest2.css('height') ) );
+				valueLog1.push( slideTest1.height());
+				valueLog2.push( slideTest2.height());
 			}).on('complete', function() {
-				valueLog1.push( parseFloat( slideTest1.css('height') ) );
-				valueLog2.push( parseFloat( slideTest2.css('height') ) );
+				valueLog1.push( slideTest1.height() );
+				valueLog2.push( slideTest2.height() );
 				
 				ok(Math.min.apply(null, valueLog1) >= lowestHeight1, 'low value');
 				ok(Math.min.apply(null, valueLog2) >= lowestHeight2, 'low value');
@@ -560,17 +560,17 @@ test('slideToggle', 4, function() {
 		nodeList = glow( glow('#testElmsContainer2')[0].childNodes ),
 		slideTest1 = glow('#slideTest1'),
 		slideTest2 = glow('#slideTest2'),
-		fullHeight1 = parseFloat( slideTest1.css('height') ),
-		fullHeight2 = parseFloat( slideTest2.css('height') );
+		fullHeight1 = slideTest1.height(),
+		fullHeight2 = slideTest2.height();
 		
 	nodeList.slideToggle(0.25);
 	
 	slideTest2.data('glow_slideShut').on('frame', function() {
-		valueLog1.push( parseFloat( slideTest1.css('height') ) );
-		valueLog2.push( parseFloat( slideTest2.css('height') ) );
+		valueLog1.push( slideTest1.height() );
+		valueLog2.push( slideTest2.height() );
 	}).on('complete', function() {
-		valueLog1.push( parseFloat( slideTest1.css('height') ) );
-		valueLog2.push( parseFloat( slideTest2.css('height') ) );
+		valueLog1.push( slideTest1.height() );
+		valueLog2.push( slideTest2.height() );
 		
 		equal(valueLog1.slice(-1)[0], 0, 'end value');
 		equal(valueLog2.slice(-1)[0], 0, 'end value');
@@ -578,11 +578,11 @@ test('slideToggle', 4, function() {
 		nodeList.slideToggle(0.25);
 		
 		slideTest2.data('glow_slideOpen').on('frame', function() {
-			valueLog1.push( parseFloat( slideTest1.css('height') ) );
-			valueLog2.push( parseFloat( slideTest2.css('height') ) );
+			valueLog1.push( slideTest1.height() );
+			valueLog2.push( slideTest2.height() );
 		}).on('complete', function() {
-			valueLog1.push( parseFloat( slideTest1.css('height') ) );
-			valueLog2.push( parseFloat( slideTest2.css('height') ) );
+			valueLog1.push( slideTest1.height() );
+			valueLog2.push( slideTest2.height() );
 			
 			equal(valueLog1.slice(-1)[0], fullHeight1, 'end value');
 			equal(valueLog2.slice(-1)[0], fullHeight2, 'end value');
