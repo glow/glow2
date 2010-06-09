@@ -63,7 +63,6 @@ Glow.provide(function(glow) {
 					<li>return</li>
 					<li>shift</li>
 					<li>alt</li>
-					<li>escape</li>
 					<li>space</li>
 					<li>pageup</li>
 					<li>pagedown</li>
@@ -78,18 +77,6 @@ Glow.provide(function(glow) {
 					<li>;</li>
 					<li>=</li>
 					<li>-</li>
-					<li>f1</li>
-					<li>f2</li>
-					<li>f3</li>
-					<li>f4</li>
-					<li>f5</li>
-					<li>f6</li>
-					<li>f7</li>
-					<li>f8</li>
-					<li>f9</li>
-					<li>f10</li>
-					<li>f11</li>
-					<li>f12</li>
 					<li>numlock</li>
 					<li>scrolllock</li>
 					<li>pause</li>
