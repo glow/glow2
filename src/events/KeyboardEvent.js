@@ -392,7 +392,7 @@ Glow.provide(function(glow) {
 				105: '9',
 				//106: '*', // opera fires 2 keypress events
 				//107: '+', // opera fires 2 keypress events
-				//109: '-', // opera sees - as insert
+				109: '-', // opera sees - as insert, but firefox 3.0 see the normal - key the same as the numpad one
 				//110: '.', // opera sees this as n
 				111: '/',
 			// end of numpad
