@@ -364,6 +364,9 @@ Glow.provide(function(glow) {
 			return this;
 		}
 		else { //getting stuff
+			if (prop === 'width' || prop === 'height') {
+				return this[prop]() + 'px';
+			}
 			return (firstItem && firstItem.nodeType === 1) ? getCssValue(firstItem, prop) : '';
 		}	
 	};
