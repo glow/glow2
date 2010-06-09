@@ -398,7 +398,8 @@ Glow.provide(function(glow) {
 		else {
 			this.overlay = overlay = new glow.ui.Overlay(container)
 				.on('hide', overlayHide, this)
-				.on('afterShow', overlayAfterShow, this);
+				.on('afterShow', overlayAfterShow, this)
+				.hide();
 			
 			// the overlay will reactivate the focusable when needed
 			this.focusable.disabled(true);
