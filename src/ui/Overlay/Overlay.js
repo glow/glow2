@@ -14,8 +14,6 @@ Glow.provide(function(glow) {
 			the element that contains the contents of the overlay. If not in the document, you must append it to the document before calling show().
 
 		@param {object} [opts]
-			@param {number} [opts.zIndex="9991"] The z-index to set on the overlay.
-				If the overlay is modal, the zIndex of the mask will be set to one less than the value of this attribute.
 			@param {function|selector|NodeList} [opts.hideFilter] Exclude elements from hiding.
 				When provided this function is run for every element that may be hidden. This includes windowed
 				Flash movies if an intersection with the overlay is found.
@@ -31,6 +29,17 @@ Glow.provide(function(glow) {
 	 */
 	
 	function Overlay(content, opts) {
+		/*!debug*/
+			if (arguments.length < 1 || content === undefined) {
+				glow.debug.warn('[wrong type] glow.ui.Overlay expects "content" argument to be defined, not ' + typeof content + '.');
+			}
+			if (opts !== undefined && typeof opts !== 'object') {
+				glow.debug.warn('[wrong type] glow.ui.Overlay expects object as "opts" argument, not ' + typeof opts + '.');
+			}
+		/*gubed!*/
+		
+		opts = glow.util.apply({ }, opts);
+		
 		//call the base class's constructor
 		Overlay.base.call(this, 'overlay', opts);
 		
@@ -47,13 +56,7 @@ Glow.provide(function(glow) {
 	
 	OverlayProto = Overlay.prototype;
 	
-	OverlayProto._init = function(opts) {
-		var defaults = {
-			zIndex: 9991
-		};
-		
-		this._opts = glow.util.apply(defaults, opts);
-		
+	OverlayProto._init = function() {
 		WidgetProto._init.call(this);
 		
 		/**
@@ -76,18 +79,22 @@ Glow.provide(function(glow) {
 	OverlayProto._build = function(content) {
 		WidgetProto._build.call(this, content);
 		
+		/*!debug*/
+			if (this.content.length < 1) {
+				glow.debug.warn('[ivalid argument] glow.ui.Overlay expects "content" argument to refer to an element that exists, no elements found for the content argument provided.');
+			}
+		/*gubed!*/
+		
 		//add IE iframe hack if needed, wrap content in an iFrame to prevent certain elements below from showing through
 		this._iframe = glow('<iframe src="javascript:\'\'" style="display:block;width:100%;height:1000px;margin:0;padding:0;border:none;position:absolute;top:0;left:0;filter:alpha(opacity=0);"></iframe>')
 		this._iframe.css('z-index', 0);
 		
 		this._iframe.insertBefore(this.content);
 		this.content
-			.css('z-index', 1)
 			.css('position', 'relative')
+			.css('z-index', 1)
 			.css('top', 0)
 			.css('left', 0);
-		
-		this.container.css('z-index', this._opts.zIndex);
 
 		return this;
 	}

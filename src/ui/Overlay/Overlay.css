@@ -1,9 +1,10 @@
 .glowCSSVERSION-overlay {
 	position: absolute;
+	z-index: 9991;
 	overflow: hidden;
 }
 
-.glowCSSVERSION-overlay .overlay-content {
+.glowCSSVERSION-overlay .hidden .overlay-content {
 	display: none;
 	visibility: hidden;
 }

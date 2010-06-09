@@ -2,7 +2,7 @@
 	module('glow.ui.Overlay');
 	
 	test('Basic overlay creation', function() {			
-        expect(4);	
+        expect(5);	
 		
 		// set up
 		var myOverlay = new glow.ui.Overlay('#div2', {addId: 'myOverlay'});
@@ -11,6 +11,8 @@
 		equal(glow(".glowCSSVERSION-overlay").length, 1, 'A container element has been created for the overlay.');
 		equal(glow(".overlay-content").length, 1, 'A content element has been created for the overlay.');
 		equal(glow(".overlay-content")[0].id, 'div2', 'A container element has been created for the overlay.');
+		
+		equal(myOverlay.container.css('z-index'), 9991, 'The zIndex of the container is set to a default of 9991.');
 		
 		// tear down
 		myOverlay.content.removeClass('overlay-content');

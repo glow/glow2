@@ -12,6 +12,7 @@
 	<script type="text/javascript">
 		testHelper.addScript('core.js');
 		testHelper.addScript('ui.js');
+		testHelper.addCss('ui.css');
 	</script>
 	
 	<script type="text/javascript" src="../../lib/manualtest.js"></script>
@@ -19,11 +20,9 @@
 	
 	<style type="text/css" media="screen">
 		/*container*/
-		#myOverlay1
-		{
-			position: absolute;
+		#myOverlay1 {
+			left: -50px;
 			width: 60px;
-			overflow: hidden;
 		}
 		/*content*/
 		#myOverlay1 .animate-test-content {
@@ -42,10 +41,11 @@
 		
 		#testFlash {
 			position: relative;
-			left: 350px;
+			left: 330px;
+			top: -12px;
 			width: 70px;
-			padding: 4px;
-			border: 1px solid red;
+			padding: 5px;
+			border: 1px dashed red;
 		}
 		
 		
@@ -66,13 +66,13 @@
 		#myOverlay3
 		{
 			position: absolute;
-			width: 60px;
+			width: 120px;
 			overflow: hidden;
 		}
 		
 		#myOverlay3 .animate-test-content
 		{
-				border: 1px solid black;
+				border: 1px solid green;
 				background-color: #EEC6D8;
 				zoom: 1;
 		}
@@ -195,7 +195,7 @@
 		Try clicking the show and hide buttons while it is still animating.<br>
 		<button type="button" class="show-button" name="show-button" value="show">show</button>
 		<button type="button" class="hide-button" name="hide-button" value="hide">hide</button>
-		<div class="animate-test-content">Hello flash.</div>
+		<div class="animate-test-content"><ul><li>Hello</li><li>flash</li></ul></div>
 		<div>
 			<div id="testFlash"><embed width="32" height="32" quality="high" allowfullscreen="true" allowscriptaccess="always" id="glow84420596FlashEmbed1" src="data/smile.swf" type="application/x-shockwave-flash"></div>
 		</div>
