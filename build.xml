@@ -107,19 +107,19 @@
 		<echo message="Combining files to build packages" />
 		
 		<concat destfile="${BUILDSRC_DIR}/glow.js" fixlastline="yes" eol="lf">
-			<filelist files="${packages.glow.js.file}" />
+			<filelist dir="${ROOT_DIR}" files="${packages.glow.js.file}" />
 		</concat>
 		
 		<concat destfile="${BUILDSRC_DIR}/core.js" fixlastline="yes" eol="lf">
-			<filelist files="${packages.core.js.file}" />
+			<filelist dir="${ROOT_DIR}" files="${packages.core.js.file}" />
 		</concat>
 		
 		<concat destfile="${BUILDSRC_DIR}/ui.js" fixlastline="yes" eol="lf">
-			<filelist files="${packages.ui.js.file}" />
+			<filelist dir="${ROOT_DIR}" files="${packages.ui.js.file}" />
 		</concat>
 		
 		<concat destfile="${BUILDSRC_DIR}/ui.css" fixlastline="yes" eol="lf">
-			<filelist files="${packages.ui.css.file}" />
+			<filelist dir="${ROOT_DIR}" files="${packages.ui.css.file}" />
 		</concat>
 	</target>
 	
