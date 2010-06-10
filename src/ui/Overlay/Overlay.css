@@ -5,7 +5,7 @@
 }
 
 .glowCSSVERSION-overlay .hidden .overlay-content {
-	display: none;
+	display: block;
 	visibility: hidden;
 }
 

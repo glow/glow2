@@ -4,7 +4,16 @@ Glow.provide(function(glow) {
 		idCounter = 0,
 		undefined,
 		instances = {}; // like {uid: overlayInstance}
-
+	
+	
+	var vis = {
+		SHOWING: 2,
+		SHOWN: 1,
+		HIDING: -1,
+		HIDDEN: -2
+	};
+	
+	
 	/**
 		@name glow.ui.Overlay
 		@class
@@ -37,6 +46,7 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong type] glow.ui.Overlay expects object as "opts" argument, not ' + typeof opts + '.');
 			}
 		/*gubed!*/
+		var that = this;
 		
 		opts = glow.util.apply({ }, opts);
 		
@@ -45,8 +55,19 @@ Glow.provide(function(glow) {
 		
 		this.uid = 'overlayId_' + glow.UID + '_' + (++idCounter);
 		instances[this.uid] = this;
-		
-		this.lastState = -1; // enforce that states always alternate, -1 for hidden, +1 for shown
+
+		// some browsers need help with Flash (like non-mac opera and gecko 1.9 or less)
+		var ua = navigator.userAgent; // like ﻿"... rv:1.9.0.5) gecko ..."
+
+		this.flashHandler = (
+			glow.env.opera && !/macintosh/i.test(ua)
+			|| /rv:1\.9\.0.*\bgecko\//i.test(ua)
+			|| glow.env.webkit && !/macintosh/i.test(ua)
+		)?
+			function() {
+				that.hideFlash();
+			}
+			: null;
 		
 		this._init(opts);
 		this._build(content);
@@ -86,10 +107,13 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 		
 		//add IE iframe hack if needed, wrap content in an iFrame to prevent certain elements below from showing through
-		this._iframe = glow('<iframe src="javascript:\'\'" style="display:block;width:100%;height:1000px;margin:0;padding:0;border:none;position:absolute;top:0;left:0;filter:alpha(opacity=0);"></iframe>')
-		this._iframe.css('z-index', 0);
+		if (glow.env.ie) {
+			this._iframe = glow('<iframe src="javascript:\'\'" style="display:block;width:100%;height:1000px;margin:0;padding:0;border:none;position:absolute;top:0;left:0;filter:alpha(opacity=0);"></iframe>')
+			this._iframe.css('z-index', 0);
+			
+			this._iframe.insertBefore(this.content);
+		}
 		
-		this._iframe.insertBefore(this.content);
 		this.content
 			.css('position', 'relative')
 			.css('z-index', 1)
@@ -102,80 +126,83 @@ Glow.provide(function(glow) {
 	/**
 		@name glow.ui.Overlay#hideFlash
 		@method
-		@description Calculates, based on the current position of this overlay, if it
-		intersects with any Flash elements on the page. Any intersected Flash elements are then hidden and
-		any previously hidden Flash elements that are no longer intersected will be shown.
-		
-		Note that all Flash elements hidden this way will automatically be reshown
-		immediately after the overlay's afterHide event is fired.
+		@description Hides all Flash elements on the page, outside of the overlay.
+		This should only be neccessary on older browsers that cannot properly display
+		overlay content on top of Flash elements. On those browsers Glow will automatically
+		call this method for you in the onshow event, and will automatically call
+		showFlash for you in the afterhide event.
 	 */
 	OverlayProto.hideFlash = function() { /*debug*///console.log('hideFlash');
-		
 		var toHide = glow(),
-			that = this;
+			that = this,
+			hidBy = '';
 			
-		toHide.push(
-			glow('object, embed').filter(function() {
-				return isWindowedFlash.call(this, that);
-			})
-		);
+		toHide.push( glow('object, embed') );
 		
 		// filter out the elements that are inside this overlay
 		toHide = toHide.filter(function() {
 			return !that.container.contains(this);
 		});
 		
-		// multiple overlays may try to hide the same element
-		// but only the first attempt should actually hide it
+		// apply any user filter
+		if (this._opts.hideFilter) {
+			toHide = toHide.filter(this._opts.hideFilter);
+		}
+		
+		// multiple overlays may hide the same element
+		// flash elements keep track of which overlays have hidden them
+		// trying to hide a flash element more than once does nothing
 		for (var i = 0, leni = toHide.length; i < leni; i++) {
-			toHide.item(i).data('overlayHideCount', (toHide.item(i).data('overlayHideCount') || 0) + 1);
-
-			if (toHide.item(i).data('overlayHideCount') == 1) {
+			hidBy = (toHide.item(i).data('overlayHidBy') || '');
+			
+			if (hidBy === '') {
 				toHide.item(i).data('overlayOrigVisibility', toHide.item(i).css('visibility'));
 				toHide.item(i).css('visibility', 'hidden');
 			}
+			if (hidBy.indexOf('['+this.uid+']') === -1) {
+				toHide.item(i).data('overlayHidBy', hidBy + '['+this.uid+']');
+			}
+		}
+		
+		// things were hidden, make sure they get shown again
+		if (toHide.length && !that._doShowFlash) { // do this only once
+			that._doShowFlash = true;
+			that.on('afterHide', function() { /*debug*///console.log('callback');
+				that.showFlash();
+			});
 		}
 		
 		this._hiddenElements = toHide;
 	}
 	
-	var flashUrlTest = /.swf($|\?)/i,
-		wmodeTest = /<param\s+(?:[^>]*(?:name=["'?]\bwmode["'?][\s\/>]|\bvalue=["'?](?:opaque|transparent)["'?][\s\/>])[^>]*){2}/i;
-	
-	OverlayProto.showFlash = function() {
-		if (!this._hiddenElements || this._hiddenElements.length === 0) {
+	/**
+		@name glow.ui.Overlay#showFlash
+		@method
+		@description Hides all Flash elements on the page, outside of the overlay.
+		If a Flash element has been hidden by more than one overlay, you must call
+		showFlash once for each time it was hidden before the Flash will finally appear.
+	 */
+	OverlayProto.showFlash = function() { /*debug*///console.log('showFlash');
+		var hidBy = '';
+		
+		if (!this._hiddenElements || this._hiddenElements.length === 0) { // this overlay has not hidden anything?
 			return;
 		}
 		
-		var toHide = this._hiddenElements;
+		var toShow = this._hiddenElements;
 		
-		for (var i = 0, leni = toHide.length; i < leni; i++) {
-			toHide.item(i).data(
-				'overlayHideCount',
-				Math.max(0, toHide.item(i).data('overlayHideCount') - 1)
-			);
+		for (var i = 0, leni = toShow.length; i < leni; i++) {
+			hidBy = (toShow.item(i).data('overlayHidBy') || '');
 			
-			if (toHide.item(i).data('overlayHideCount') == 0) {
-				toHide.item(i).css( 'visibility', toHide.item(i).data('overlayOrigVisibility') );
+			if (hidBy.indexOf('['+this.uid+']') > -1) { // I hid this
+				hidBy = hidBy.replace('['+this.uid+']', ''); // remove me from the list of hiders
+				toShow.item(i).data('overlayHidBy', hidBy);
+			}
+			
+			if (hidBy == '') { // no hiders lefts
+				toShow.item(i).css( 'visibility', toShow.item(i).data('overlayOrigVisibility') );
 			}
 		}
-	}
-	
-	function isWindowedFlash(overlay) {
-		var that = this, wmode;
-		//we need to use getAttribute here because Opera & Safari don't copy the data to properties
-		if (
-			(that.getAttribute("type") == "application/x-shockwave-flash" ||
-			flashUrlTest.test(that.getAttribute("data") || that.getAttribute("src") || "") ||
-			(that.getAttribute("classid") || "").toLowerCase() == "clsid:d27cdb6e-ae6d-11cf-96b8-444553540000")
-		) {
-			wmode = that.getAttribute("wmode");
-
-			return (that.nodeName == "OBJECT" && !wmodeTest.test(that.innerHTML)) ||
-				(that.nodeName != "OBJECT" && wmode != "transparent" && wmode != "opaque");
-
-		}
-		return false;
 	}
 	
 	/**
@@ -322,10 +349,9 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	OverlayProto.show = function(delay) {
-		if (this.shown) { /*debug*///console.log('show ignored');
-			return this;
-		}
-		
+		//if (this.shown) { /*debug*///console.log('show ignored');
+		//	return this;
+		//}
 		var that = this;
 		
 		if ( !this.fire('show').defaultPrevented() ) {
@@ -346,33 +372,41 @@ Glow.provide(function(glow) {
 		return this;
 	}
 	
-	function show() {
+	function show() { /*debug*///console.log('show() curently '+this.state);
 		var that = this;
+		
+		// already being shown?
+		if (this.state === vis.SHOWING || this.state === vis.SHOWN) {
+			return;
+		}
 		
 		setShown(that, true);
 		
+		if (this.flashHandler) { this.flashHandler(); }
+		
 		if (this._animator) {
+			that.state = vis.SHOWING;
 			this._animator.call(this, true, function() { afterShow.call(that); });
 		}
 		else if (this._animDef) {
-			if (this._anim) {
+			if (this._anim) { // is hiding?
+				this.state = vis.SHOWING;
 				this._anim.reverse();
 			}
-			else {
+			else { // is hidden?
+				this.state = vis.SHOWING;
+				
+				// this same anim is reused (by reversing it) for showing and hiding
 				this._anim = this.container.anim(this._animDef[0], this._animDef[1], this._animDef[2]);
 				this._anim.on('complete', function() {
-					if (that._anim.reversed) {
-						if (that.lastState === 1) {
-							that.lastState = -that.lastState;
-							setShown(that, false);
-							afterHide.call(that);
-						}
-					}
-					else {
-						if (that.lastState === -1) {
-							that.lastState = -that.lastState;
-							afterShow.call(that);
-						}
+					
+					if (that.state === vis.SHOWING) {
+						setShown(that, true);
+						afterShow.call(that);
+					} 
+					else if (that.state === vis.HIDING) {
+						setShown(that, false);
+						afterHide.call(that);
 					}
 				});
 			}
@@ -385,6 +419,7 @@ Glow.provide(function(glow) {
 	}
 	
 	function afterShow() { /*debug*///console.log('after show');
+		this.state = vis.SHOWN;
 		this.fire('afterShow');
 	}
 	
@@ -399,33 +434,41 @@ Glow.provide(function(glow) {
 		overlay.shown = shownState;
 		
 		if (shownState) {
+			stateElm.removeClass('hidden');
 			stateElm.addClass('shown');
 		}
 		else {
 			stateElm.removeClass('shown');
+			stateElm.addClass('hidden');
 		}
 	}
 	
-	function hide() {
+	function hide() { /*debug*///console.log('hide() curently '+this.state);
 		var that = this;
 		
-		if (this._animator) {
+		if (this.state === vis.HIDING || this.state === vis.HIDDEN) {
+			return;
+		}
+		
+		if (this._animator) { // provided by user
 			this._animator.call(this, false, function() {
 				setShown(that, false);
 				afterHide.call(that);
 			});
 		}
-		else if (this._anim) {
+		else if (this._anim) { // generated by overlay
+			this.state = vis.HIDING;
 			this._anim.reverse();
 			this._anim.start();
 		}
-		else {
+		else { // no animation
 			setShown(that, false);
 			afterHide.call(this);
 		}
 	}
 	
 	function afterHide() { /*debug*///console.log('after hide');
+		this.state = vis.HIDDEN;
 		this.fire('afterHide');
 	}
 	
@@ -440,9 +483,9 @@ Glow.provide(function(glow) {
 		@returns this
 	*/
 	OverlayProto.hide = function(delay) {
-		if (!this.shown) { /*debug*///console.log('hide ignored');
-			return this;
-		}
+		//if (!this.shown) { /*debug*///console.log('hide ignored');
+		//	return this;
+		//}
 		
 		var that = this;
 		

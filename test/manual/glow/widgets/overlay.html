@@ -65,8 +65,8 @@
 		
 		#myOverlay3
 		{
-			position: absolute;
-			width: 120px;
+			position: relative;
+			width: 100px;
 			overflow: hidden;
 		}
 		
@@ -146,17 +146,23 @@
 		
 		test('Animation function used to show and hide.', function(result) {
 			glow.ready(function() {
+				var animref = null;
+				
 				var animator = function(/*this: Overlay*/ shown, callback) {
-					var that = this.container;
+					var o = this.container;
 					
 					if (shown) {
-						that.anim(2, {left: [-55, 350]}, {tween: 'bounceOut'})
+						if (animref) { animref.stop(); }
+						
+						animref = o.anim(2, {left: [-55, 350]}, {tween: 'bounceOut'})
 						.on('complete', callback);
 					}
 					else {
-						that.anim(2, {left: 700}, {tween: 'bounceOut'})
+						if (animref) { animref.stop(); }
+						
+						animref = o.anim(2, {left: 700}, {tween: 'bounceOut'})
 						.on('complete', function(e) {
-							that.css('left', -55);
+							o.css('left', -55);
 						})
 						.on('complete', callback);
 					}
@@ -195,6 +201,7 @@
 		Try clicking the show and hide buttons while it is still animating.<br>
 		<button type="button" class="show-button" name="show-button" value="show">show</button>
 		<button type="button" class="hide-button" name="hide-button" value="hide">hide</button>
+		<br><br>
 		<div class="animate-test-content"><ul><li>Hello</li><li>flash</li></ul></div>
 		<div>
 			<div id="testFlash"><embed width="32" height="32" quality="high" allowfullscreen="true" allowscriptaccess="always" id="glow84420596FlashEmbed1" src="data/smile.swf" type="application/x-shockwave-flash"></div>
@@ -209,17 +216,14 @@
 					'#animate-test3 .animate-test-content',
 					{id: 'myOverlay3'}
 				)
-				.setAnim([2, {left: 325}, {tween: 'bounceOut'}]);
+				.setAnim([2, {left: 355}, {tween: 'easeOut'}]);
 		
 				myOverlay3.container.css('left', -55);
+				myOverlay3.container.css('top', 10);
 			
-				myOverlay3.on('afterShow', function() {
-					myOverlay3.hideFlash();
-				});
-			
-				myOverlay3.on('afterHide', function() {
-					myOverlay3.showFlash();
-				});
+				//myOverlay3.on('afterShow', function() {
+				//	myOverlay3.hideFlash();
+				//});
 			
 				glow('#animate-test3 .show-button').on('click', function() {
 					myOverlay3.show();
