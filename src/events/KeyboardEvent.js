@@ -63,6 +63,7 @@ Glow.provide(function(glow) {
 					<li>return</li>
 					<li>shift</li>
 					<li>alt</li>
+					<li>escape</li>
 					<li>space</li>
 					<li>pageup</li>
 					<li>pagedown</li>
@@ -77,6 +78,18 @@ Glow.provide(function(glow) {
 					<li>;</li>
 					<li>=</li>
 					<li>-</li>
+					<li>f1</li>
+					<li>f2</li>
+					<li>f3</li>
+					<li>f4</li>
+					<li>f5</li>
+					<li>f6</li>
+					<li>f7</li>
+					<li>f8</li>
+					<li>f9</li>
+					<li>f10</li>
+					<li>f11</li>
+					<li>f12</li>
 					<li>numlock</li>
 					<li>scrolllock</li>
 					<li>pause</li>
@@ -161,7 +174,8 @@ Glow.provide(function(glow) {
 	/** 
 		@private
 		@description Do we expect the browser to fire a keypress after a given keydown?
-		
+			Also fills in activeChar for webkit.
+
 		@param {number} keyCode The keyCode from a keydown listener.
 		@param {boolean} defaultPrevented Was the keydown prevented?
 	*/
@@ -169,7 +183,7 @@ Glow.provide(function(glow) {
 		var keyName;
 		
 		// for browsers that fire keypress for the majority of keys
-		if (env.gecko || env.opera) {
+		if (env.gecko || env.opera || env.webkit < 525) {
 			return !noKeyPress[keyCode];
 		}
 		
@@ -179,6 +193,8 @@ Glow.provide(function(glow) {
 		// is this a printable char?
 		if (keyName.length === 1 || keyName === 'tab' || keyName === 'space') {
 			// webkit doesn't fire keypress if the keydown has been prevented
+			// take a good guess at the active char for webkit
+			activeChar = ( keyNameToChar[keyName] || keyName ).charCodeAt(0);
 			return !(env.webkit && defaultPrevented);
 		}
 		return false;
@@ -223,7 +239,7 @@ Glow.provide(function(glow) {
 		};
 		
 		keypressHandler = function(nativeEvent) {
-			var keyName;
+			var keyName, preventDefault;
 			// some browsers store the charCode in .charCode, some in .keyCode
 			activeChar = nativeEvent.charCode || nativeEvent.keyCode;
 			keyName = keyCodeToId(activeKey);
@@ -233,7 +249,8 @@ Glow.provide(function(glow) {
 				// non-printable chars usually have an ID length greater than 1
 				activeChar = undefined;
 			}
-			var preventDefault = _callDomListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
+
+			preventDefault = _callDomListeners( attachTo, 'keypress', new KeyboardEvent(nativeEvent) ).defaultPrevented();
 			return !preventDefault;
 		};
 		
@@ -392,7 +409,7 @@ Glow.provide(function(glow) {
 				105: '9',
 				//106: '*', // opera fires 2 keypress events
 				//107: '+', // opera fires 2 keypress events
-				//109: '-', // opera sees - as insert
+				109: '-', // opera sees - as insert, but firefox 3.0 see the normal - key the same as the numpad one
 				//110: '.', // opera sees this as n
 				111: '/',
 			// end of numpad
@@ -424,6 +441,11 @@ Glow.provide(function(glow) {
 			//224: 'meta', // same as [ in opera
 			226: '\\' // this key appears on a US layout in webkit windows
 		},
+		// converting key names to chars, for key names greater than 1 char
+		keyNameToChar = {
+			space: ' ',
+			tab: '\t'
+		}
 		noKeyPress = {};
 	
 	// corrections for particular browsers :(

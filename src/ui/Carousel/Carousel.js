@@ -1,5 +1,8 @@
 Glow.provide(function(glow) {
-	var undefined, CarouselProto;
+	var undefined,
+		CarouselProto,
+		Widget = glow.ui.Widget,
+		WidgetProto = Widget.prototype;
 	
 	/**
 		@name glow.ui.Carousel
@@ -23,7 +26,7 @@ Glow.provide(function(glow) {
 			@param {string|function} [opts.tween='easeBoth'] Tween to use for animations.
 				This can be a property name of {@link glow.tweens} or a tweening function.
 			
-			@param {boolean|number} [opts.paging=false] Move a whole page at a time.
+			@param {boolean|number} [opts.page=false] Move a whole page at a time.
 				If 'true', the page size will be the spotlight size, but you
 				can also set this to be an explicit number of items. Space will
 				be added to the end of the carousel so pages stay in sync.
@@ -42,16 +45,6 @@ Glow.provide(function(glow) {
 				the width of the container, allowing room for next & previous buttons.
 				Any remaining width will be used to partially show the previous/next item
 				beneath the next & previous buttons.
-			
-			@param {selector} [opts.itemTitles] Treat an element as the title for each item.
-				This is a selector which points to an element within each carousel item. That
-				element will moved out of the carousel and shown beneath the carousel item
-				when it is in the spotlight.
-			
-				These move independently of the carousel, fading in & out rather than
-				scrolling.
-				
-				By default, title boxes are not used.
 				
 		@example
 			// This creates a carousel out of HTML like...
@@ -60,17 +53,11 @@ Glow.provide(function(glow) {
 			//     <a href="anotherpage.html">
 			//       <img width="200" height="200" src="img.jpg" alt="" />
 			//	   </a>
-			//     <div class="furtherInfo">This is item 1</div>
 			//   </li>
 			//   ...more list items like above...
 			var myCarousel = new glow.ui.Carousel('#carouselItems', {
 				loop: true,
-				paging: true,
-				itemTitles: 'div.furtherInfo'
-			}).on('select', function(e) {
-				// follow the link when the item's selected
-				window.location = e.item.get('a').prop('href');
-				return false;
+				page: true,
 			});
 			
 		@example
@@ -89,9 +76,55 @@ Glow.provide(function(glow) {
 					return false;
 				});
 	*/
-	function Carousel(itemContainer, opts) {};
+	function Carousel(itemContainer, opts) {
+		var spot;
+		
+		Widget.call(this, 'Carousel', opts);
+		
+		opts = this._opts;
+		
+		// convert the options for CarouselPane
+		if (opts.page) {
+			opts.step = opts.page;
+			opts.page = true;
+		}
+		
+		this.itemContainer = itemContainer = glow(itemContainer).item(0);
+		
+		// see if we're going to get enough room for our prev/next buttons
+		spot = glow.ui.CarouselPane._getSpot(
+			itemContainer.parent().width(),
+			itemContainer.children().css('position', 'absolute'),
+			0,
+			opts
+		);
+		
+		// enfore our minimum back/fwd button size
+		if (spot.offset.left < 50) {
+			opts.spotlight = spot.capacity - 1;
+		}
+		
+		this._init();
+	};
 	glow.util.extend(Carousel, glow.ui.Widget);
 	CarouselProto = Carousel.prototype;
+	
+	/**
+		@name glow.ui.Carousel#_pane
+		@type glow.ui.CarouselPane
+		@description The carousel pane used by this Carousel
+	*/
+	
+	/**
+		@name glow.ui.Carousel#_prevBtn
+		@type glow.NodeList
+		@description Element acting as back button
+	*/
+	/**
+		@name glow.ui.Carousel#_nextBtn
+		@type glow.NodeList
+		@description Element acting as next button
+	*/
 	
 	/**
 		@name glow.ui.Carousel#items
@@ -105,44 +138,161 @@ Glow.provide(function(glow) {
 		@description Parent element of the carousel items.
 	*/
 	
+	// life cycle methods
+	CarouselProto._init = function () {
+		WidgetProto._init.call(this);
+		this._build();
+	};
+	
+	CarouselProto._build = function () {
+		var content,
+			itemContainer = this.itemContainer,
+			pane,
+			items,
+			spot;
+		
+		WidgetProto._build.call( this, itemContainer.wrap('<div></div>').parent() );
+		content = this.content;
+		
+		pane = this._pane = new glow.ui.CarouselPane(itemContainer, this._opts);
+		spot = pane._spot
+		items = this.items = pane.items;
+		this.itemContainer = pane.itemContainer;
+		
+		pane.moveTo(0, {
+			tween: null
+		});
+		
+		// add next & prev buttons, autosizing them
+		this._prevBtn = glow('<div class="Carousel-prev"><div class="Carousel-btnIcon"></div></div>').prependTo(content).css({
+			width: spot.offset.left,
+			height: spot.height
+		});
+		this._nextBtn = glow('<div class="Carousel-next"><div class="Carousel-btnIcon"></div></div>').prependTo(content).css({
+			width: spot.offset.right,
+			height: spot.height
+		});
+		
+		updateButtons(this);
+		
+		this._bind();
+	};
+	
 	/**
-		@name glow.ui.Carousel#addPageNav
+		@private
 		@function
-		@description Add page navigation to the carousel.
-			The page navigation show the user which position they are viewing
-			within the carousel.
-		
-		@param {Object} [opts] Options object.
-		@param {string|selector|HTMLElement} [opts.position='belowLast'] The position of the paging navigation.
-			This can be a CSS selector pointing to an element, or one of the following
-			shortcuts:
-		
-			<dl>
-				<dt>belowLast</dt>
-				<dd>Display the nav beneath the last spotlight item</dd>
-				<dt>belowNext</dt>
-				<dd>Display the nav beneath the next button</dd>
-				<dt>belowMiddle</dt>
-				<dd>Display the nav beneath the carousel, centred</dd>
-				<dt>aboveLast</dt>
-				<dd>Display the nav above the last spotlight item</dd>
-				<dt>aboveNext</dt>
-				<dd>Display the nav above the next button</dd>
-				<dt>aboveMiddle</dt>
-				<dd>Display the nav above the carousel, centred</dd>
-			</dl>
-			
-		@param {boolean} [opts.useNumbers=false] Display as numbers rather than blocks.
-		
-		@returns this
-		
-		@example
-			new glow.ui.Carousel('#carouselContainer').addPageNav({
-				position: 'belowMiddle',
-				useNumbers: true
-			});
+		@description Update the enabled / disabled state of the buttons.
 	*/
-	CarouselProto.addPageNav = function(opts) {};
+	function updateButtons(carousel) {
+		// buttons are always active for a looping carousel
+		if (carousel._opts.loop) {
+			return;
+		}
+		
+		var indexes = carousel.spotlightIndexes(),
+			lastIndex = indexes[indexes.length - 1],
+			lastItemIndex = carousel.items.length - 1;
+
+		// add or remove the disabled class from the buttons
+		carousel._prevBtn[ (indexes[0] === 0) ? 'addClass' : 'removeClass' ]('Carousel-prev-disabled');
+		carousel._nextBtn[ (lastIndex === lastItemIndex) ? 'addClass' : 'removeClass' ]('Carousel-next-disabled');
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for CarouselPane's 'select' event.
+			'this' is the Carousel
+	*/
+	function paneSelect(event) {
+		this.fire('select', event);
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for CarouselPane's 'move' event.
+			'this' is the Carousel
+	*/
+	function paneMove(event) {
+		var pane = this._pane;
+		
+		if ( !this.fire('move', event).defaultPrevented() ) {
+			this._updateNav( (pane._index + event.moveBy) % this.items.length / pane._step );
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for CarouselPane's 'afterMove' event.
+			'this' is the Carousel
+	*/
+	function paneAfterMove(event) {
+		if ( !this.fire('afterMove', event).defaultPrevented() ) {
+			updateButtons(this);
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for back button's 'mousedown' event.
+			'this' is the Carousel
+	*/
+	function prevMouseDown(event) {
+		if (event.button === 0) {
+			this._pane.moveStart(true);
+			return false;
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Listener for fwd button's 'mousedown' event.
+			'this' is the Carousel
+	*/
+	function nextMouseDown(event) {
+		if (event.button === 0) {
+			this._pane.moveStart();
+			return false;
+		}
+	}
+	
+	/**
+		@private
+		@function
+		@description Stop the pane moving.
+			This is used as a listener for various mouse events on the
+			back & forward buttons.
+			
+			`this` is the Carousel.
+	*/
+	function paneMoveStop() {
+		this._pane.moveStop();
+	}
+	
+	CarouselProto._bind = function () {
+		var pane = this._pane,
+			carousel = this;
+		
+		this._tie(pane);
+		
+		pane.on('select', paneSelect, this)
+			.on('afterMove', paneAfterMove, this)
+			.on('move', paneMove, this);
+		
+		this._prevBtn.on('mousedown', prevMouseDown, this)
+			.on('mouseup', paneMoveStop, this)
+			.on('mouseleave', paneMoveStop, this);
+		
+		this._nextBtn.on('mousedown', nextMouseDown, this)
+			.on('mouseup', paneMoveStop, this)
+			.on('mouseleave', paneMoveStop, this);
+		
+		WidgetProto._bind.call(this);
+	};
 	
 	/**
 		@name glow.ui.Carousel#spotlightItems
@@ -151,7 +301,9 @@ Glow.provide(function(glow) {
 		
 		@returns {glow.NodeList}
 	*/
-	CarouselProto.spotlightItems = function() {};
+	CarouselProto.spotlightItems = function() {
+		return this._pane.spotlightItems();
+	};
 	
 	/**
 		@name glow.ui.Carousel#spotlightIndexes
@@ -161,7 +313,9 @@ Glow.provide(function(glow) {
 		
 		@returns {number[]}
 	*/
-	CarouselProto.spotlightIndexes = function() {};
+	CarouselProto.spotlightIndexes = function() {
+		return this._pane.spotlightIndexes();
+	};
 	
 	/**
 		@name glow.ui.Carousel#moveTo
@@ -175,7 +329,23 @@ Glow.provide(function(glow) {
 		
 		@returns this
 	*/
-	CarouselProto.moveTo = function() {};
+	CarouselProto.moveTo = function(itemIndex, animate) {
+		this._pane.moveTo(itemIndex, animate);
+		return this;
+	};
+	
+	/**
+		@private
+		@function
+		@decription Creates the prev & next functions
+		@param {number} direction Either 1 or -1
+	*/
+	function prevNext(direction) {
+		return function() {
+			this._pane.moveBy(this._pane._step * direction);
+			return this;
+		}
+	}
 	
 	/**
 		@name glow.ui.Carousel#next
@@ -184,7 +354,7 @@ Glow.provide(function(glow) {
 		
 		@returns this
 	*/
-	CarouselProto.next = function() {};
+	CarouselProto.next = prevNext(1);
 	
 	/**
 		@name glow.ui.Carousel#prev
@@ -193,7 +363,7 @@ Glow.provide(function(glow) {
 		
 		@returns this
 	*/
-	CarouselProto.prev = function() {};
+	CarouselProto.prev = prevNext(-1);
 	
 	/**
 		@name glow.ui.Carousel#destroy
@@ -203,9 +373,13 @@ Glow.provide(function(glow) {
 			
 		@returns undefined
 	*/
-	CarouselProto.destroy = function() {};
+	CarouselProto.destroy = function() {
+		// Move the pane outside our widget
+		this._pane.container.insertBefore(this.container);
+		WidgetProto.destroy.call(this);
+	};
 	
-	/**
+	/*
 		@name glow.ui.Carousel#updateUi
 		@function
 		@description Refresh the carousel after moving/adding/removing items.
@@ -220,6 +394,7 @@ Glow.provide(function(glow) {
 			
 		@returns this
 	*/
+	// TODO: populate #items here & check back & fwd button sizes
 	
 	/**
 		@name glow.ui.Carousel#event:select
@@ -244,9 +419,9 @@ Glow.provide(function(glow) {
 			while the mouse button is held on one of the arrows.
 		
 		@param {glow.events.Event} event Event Object
-		@param {number} event.destination Index of the destination item.
-			This will be undefined for continuous scrolling movements (when the mouse
-			is held down on the back/forward arrows & paging is off).
+		@param {number} event.moveBy The number of items we're moving by.
+			This will be positive for forward movements and negative for backward
+			movements.
 		
 			You can get the current index via `myCarousel.spotlightIndexes()[0]`.
 	*/

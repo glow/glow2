@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: glow.ui.Carousel</title>
+	
+	<script type="text/javascript" src="../../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../../lib/style.css" />
+	<script src="../../../../unit/lib/testhelper.js?base=../../../../../" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+		testHelper.addScript('core.debug.js');
+		testHelper.addScript('ui.debug.js');
+		testHelper.addCss('ui.css');
+	</script>
+	
+	<style type="text/css">
+		#carousel1Outer {
+			width: 580px;
+		}
+		#carousel1 {
+			margin: 0; padding: 0;
+			list-style: none;
+		}
+		
+		img {
+			display: block;
+		}
+		.itemTitle {
+			padding: 5px 0;
+			background: #ccc;
+			font-size: small;
+		}
+		
+		li {
+			margin: 0 2px;
+		}
+		
+		#animTest li {
+			margin: 0 5px;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>glow.ui.Carousel</h1>
+	
+	<h2>Carousel with titles and page nav</h2>
+	
+	<ol>
+		<li>Below should be a carousel showing 3 items, with one image partially visible behind the next (right) button.</li>
+		<li>Clicking the left and right arrows should move the carousel one step at a time</li>
+		<li>The next/previous buttons should be disabled when at the end/start of the carousel</li>
+		<li>Page naviagation should be shown below the last item in the carousel</li>
+		<li>Clicking the page naviagtion should move the carousel to that page</li>
+		<li>The page navigation block representing the active page should be a darker grey than the others.</li>
+	</ol>
+	
+	<div class="testarea" id="carousel1Outer">
+		<ol id="carousel1">
+			<li>
+				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Leonardo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Michelangelo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Donatello</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Raphael</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Master Splinter</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Shredder</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">April O'Neil</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Krang</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Technodrome</div>
+			</li>
+		</ol>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			window.myCarousel = new glow.ui.Carousel('#carousel1').addPageNav();
+		});
+	</script>
+	
+	<h2>Carousel with looping</h2>
+	
+	<ol>
+		<li>Below should be a carousel showing 4 items, with one image partially visible behind the next (right) button.</li>
+		<li>Clicking the left and right arrows should move the carousel one step at a time</li>
+		<li>The carousel should loop from the last item back to the first</li>
+		<li>Page naviagation should be shown below carousel, centred</li>
+		<li>Clicking the page naviagtion should move the carousel to that page</li>
+		<li>The page navigation block representing the active page should be a darker grey than the others.</li>
+	</ol>
+	
+	<div class="testarea" style="width:800px">
+		<ol id="carousel2">
+			<li>
+				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Leonardo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Michelangelo</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Donatello</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Raphael</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Master Splinter</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Shredder</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">April O'Neil</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Krang</div>
+			</li>
+			<li>
+				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
+				<div class="itemTitle">Technodrome</div>
+			</li>
+		</ol>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			window.myCarousel2 = new glow.ui.Carousel('#carousel2', {
+				spotlight: 4,
+				loop: true
+			})
+		});
+	</script>
+	
+	<h2>Carousel with paging</h2>
+	
+	<ol>
+		<li>Below should be a carousel showing 4 items, with one image partially visible behind the next (right) button.</li>
+		<li>Clicking the left and right arrows should move the carousel 4 items at a time</li>
+		<li>The final page should contain 1 item only</li>
+		<li>The carousel should loop from the last item back to the first</li>
+	</ol>
+	
+	<div class="testarea" style="width:800px">
+		<ol id="carousel3">
+			<li>
+				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
+			</li>
+			<li>
+				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
+			</li>
+		</ol>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		glow.ready(function() {
+			window.myCarousel2 = new glow.ui.Carousel('#carousel3', {
+				duration: 0.5,
+				spotlight: 4,
+				page: true,
+				loop: true
+			}).addPageNav({
+				position: 'belowNext'
+			}).on('select', function() {
+				alert('hi');
+			}).on('move', function() {
+				console.log('move!');
+			}).on('afterMove', function() {
+				console.log('afterMove!');
+			})
+		});
+	</script>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>

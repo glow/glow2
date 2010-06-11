@@ -65,8 +65,8 @@ Glow.provide(function(glow) {
 			@param {Object} [opts.headers] A hash of headers to send along with the request.
 				eg `{'Accept-Language': 'en-gb'}`
 			@param {boolean} [opts.cacheBust=false] Prevent the browser returning a cached response.
-				If true, a random number is added to the query string to ensure a
-				fresh version of the file is being fetched.
+				If true, a value is added to the query string to ensure a fresh version of the
+	 			file is being fetched.
 			@param {number} [opts.timeout] Time to allow for the request in seconds.
 				No timeout is set by default. Once the time is reached, the error
 				event will fire with a '408' status code.
@@ -96,7 +96,7 @@ Glow.provide(function(glow) {
 
 		// add the cacheBust to the url
 		if (opts.cacheBust) {
-			url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'a' + new Date().valueOf();
+			url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'cachebuster=' + new Date().valueOf();
 		}
 
 		request.complete = false;
