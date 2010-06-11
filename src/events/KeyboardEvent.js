@@ -183,7 +183,7 @@ Glow.provide(function(glow) {
 		var keyName;
 		
 		// for browsers that fire keypress for the majority of keys
-		if (env.gecko || env.opera) {
+		if (env.gecko || env.opera || env.webkit < 525) {
 			return !noKeyPress[keyCode];
 		}
 		
