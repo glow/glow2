@@ -49,7 +49,6 @@
 	
 	<ol>
 		<li>Below should be a carousel showing 3 items, with one image partially visible behind the next (right) button.</li>
-		<li>Below each of the 3 fully visible images should be a title beneath each.</li>
 		<li>Clicking the left and right arrows should move the carousel one step at a time</li>
 		<li>The next/previous buttons should be disabled when at the end/start of the carousel</li>
 		<li>Page naviagation should be shown below the last item in the carousel</li>
@@ -100,13 +99,7 @@
 	
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
-			window.myCarousel = new glow.ui.Carousel('#carousel1', {
-				itemTitles: '.itemTitle'
-			}).addPageNav().on('move', function() {
-				console.log('move!');
-			}).on('afterMove', function() {
-				console.log('afterMove!');
-			})
+			window.myCarousel = new glow.ui.Carousel('#carousel1').addPageNav();
 		});
 	</script>
 	
@@ -114,7 +107,6 @@
 	
 	<ol>
 		<li>Below should be a carousel showing 4 items, with one image partially visible behind the next (right) button.</li>
-		<li>Below each of the 4 fully visible images should be a title beneath each.</li>
 		<li>Clicking the left and right arrows should move the carousel one step at a time</li>
 		<li>The carousel should loop from the last item back to the first</li>
 		<li>Page naviagation should be shown below carousel, centred</li>
@@ -166,7 +158,6 @@
 	<script type="text/javascript" class="showSrc">
 		glow.ready(function() {
 			window.myCarousel2 = new glow.ui.Carousel('#carousel2', {
-				itemTitles: '.itemTitle',
 				spotlight: 4,
 				loop: true
 			}).addPageNav({
@@ -235,60 +226,6 @@
 			}).on('afterMove', function() {
 				console.log('afterMove!');
 			})
-		});
-	</script>
-
-	<h2>Anim test</h2>
-	
-	<div class="testarea" style="width:650px">
-		<ol id="animTest">
-			<li>
-				<img src="../CarouselPane/images/1.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Leonardo</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/2.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Michelangelo</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/3.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Donatello</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/4.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Raphael</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/5.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Master Splinter</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/6.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Shredder</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/7.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">April O'Neil</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/8.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Krang</div>
-			</li>
-			<li>
-				<img src="../CarouselPane/images/9.jpg" alt="" width="150" height="150" />
-				<div class="itemTitle">Technodrome</div>
-			</li>
-		</ol>
-	</div>
-	
-	<script type="text/javascript" class="showSrc">
-		glow.ready(function() {
-			window.myCarousel2 = new glow.ui.Carousel('#animTest', {
-				duration: 0.35,
-				itemTitles: '.itemTitle',
-				spotlight: 3,
-				page: true
-			}).addPageNav();
 		});
 	</script>
 	

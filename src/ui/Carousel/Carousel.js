@@ -45,16 +45,6 @@ Glow.provide(function(glow) {
 				the width of the container, allowing room for next & previous buttons.
 				Any remaining width will be used to partially show the previous/next item
 				beneath the next & previous buttons.
-			
-			@param {selector} [opts.itemTitles] Treat an element as the title for each item.
-				This is a selector which points to an element within each carousel item. That
-				element will moved out of the carousel and shown beneath the carousel item
-				when it is in the spotlight.
-			
-				These move independently of the carousel, fading in & out rather than
-				scrolling.
-				
-				By default, title boxes are not used.
 				
 		@example
 			// This creates a carousel out of HTML like...
@@ -63,17 +53,11 @@ Glow.provide(function(glow) {
 			//     <a href="anotherpage.html">
 			//       <img width="200" height="200" src="img.jpg" alt="" />
 			//	   </a>
-			//     <div class="furtherInfo">This is item 1</div>
 			//   </li>
 			//   ...more list items like above...
 			var myCarousel = new glow.ui.Carousel('#carouselItems', {
 				loop: true,
 				page: true,
-				itemTitles: 'div.furtherInfo'
-			}).on('select', function(e) {
-				// follow the link when the item's selected
-				window.location = e.item.get('a').prop('href');
-				return false;
 			});
 			
 		@example
@@ -141,20 +125,6 @@ Glow.provide(function(glow) {
 		@type glow.NodeList
 		@description Element acting as next button
 	*/
-	/**
-		@name glow.ui.Carousel#_itemTitles
-		@type glow.NodeList
-		@description Item title boxes, one per item.
-			If any items don't have a title box, an empty div will be created.
-			
-			If title boxes aren't used, this will be undefined.
-	*/
-	/**
-		@name glow.ui.Carousel#_titlesHolder
-		@type glow.NodeList
-		@description Container of item titles.
-			Items from _itemTitles will be added & removed to/from this element.
-	*/
 	
 	/**
 		@name glow.ui.Carousel#items
@@ -177,8 +147,6 @@ Glow.provide(function(glow) {
 	CarouselProto._build = function () {
 		var content,
 			itemContainer = this.itemContainer,
-			itemTitles,
-			titlesHolder,
 			pane,
 			items,
 			spot;
@@ -186,20 +154,10 @@ Glow.provide(function(glow) {
 		WidgetProto._build.call( this, itemContainer.wrap('<div></div>').parent() );
 		content = this.content;
 		
-		// add titles item
-		titlesHolder = this._titlesHolder = glow('<div class="Carousel-titles"></div>').appendTo(content);
-		// get titles and remove them from their items
-		itemTitles = this._itemTitles = getItemTitles(this);
-		// set the holder to the same height as the items
-		itemTitles && titlesHolder.height( itemTitles[0].style.height );
-		
 		pane = this._pane = new glow.ui.CarouselPane(itemContainer, this._opts);
 		spot = pane._spot
 		items = this.items = pane.items;
 		this.itemContainer = pane.itemContainer;
-		
-		// set the item titles to be the same size as the items
-		itemTitles && itemTitles.width( items.width() );
 		
 		pane.moveTo(0, {
 			tween: null
@@ -216,7 +174,6 @@ Glow.provide(function(glow) {
 		});
 		
 		updateButtons(this);
-		showTitles(this);
 		
 		this._bind();
 	};
@@ -244,35 +201,6 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
-		@description Look for & extract item titles from the carousel items.
-		@returns NodeList of item titles.
-	*/
-	function getItemTitles(carousel) {
-		var titleSelector = carousel._opts.itemTitles,
-			itemTitles = glow(),
-			heights = [],
-			heightsLen = 0;
-			
-		if (!titleSelector) { return undefined; }
-		
-		carousel.itemContainer.children().each(function() {
-			var itemTitle = glow('<div class="Carousel-title"></div>').append(
-				glow(this).get(titleSelector).item(0)
-			);
-			
-			itemTitles.push(itemTitle);
-			
-			// get the title's height
-			heights[heightsLen++] = itemTitle.appendTo(carousel._titlesHolder).height();
-		});
-		
-		// equalise the heights and return
-		return itemTitles.remove().height( Math.max.apply(undefined, heights) );
-	}
-	
-	/**
-		@private
-		@function
 		@description Listener for CarouselPane's 'select' event.
 			'this' is the Carousel
 	*/
@@ -291,18 +219,7 @@ Glow.provide(function(glow) {
 		
 		if ( !this.fire('move', event).defaultPrevented() ) {
 			this._updateNav( (pane._index + event.moveBy) % this.items.length / pane._step );
-			hideTitles(this);
 		}
-	}
-	
-	/**
-		@private
-		@function
-		@description Hide the current titles displayed, if any.
-	*/
-	function hideTitles(carousel) {
-		var currentTitles = carousel._titlesHolder.children();
-		currentTitles.fadeOut(carousel._pane._opts.duration);
 	}
 	
 	/**
@@ -314,44 +231,7 @@ Glow.provide(function(glow) {
 	function paneAfterMove(event) {
 		if ( !this.fire('afterMove', event).defaultPrevented() ) {
 			updateButtons(this);
-			showTitles(this, true);
 		}
-	}
-	
-	/**
-		@private
-		@function
-		@description Show the titles for the currently displayed items
-	*/
-	function showTitles(carousel, animate) {
-		// bail if no item titles
-		if (!carousel._itemTitles) { return; }
-		
-		var indexes = carousel.spotlightIndexes(),
-			carouselItems = carousel.spotlightItems(),
-			itemTitles = carousel._itemTitles,
-			titlesHolder = carousel._titlesHolder.empty(),
-			titlesHolderOffset = titlesHolder.offset().left,
-			titlesToShow = glow(),
-			animDuration = carousel._pane._opts.duration * !!animate;
-			
-		for (var i = 0, leni = indexes.length; i < leni; i++) {
-			titlesToShow.push(
-				// get the title
-				itemTitles.item( indexes[i] )
-					// add it to the holder
-					.appendTo(titlesHolder)
-					// position it
-					.css( 'left', carouselItems.item(i).offset().left - titlesHolderOffset )
-			);
-		}
-		
-		titlesToShow.css({
-			height: 0,
-			opacity: 0
-		}).fadeIn(animDuration).slideOpen(animDuration, {
-			lockToBottom: true
-		});
 	}
 	
 	/**
