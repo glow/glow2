@@ -77,6 +77,28 @@
 				zoom: 1;
 		}
 		
+		#saveDialog {
+			position: relative;
+			top: -400px;
+			left: 40%;
+		}
+		
+		#saveDialog .overlay-content {
+			display: none;
+			visibility: 'hidden';
+		}
+		
+		#saveDialog .shown .overlay-content {
+			display: block;
+			visibility: 'visible';
+			height: 100px;
+			width: 200px;
+			border: 1px solid #666;
+			background-color: #ddd;
+		}
+		
+		
+		
 	</style>
 </head>
 <body>
@@ -136,6 +158,7 @@
 	<div class="testarea" id="animate-test2">
 		Click the button to show the overlay.<br>
 		Click the button to hide the overlay.<br>
+		The H2 elements on the page should be hidden when the overlay is shown.<br>
 		Try clicking the show and hide buttons while it is still animating.<br>
 		<button type="button" class="show-button" name="show-button" value="show">show</button>
 		<button type="button" class="hide-button" name="hide-button" value="hide">hide</button>
@@ -170,7 +193,10 @@
 
 				var myOverlay2 = new glow.ui.Overlay(
 					'#animate-test2 .animate-test-content',
-					{id: 'myOverlay2'}
+					{
+						id: 'myOverlay2',
+						hideWhenShown: 'h2'
+					}
 				)
 				.setAnim(animator);
 		
@@ -221,10 +247,6 @@
 				myOverlay3.container.css('left', -55);
 				myOverlay3.container.css('top', 10);
 			
-				//myOverlay3.on('afterShow', function() {
-				//	myOverlay3.hideFlash();
-				//});
-			
 				glow('#animate-test3 .show-button').on('click', function() {
 					myOverlay3.show();
 				});
@@ -237,6 +259,38 @@
 	</script>
 	
 	
+	<h2>Example</h2>
+	
+	<p>from the docs.</p>
+	
+	<div class="testarea" id="overlay-example">
+		Nothing (including Flash) should ever become hidden when you show the overlay.<br>
+		<button type="button" id="save-story" name="save-story" value="hide">Save</button>
+	</div>
+	<script type="text/javascript" class="showSrc">
+ 		module('example');
+		
+ 		test('Run example from the docs.', function(result) {
+			glow.ready(function() {
+				var overlay = new glow.ui.Overlay(
+					glow(
+						'<div>' +
+						'  <p>Your Story has been saved.</p>' +
+						'</div>'
+					).appendTo(document.body),
+					{
+						id: 'saveDialog',
+						hideWhenShown: false
+					}
+				);
+				
+				glow('#save-story').on('click', function() {
+					overlay.show();
+					setTimeout( function() { overlay.hide(); }, 3000 );
+				} );
+			});
+		});
+	</script>
 	
 	<script type="text/javascript">
 		// make scripts visible in the page...

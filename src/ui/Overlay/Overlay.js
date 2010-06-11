@@ -19,22 +19,26 @@ Glow.provide(function(glow) {
 		@class
 		@augments glow.ui
 		@description A container element displayed on top of the other page content
-		@param {selector|NodeList|String} content
+		@param {selector|NodeList|String|boolean} content
 			the element that contains the contents of the overlay. If not in the document, you must append it to the document before calling show().
 
 		@param {object} [opts]
-			@param {function|selector|NodeList} [opts.hideFilter] Exclude elements from hiding.
-				When provided this function is run for every element that may be hidden. This includes windowed
-				Flash movies if an intersection with the overlay is found.
+			@param {function|selector|NodeList|boolean} [opts.hideWhenShown] Select which things to hide whenevr the overlay is in a shown state.
+			By default all `object` and `embed` elements will be hidden, in browsers that cannot properly layer those elements, whenever any overlay is shown.
+			Set this option to a false value to cause the overlay to never hide any elements, or set it to a bespoke selector, NodeList
+			or a function that returns a NodeList which will be used instead.
 		@example
-			var overlay = new glow.ui.Overlay(
+			var myOverlay = new glow.ui.Overlay(
 				glow(
 					'<div>' +
 					'  <p>Your Story has been saved.</p>' +
 					'</div>'
-				)
+				).appendTo(document.body)
 			);
-			overlay.show();
+			
+			glow('#save-story-button').on('click', function() {
+				myOverlay.show();
+			});
 	 */
 	
 	function Overlay(content, opts) {
@@ -46,7 +50,8 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[wrong type] glow.ui.Overlay expects object as "opts" argument, not ' + typeof opts + '.');
 			}
 		/*gubed!*/
-		var that = this;
+		var that = this,
+			ua;
 		
 		opts = glow.util.apply({ }, opts);
 		
@@ -54,20 +59,7 @@ Glow.provide(function(glow) {
 		Overlay.base.call(this, 'overlay', opts);
 		
 		this.uid = 'overlayId_' + glow.UID + '_' + (++idCounter);
-		instances[this.uid] = this;
-
-		// some browsers need help with Flash (like non-mac opera and gecko 1.9 or less)
-		var ua = navigator.userAgent; // like ﻿"... rv:1.9.0.5) gecko ..."
-
-		this.flashHandler = (
-			glow.env.opera && !/macintosh/i.test(ua)
-			|| /rv:1\.9\.0.*\bgecko\//i.test(ua)
-			|| glow.env.webkit && !/macintosh/i.test(ua)
-		)?
-			function() {
-				that.hideFlash();
-			}
-			: null;
+		instances[this.uid] = this; // useful for modal overlays?
 		
 		this._init(opts);
 		this._build(content);
@@ -98,6 +90,8 @@ Glow.provide(function(glow) {
 	}
 	
 	OverlayProto._build = function(content) {
+		var that = this;
+		
 		WidgetProto._build.call(this, content);
 		
 		/*!debug*/
@@ -105,6 +99,39 @@ Glow.provide(function(glow) {
 				glow.debug.warn('[ivalid argument] glow.ui.Overlay expects "content" argument to refer to an element that exists, no elements found for the content argument provided.');
 			}
 		/*gubed!*/
+		
+		// some browsers need to hide Flash when the overlay is shown (like non-mac opera and gecko 1.9 or less)
+		if (this._opts.hideWhenShown === undefined) { // need to make our own flash handler
+			ua = navigator.userAgent; // like ﻿"... rv:1.9.0.5) gecko ..."
+			/**
+				A function that returns a NodeList containing all elements that need to be hidden.
+				@name glow.ui.Overlay#_whatToHide
+				@private
+				@returns {glow.NodeList} Elements that need to be hidden when the overlay is shown.
+			 */
+			this._whatToHide = (
+				glow.env.opera && !/macintosh/i.test(ua)
+				|| /rv:1\.9\.0.*\bgecko\//i.test(ua)
+				|| glow.env.webkit && !/macintosh/i.test(ua)
+			)?
+				function() {
+					return glow('object, embed')/*.filter(function() {
+						return !that.container.contains(this); // don't hide elements that are inside the overlay
+					});*/
+				}
+				: function() { return glow(); }
+		}
+		else { // user provides their own info about what to hide
+			if (!this._opts.hideWhenShown) { // a value that is false
+				this._whatToHide = function() { return glow(); }
+			}
+			else if (typeof this._opts.hideWhenShown === 'function') { // a function
+				this._whatToHide = this._opts.hideWhenShown;
+			}
+			else if (this._opts.hideWhenShown.length !== undefined) { // nodelist or string?
+				this._whatToHide = function() { return glow('*').filter(this._opts.hideWhenShown); }
+			}
+		}
 		
 		//add IE iframe hack if needed, wrap content in an iFrame to prevent certain elements below from showing through
 		if (glow.env.ie) {
@@ -133,21 +160,11 @@ Glow.provide(function(glow) {
 		showFlash for you in the afterhide event.
 	 */
 	OverlayProto.hideFlash = function() { /*debug*///console.log('hideFlash');
-		var toHide = glow(),
+		var toHide,
 			that = this,
 			hidBy = '';
 			
-		toHide.push( glow('object, embed') );
-		
-		// filter out the elements that are inside this overlay
-		toHide = toHide.filter(function() {
-			return !that.container.contains(this);
-		});
-		
-		// apply any user filter
-		if (this._opts.hideFilter) {
-			toHide = toHide.filter(this._opts.hideFilter);
-		}
+		toHide = this._whatToHide();
 		
 		// multiple overlays may hide the same element
 		// flash elements keep track of which overlays have hidden them
@@ -382,7 +399,7 @@ Glow.provide(function(glow) {
 		
 		setShown(that, true);
 		
-		if (this.flashHandler) { this.flashHandler(); }
+		if (this._whatToHide) { this.hideFlash(); }
 		
 		if (this._animator) {
 			that.state = vis.SHOWING;
