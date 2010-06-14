@@ -164,7 +164,7 @@ Glow.provide(function(glow) {
 		*/
 		this.stage = glow(container).item(0);
 
-		this._focusable = this.stage.focusable( {children: '> .carousel-item', loop: true, setFocus: true} );
+		this._focusable = this.stage.focusable( {children: '> *', loop: true, setFocus: true} );
 		
 		
 		// what would have been the "content" of this widget, is named "viewport"
@@ -405,7 +405,6 @@ Glow.provide(function(glow) {
 		/*!debug*/
 			if (arguments.length > 1) {
 				glow.debug.warn('[wrong count] glow.ui.moveStart - too many arguments, must be 1 or 0, not '+arguments.length+'.');
-				return;
 			}
 		/*gubed!*/
 		
@@ -452,7 +451,6 @@ Glow.provide(function(glow) {
 		/*!debug*/
 			if (arguments.length > 1) {
 				glow.debug.warn('[wrong count] glow.ui.moveToggle - too many arguments, must be 1 or 0, not '+arguments.length+'.');
-				return;
 			}
 		/*gubed!*/
 		
