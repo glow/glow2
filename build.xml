@@ -13,14 +13,14 @@
 	<property name="BUILD_DIR"    value="${ROOT_DIR}/build/" />
 	<property name="BUILDSRC_DIR" value="${BUILD_DIR}${VERSION}/" />
 	<property name="BUILDLIB_DIR" value="${BUILD_DIR}lib/" />
-	
-	<property name="DOCS_DIR"     value="${ROOT_DIR}/docs/" />
-	
+
 	<property name="DIST_DIR"     value="${ROOT_DIR}/dist/" />
 	<property name="DISTSRC_DIR"  value="${DIST_DIR}/${NAME}/${VERSION}" />
 	<property name="DIST_ZIP"     value="${ROOT_DIR}/${NAME}-${VERSION}.zip" />
 	<property name="DIST_TGZ"     value="${ROOT_DIR}/${NAME}-${VERSION}.tgz" />
-	
+
+	<property name="DOCS_DIR"     value="${DIST_DIR}/docs/" />
+
 	<property name="SIZZLE_DIR"   value="${ROOT_DIR}/src/NodeList/_sizzle/sizzle/" />
 	<property name="QUNIT_DIR"    value="${ROOT_DIR}/test/unit/lib/qunit/" />
 	<property name="WOOSH_DIR"    value="${ROOT_DIR}/test/speed/lib/woosh/" />
@@ -149,8 +149,6 @@
 	<target name="apidocs" depends="filter">
 		<echo message="Generating API documentation from JsDoc: ${JSDOC_DIR}" />
 		
-		<mkdir dir="${DOCS_DIR}/${VERSION}/" />
-		
 		<exec executable="java" failonerror="true">
 			<arg value="-jar"/>
 	        <arg value="${JSDOC_DIR}jsrun.jar"/>
@@ -159,7 +157,7 @@
 			<arg value="-v" />
 			<arg value="-u" />
 			<arg value="-t=${JSDOC_DIR}templates/jsdoc/" />
-			<arg value="-d=${DOCS_DIR}/${VERSION}/" />
+			<arg value="-d=${DOCS_DIR}/" />
 			<arg value="-r=1" />			
 			<arg value="${BUILDSRC_DIR}" />
 		</exec>
@@ -213,11 +211,12 @@
 		
 		<echo message="Creating distribution zip &amp; tar.gz files" />
 		
-		<zip destfile="${DIST_ZIP}"
-			basedir="${DIST_DIR}" />
-		<tar destfile="${DIST_TGZ}" 
-			basedir="${DIST_DIR}" 
-			compression="gzip" />
+		<zip destfile="${DIST_ZIP}">
+			<fileset dir="${DIST_DIR}"/>
+		</zip>
+		<tar destfile="${DIST_TGZ}" compression="gzip">
+			<zipfileset src="${DIST_ZIP}"/>
+		</tar>
 	</target>
 	
 	<target name="all" depends="clean, setup, meta, knit, copyimgs, filter, apidocs, debug, minify, dist">
