@@ -1047,7 +1047,7 @@ Glow.provide(function(glow) {
 	};
 	
 	/**
-		@name glow.ui.Carousel#event:select
+		@name glow.ui.CarouselPane#event:select
 		@event
 		@description Fires when a carousel item is selected.
 			Items are selected by clicking, or pressing enter when a child is in the spotlight.
@@ -1056,7 +1056,7 @@ Glow.provide(function(glow) {
 		
 		@param {glow.events.Event} event Event Object
 		@param {glow.NodeList} event.item Item selected
-		@param {number} event.itemIndex The index of the selected item in {@link glow.ui.Carousel#items}.
+		@param {number} event.itemIndex The index of the selected item in {@link glow.ui.CarouselPane#items}.
 	*/
 	
 	/**
