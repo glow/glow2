@@ -92,6 +92,41 @@ Glow.provide(function(glow) {
 		return {}.toString.call(o) === '[object Function]';
 	}
 
+         /**
+        	@name glow.util.clone
+        	@function
+        	@description Deep clones an object / array
+
+        	@param {Object} Data Object to clone
+
+        	@returns {Object}
+
+        	@example
+        	var firstObj = { name: "Bob", secondNames: ["is","your","uncle"] };
+        	var clonedObj = glow.util.clone( firstObj );
+        */
+        util.clone = function(obj) {
+            var index, _index, tmp;
+            obj = obj.valueOf();
+            if ( typeof obj !== 'object' ) {
+                return obj;
+            } else {
+                if ( obj[0] || obj.concat ) {
+                    tmp = [ ];
+                    index = obj.length;
+                    while(index--) {
+                        tmp[index] = arguments.callee( obj[index] );
+                    }
+                } else {
+                    tmp = { };
+                    for ( index in obj ) {
+                        tmp[index] = arguments.callee( obj[index] );
+                    }
+                }
+                return tmp;
+            }
+        }
+
 	/**
 		@name glow.util.getType
 		@function
