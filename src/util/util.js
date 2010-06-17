@@ -92,40 +92,42 @@ Glow.provide(function(glow) {
 		return {}.toString.call(o) === '[object Function]';
 	}
 
-         /**
-        	@name glow.util.clone
-        	@function
-        	@description Deep clones an object / array
+	 /**
+		@name glow.util.clone
+		@function
+		@description Deep clones an object / array
 
-        	@param {Object} Data Object to clone
+		@param {Object} Data Object to clone
 
-        	@returns {Object}
+		@returns {Object}
 
-        	@example
-        	var firstObj = { name: "Bob", secondNames: ["is","your","uncle"] };
-        	var clonedObj = glow.util.clone( firstObj );
-        */
-        util.clone = function(obj) {
-            var index, _index, tmp;
-            obj = obj.valueOf();
-            if ( typeof obj !== 'object' ) {
-                return obj;
-            } else {
-                if ( obj[0] || obj.concat ) {
-                    tmp = [ ];
-                    index = obj.length;
-                    while(index--) {
-                        tmp[index] = arguments.callee( obj[index] );
-                    }
-                } else {
-                    tmp = { };
-                    for ( index in obj ) {
-                        tmp[index] = arguments.callee( obj[index] );
-                    }
-                }
-                return tmp;
-            }
-        }
+		@example
+		var firstObj = { name: "Bob", secondNames: ["is","your","uncle"] };
+		var clonedObj = glow.util.clone( firstObj );
+	*/
+	util.clone = function(obj) {
+		var index,
+			clone;
+		obj = obj.valueOf();
+
+		if ( typeof obj !== 'object' ) {
+			return obj;
+		} else {
+			if ( isArray(obj) ) {
+				clone = [];
+				index = obj.length;
+				while(index--) {
+					clone[index] = util.clone( obj[index] );
+				}
+			} else {
+				clone = {};
+				for ( index in obj ) {
+					clone[index] = util.clone( obj[index] );
+				}
+			}
+			return clone;
+		}
+	}
 
 	/**
 		@name glow.util.getType
