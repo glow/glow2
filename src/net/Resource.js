@@ -325,13 +325,13 @@ Glow.provide(function(glow) {
 				// files now loaded
 			});
 	*/
-	net.getResources = function(urls, opts) {
+	net.getResources = function(urls) {
 		/*!debug*/
-			if (arguments.length < 1 && arguments.length > 2) {
-				glow.debug.warn('[wrong count] glow.net.getResources expects 1 or 2 arguments, not ' + arguments.length + '.');
+			if (arguments.length !== 1) {
+				glow.debug.warn('[wrong count] glow.net.getResources expects 1 argument, not ' + arguments.length + '.');
 			}
 		/*gubed!*/
-		return new glow.net.ResourceRequest(urls, opts);
+		return new glow.net.ResourceRequest(urls);
 	};
 	
 	glow.net.ResourceRequest = ResourceRequest;	
