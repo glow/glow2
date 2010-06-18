@@ -445,7 +445,7 @@ Glow.provide(function(glow) {
 		keyNameToChar = {
 			space: ' ',
 			tab: '\t'
-		}
+		},
 		noKeyPress = {};
 	
 	// corrections for particular browsers :(
