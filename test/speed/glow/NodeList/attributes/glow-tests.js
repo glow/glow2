@@ -21,75 +21,75 @@ woosh.addTests('glow-170', {
 				break;
 		}
 	},
-	'attr set one': new woosh.TimeTest(1, function() {
+	'attr set one': new woosh.TimeTest(1, function(test) {
 		paragraphs.attr('title', 'some title goes here');
-		if (++testCount == 200) {
+		if (test.lastLoop) {
 			return glow.dom.get('p').length;
 		}
 	}),
-	'attr set many': new woosh.TimeTest(1, function() {
+	'attr set many': new woosh.TimeTest(1, function(test) {
 		paragraphs.attr({'title': 'some title goes here', 'class': 'some-class'});
-		if (++testCount == 100) {
+		if (test.lastLoop) {
 			return glow.dom.get('p').length;
 		}
 	}),
-	'attr get': new woosh.TimeTest(1, function() {
+	'attr get': new woosh.TimeTest(1, function(test) {
 		var title = paragraphs.attr('title');
-		if (++testCount == 1200) {
+		if (test.lastLoop) {
 			return title || '';
 		}
 	}),
-	'attr has': new woosh.TimeTest(1, function() {
+	'attr has': new woosh.TimeTest(1, function(test) {
 		paragraphs.hasAttr('zoop');
-		if (++testCount == 1000) {
+		if (test.lastLoop) {
 			return paragraphs.hasAttr();
 		}
 	}),
-	'attr remove': new woosh.TimeTest(1, function() {
+	'attr remove': new woosh.TimeTest(1, function(test) {
 		paragraphs.removeAttr('title');
-		if (++testCount == 600) {
+		if (test.lastLoop) {
 			return paragraphs.attr('title') || '';
 		}
 	}),
-	'attr add class': new woosh.TimeTest(1, function() {
+	'attr add class': new woosh.TimeTest(1, function(test) {
 		paragraphs.addClass('selected');
-		if (++testCount == 600) {
+		if (test.lastLoop) {
 			return paragraphs.hasClass('selected');
 		}
 	}),
-	'attr has class': new woosh.TimeTest(1, function() {
+	'attr has class': new woosh.TimeTest(1, function(test) {
 		paragraphs.hasClass('selected');
-		if (++testCount == 600) {
+		if (test.lastLoop) {
 			return paragraphs.hasClass('selected');
 		}
 	}),
-	'attr class remove': new woosh.TimeTest(1, function() {
+	'attr class remove': new woosh.TimeTest(1, function(test) {
 		paragraphs.removeClass('selected');
-		if (++testCount == 600) {
+		if (test.lastLoop) {
 			return paragraphs.hasClass('selected');
 		}
 	}),
-	'attr class toggle': new woosh.TimeTest(1, function() {
+	'attr class toggle': new woosh.TimeTest(1, function(test) {
 		paragraphs.toggleClass('selected');
-		if (++testCount == 100) {
+		if (test.lastLoop) {
 			return paragraphs.hasClass('selected');
 		}
 	}),
-	'attr data': new woosh.TimeTest(1, function() {
+	'attr data': new woosh.TimeTest(1, function(test) {
 		paragraphs.data('color', 'blue');
-		if (++testCount == 50) {
+		if (test.lastLoop) {
 			return paragraphs.data('color');
 		}
 	}),
-	'attr remove data': new woosh.TimeTest(1, function() {
+	'attr remove data': new woosh.TimeTest(1, function(test) {
 		paragraphs.removeData('color');
-		if (++testCount == 200) {
+		if (test.lastLoop) {
 			return paragraphs.data('color');
 		}
 	}),
-	'form val': new woosh.TimeTest(1, function() {
+	'form val': new woosh.TimeTest(1, function(test) {
 		form.val();
-		if (++testCount == 200) {
+		if (test.lastLoop) {
 			return form.nm1;
 		}
 	})

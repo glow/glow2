@@ -20,127 +20,139 @@ woosh.addTests('jq-142', {
 				break;
 		}
 	},
-	'after': new woosh.TimeTest(1, function() {
+	'after': new woosh.TimeTest(1, function(test) {
 		paragraphs.after('<p>hello</p>');
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('p').length;
 		}
+		htmlForTest.innerHTML = htmlForTestHTML;
+		paragraphs = $('p');
 	}),
-	'before': new woosh.TimeTest(1, function() {
+	'before': new woosh.TimeTest(1, function(test) {
 		paragraphs.before('<p>hello</p>');
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('p').length;
 		}
+		htmlForTest.innerHTML = htmlForTestHTML;
+		paragraphs = $('p');
 	}),
-	'append': new woosh.TimeTest(1, function() {
+	'append': new woosh.TimeTest(1, function(test) {
 		paragraphs.append('<span>hello</span>');
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('span').length;
 		}
+		htmlForTest.innerHTML = htmlForTestHTML;
+		paragraphs = $('p');
 	}),
-	'prepend': new woosh.TimeTest(1, function() {
+	'prepend': new woosh.TimeTest(1, function(test) {
 		paragraphs.prepend('<span>hello</span>');
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('span').length;
 		}
+		htmlForTest.innerHTML = htmlForTestHTML;
+		paragraphs = $('p');
 	}),
-	'appendTo': new woosh.TimeTest(1, function() {
+	'appendTo': new woosh.TimeTest(1, function(test) {
 		paragraphs.appendTo(testBin);
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return new $('#testBin p').length;
 		}
 	}),
-	'prependTo': new woosh.TimeTest(1, function() {
+	'prependTo': new woosh.TimeTest(1, function(test) {
 		paragraphs.prependTo(testBin);
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return new $('#testBin p').length;
 		}
 	}),
-	'insertAfter': new woosh.TimeTest(1, function() {
+	'insertAfter': new woosh.TimeTest(1, function(test) {
 		paragraphs.insertAfter(testBin);
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('#testBin p').length;
 		}
 	}),
-	'insertBefore': new woosh.TimeTest(1, function() {
+	'insertBefore': new woosh.TimeTest(1, function(test) {
 		paragraphs.insertBefore(testBin);
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('#testBin p').length;
 		}
 	}),
-	'remove': new woosh.TimeTest(1, function() {
+	'remove': new woosh.TimeTest(1, function(test) {
 		var html = testBin[0].innerHTML;
 		paragraphs.remove();
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('#testBin p').length;
 		}
 		testBin[0].innerHTML = html;
 		paragraphs = $('p');
 	}),
-	'empty': new woosh.TimeTest(1, function() {
+	'empty': new woosh.TimeTest(1, function(test) {
 		var html = testBin[0].innerHTML;
 		paragraphs.empty();
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('p').children().length;
 		}
 		testBin[0].innerHTML = html;
 		paragraphs = $('p');
 	}),
-	'replaceWith': new woosh.TimeTest(1, function() {
+	'replaceWith': new woosh.TimeTest(1, function(test) {
 		paragraphs.replaceWith('<p>Hello!</p>');
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('p').length;
 		}
 		paragraphs = $('p');
 	}),
-	'wrap': new woosh.TimeTest(1, function() {
+	'wrap': new woosh.TimeTest(1, function(test) {
 		paragraphs.wrap('<div><div class="wrapInner"></div></div>');
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('div.wrapInner').length;
 		}
+		htmlForTest.innerHTML = htmlForTestHTML;
+		paragraphs = $('p');
 	}),
-	'wrap single': new woosh.TimeTest(1, function() {
+	'wrap single': new woosh.TimeTest(1, function(test) {
 		paragraph.wrap('<div><div class="wrapInner"></div></div>');
-		if (++testCount == 200) {
+		if (test.lastLoop) {
 			return $('div.wrapInner').length;
 		}
+		htmlForTest.innerHTML = htmlForTestHTML;
+		paragraph = $('p').eq(0);
 	}),
-	'unwrap': new woosh.TimeTest(1, function() {
+	'unwrap': new woosh.TimeTest(1, function(test) {
 		var html = testBin[0].innerHTML;
 		paragraphs.unwrap();
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return $('div.wrappingToRemove').length;
 		}
 		testBin[0].innerHTML = html;
 		paragraphs = $('p');
 	}),
-	'clone': new woosh.TimeTest(1, function() {
+	'clone': new woosh.TimeTest(1, function(test) {
 		paragraphs.clone(true);
-		if (++testCount == 20) {
+		if (test.lastLoop) {
 			return paragraphs.length;
 		}
 	}),
-	'copy': new woosh.TimeTest(1, function() {
+	'copy': new woosh.TimeTest(1, function(test) {
 		paragraphs.clone(false);
-		if (++testCount == 200) {
+		if (test.lastLoop) {
 			return paragraphs.length;
 		}
 	}),
-	'html getting': new woosh.TimeTest(1, function() {
+	'html getting': new woosh.TimeTest(1, function(test) {
 		return paragraphs.html();
 	}),
-	'html setting': new woosh.TimeTest(1, function() {
+	'html setting': new woosh.TimeTest(1, function(test) {
 		paragraphs.html('Hello!');
-		if (++testCount == 100) {
+		if (test.lastLoop) {
 			return paragraphs[0].innerHTML;
 		}
 	}),
-	'text getting': new woosh.TimeTest(1, function() {
+	'text getting': new woosh.TimeTest(1, function(test) {
 		return paragraph.text();
 	}),
-	'text setting': new woosh.TimeTest(1, function() {
+	'text setting': new woosh.TimeTest(1, function(test) {
 		paragraphs.text('Hello!');
-		if (++testCount == 100) {
+		if (test.lastLoop) {
 			return paragraphs[0].innerHTML;
 		}
 	})
