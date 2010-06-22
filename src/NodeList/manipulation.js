@@ -587,16 +587,18 @@ Glow.provide(function(glow) {
 	*/
 	NodeListProto.html = function(htmlString) {
 		// getting
-		if (!arguments.length) {
-			return this[0] ? this[0].innerHTML : '';
+		var node = this[0],
+			i;
+
+		if (htmlString === undefined) {
+			return node ? node.innerHTML : '';
 		}
 		
 		// setting
-		var i = this.length,
-			node;
+		i = this.length;
 		
 		// normalise the string
-		htmlString = htmlString === undefined? '' : String(htmlString);
+		htmlString = String(htmlString);
 		
 		while (i--) {
 			node = this[i];
