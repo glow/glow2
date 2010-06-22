@@ -1,34 +1,17 @@
 Glow.provide(function(glow) {
-	var undef
-		, NodeListProto = glow.NodeList.prototype
-	
-		/**
-			@private
-			@name glow.NodeList-dom0PropertyMapping
-			@description Mapping of HTML attribute names to DOM0 property names.
-		*/
-		, dom0PropertyMapping = { // keys must be lowercase
+	var undefined,
+		NodeListProto = glow.NodeList.prototype,
+		env = glow.env,
+		// Mapping of HTML attribute names to DOM0 property names.
+		dom0PropertyMapping = { // keys must be lowercase
 			'class'     : 'className',
 			'for'       : 'htmlFor',
 			'maxlength' : 'maxLength'
-		}
-		
-		/**
-			@private
-			@name glow.NodeList-dataPropName
-			@type String
-			@description The property name added to the DomElement by the NodeList#data method.
-		*/
-		, dataPropName = '_uniqueData' + glow.UID
-		
-		/**
-			@private
-			@name glow.NodeList-dataIndex
-			@type String
-			@description The value of the dataPropName added by the NodeList#data method.
-		*/
-		, dataIndex = 1 // must be a truthy value
-			
+		},
+		// The property name added to the DomElement by the NodeList#data method.
+		dataPropName = '_uniqueData' + glow.UID,
+		// The value of the dataPropName added by the NodeList#data method.
+		dataIndex = 1, // must be a truthy value
 		/**
 			@private
 			@name glow.NodeList-dataCache
@@ -42,7 +25,7 @@ Glow.provide(function(glow) {
 				}
 			]
 		*/
-		, dataCache = [];
+		dataCache = [];
 			
 	/**
 	@name glow.NodeList#addClass
@@ -116,13 +99,13 @@ Glow.provide(function(glow) {
 		case the returned value will be an empty string.
 
 	@example
-		var myNodeList = glow(".myImgClass");
+		var myNodeList = glow("img");
 
 		// get an attribute
-		myNodeList.attr("class");
+		myNodeList.attr("src");
 
 		// set an attribute
-		myNodeList.attr("class", "anotherImgClass");
+		myNodeList.attr("src", "whatever.jpg");
 
 		// set multiple attributes
 		myNodeList.attr({
@@ -131,89 +114,74 @@ Glow.provide(function(glow) {
 		});
 	 */
 	 // see: http://tobielangel.com/2007/1/11/attribute-nightmare-in-ie/
-	NodeListProto.attr = function(/*arguments*/) {
-		var args = arguments,
-			argsLen = args.length,
-			thisLen = this.length,
-			keyvals,
-			name = keyvals = args[0], // using this API: attr(name) or attr({key: val}) ?
+	NodeListProto.attr = function(name, value) {
+		var thisLen = this.length,
+			keyvals = (typeof name === 'object') && name,
 			dom0Property = '',
 			node,
-			attrNode;
+			attrNode,
+			i = thisLen;
 		
 		/*!debug*/
 			if (arguments.length === 2 && typeof arguments[0] !== 'string') {glow.debug.warn('[wrong type] glow.NodeList#attr expects name to be of type string, not '+typeof arguments[0]+'.'); }
 			else if (arguments.length === 1 && (typeof arguments[0] !== 'string' && arguments[0].constructor !== Object)) {glow.debug.warn('[wrong type] glow.NodeList#attr expects argument 1 to be of type string or an instance of Object.'); }
 			else if (arguments.length === 0 ||  arguments.length > 2) { glow.debug.warn('[wrong count] glow.NodeList#attr expects 1 or 2 arguments, not '+arguments.length+'.'); }
 		/*gubed!*/
-		
-		if (this.length === 0) { // is this an empty nodelist?
-			return (argsLen > 1)? this : undef;
+
+		// quick exist if NodeList is empty
+		if (thisLen === 0) { // is this an empty nodelist?
+			return (value || keyvals) ? this : '';
 		}
-		
+
 		if (typeof keyvals === 'object') { // SETting value from {name: value} object
 			for (name in keyvals) {
 				if (!keyvals.hasOwnProperty(name)) { continue; }
-				
-				// in IE6 and IE7 the attribute name needs to be translated into dom property name
-				if (glow.env.ie < 8) {
-					dom0Property = dom0PropertyMapping[name.toLowerCase()];
-				}
-				
-				var i = thisLen;
-				while (i--) {
-					node = this[i];
-					
-					if (node.nodeType !== 1) { continue; }
-					
-					if (dom0Property) {
-						node[dom0Property] = keyvals[name];
-					}
-					else {
-						node.setAttribute(name, keyvals[name], 0); // IE flags, 0: case-insensitive
-					}
-				}
+				this.attr( name, keyvals[name] );
 			}
 			
 			return this;
 		}
-		else {
+
+		if (value === undefined) { // GETting value from name. see http://reference.sitepoint.com/javascript/Element/getAttribute
 			node = this[0];
-				
+
 			if (node.nodeType !== 1) {
-				return (argsLen > 1)? this : undef;
+				return '';
 			}
 
-			if (argsLen === 1) { // GETting value from name. see http://reference.sitepoint.com/javascript/Element/getAttribute
-				if ( glow.env.ie && (name === 'href' || name === 'src') ) {
-					value = node.getAttribute(name, 2); // IE flags, 0: case-insensitive + 2: exactly as set
-					return (value === null)? '' : value;
-				}
-				else if (node.attributes[name]) { // in IE node.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
-					return (!node.attributes[name].specified)? '' : node.attributes[name].value;
-				}
-				else if (node.getAttributeNode) { // in IE getAttribute() does not always work so we use getAttributeNode if we can
-					attrNode = node.getAttributeNode(name, 0);
-					return (attrNode === null)? '' : attrNode.value;
-				}
-				else {
-					value = node.getAttribute(name, 2); // IE flags, 0: case-insensitive + 2: exactly as set
-					return (value === null)? '' : value;
-				}	
+			if ( env.ie && (name === 'href' || name === 'src') ) {
+				value = node.getAttribute(name, 2); // IE flags, 0: case-insensitive + 2: exactly as set
+				return (value === null)? '' : value;
 			}
-			else { // SETting a single value like attr(name, value), normalize to an keyval object
-				if (glow.env.ie < 8) {
-					dom0Property = dom0PropertyMapping[name.toLowerCase()];
-				}
-				
-				if (dom0Property) {
-					node[dom0Property] = args[1];
-				}
-				else {
-					node.setAttribute(name, args[1], 0); // IE flags, 0: case-insensitive
-				}
-				return this;
+			else if (node.attributes[name]) { // in IE node.getAttributeNode sometimes returns unspecified default values so we look for specified attributes if we can
+				return (!node.attributes[name].specified)? '' : node.attributes[name].value;
 			}
+			else if (node.getAttributeNode) { // in IE getAttribute() does not always work so we use getAttributeNode if we can
+				attrNode = node.getAttributeNode(name, 0);
+				return (attrNode === null)? '' : attrNode.value;
+			}
+			else {
+				value = node.getAttribute(name, 2); // IE flags, 0: case-insensitive + 2: exactly as set
+				return (value === null)? '' : value;
+			}
+		}
+		else { // SETting a single value like attr(name, value), normalize to an keyval object
+			if (env.ie < 8) {
+				dom0Property = dom0PropertyMapping[name.toLowerCase()];
+			}
+
+			while (i--) {
+				node = this[i];
+				if (node.nodeType === 1) {
+					if (dom0Property) {
+						node[dom0Property] = value;
+					}
+					else {
+						node.setAttribute(name, value, 0); // IE flags, 0: case-insensitive
+					}
+				}
+			}
+			return this;
 		}
 	};
 	/**
@@ -312,13 +280,13 @@ Glow.provide(function(glow) {
 		}
 		else { // GET from first node
 			node = this[0];
-			if (node === undef || node.nodeType !== 1) { return undef; }
+			if (node === undefined || node.nodeType !== 1) { return undefined; }
 				
 			if ( !(index = node[dataPropName]) ) {
-				return undef;
+				return undefined;
 			}
 
-			if (key !== undef) {
+			if (key !== undefined) {
 				return dataCache[index][key];
 			}
 			
@@ -361,7 +329,7 @@ Glow.provide(function(glow) {
 			}
 			
 			if (node.hasAttribute) { return node.hasAttribute(name); } // like FF, Safari, etc
-			else { return node.attributes[name] !== undef; } // like IE7
+			else { return node.attributes[name] !== undefined; } // like IE7
 		}
 	};
 	
@@ -486,7 +454,7 @@ Glow.provide(function(glow) {
 	
 		for (var i = 0, leni = this.length; i < leni; i++) {
 			if (this[i].nodeType === 1) {
-				if (glow.env.ie < 8) {
+				if (env.ie < 8) {
 					if ( (dom0Property = dom0PropertyMapping[name.toLowerCase()]) ) {
 						this[i][dom0Property] = '';
 					}
@@ -571,11 +539,11 @@ Glow.provide(function(glow) {
 			elm = this[i];
 			index = elm[dataPropName];
 			
-			if (index !== undef) {
+			if (index !== undefined) {
 				switch (arguments.length) {
 					case 0:
-						dataCache[index] = undef;
-						elm[dataPropName] = undef;
+						dataCache[index] = undefined;
+						elm[dataPropName] = undefined;
 						try {
 							delete elm[dataPropName]; // IE 6 goes wobbly here
 						}
@@ -584,7 +552,7 @@ Glow.provide(function(glow) {
 						}
 						break;
 					case 1:
-						dataCache[index][key] = undef;
+						dataCache[index][key] = undefined;
 						delete dataCache[index][key];
 						break;
 				}

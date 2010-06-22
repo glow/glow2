@@ -60,7 +60,7 @@ if (glow.debug) test('glow.NodeList#addClass debug', 6, function() {
 	equal(error.type, 'wrong type', 'Passing more than 1 argument logs an error of type "type".');
 });
 
-test('glow.NodeList#attr', 32, function() {
+test('glow.NodeList#attr', 33, function() {
 		
 	// test this: getting an attribute value
 	var myNodeList = new glow.NodeList(
@@ -74,7 +74,8 @@ test('glow.NodeList#attr', 32, function() {
 	myNodeList.attr('title', 'newTitle');
 	equal(myNodeList[0].title, 'newTitle', 'Can set the title attribute, overwriting an existing title.');
 	equal((myNodeList[1].title||''), '', 'Does not set the title attribute on a text node.');
-	
+	equal(myNodeList[2].title, 'newTitle', 'Attribute set on all items.');
+
 	// test this: setting and getting the value of an attribute with no default value
 	myNodeList = new glow.NodeList(
 		'<p class="testClass"><b>hello</b></p>text<span TITLE="upperTitle"></span><!-- comment -->'
@@ -117,7 +118,7 @@ test('glow.NodeList#attr', 32, function() {
 	
 	// test this: getting an attribute from an empty nodelist
 	title = myNodeList.attr('title');
-	equal(title, undefined, 'Can call attr(name) on an empty list, returns undefined.');
+	equal(title, '', 'Can call attr(name) on an empty list');
 	
 	// test this: getting and setting attributes on an image element
 	myNodeList = new glow.NodeList(
