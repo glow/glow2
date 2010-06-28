@@ -60,6 +60,29 @@ Glow.provide(function(glow) {
 	}
 
 	/**
+		@private
+		@function
+		@param {object} params Name-value object of params
+		@returns {string} String of param elements
+	 */
+	function createParamStr(params) {
+		var paramStr = '';
+
+		for (var paramName in params) {
+			if ( params.hasOwnProperty(paramName) ) {
+				paramStr += util.interpolate('<param name="{name}" value="{value}">', {
+					name: paramName,
+					value: params[paramName]
+				}, {
+					escapeHtml: true
+				});
+			}
+		}
+
+		return paramStr;
+	}
+
+	/**
 		@name glow.flash.installed
 		@type function
 		@description Gets the version string, or checks the user has a particular version.
@@ -157,45 +180,37 @@ Glow.provide(function(glow) {
 		}, opts);
 
 		var flashNodeList,
-			param,
 			flashVars = opts.flashVars,
+			alt = opts.alt,
 			// shallow-clone the param object incase the uses re-uses it
-			params = apply({
-				movie:swfUrl
-			}, opts.params);
+			params = apply({}, opts.params);
 
 		// is version correct?
 		if ( !installed(minVer) ) {
-			return glow(opts.alt);
+			if (typeof alt == 'string') {
+				alt = glow.NodeList._strToNodes(alt);
+			}
+			return glow(alt);
 		}
 
-		// create flash elements
-		// for IE...
-		if (ActiveX) {
-			flashNodeList = glow('<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"' + widthHeightStr + '></object>');
-		}
-		// for others...
-		else {
-			flashNodeList = glow(nonIeFlashHtml);
-		}
-
-		// add flash vars
+		// set flash vars as param
 		if (typeof flashVars == 'object') {
 			flashVars = util.urlEncode(flashVars);
 		}
 		params.flashvars = flashVars;
 
-		// add params
-		for (var paramName in params) {
-			if ( params.hasOwnProperty(paramName) ) {
-				param = document.createElement('param');
-				param.name = paramName;
-				param.value = params[paramName];
-				flashNodeList[0].appendChild(param);
-			}
+		// create flash elements
+		// for IE...
+		if (ActiveX) {
+			params.movie = swfUrl;
+			flashNodeList = glow('<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"' + widthHeightStr + '>' + createParamStr(params) + '</object>');
+		}
+		// for others...
+		else {
+			flashNodeList = glow(nonIeFlashHtml).append( createParamStr(params) ).attr('data', swfUrl);
 		}
 
-		return flashNodeList//.attr('data', swfUrl);
+		return flashNodeList;
 	}
 	flash.create = create;
 

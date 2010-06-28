@@ -70,7 +70,33 @@
 	<div id="flash1" style="width: 100px; height: 100px"></div>
 
 	<script type="text/javascript">
-		glow('#flash1')[0].appendChild( glow.flash.create('../../data/smile.swf', 6)[0] );
+		glow.flash.create('../../data/smile.swf', 6).appendTo('#flash1');
+	</script>
+
+	<h2>glow.flash.create - version not supported</h2>
+
+	<p>
+		This movie requires flash 1000, which you probably don't have. You should see the default alt message.
+	</p>
+
+	<div id="flash2" style="height: 100px"></div>
+
+	<script type="text/javascript">
+		glow.flash.create('../../data/smile.swf', 1000).appendTo('#flash2');
+	</script>
+
+	<h2>glow.flash.create - custom alt</h2>
+
+	<p>
+		This movie requires flash 1000 again, but uses nodes as a custom alt message.
+	</p>
+
+	<div id="flash3" style="height: 100px"><p>Don't have Flash? Are you Steve Jobs?</p></div>
+
+	<script type="text/javascript">
+		glow.flash.create('../../data/smile.swf', 1000, {
+			alt: glow('#flash3').children().remove()
+		}).appendTo('#flash3');
 	</script>
 
 	<script type="text/javascript">
