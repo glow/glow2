@@ -99,6 +99,30 @@
 		}).appendTo('#flash3');
 	</script>
 
+	<h2>glow.flash.create - flash vars and params</h2>
+
+	<div id="flash4" style="height: 100px"></div>
+
+	<script type="text/javascript">
+		glow.flash.create('../../data/smile.swf', 6, {
+			params: {foo: 'bar', hello: 'world'},
+			flashVars: {cat: 'domino'}
+		}).appendTo('#flash4');
+
+		// Sizzle can't get at these elements in IE
+		/*module('glow.flash.create');
+
+		test('Flash movie has "foo" param', function(result) {
+			result.ok( !!glow('#flash4 param[name="foo"][value="bar"]').length );
+		});
+		test('Flash movie has "hello" param', function(result) {
+			result.ok( !!glow('#flash4 param[name="hello"][value="world"]').length );
+		});
+		test('Flash movie has flashVars', function(result) {
+			result.ok( !!glow('#flash4 param[name="flashvars"][value="cat=domino"]').length );
+		});*/
+	</script>
+
 	<script type="text/javascript">
 		// make scripts visible in the page...
 		manualTests.showSrc();

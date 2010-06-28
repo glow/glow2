@@ -27,8 +27,6 @@ Glow.provide(function(glow) {
 			versionString,
 			i;
 
-		// todo: ensure document.body is present
-
 		cachedVersionDetails = [];
 		cachedVersionString = '';
 
@@ -98,7 +96,14 @@ Glow.provide(function(glow) {
 			}
 	*/
 	function installed(assertMin) {
-		// Todo: gubeds
+		/*!debug*/
+			if (!document.body) {
+				glow.debug.warn('glow.flash cannot be used before <body>');
+			}
+			if (arguments.length > 1) {
+				glow.debug.warn('[wrong count] glow.flash.installed expects 0 or 1 arguments, not '+arguments.length+'.');
+			}
+		/*gubed!*/
 
 		var installedVersion = cachedVersionDetails || getVersionDetails(),
 			assertMinParts;
@@ -110,7 +115,14 @@ Glow.provide(function(glow) {
 		// normalise to an array of version parts
 		assertMinParts = (typeof assertMin === 'number') ? [assertMin] : assertMin.split('.');
 
-		// todo: check the format of assertMinParts
+		/*!debug*/
+			var i = assertMinParts.length;
+			while (i--) {
+				if ( isNaN(assertMinParts[i]) ) {
+					glow.debug.warn('[wrong format] glow.flash Version must be in format number, number.number or number.number.number');
+				}
+			}
+		/*gubed!*/
 
 		for (var i = 0, len = assertMinParts.length; i < len; i++) {
 			if ( installedVersion[i] < assertMinParts[i]-0 ) {
@@ -195,7 +207,7 @@ Glow.provide(function(glow) {
 
 		// set flash vars as param
 		if (typeof flashVars == 'object') {
-			flashVars = util.urlEncode(flashVars);
+			flashVars = util.encodeUrl(flashVars);
 		}
 		params.flashvars = flashVars;
 
