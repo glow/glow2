@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Manual Test: glow.flash</title>
+	
+	<script src="../../../unit/lib/testhelper.js?base=../../../../" type="text/javascript"></script>
+	
+	<script type="text/javascript">
+		testHelper.addScript('core.debug.js');
+	</script>
+	
+	<script type="text/javascript" src="../../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../../lib/style.css" />
+</head>
+
+<body>
+	<div id="glow-version"></div>
+	
+	<h1>glow.flash</h1>
+	
+	<h2>glow.flash.version</h2>
+	
+	<p>
+		Although these tests pass, check the reported version number corresponds to the installed version, if any.
+	</p>
+
+	<script type="text/javascript">
+		module('glow.flash.version');
+
+		test('Version string can be fetched', function(result) {
+			var version = glow.flash.installed();
+			result.ok(typeof version === 'string', {
+				detected: version
+			});
+		});
+
+		test('Version is equal or greater than 6', function(result) {
+			var isInstalled = glow.flash.installed(6);
+			result.ok(isInstalled === true);
+		});
+
+		test('Version isequal or  greater than 6.1', function(result) {
+			var isInstalled = glow.flash.installed('6.1');
+			result.ok(isInstalled === true);
+		});
+
+		test('Version is equal or greater than ' + glow.flash.installed(), function(result) {
+			var isInstalled = glow.flash.installed( glow.flash.installed() );
+			result.ok(isInstalled === true);
+		});
+
+		test('Version is not equal or greater than 100', function(result) {
+			var isInstalled = glow.flash.installed(100);
+			result.ok(isInstalled === false);
+		});
+
+		test('Version is not equal or greater than 100.0.0', function(result) {
+			var isInstalled = glow.flash.installed('100.0.0');
+			result.ok(isInstalled === false);
+		});
+	</script>
+
+	<h2>glow.flash.create</h2>
+
+	<p>
+		If you have flash installed, you should see a smiley face below
+	</p>
+
+	<div id="flash1" style="width: 100px; height: 100px"></div>
+
+	<script type="text/javascript">
+		glow('#flash1')[0].appendChild( glow.flash.create('../../data/smile.swf', 6)[0] );
+	</script>
+
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>
