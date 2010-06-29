@@ -8,7 +8,8 @@ Glow.provide(function(glow) {
 		flash = {},
 		ActiveX = window.ActiveXObject,
 		widthHeightStr = ' width="100%" height="100%"',
-		nonIeFlashHtml = '<object type="application/x-shockwave-flash"' + widthHeightStr + '></object>',
+		flashMimeType = 'application/x-shockwave-flash',
+		nonIeFlashHtml = '<object type="' + flashMimeType + '"' + widthHeightStr + '></object>',
 		util = glow.util,
 		apply = util.apply,
 		// these are populated on the first call to glow.flash.installed
@@ -18,8 +19,30 @@ Glow.provide(function(glow) {
 	/**
 		@private
 		@function
+		@description Is the flash plugin installed and active?
+			This only works for non-IE browsers (as in, not activex)
+
+		@returns {boolean}
+	 */
+	function flashPluginInstalled() {
+		var nav = navigator,
+			plugins = nav.plugins,
+			mimeTypes = nav.mimeTypes,
+			flashMimeNav;
+
+		if ( plugins && plugins['Shockwave Flash'] ) {
+			// this catches Safari, which indicates Flash is installed even when it's disabled.
+			// basically, if Flash exists in navigator.mimeTypes, ensure it's enabled
+			return !( mimeTypes && (flashMimeNav = mimeTypes[flashMimeType]) && !flashMimeNav.enabledPlugin );
+		}
+		return false;
+	}
+
+	/**
+		@private
+		@function
 		@descrption Gets the installed version & populates cachedVersionDetails & cachedVersionString
-		@returns {number[]} An array of 3 version numbers, so 10.0.0 would be [10, 0, 0]
+		@returns {number[]} An array of version numbers, so 10.0.32.18 would be [10, 0, 32, 18]
 	 */
 	// this function only runs once per page. Thanks to swfobject for some of the ideas used here.
 	function getVersionDetails() {
@@ -32,16 +55,22 @@ Glow.provide(function(glow) {
 
 		// for IE
 		if (ActiveX) {
-			flashInstance = new ActiveX('ShockwaveFlash.ShockwaveFlash');
+			// this may be null if activeX disabled, hence default object
+			try {
+				flashInstance = new ActiveX('ShockwaveFlash.ShockwaveFlash');
+			}
+			catch (e) {}
+			flashInstance = flashInstance || {};
 		}
 		else {
-			// this needs to go onto the body before it works correctly
-			flashInstance = glow(nonIeFlashHtml).prependTo(document.body)[0];
+			// we use flashPluginInstalled to avoid adding a flash movie to the page which triggers "Oi! You want a plugin?" browser messages.
+			// The flash movie needs to go onto the body before it correctly reports version info.
+			flashInstance = flashPluginInstalled() ? glow(nonIeFlashHtml).prependTo(document.body)[0] : {};
 		}
 
-		if (flashInstance && (versionString = flashInstance.GetVariable('$version')) ) {
+		if (flashInstance.GetVariable && (versionString = flashInstance.GetVariable('$version')) ) {
 			cachedVersionString = versionString.split(' ')[1].replace(/,/g, '.');
-			cachedVersionDetails = cachedVersionString.split('.').slice(0, 3);
+			cachedVersionDetails = cachedVersionString.split('.');
 
 			// convert parts to numbers
 			i = cachedVersionDetails.length;
@@ -106,7 +135,8 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 
 		var installedVersion = cachedVersionDetails || getVersionDetails(),
-			assertMinParts;
+			assertMinParts,
+			partNum;
 
 		if (assertMin === undefined) {
 			return cachedVersionString;
@@ -125,8 +155,9 @@ Glow.provide(function(glow) {
 		/*gubed!*/
 
 		for (var i = 0, len = assertMinParts.length; i < len; i++) {
-			if ( installedVersion[i] < assertMinParts[i]-0 ) {
-				return false;
+			partNum = assertMinParts[i]-0;
+			if ( installedVersion[i] != partNum ) {
+				return installedVersion[i] > partNum;
 			}
 		}
 
@@ -157,7 +188,7 @@ Glow.provide(function(glow) {
 			@param {NodeList|string|HTMLElement} [opts.alt] Alternate content to display if embedding fails.
 				Embedding fails if the user does not have the correct version of the Flash plugin.
 				
-				By default, this is a message asking the user to update their Flash player.
+				By default, this is `You need to install the latest version of Flash to play this content. &lt;a href="http://get.adobe.com/flashplayer/"&gt;Download the Flash player now.&lt;/a&gt;.`
 		
 		@returns {glow.NodeList} NodeList containing flash movie or alternate content.
 		
@@ -183,12 +214,9 @@ Glow.provide(function(glow) {
 			}).appendTo('#movieContainer');
 	*/
 	function create(swfUrl, minVer, opts) {
-		// todo: cater for leaks in IE
-
 		opts = apply({
 			flashVars: '',
-			// todo: get the official default for this. Special mesage for iOS?
-			alt: 'This Flash movie requires Flash ' + minVer + '. <a href="http://get.adobe.com/flashplayer/">Get Flash</a>.'
+			alt: 'You need to install the latest version of Flash to play this content. <a href="http://get.adobe.com/flashplayer/">Download the Flash player now.</a>.'
 		}, opts);
 
 		var flashNodeList,
