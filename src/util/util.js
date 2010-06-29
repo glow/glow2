@@ -314,7 +314,7 @@ Glow.provide(function(glow) {
 			type = _getType( object[key] );
 
 			/*!debug*/
-				if (type !== 'Array' || type !== 'string') {
+				if (type !== 'Array' && type !== 'string') {
 					glow.debug.warn('[wrong type] glow.util.encodeUrl expected Array or String value for "' + key + '", not ' + type + '.');
 				}
 			/*gubed!*/
