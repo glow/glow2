@@ -68,20 +68,24 @@ Glow.provide(function(glow) {
 			flashInstance = flashPluginInstalled() ? glow(nonIeFlashHtml).prependTo(document.body)[0] : {};
 		}
 
-		if (flashInstance.GetVariable && (versionString = flashInstance.GetVariable('$version')) ) {
-			cachedVersionString = versionString.split(' ')[1].replace(/,/g, '.');
-			cachedVersionDetails = cachedVersionString.split('.');
+		// using try/catch as IE may throw an error accessing flashInstance.GetVariable, even though it's happy to call it as a function
+		try {
+			if ( versionString = flashInstance.GetVariable('$version') ) {
+				cachedVersionString = versionString.split(' ')[1].replace(/,/g, '.');
+				cachedVersionDetails = cachedVersionString.split('.');
 
-			// convert parts to numbers
-			i = cachedVersionDetails.length;
+				// convert parts to numbers
+				i = cachedVersionDetails.length;
 
-			while (i--) {
-				cachedVersionDetails[i] = cachedVersionDetails[i] - 0;
+				while (i--) {
+					cachedVersionDetails[i] = cachedVersionDetails[i] - 0;
+				}
+
+				// remove it from the document if we added it
+				flashInstance.parentNode && glow(flashInstance).destroy();
 			}
-
-			// remove it from the document if we added it
-			flashInstance.parentNode && glow(flashInstance).destroy();
 		}
+		catch (e) {}
 
 		return cachedVersionDetails;
 	}
@@ -214,10 +218,36 @@ Glow.provide(function(glow) {
 			}).appendTo('#movieContainer');
 	*/
 	function create(swfUrl, minVer, opts) {
+		/*!debug*/
+			if (arguments.length > 3 || arguments.length < 2) {
+				glow.debug.warn('[wrong count] glow.flash.create expects 2 or 3 arguments, not '+arguments.length+'.');
+			}
+			if (typeof swfUrl != 'string') {
+				glow.debug.warn('[wrong type] glow.flash.create "swfUrl" param expected string, got ' + typeof swfUrl + '.');
+			}
+			if ( !/^(string|number)$/.test(typeof minVer) ) {
+				glow.debug.warn('[wrong type] glow.flash.create "minVer" param expected string or number, got ' + typeof minVer + '.');
+			}
+			// format of minVer checked in installed()
+			if (opts && typeof opts != 'object') {
+				glow.debug.warn('[wrong type] glow.flash.create "opts" param expected object, got ' + typeof opts + '.');
+			}
+		/*gubed!*/
+
 		opts = apply({
 			flashVars: '',
 			alt: 'You need to install the latest version of Flash to play this content. <a href="http://get.adobe.com/flashplayer/">Download the Flash player now.</a>.'
 		}, opts);
+
+		/*!debug*/
+			// format of minVer checked in installed()
+			if ( !/^(string|object)$/.test(typeof opts.flashVars) ) {
+				glow.debug.warn('[wrong type] glow.flash.create "opts.flashVars" param expected object or string, got ' + typeof opts.flashVars + '.');
+			}
+			if ( opts.params && typeof opts.params != 'object' ) {
+				glow.debug.warn('[wrong type] glow.flash.create "opts.params" param expected object, got ' + typeof opts.params + '.');
+			}
+		/*gubed!*/
 
 		var flashNodeList,
 			flashVars = opts.flashVars,
