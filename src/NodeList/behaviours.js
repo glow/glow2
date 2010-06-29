@@ -4,7 +4,7 @@ Glow.provide(function(glow) {
 		undefined;
 	
 	/**
-		@name glow.NodeList.focusable
+		@name glow.NodeList#focusable
 		@function
 		@extends glow.ui.Behaviour
 		@description Manage a focusable element, or group of elements
