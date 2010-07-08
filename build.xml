@@ -21,7 +21,7 @@
 
 	<property name="DOCS_DIR"     value="${DIST_DIR}/docs/" />
 
-	<property name="SIZZLE_DIR"   value="${ROOT_DIR}/src/NodeList/_sizzle/sizzle/" />
+	<property name="JQUERY_DIR"   value="${ROOT_DIR}/src/_jquery/" />
 	<property name="QUNIT_DIR"    value="${ROOT_DIR}/test/unit/lib/qunit/" />
 	<property name="WOOSH_DIR"    value="${ROOT_DIR}/test/speed/lib/woosh/" />
 	
@@ -29,7 +29,6 @@
 	<property name="YUI_DIR"      value="${BUILDLIB_DIR}/yuicompressor/" />
 	<property name="YUI_JAR"      value="${YUI_DIR}build/yuicompressor-2.4.2.jar" />
 	
-	<loadfile property="SIZZLE-EXPORTS" srcfile="${ROOT_DIR}/src/NodeList/_sizzle/sizzle-glow.js" />
 	<xmlproperty file="packages/packages.xml" collapseAttributes="true" />
 	
 	<!-- TARGETS -->
@@ -51,14 +50,8 @@
 		<unzip dest="${YUI_DIR}" src="${temp.zip}">
 			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
 		</unzip>
-	
-		<delete dir="${SIZZLE_DIR}" />
-		<mkdir dir="${SIZZLE_DIR}" />
-		<get dest="${temp.zip}" src="${SIZZLE_URL}" />
-		<untar dest="${SIZZLE_DIR}" src="${temp.zip}" compression="gzip">
-			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
-		</untar>
-		<replaceregexp match="// EXPOSE" replace="${SIZZLE-EXPORTS}" file="${SIZZLE_DIR}/sizzle.js" />
+
+		<get dest="${JQUERY_DIR}/jquery.js" src="${JQUERY_URL}" />
 
 		<delete dir="${QUNIT_DIR}" />
 		<mkdir dir="${QUNIT_DIR}" />

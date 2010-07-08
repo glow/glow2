@@ -1,14 +1,13 @@
+var Glow;
 (function() {
-
 	// there can be only one
-	if (window.Glow) { return; }
-	window.Glow = true;
+	if (Glow) { return; }
 	
 	var glowMap,
 		defaultBase,
 		document = window.document,
 		scripts = document.getElementsByTagName('script'),
-		thisScriptSrc = '';
+		thisScriptSrc;
 	
 	// we need to be very explicit to defend against some browser
 	// extensions which add elements to the document unexpectedly
@@ -25,16 +24,10 @@
 		: '';
 		
 	// track when document is ready, must run before the page is finished loading
-	if (!document.readyState) {
-		if (document.addEventListener) { // like Mozilla
-			document.addEventListener('DOMContentLoaded',
-				function () {
-					document.removeEventListener('DOMContentLoaded', arguments.callee, false);
-					document.readyState = 'complete';
-				},
-				false
-			);
-		}
+	if (!document.readyState && document.addEventListener) { // like Mozilla
+		document.addEventListener('DOMContentLoaded', function () {
+				document.readyState = 'complete';
+		}, false);
 	}
 	
 	/**
@@ -47,10 +40,10 @@
 		@param {string} [opts.base] The path to the base folder, in which the Glow versions are kept.
 		@param {boolean} [opts.debug] Have all filenames modified to point to debug versions.
 	*/
-	window.Glow = function(version, opts) { /*debug*///log.info('new Glow("'+Array.prototype.join.call(arguments, '", "')+'")');
+	Glow = function(version, opts) { /*debug*///log.info('new Glow("'+Array.prototype.join.call(arguments, '", "')+'")');
 		opts = opts || {};
 		
-		var glowInstance,
+		var $,
 			debug = (opts.debug)? '.debug' : '',
 			base = opts.base || defaultBase;
 
@@ -75,14 +68,14 @@
 			base += '/';
 		}
 		
-		glowInstance = createGlowInstance(version, base);
-		Glow._build.instances[version] = glowInstance;
+		$ = createInstance(version, base);
+		Glow._build.instances[version] = $;
 		
-		glowInstance.UID = 'glow' + Math.floor(Math.random() * (1<<30));
+		$.UID = 'glow' + Math.floor(Math.random() * (1<<30));
 
- 		if (!opts._noload) { glowInstance.load('core'); } // core is always loaded;
+ 		if (!opts._noload) { $.load('core'); } // core is always loaded;
  		 		
-		return glowInstance;
+		return $;
 	}
 	
 	/**
@@ -213,12 +206,12 @@
 		if (!glow) { /*debug*///log.info('Cannot complete, unknown version of glow: '+version);
 			throw new Error('Cannot complete, unknown version of glow: '+version);
 		}
-		glow._build.builders[name] = Glow._build.provided;
+		glow._gBuild.builders[name] = Glow._build.provided;
 		Glow._build.provided = [];
 
 		// shortcuts
-		loading   = glow._build.loading;
-		builders = glow._build.builders;
+		loading   = glow._gBuild.loading;
+		builders = glow._gBuild.builders;
 		
 		// try to build packages, in the same order they were loaded
 		for (var i = 0; i < loading.length; i++) { // loading.length may change during loop
@@ -245,44 +238,43 @@
 	}
 	
 	/**
-		@name createGlowInstance
 		@private
 		@function
 		@description Creates an instance of the Glow library. 
 		@param {string} version
 		@param {string} base
 	 */
-	var createGlowInstance = function(version, base) { /*debug*///log.info('new glow("'+Array.prototype.join.call(arguments, '", "')+'")');
-		var glow = function(nodeListContents) {
-			return new glow.NodeList(nodeListContents);
+	var createInstance = function(version, base) { /*debug*///log.info('new glow("'+Array.prototype.join.call(arguments, '", "')+'")');
+		var $ = function(selector, context) {
+			return new $.fn.init(selector, context);
 		};
 		
-		glow.version = version;
-		glow.base = base;
-		glow.map = getMap(version);
-		glow._build = {
+		$._gVersion = version;
+		$._gBase = base;
+		$._gMap = getMap(version);
+		$._gBuild = {
 			loading: [],   // names of packages requested but not yet built, in same order as requested.
 			builders: {},  // completed but not yet built (waiting on dependencies). Like _build.builders[packageName]: [function, function, ...].
 			history: {},   // names of every package ever loaded for this instance
 			callbacks: []
 		};
 		
-		// copy properties from glowInstanceMembers
-		for (var prop in glowInstanceMembers) {
-			glow[prop] = glowInstanceMembers[prop];
+		// copy properties from $Members
+		for (var prop in $Members) {
+			$[prop] = $Members[prop];
 		}
 		
-		return glow;
+		return $;
 	}
 	
 	
 	/**
-		@name glowInstanceMembers
+		@name $Members
 		@private
 		@description All members of this object will be copied onto little-glow instances
 		@type {Object}
 	*/
-	var glowInstanceMembers = {
+	var $Members = {
 		/**
 			@public
 			@name glow#load
@@ -298,27 +290,27 @@
 			for (var i = 0, len = arguments.length; i < len; i++) {
 				name = arguments[i];
 				
-				if (this._build.history[name]) { /*debug*///log.info('already loaded package "'+name+'" for version '+this.version+', skipping.');
+				if (this._gBuild.history[name]) { /*debug*///log.info('already loaded package "'+name+'" for version '+this.version+', skipping.');
 					continue;
 				}
 				
-				this._build.history[name] = true;
+				this._gBuild.history[name] = true;
 				
 				// packages have dependencies, listed in the map: a single js file, css files, or even other packages
-				depends = this.map[name]; /*debug*///log.info('depends for '+name+' '+this.version+': "'+depends.join('", "')+'"');
+				depends = this._gMap[name]; /*debug*///log.info('depends for '+name+' '+this.version+': "'+depends.join('", "')+'"');
 				for (var j = 0, lenj = depends.length; j < lenj; j++) {
 					
 					if (depends[j].slice(-3) === '.js') { /*debug*///log.info('dependent js: "'+depends[j]+'"');
-						src = this.base + this.version + '/' + depends[j];
+						src = this._gBase + this._gVersion + '/' + depends[j];
 						
 						// readyBlocks are removed in _release()
 						if (this._addReadyBlock) { this._addReadyBlock('glow_loading_'+name); } // provided by core
-						this._build.loading.push(name);
+						this._gBuild.loading.push(name);
 						
 						injectJs(src);
 					}
 					else if (depends[j].slice(-4) === '.css') { /*debug*///log.info('dependent css "'+depends[j]+'"');
-						src = this.base + this.version + '/' + depends[j];
+						src = this._gBase + this._gVersion + '/' + depends[j];
 						injectCss(src);
 					}
 					else { /*debug*///log.info('dependent package: "'+depends[j]+'"');
@@ -337,7 +329,7 @@
 			@description Do something when all the packages load.
 		 */
 		loaded: function(onLoadCallback) { /*debug*///log.info('glow.loaded('+typeof onLoadCallback+') for version '+this.version);
-			this._build.callbacks.push(onLoadCallback);
+			this._gBuild.callbacks.push(onLoadCallback);
 			if (this._addReadyBlock) { this._addReadyBlock('glow_loading_loadedcallback'); }
 			
 			this._release();
@@ -353,13 +345,13 @@
 		_release: function() { /*debug*///log.info('glow._release("'+this.version+'")');
 			var callback;
 			
-			if (this._build.loading.length !== 0) { /*debug*///log.info('waiting for '+this._build.loading.length+' to finish.');
+			if (this._gBuild.loading.length !== 0) { /*debug*///log.info('waiting for '+this._build.loading.length+' to finish.');
 				return;
 			}
 			/*debug*///log.info('running '+this._build.callbacks.length+' loaded callbacks for version "'+this.version+'"');
 			
 			// run and remove each available _onloaded callback
-			while (callback = this._build.callbacks.shift()) {
+			while (callback = this._gBuild.callbacks.shift()) {
 				callback(this);
 				if (this._removeReadyBlock) { this._removeReadyBlock('glow_loading_loadedcallback'); }
 			}
@@ -372,7 +364,7 @@
 		 */
 		ready: function(onReadyCallback) { /*debug*///log.info('(ember) glow#ready('+typeof onReadyCallback+') for version '+this.version+'. There are '+this._build.loading.length+' loaded packages waiting to be built.');
 			this.loaded(function(glow) {
-				glow.ready( function() { onReadyCallback(glow); } );
+				glow.ready(onReadyCallback);
 			});
 			
 			return this;

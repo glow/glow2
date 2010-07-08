@@ -10,6 +10,11 @@
 		<js>
 			<file>src/header/license.txt</file>
 			<file>src/header/core.js</file>
+			<file>src/_jquery/jquery.js</file>
+			<file>src/_jquery/jquery-footer.js</file>
+			<file>src/core/ready.js</file>
+			<file>src/footer/core.js</file>
+			<!--
 			<file>src/env/env.js</file>
 			<file>src/core/ready.js</file>
 			<file>src/util/util.js</file>
@@ -36,13 +41,13 @@
 			<file>src/anim/Anim/mutation.js</file>
 			<file>src/anim/Timeline/Timeline.js</file>
 			<file>src/flash/flash.js</file>
-			<file>src/footer/core.js</file>
+			-->
 		</js>
 		<css></css>
 	</core>
 	<ui>
 		<js>
-			<file>src/header/license.txt</file>
+			<!--<file>src/header/license.txt</file>
 			<file>src/NodeList/behaviours.js</file>
 			<file>src/ui/ui.js</file>
 			<file>src/ui/Behaviour/Behaviour.js</file>
@@ -54,14 +59,14 @@
 			<file>src/ui/CarouselPane/CarouselPane.js</file>
 			<file>src/ui/Carousel/Carousel.js</file>
 			<file>src/ui/Carousel/pageNav.js</file>
-			<file>src/footer/ui.js</file>
+			<file>src/footer/ui.js</file>-->
 		</js>
 		<css>
-			<file>src/header/license.txt</file>
+			<!--<file>src/header/license.txt</file>
 			<file>src/ui/ui.css</file>
 			<file>src/ui/Overlay/Overlay.css</file>
 			<file>src/ui/AutoSuggest/AutoSuggest.css</file>
-			<file>src/ui/Carousel/Carousel.css</file>
+			<file>src/ui/Carousel/Carousel.css</file>-->
 		</css>
 	</ui>
 </packages>

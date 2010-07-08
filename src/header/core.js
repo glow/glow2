@@ -11,24 +11,28 @@
 		// is the same as
 		var links = new glow.NodeList('a');
 */
-if (!window.Glow) { // loading packages via user SCRIPT tags?
-	window.Glow = {
-		provide: function(f) {
-			f(glow);
-		},
-		complete: function(n, version) {
-			glow.version = version;
-		}
-	};
-	
-	window.glow = function(nodeListContents) {
-		return new glow.NodeList(nodeListContents);
-	};
-	glow.UID = 'glow' + Math.floor(Math.random() * (1<<30));
-	glow.load = function() {
-		throw new Error('Method load() is not available without glow.js');
+var Glow;
+(function(){
+	if (!Glow) { // loading packages via user SCRIPT tags?
+		var win = window,
+			$;
+
+		Glow = {
+			provide: function(f) {
+				f($);
+			},
+			complete: function(n, version) {
+				$._gVersion = version;
+			}
+		};
+
+		$ = win.$ = win.jQuery = function(selector, context) {
+			return new $.fn.init(selector, context);
+		};
+		$.UID = 'glow' + Math.floor(Math.random() * (1<<30));
 	}
-}
+})();
+
 
 
 Glow.provide(function(glow) {

@@ -28,23 +28,23 @@
 			var glow = Glow('2', {_map: testMap, _noload: true});
 		
 				equals(typeof glow, 'function', 'glow is a function');
- 				equals(glow.version, '2.1.0', 'glow.version is set to the latest minor+bugfix version.');
+ 				equals(glow._gVersion, '2.1.0', 'glow._gVersion is set to the latest minor+bugfix version.');
  			
  			glow = Glow('2.0', {_map: testMap, _noload: true});
  			
- 				equals(glow.version, '2.0.1', 'glow.version is set to the latest bugfix version.');
+ 				equals(glow._gVersion, '2.0.1', 'glow._gVersion is set to the latest bugfix version.');
  			
  			glow = Glow('2.1.0', {_map: testMap, _noload: true});
  			
- 				equals(glow.version, '2.1.0', 'glow.version is set to the latest exact version.');
+ 				equals(glow._gVersion, '2.1.0', 'glow._gVersion is set to the latest exact version.');
  				
  			glow = Glow('2.1.0 rc-1', {_map: testMap, _noload: true});
  			
- 				equals(glow.version, '2.1.0 rc-1', 'glow.version is set to the latest exact rc version.');
+ 				equals(glow._gVersion, '2.1.0 rc-1', 'glow._gVersion is set to the latest exact rc version.');
  			
  			glow = Glow('src', {_map: testMap, _noload: true});
  			
- 				equals(glow.version, 'src', 'glow.version is set to the src directory when given a placeholder.');
+ 				equals(glow._gVersion, 'src', 'glow._gVersion is set to the src directory when given a placeholder.');
 		});
 		
 		test('globals', 2, function() {
@@ -66,10 +66,10 @@
 			
 			function checkTags(frame) {
 				with (frame) {
-					ok( (typeof glow !== 'undefined'), 'glow is defined.' );
-					equals(typeof glow, 'function', 'glow is a function');
-					ok( (typeof glow.util !== 'undefined'), 'glow.util is defined.' );
-					ok( (typeof glow.ui !== 'undefined'), 'glow.ui is defined.' );
+					ok( (typeof $ !== 'undefined'), '$ is defined.' );
+					equals(typeof $, 'function', '$ is a function');
+					ok( (typeof $.ready !== 'undefined'), '$.ready is defined.' );
+					ok( (typeof $.ajax !== 'undefined'), '$.ajax is defined.' );
 				}
 				start();
 			}
