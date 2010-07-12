@@ -1,12 +1,12 @@
 /*debug*///log.info('executing core/ready.js');
-Glow.provide(function($) {
+Brew.provide(function($) {
 	var readyQueue = [],
 		blockersActive = 0,
 		processingReadyQueue = false,
 		allReady,
 		readyBlockers = $._readyBlockers = {};
 
-	/*debug*///log.info('overwriting Glow ready with $.ready');
+	/*debug*///log.info('overwriting Brew ready with $.ready');
 	$.ready = function (f) { /*debug*///log.info('$.ready()');
 		if (allReady) {
 			f();

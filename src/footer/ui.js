@@ -1,1 +1,1 @@
-Glow.complete('ui', '@SRC@');
+Brew.complete('ui', '@SRC@');

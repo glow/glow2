@@ -1,4 +1,4 @@
-Glow.provide(function(lib) {
-	// copy jQuery properties to our lib
-	$.extend( lib, $.noConflict(true) );
+Brew.provide(function(stub) {
+	// copy jQuery properties to our stub
+	$.extend( stub, $.noConflict(true) );
 });

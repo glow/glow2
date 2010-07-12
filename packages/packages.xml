@@ -1,11 +1,11 @@
 <packages>
-	<glow>
+	<brew>
 		<js>
 			<file>src/header/license.txt</file>
-			<file>src/glow.js</file>
+			<file>src/brew.js</file>
 		</js>
 		<css></css>
-	</glow>
+	</brew>
 	<core>
 		<js>
 			<file>src/header/license.txt</file>
