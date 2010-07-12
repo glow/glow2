@@ -12,20 +12,17 @@
 	
 	<script type="text/javascript">
 		window.loadedRan = [];
-		window.env = null;
-		window.ui = null;
 		
 		window.glow =
 		Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
 			.load('core')
 			.loaded(function(glow) {
-				window.env = glow.env;
+				window.map = glow.map;
 				window.loadedRan.push('one');
 			})
 			.load('ui')
 			.loaded(function(glow) {
 				window.loadedRan.push('two');
-				window.ui = glow.ui;
 				
 				if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }
 			})

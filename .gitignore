@@ -10,3 +10,4 @@ build/lib/jsdoc-toolkit
 build/lib/yuicompressor
 .DS_Store
 .idea
+/src/_jquery/jquery.js
