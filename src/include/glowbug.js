@@ -17,7 +17,7 @@ var glowbug = {
 		var e = new Error(message, fileName, lineNumber);
 		
 		e.message = message;
-		e.name = 'Glow'+level;
+		e.name = 'Brew'+level;
 		e.level = level.toLowerCase();
 		
 		var match = /\[([^\]]+)\]/.exec(message);

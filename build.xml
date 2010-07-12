@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="glow" default="all" basedir=".">
+<project name="brew" default="all" basedir=".">
 
 	<!-- PROPERTIES -->
 
 	<property file="build.properties" />
-	<property name="NAME" value="glow" />
+	<property name="NAME" value="brew" />
 	
 	<property name="ROOT_DIR"     value="." />
 	<property name="INCLUDE_DIR"  value="${ROOT_DIR}/src/include/" />
@@ -99,8 +99,8 @@
 	<target name="knit" depends="meta">
 		<echo message="Combining files to build packages" />
 		
-		<concat destfile="${BUILDSRC_DIR}/glow.js" fixlastline="yes" eol="lf">
-			<filelist dir="${ROOT_DIR}" files="${packages.glow.js.file}" />
+		<concat destfile="${BUILDSRC_DIR}/brew.js" fixlastline="yes" eol="lf">
+			<filelist dir="${ROOT_DIR}" files="${packages.brew.js.file}" />
 		</concat>
 		
 		<concat destfile="${BUILDSRC_DIR}/core.js" fixlastline="yes" eol="lf">
@@ -215,7 +215,7 @@
 	<target name="all" depends="clean, setup, meta, knit, copyimgs, filter, apidocs, debug, minify, dist">
 		<echo message="" />
 		<echo message="**************************************" />
-		<echo message="Glow version ${VERSION} build complete" />
+		<echo message="Brew version ${VERSION} build complete" />
 		<echo message="**************************************" />
 		<echo message="" />
 	</target>

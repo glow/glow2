@@ -1,43 +1,37 @@
 /**
-	@name glow
+	@name brew
 	@namespace
 	@version @VERSION@
-	@description The glow library namespace
-		The library can also be used as a function, which is a shortcut to
-		{@link glow.NodeList}.
-		
-	@example
-		var links = glow('a');
-		// is the same as
-		var links = new glow.NodeList('a');
+	@description A stub used by the BBC Brew loader for the jQuery library.
+	@see http://jquery.com/
 */
-var Glow;
+var Brew;
 (function(){
-	if (!Glow) { // loading packages via user SCRIPT tags?
+	if (!Brew) { // loading packages via user SCRIPT tags?
 		var win = window,
 			$;
 
-		Glow = {
+		Brew = {
 			provide: function(f) {
 				f($);
 			},
 			complete: function(n, version) {
-				$._gVersion = version;
+				$._bVersion = version;
 			}
 		};
 
 		$ = win.$ = win.jQuery = function(selector, context) {
 			return new $.fn.init(selector, context);
 		};
-		$.UID = 'glow' + Math.floor(Math.random() * (1<<30));
+		$.UID = 'brew' + Math.floor(Math.random() * (1<<30));
 	}
 })();
 
 
 
-Glow.provide(function(glow) {
+Brew.provide(function(brew) {
 	/*!debug*/
 	/*!include:glowbug.js*/
-	if (typeof glowbug != 'undefined') { glow.debug = glowbug; }
+	if (typeof glowbug != 'undefined') { brew.debug = glowbug; }
 	/*gubed!*/
 });
