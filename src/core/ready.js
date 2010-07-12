@@ -58,14 +58,14 @@ Brew.provide(function($) {
 
 	// wait for other modules to load
 	if ($.loaded) {
-		$._addReadyBlock('$_load');
+		$._addReadyBlock('brew_load');
 		$.loaded(function() {
-			$._removeReadyBlock('$_load');
+			$._removeReadyBlock('brew_load');
 		})
 	}
 	// hook into jQuery's dom ready
-	$._addReadyBlock('$_domReady');
+	$._addReadyBlock('brew_domReady');
 	$(function() {
-		$._removeReadyBlock('$_domReady');
+		$._removeReadyBlock('brew_domReady');
 	})
 });

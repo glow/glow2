@@ -7,21 +7,21 @@
 	<title>t Loaded</title>
 	
 	<script type="text/javascript">
-		parent.testHelper.addScript('glow.js', window);
+		parent.testHelper.addScript('brew.js', window);
 	</script>
 	
 	<script type="text/javascript">
 		window.loadedRan = [];
 		
-		window.glow =
-		Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
+		window.brew =
+		Brew( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
 			.load('core')
-			.loaded(function(glow) {
-				window.map = glow.map;
+			.loaded(function(brew) {
+				window.map = brew.map;
 				window.loadedRan.push('one');
 			})
 			.load('ui')
-			.loaded(function(glow) {
+			.loaded(function(brew) {
 				window.loadedRan.push('two');
 				
 				if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }

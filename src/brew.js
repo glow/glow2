@@ -302,7 +302,7 @@ var Brew;
 						src = this._bBase + this._bVersion + '/' + depends[j];
 						
 						// readyBlocks are removed in _release()
-						if (this._addReadyBlock) { this._addReadyBlock('$_loading_'+name); } // provided by core
+						if (this._addReadyBlock) { this._addReadyBlock('brew_loading_'+name); } // provided by core
 						this._bBuild.loading.push(name);
 						
 						injectJs(src);
@@ -328,7 +328,7 @@ var Brew;
 		 */
 		loaded: function(onLoadCallback) { /*debug*///log.info('brew.loaded('+typeof onLoadCallback+') for version '+this.version);
 			this._bBuild.callbacks.push(onLoadCallback);
-			if (this._addReadyBlock) { this._addReadyBlock('$_loading_loadedcallback'); }
+			if (this._addReadyBlock) { this._addReadyBlock('brew_loading_loadedcallback'); }
 			
 			this._release();
 			
@@ -351,7 +351,7 @@ var Brew;
 			// run and remove each available _onloaded callback
 			while (callback = this._bBuild.callbacks.shift()) {
 				callback(this);
-				if (this._removeReadyBlock) { this._removeReadyBlock('$_loading_loadedcallback'); }
+				if (this._removeReadyBlock) { this._removeReadyBlock('brew_loading_loadedcallback'); }
 			}
 		},
 		/**
@@ -360,7 +360,7 @@ var Brew;
 			@param {function} onReadyCallback Called when all the packages load and the DOM is available.
 			@description Do something when all the packages load and the DOM is ready.
 		 */
-		ready: function(onReadyCallback) { /*debug*///log.info('(ember) brew#ready('+typeof onReadyCallback+') for version '+this.version+'. There are '+this._build.loading.length+' loaded packages waiting to be built.');
+		ready: function(onReadyCallback) { /*debug*///console.log('brew#ready('+typeof onReadyCallback+')');
 			this.loaded(function(brew) {
 				brew.ready(onReadyCallback);
 			});

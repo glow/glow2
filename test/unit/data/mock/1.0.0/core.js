@@ -1,8 +1,8 @@
 
-Glow.provide(function(glow) {
+Brew.provide(function(brew) {
 	var ua = navigator.userAgent.toLowerCase();
 	
-	glow.env = function(){
+	brew.env = function(){
 		var nanArray = [0, NaN],
 			opera = (/opera[\s\/]([\w\.]+)/.exec(ua) || nanArray)[1],
 			ie = opera ? NaN : (/msie ([\w\.]+)/.exec(ua) || nanArray)[1],
@@ -26,21 +26,21 @@ Glow.provide(function(glow) {
 		blockersActive = 0,
 		processingReadyQueue = false;
 		
-	glow._readyBlockers = {};
+	brew._readyBlockers = {};
 
-	glow.ready = function (f) { /*debug*///console.log('core glow.ready()');
+	brew.ready = function (f) { /*debug*/console.log('core brew.ready()');
 		if (this.isReady) {
 			f();
 		}
 		else {
 			readyQueue.push(f);
 		}
-		return glow;
+		return brew;
 	};
 	
-	glow.onDomReady = function(f) {
+	brew.onDomReady = function(f) {
 		//just run function if already ready
-		if (glow.isDomReady) {
+		if (brew.isDomReady) {
 			f();
 		}
 		else {
@@ -48,32 +48,32 @@ Glow.provide(function(glow) {
 		}
 	};
 	
-	glow._addReadyBlock = function(name) {
-		if (name in glow._readyBlockers) {
+	brew._addReadyBlock = function(name) {
+		if (name in brew._readyBlockers) {
 			throw new Error("Blocker '" + name +"' already exists");
 		}
-		glow._readyBlockers[name] = true;
-		glow.isReady = false;
+		brew._readyBlockers[name] = true;
+		brew.isReady = false;
 		blockersActive++;
-		return glow;
+		return brew;
 	}
 		
-	glow._removeReadyBlock = function(name) {
-		if (glow._readyBlockers[name]) {
-			glow._readyBlockers[name] = false;
+	brew._removeReadyBlock = function(name) {
+		if (brew._readyBlockers[name]) {
+			brew._readyBlockers[name] = false;
 			blockersActive--;
 			// if we're out of blockers
 			if (!blockersActive) {
 				// call our queue
-				glow.isReady = true;
+				brew.isReady = true;
 				runReadyQueue();
 			}
 		}
-		return glow;
+		return brew;
 	}
 	
 	function runDomReadyQueue() {
-		glow.isDomReady = true;
+		brew.isDomReady = true;
 		// run all functions in the array
 		for (var i = 0, len = domReadyQueue.length; i < len; i++) {
 			domReadyQueue[i]();
@@ -86,7 +86,7 @@ Glow.provide(function(glow) {
 		
 		processingReadyQueue = true;
 		while (readyQueue.length) {
-			(readyQueue.shift())(glow);
+			(readyQueue.shift())(brew);
 			
 			// check if the previous function has created a blocker
 			if (blockersActive) { break; }
@@ -102,12 +102,12 @@ Glow.provide(function(glow) {
 	 */
 	var bindReady = function() {
 		//don't do this stuff if the dom is already ready
-		if (glow.isDomReady) { return; }
-		glow._addReadyBlock('glow_domReady'); // wait for dom to be ready
+		if (brew.isDomReady) { return; }
+		brew._addReadyBlock('brew_domReady'); // wait for dom to be ready
 		
 		function onReady() { /*debug*///console.log('onReady()');
 			runReadyQueue();
-			glow._removeReadyBlock('glow_domReady');
+			brew._removeReadyBlock('brew_domReady');
 			document.readyState == 'complete';
 		}
 				
@@ -142,7 +142,7 @@ Glow.provide(function(glow) {
 				})();
 			}
 		}
-		else if (glow.env.webkit < 525.13 && document.readyState) { // like pre Safari 3.1
+		else if (brew.env.webkit < 525.13 && document.readyState) { // like pre Safari 3.1
 			(function() {
 				if ( /loaded|complete/.test(document.readyState) ) {
 					onReady();
@@ -163,25 +163,25 @@ Glow.provide(function(glow) {
 			);
 		}
 		else {
-			throw new Error('Unable to bind glow ready listener to document.');
+			throw new Error('Unable to bind brew ready listener to document.');
 		}
 	};
 
-	glow.notSupported = ( // here are the browsers we don't support
-		glow.env.ie < 6 ||
-		(glow.env.gecko < 1.9 && !/^1\.8\.1/.test(glow.env.version)) ||
-		glow.env.opera < 9 ||
-		glow.env.webkit < 412
+	brew.notSupported = ( // here are the browsers we don't support
+		brew.env.ie < 6 ||
+		(brew.env.gecko < 1.9 && !/^1\.8\.1/.test(brew.env.version)) ||
+		brew.env.opera < 9 ||
+		brew.env.webkit < 412
 	);
 	// deprecated
-	glow.isSupported = !glow.notSupported;
+	brew.isSupported = !brew.notSupported;
 	
 	// block 'ready' if browser isn't supported
-	if (glow.notSupported) {
-		glow._addReadyBlock('glow_browserSupport');
+	if (brew.notSupported) {
+		brew._addReadyBlock('brew_browserSupport');
 	}
 	
 	bindReady();
 });
 
-Glow.complete('core', '1.0.0');
+Brew.complete('core', '1.0.0');

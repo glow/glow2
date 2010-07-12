@@ -16,7 +16,7 @@
 	<title>t Loaded Ready</title>
 	
 	<script type="text/javascript">
-		parent.testHelper.addScript('glow.js', window);
+		parent.testHelper.addScript('brew.js', window);
 	</script>
 	
 	<script type="text/javascript">
@@ -24,29 +24,28 @@
 		window.elementFound = null;
 		window.env = null;
 		
-		Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
+		Brew( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
 			.load('core')
 			.loaded(function() {
 				window.readyRan.push('zero');
 			})
-			.ready(function(glow) {
+			.ready(function(brew) {
 				// dom elements in the body are available when this runs?
 				window.elementFound = document.getElementById('test-element');
 				
 				// the first callback runs?
 				window.readyRan.push('one');
 			})
-			.ready(function(glow) {
+			.ready(function(brew) {
 				// the second callback runs?
 				window.readyRan.push('two');
 				
 				// setting a ready callback after the document is already ready...
-				glow.load('ui')
+				brew.load('ui')
 				.loaded(function(){ /*debug*///log.info('~ pushed three');
 					window.readyRan.push('three');
 				})
 				.ready(function(){ /*debug*///log.info('~ pushed four');
-					
 					window.readyRan.push('four');
 					
 					if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }

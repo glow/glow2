@@ -7,11 +7,11 @@
 	<title>t Load</title>
 	
 	<script type="text/javascript">
-		parent.testHelper.addScript('glow.js', window);
+		parent.testHelper.addScript('brew.js', window);
 	</script>
 	
 	<script type="text/javascript">
-		window.glow = Glow( parent.testHelper.getVersion(), { base: parent.testHelper.getBase() })
+		window.brew = Brew( parent.testHelper.getVersion(), { base: parent.testHelper.getBase() })
 		.load('ui')
 		.ready(function(g) {
 			if (parent.callbacks && parent.callbacks[window.name]) { parent.callbacks[window.name](window); }

@@ -7,7 +7,7 @@
 	<title>t Depends</title>
 	
 	<script type="text/javascript">
-		parent.testHelper.addScript('glow.js', window);
+		parent.testHelper.addScript('brew.js', window);
 	</script>
 	
 	<script type="text/javascript">
@@ -20,7 +20,7 @@
 			}
 		};
 
-		Glow('1.0.0', {base: './mock/', _map: mockMap})
+		Brew('1.0.0', {base: './mock/', _map: mockMap})
 		.load('foo', 'bar')
 		.loaded(function(g) {
 			if (parent.callbacks && parent.callbacks[window.name]) {

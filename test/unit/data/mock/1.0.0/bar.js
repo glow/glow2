@@ -1,4 +1,4 @@
-Glow.provide( function(glow) {
+Brew.provide( function(glow) {
 	glow.bar = glow.bar || {};
 	
 	glow.order = glow.order || [];
@@ -9,4 +9,4 @@ Glow.provide( function(glow) {
 });
 
 
-Glow.complete('bar', '1.0.0');
+Brew.complete('bar', '1.0.0');

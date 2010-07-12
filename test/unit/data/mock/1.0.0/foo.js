@@ -1,6 +1,6 @@
 setTimeout(
 	function() {
-		Glow.provide(function(glow) {
+		Brew.provide(function(glow) {
 			glow.foo = glow.foo || {};
 			
 			glow.order = glow.order || [];
@@ -11,7 +11,7 @@ setTimeout(
 		});
 		
 		
-		Glow.complete('foo', '1.0.0');
+		Brew.complete('foo', '1.0.0');
 	}
 	,
 	1000

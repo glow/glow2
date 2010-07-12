@@ -23,27 +23,27 @@
 	<title>t Ready</title>
 	
 	<script type="text/javascript">
-		parent.testHelper.addScript('glow.js', window);
+		parent.testHelper.addScript('brew.js', window);
 	</script>
 	
 	<script type="text/javascript">
 		window.readyRan = [];
 		window.elementFound = null;
 		
-		window.globalGlow = Glow( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
-			.ready(function(glow) {
+		window.globalBrew = Brew( parent.testHelper.getVersion(), {base: parent.testHelper.getBase() })
+			.ready(function(brew) {
 				// dom elements in the body are available when this runs?
 				window.elementFound = document.getElementById('test-element');
 				
 				// the first callback runs?
 				window.readyRan.push('one');
 			})
-			.ready(function(glow) {
+			.ready(function(brew) {
 				// the second callback runs?
 				window.readyRan.push('two');
 				
 				// setting a ready callback after the document is already ready...
-				glow.ready(function(glow){
+				brew.ready(function(brew){
 					window.readyRan.push('three');
 				});
 			});
@@ -54,7 +54,7 @@
 				window.onload = function() { /*debug*///log.info('window.onload');
 					originalOnload();
 					
-					globalGlow.ready(function(glow){
+					globalBrew.ready(function(brew){
 						window.readyRan.push('four');
 						
 						/*debug*///log.info(window.readyRan.join(', '));
