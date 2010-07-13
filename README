@@ -1,169 +1,81 @@
-Glow 2.0.0 alpha 1
-==================
+BBC Brew 1.0.0 alpha 1
+======================
 
-This is the first release of Glow 2. It is intended for testing and shouldn't be used in a live environment.
+This is the first release of BBC Brew. It is intended for testing and 
+shouldn't be used in a live environment.
 
-Loading Glow
-============
+Using BBC Brew
+==============
 
-There are 2 options for loading Glow onto your page
+The Brew Loader is JavaScript loader that provides for asynchronous,
+sandboxed loading of the Brew Library, a version of the jQuery
+JavaScript Library with bespoke BBC Widget Plugins pre-installed and
+configured for use on BBC web sites.
+
+There are 2 options for including the Brew Library onto your page.
 
 Asynchronous loading (recommended)
 ----------------------------------
 
-This makes Glow load in the background, which doesn't block page rendering. This can also be used to load only the parts of Glow that are needed.
+This makes Brew load in the background, which doesn't block page
+rendering.
 
 <!-- Include the loader, this is best at the end of your page -->
-<script type="text/javascript" src="/scripts/glow/2.0.0/glow.js"></script>
+<script type="text/javascript" src="/scripts/brew/1.0.0/brew.js"></script>
 <script type="text/javascript">
-	// load glow
-	Glow(2).ready(function(glow) {
-		// glow has loaded and the DOM is ready
-		glow('body').append('glow is ready!');
+	Brew(1).ready(function($) {
+		// the jQuery object has loaded and the DOM is ready
+		$('body').append('brew is ready!');
 	});
 </script>
 
-Another benefit is glow doesn't hit the global scope, it only exists inside your ready callback. Although it isn’t ideal in terms of bandwidth, multiple versions of glow can be loaded safely on the same page.
+Using this pattern the $ name will not affect the global scope, it
+only exists inside your ready callback. Although this isn't best in terms
+of bandwidth, it does allow multiple versions of jQuery can be loaded
+safely onto the same page at the same time.
 
 For larger apps, this pattern may be more useful 
 
 <script type="text/javascript">
 	(function() {
-		var glow = Glow(2).ready(init);
+		var $ = Brew(1).ready(init);
 		
 		function init() {
-			// initialise your application here
+			// use $ in your application here
 		}
 	})();
 </script>
 
-Later, when we add more features, Glow will be split into packages. If we had any widgets, you would load them like this:
+To add Brew Library plugins to jQuery, you simply list which specific
+packages you wish to have loaded. These will load asynchrounously as well
+and Brew will track all the required downloads and dependencies for you.
 
 <script type="text/javascript">
-	// load glow
-	Glow(2).load('widgets').ready(function(glow) {
-		// glow has loaded and the DOM is ready
-		glow('body').append('glow & glow.widgets is ready!');
+	Brew(1).load('ui').ready(function($) {
+		// $ has loaded and the DOM is ready
+		$('body').append('jQuery & Brew UI plugins are now ready!');
 	});
 </script>
 
-At the moment there’s only one package, 'core'. This is loaded as soon as you call Glow(2).
+In principle Brew is analagous to the Gloader tool, which was used to
+load the BBC Glow library.
 
-These methods of loading Glow replace Gloader, which was used to load Glow 1.
-
-The full docs for Glow can be found in glow.debug.js, search for "@name Glow"
+The full docs for Brew can be found in brew.debug.js, search for
+"@name Brew"
 
 Synchronous loading
 -------------------
 
-Using the loader is optional, you can load Glow synchronously into the global scope via:
+Using the Brew Loader is optional, you can load Brew synchronously into
+the global scope via:
 
-<!-- Include the loader, this is best at the end of your page -->
-<script type="text/javascript" src="/scripts/glow/2.0.0/core.js"></script>
+<!-- it is best to include this at the end of your page -->
+<script type="text/javascript" src="/scripts/brew/1.0.0/core.js"></script>
+<script type="text/javascript" src="/scripts/brew/1.0.0/ui.js"></script>
 <script type="text/javascript">
-	// glow has loaded into the global scope
-	glow.ready(function() {
+	var $ = window.jQuery; // optional
+	$(function() {
 		// now the dom is ready
-		glow('body').append('glow is ready!')
+		$('body').append('brew is ready!')
 	});
 </script>
-
-Interacting with the DOM
-========================
-
-You can use glow as a function to get elements by CSS selector or create them by HTML string.
-
-glow('#nav li:first-child').css('background', 'red');
-glow('<p>New paragraph</p>').appendTo('body');
-
-glow() is simply a shortcut.
-
-glow('h1')
-is the same as
-new glow.NodeList('h1')
-
-The full docs for glow.NodeList can be found in core.debug.js, search for "@name glow.NodeList"
-
-Differences from Glow 1
------------------------
-
-The NodeList API is very similar to Glow 1, most of the work has been on performance for this module.
-
-Glow 2 uses Sizzle as its CSS selector engine, greatly improving the range of selectors that can be used.
-
-CSS can also be used to search for, and filter elements. For instance:
-
-// get all the items in the NodeList that have class 'active'
-myNodeList.filter('.active');
-
-// get the parent element that's a child list-item of #nav
-myNodeList.parent('#nav > li');
-
-Events
-======
-
-The full docs for glow.events can be found in core.debug.js, search for "@name glow.events"
-
-Custom Events
--------------
-
-Now, any object can extend or be enhanced by glow.events.Target. This gives it instance methods like 'on', 'detach' and 'fire'.
-
-function Ball() {}
-glow.util.extend(Ball, glow.event.Target, {
-	bounce: function() {
-		// fire the bounce event
-		this.fire('bounce');
-	}
-});
-
-// and other code can listen for these events
-var myBall = new Ball();
-myBall.on('bounce', function() {
-	glow('body').append('<p>boing!</p>');
-});
-
-DOM Events
-----------
-
-Rather than the long-winded glow.events.addListener, NodeList now has an 'on' method.
-
-glow('#nav a').on('click', function() {
-	alert('You just clicked a link in the nav');
-});
-
-The above will add a listener to each link in #nav. As a more efficient alternative, you could use event delegation...
-
-glow('#nav').delegate('click', 'a', function() {
-	alert('You just clicked a link in the nav');
-});
-
-The above adds one listener to the nav, but only fires your callback if the user clicks on a link inside the nav. This means that the event will also fire for links created after the listener is added.
-
-Keyboard Events
----------------
-
-Keyboard events have been normalised to fire keydown and keyup once per key press, whereas the keypress event will repeat while the key is held down.
-
-Details of which keys have been pressed have been normalised across browsers.
-
-// adding key listeners for a sideways-scrolling shooter
-glow('#spaceshipGameScreen').on('keydown', function() {
-	if (e.key === 'up') {
-		spaceship.startMoveUp();
-	}
-	else if (e.key === 'down') {
-		spaceship.startMoveDown();
-	}
-}).on('keyup', function(e) {
-	if (e.key === 'up') {
-		spaceship.stopMoveUp();
-	}
-	else if (e.key === 'down') {
-		spaceship.stopMoveDown();
-	}
-}).on('keypress', function(e) {
-	if (e.key === 'space') {
-		spaceship.fireLasers();
-	}
-})

@@ -1,12 +1,7 @@
-Glow Changelog
+Brew Changelog
 
-2.0.0 alpha 1
+1.0.0 alpha 1
 
 First release including the following modules:
 
-* Glow - the loader
-* glow - the library
-* glow.NodeList
-* glow.events
-* glow.env
-* glow.util
+* Brew - the loader
