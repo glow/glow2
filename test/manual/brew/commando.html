@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Brew commando</title>
+	
+	<script src="../../unit/lib/testhelper.js?base=../../../" type="text/javascript"></script>
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
+
+	<script type="text/javascript">
+		testHelper.addScript('core.js');
+	</script>
+</head>
+
+<body>
+	<h1>Brew commando</h1>
+	
+	<h2>Loading the Brew library via script tags.</h2>
+	
+	<p>
+		This is provided as a manual test to ensure that Brew loads correctly via script tags.
+	</p>
+	
+	<div class="testarea" id="commando-test">
+		<ul>
+			<li>Is jQuery defined?</li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+		module('Commando Loading');
+		
+		test('File core.js is loaded, jQuery is defined.', function(result) {
+			result.ok(typeof window.jQuery != 'undefined', typeof window.jQuery);
+		});
+	</script>
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+	
+</body>
+</html>

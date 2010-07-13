@@ -1,10 +1,10 @@
-Brew.provide( function(glow) {
-	glow.bar = glow.bar || {};
+Brew.provide( function($) {
+	$.bar = $.bar || {};
 	
-	glow.order = glow.order || [];
-	glow.order.push('bar');
+	$.order = $.order || [];
+	$.order.push('bar');
 	
-	glow.bar.bibble = function() {
+	$.bar.bibble = function() {
 	};
 });
 

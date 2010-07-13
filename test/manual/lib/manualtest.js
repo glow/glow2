@@ -146,15 +146,7 @@
 			module('Window Events');
 		
 			test('Window resize can be detected', function(result) {
-				window.resizeCounter = 0;
-				glow.ready(function() {
-					new glow.NodeList(window).on('resize', function(e) {
-						resizeCounter++;
-						result.pass({
-							"resizeCounter": resizeCounter
-						});
-					})
-				});
+				// test here
 			});
 			
 			// a two-part test
@@ -162,10 +154,7 @@
 			var mouseoverResult = test('Mouseover can be detected');
 			
 			test('Mouseover related element can be detected', function(result) {
-				new glow.NodeList('#mouse-test').on('mouseover', function(e) {
-					result.pass()
-					mouseoverResult.ok(e.related && e.related.id === 'mouse-around')
-				})
+				// test here
 			})
 	*/
 	function module(name) {
@@ -190,7 +179,7 @@
 			This callback is passed an instance of ManualTestResult as the first param.
 			Use this to set the result of the test.
 			
-			If glow is on the page, the callback will be called after glow.ready.
+			If jQuery is on the page, the callback will be called after jQuery.ready.
 			
 		@returns {ManualTestResult} result Use this to set the result of the test (an instance is also passed into the callback).
 	*/
@@ -202,8 +191,8 @@
 		currentList.appendChild(li);
 		
 		if (callback) {
-			if (typeof glow !== 'undefined') {
-				glow.ready(function() {
+			if (typeof jQuery !== 'undefined') {
+				jQuery.ready(function() {
 					callback(result);
 				})
 			}
@@ -219,13 +208,3 @@
 	window.module = module;
 	window.test = test;
 })();
-
-// include glow on the page
-// (function() {
-// 	var glowSrc =  conf.base + (conf.version == '@SRC@'? 'src' : conf.version) + '/glow.js';
-// 	
-// 	document.write(
-// 		'<'+'script type="text/javascript" src="' + glowSrc + '"> \
-// 		<' + '/script>'
-// 	);
-// })();

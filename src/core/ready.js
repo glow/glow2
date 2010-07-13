@@ -1,4 +1,3 @@
-/*debug*///log.info('executing core/ready.js');
 Brew.provide(function($) {
 	var readyQueue = [],
 		blockersActive = 0,

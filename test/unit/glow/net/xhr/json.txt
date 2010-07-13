@@ -1,6 +1,0 @@
-{
-	hello:"world",
-	something:3,
-	anArray: ["foo", "bar", 20],
-	anObject: {foo:"bar"}
-}
