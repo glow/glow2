@@ -21,26 +21,26 @@
 		
 		test('resolveVersion', 6, function() {
 			var testMap = {
-				versions: ['2.0.0 rc-1', '2.0.0', '2.0.1', '2.1.0 rc-1', '2.1.0', '2.0.0b1', 'src'],
-				'2.0.0 rc-1': { core: ['core.js'] }
+				versions: ['1.0.0 rc-1', '1.0.0', '1.0.1', '1.1.0 rc-1', '1.1.0', '1.0.0b1', 'src'],
+				'1.0.0 rc-1': { core: ['core.js'] }
 			};
 			
-			var brew = Brew('2', {_map: testMap, _noload: true});
+			var brew = Brew('1', {_map: testMap, _noload: true});
 		
 				equals(typeof brew, 'function', 'brew is a function');
- 				equals(brew._bVersion, '2.1.0', 'brew._bVersion is set to the latest minor+bugfix version.');
+ 				equals(brew._bVersion, '1.1.0', 'brew._bVersion is set to the latest minor+bugfix version.');
  			
- 			brew = Brew('2.0', {_map: testMap, _noload: true});
+ 			brew = Brew('1.0', {_map: testMap, _noload: true});
  			
- 				equals(brew._bVersion, '2.0.1', 'brew._bVersion is set to the latest bugfix version.');
+ 				equals(brew._bVersion, '1.0.1', 'brew._bVersion is set to the latest bugfix version.');
  			
- 			brew = Brew('2.1.0', {_map: testMap, _noload: true});
+ 			brew = Brew('1.1.0', {_map: testMap, _noload: true});
  			
- 				equals(brew._bVersion, '2.1.0', 'brew._bVersion is set to the latest exact version.');
+ 				equals(brew._bVersion, '1.1.0', 'brew._bVersion is set to the latest exact version.');
  				
- 			brew = Brew('2.1.0 rc-1', {_map: testMap, _noload: true});
+ 			brew = Brew('1.1.0 rc-1', {_map: testMap, _noload: true});
  			
- 				equals(brew._bVersion, '2.1.0 rc-1', 'brew._bVersion is set to the latest exact rc version.');
+ 				equals(brew._bVersion, '1.1.0 rc-1', 'brew._bVersion is set to the latest exact rc version.');
  			
  			brew = Brew('src', {_map: testMap, _noload: true});
  			

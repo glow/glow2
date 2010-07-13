@@ -48,8 +48,8 @@ var Brew;
 			base = opts.base || defaultBase;
 
 		brewMap = {
-			versions: ['2.0.0b1', 'src'],
-			'2.0.0b1': {
+			versions: ['1.0.0a1', 'src'],
+			'1.0.0a1': {
 				'core': ['core'+debug+'.js'],
 				'ui':   ['core', 'ui'+debug+'.js', 'ui'+debug+'.css']
 			}
@@ -82,13 +82,13 @@ var Brew;
 		@private
 		@name getVersion
 		@function
-		@param {string} version A (possibly imprecise) version identifier, like "2".
+		@param {string} version A (possibly imprecise) version identifier, like "1".
 		@param {boolean} exact Force this function to only return exact matches for the requested version.
 		@description Finds the most recent, available version of brew that matches the requested version.
 		Versions that contain characters other than numbers and dots are never returned
 		unless you ask for then exactly.
 		@returns {string} The version identifier that best matches the given version.
-		For example, given 2.1 this function could return 2.1.5 as the best match. 
+		For example, given 1.1 this function could return 1.1.5 as the best match. 
 	 */
 	var getVersion = function(version, forceExact) { /*debug*///console.info('getVersion("'+version+'")');
 		var versions = brewMap.versions,
@@ -115,7 +115,7 @@ var Brew;
 		@name getMap
 		@function
 		@description Find the file map for a given version.
-		@param {string} version Resolved identifier, like '2.0.0'.
+		@param {string} version Resolved identifier, like '1.0.0'.
 		@returns {object} A map of package names to files list.
 	 */
 	var getMap = function(version) { /*debug*///log.info('getMap("'+version+'")');
