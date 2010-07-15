@@ -28,6 +28,8 @@
 			
 			<file>src/footer/ui.js</file>
 		</js>
-		<css></css>
+		<css>
+            <file>src/ui/autocomplete/bbcautocomplete.css</file>
+        </css>
 	</ui>
 </packages>

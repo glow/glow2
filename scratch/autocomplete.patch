@@ -1,0 +1,6 @@
+279,280c279,280
+< 		menuWidth = ul.width( "" ).width();
+< 		textWidth = this.element.width();
+---
+> 		menuWidth = ul.width( "" ).outerWidth();
+> 		textWidth = this.element.outerWidth();

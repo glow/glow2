@@ -1,0 +1,17 @@
+.blq-container .ui-menu { padding:0; }
+.blq-container .ui-menu *, .blq-container .ui-widget-content * {border:0 !important; margin:0 !important; }
+.blq-container .ui-widget-content {
+	border:0;
+	background: none;
+	background-color: #ccc;
+}
+.blq-container .ui-widget-content .ui-state-hover {
+	border:0;
+	background: none;
+	background-color: #777;
+	color: #fff;
+}
+.blq-container .ui-autocomplete-input { border:0; width: 200px; padding: 4px; }
+.blq-container .ui-corner-all {
+	-moz-border-radius: 0;
+}
