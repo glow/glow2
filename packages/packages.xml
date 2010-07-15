@@ -14,59 +14,20 @@
 			<file>src/_jquery/jquery-footer.js</file>
 			<file>src/core/ready.js</file>
 			<file>src/footer/core.js</file>
-			<!--
-			<file>src/env/env.js</file>
-			<file>src/core/ready.js</file>
-			<file>src/util/util.js</file>
-			<file>src/events/events.js</file>
-			<file>src/events/DomEvent.js</file>
-			<file>src/events/KeyboardEvent.js</file>
-			<file>src/NodeList/NodeList.js</file>
-			<file>src/NodeList/attributes.js</file>
-			<file>src/NodeList/_sizzle/sizzle/sizzle.js</file>
-			<file>src/NodeList/traversal.js</file>
-			<file>src/NodeList/manipulation.js</file>
-			<file>src/NodeList/appearance.js</file>
-			<file>src/NodeList/events.js</file>
-			<file>src/NodeList/anim.js</file>
-			<file>src/net/net.js</file>
-			<file>src/net/XhrRequest/XhrRequest.js</file>
-			<file>src/net/XhrResponse/XhrResponse.js</file>
-			<file>src/net/Jsonp.js</file>
-			<file>src/net/Resource.js</file>
-			<file>src/net/Crossdomain.js</file>
-			<file>src/tweens/tweens.js</file>
-			<file>src/anim/Anim/Anim.js</file>
-			<file>src/anim/Anim/prop.js</file>
-			<file>src/anim/Anim/mutation.js</file>
-			<file>src/anim/Timeline/Timeline.js</file>
-			<file>src/flash/flash.js</file>
-			-->
 		</js>
 		<css></css>
 	</core>
 	<ui>
 		<js>
-			<!--<file>src/header/license.txt</file>
-			<file>src/NodeList/behaviours.js</file>
-			<file>src/ui/ui.js</file>
-			<file>src/ui/Behaviour/Behaviour.js</file>
-			<file>src/ui/Focusable/Focusable.js</file>
-			<file>src/ui/Widget/Widget.js</file>
-			<file>src/ui/Overlay/Overlay.js</file>
-			<file>src/ui/AutoSuggest/AutoSuggest.js</file>
-			<file>src/ui/AutoSuggest/bindInput.js</file>
-			<file>src/ui/CarouselPane/CarouselPane.js</file>
-			<file>src/ui/Carousel/Carousel.js</file>
-			<file>src/ui/Carousel/pageNav.js</file>-->
+			<file>src/header/ui.js</file>
+			
+			<file>src/_jqueryui/jquery.ui.core.js</file>
+			<file>src/_jqueryui/jquery.ui.widget.js</file>
+			<file>src/_jqueryui/jquery.ui.position.js</file>
+			<file>src/_jqueryui/jquery.ui.autocomplete.js</file>
+			
 			<file>src/footer/ui.js</file>
 		</js>
-		<css>
-			<!--<file>src/header/license.txt</file>
-			<file>src/ui/ui.css</file>
-			<file>src/ui/Overlay/Overlay.css</file>
-			<file>src/ui/AutoSuggest/AutoSuggest.css</file>
-			<file>src/ui/Carousel/Carousel.css</file>-->
-		</css>
+		<css></css>
 	</ui>
 </packages>

@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Brew load</title>
+	
+	<script src="../../unit/lib/testhelper.js?base=../../../" type="text/javascript"></script>
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
+	
+	<script type="text/javascript">
+		testHelper.addScript('brew.js');
+	</script>
+
+</head>
+
+<body>
+	
+	<h1>Brew load</h1>
+	
+	<h2>Loading packages via brew.</h2>
+	
+	<p>
+		This is provided as a manual test to ensure that Brew correctly loads packages.
+	</p>
+	
+	<div class="testarea" id="load-test">
+		<ul>
+			<li>Does the loaded callback run?</li>
+			<li>Does the ready callback run?</li>
+			<li>Do the callbacks run in the right order: loaded then ready?</li>
+		</ul>
+	</div>
+	
+	<script type="text/javascript">
+		module('Brew Load');
+		
+		test('$ is instantiated', function(result) {
+			try {
+				$ = new Brew('src');
+			}
+			catch(e) {}
+			
+			if (typeof $ !== 'undefined') {
+				result.ok(true, '$ is: ' + typeof $);
+			}
+			else {
+				 result.fail();
+			}
+		});
+	/*	
+		test('Loaded callback runs when "ui" package is loaded', function(result) {
+			var onLoaded = function($) {
+				result.ok(true, 'The onloaded callback ran.');
+				window.loadedRan = true;
+			};
+			
+			var onReady = function($) {
+				var last = document.getElementById('last-element')
+				var order = last && !window.readyRan && window.loadedRan;
+				result.ok(order, 'The ready callback ran after the last element and after the loaded callback.');
+			};
+			
+			$.load('ui')
+			.loaded(onLoaded)
+			.ready(onReady);
+		});
+	*/
+	</script>
+
+
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+	<div id="log-messages"></div>
+</body>
+</html>
+<span id="last-element"></span>

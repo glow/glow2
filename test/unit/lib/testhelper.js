@@ -159,7 +159,7 @@ if (window.parent && parent.Harness && window.QUnit) {
 
 // display configuration details
 window.onload = function() {
-	var showVersion = document.getElementById('glow-version');
+	var showVersion = document.getElementById('brew-version');
 	
 	if (showVersion) {
 		showVersion.innerHTML = 'Test configuration: base: ' + testHelper.conf.base + '; version: ' + testHelper.conf.version+ '; build date: ' + testHelper.conf.buildDate;

@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Brew load</title>
+	
+	<script src="../../unit/lib/testhelper.js?base=../../../" type="text/javascript"></script>
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
+	
+	<script type="text/javascript">
+		testHelper.addScript('brew.js');
+	</script>
+</head>
+
+<body>
+	<h1>Brew load</h1>
+	
+	<h2>Ordered loading events.</h2>
+	
+	<p>
+		This is manual test shows that Brew can load multiple versions of the library
+		at the same time and will eveluate all modules in the correct order.
+	</p>
+	
+	<div class="testarea" id="loadorder-test">
+		<ul>
+			<li>Wait a few seconds.</li>
+			<li>Do the numbered events appear in order?</li>
+			<li>Reload the page a few times, try it with a clean cache.</li>
+		</ul>
+	</div>
+	
+	<script type="text/javascript" class="showSrc">
+		module('Load Order');
+		
+		window.log = [];
+		
+		test('Two different versions load together.', function(result) {
+			var mockMap = {
+				versions: ['2.0.0', '2.1.0', '2.1.1', 'src'],
+				'2.0.0': {
+					'core':    ['core.js'],
+					'base':    ['core', 'base.js'],
+					'dom':     ['base', 'dom.js'],
+					'widgets': ['dom', 'widgets.js', 'widgets.css']
+				},
+				'2.1.0': {
+					'core':    ['core.js'],
+					'base':    ['core', 'base.js'],
+					'more':    ['base', 'more.js'],
+					'widgets': ['more', 'widgets.js', 'widgets.css']
+				}
+			};
+			
+			var brew200 = Brew('2.0.0', {_map: mockMap, base: './mock/', _noload: true});
+			var brew211 = Brew('2', {_map: mockMap, base: './mock/', _noload: true});
+			
+			brew200.load('dom', 'widgets', 'base');
+			
+			brew211.load('more')
+			.loaded(function(brew) {
+				if (!brew.more) { throw new Error('Cannot run callback 1 for brew 2.1.1 before brew.more is loaded.'); }
+				
+				//log.info('____ ran onLoaded callback 1 for brew version 2.1.1');
+			})
+			.ready(function(brew) {
+				//log.info('____ ran ready callback 1 for brew version 2.1.1');
+			});
+			
+			brew200.loaded(function(brew) {
+				if (!brew.widgets) { throw new Error('Cannot run callback 1 for brew 2.0.0 before widgets is loaded.'); }
+				
+				//log.info('____ ran onLoaded callback 1 for brew version 2.0.0');
+			});
+			
+			//log.info('includes finished.');
+			
+			setTimeout(
+				function() {
+					brew211
+					.load('widgets')
+					.loaded(function(brew) {
+						if (!brew.widgets) { throw new Error('Cannot run callback 2 for brew 2.1.1 before widgets is loaded.'); }
+						
+						//log.info('____ ran onLoaded callback 2 for brew version 2.1.1');
+					})
+					.ready(function(brew) {
+						var logmsg = window.log.join('<br>');
+						document.getElementById('log').innerHTML = logmsg;
+						var order1 = /\[1\].+\[2\].+\[3\]/.test(logmsg),
+							order2 = /\(1\).+\(2\).+\(3\)/.test(logmsg);
+							
+						result.ok(order1 && order2, 'all modules load in order.');
+					});
+				},
+				2000
+			);
+		});
+	</script>
+	
+	<pre id="log"></pre>
+	
+	
+	
+	<script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+</body>
+</html>
+<span id="last-element"></span>

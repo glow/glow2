@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>BBC Brew</title> 
+	
+	<style type="text/css">
+		#testarea { color: red; }
+	</style>
+	
+	<!-- use a built brew via the loader -->
+	<script src="../1.0.0a1/brew.js"></script> 
+	<script type="text/javascript">
+		Brew('1.0.0a1').ready(function($) {
+			$('#testarea').css('color', 'green');
+		});
+	</script>
+</head>
+
+<body>
+	<p id="testarea">Hello world.</p>
+</body>
+</html>

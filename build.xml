@@ -22,6 +22,7 @@
 	<property name="DOCS_DIR"     value="${DIST_DIR}/docs/" />
 
 	<property name="JQUERY_DIR"   value="${ROOT_DIR}/src/_jquery/" />
+	<property name="JQUERYUI_DIR" value="${ROOT_DIR}/src/_jqueryui/" />
 	<property name="QUNIT_DIR"    value="${ROOT_DIR}/test/unit/lib/qunit/" />
 	<property name="WOOSH_DIR"    value="${ROOT_DIR}/test/speed/lib/woosh/" />
 	
@@ -36,6 +37,7 @@
 	<target name="deps">
 		<echo message="Setting up external dependencies" />
 		<tempfile property="temp.zip" suffix=".zip" deleteonexit="yes" />
+
 		
 		<delete dir="${JSDOC_DIR}" />
 		<mkdir dir="${JSDOC_DIR}" />
@@ -52,6 +54,15 @@
 		</unzip>
 
 		<get dest="${JQUERY_DIR}/jquery.js" src="${JQUERY_URL}" />
+		
+		<delete dir="${JQUERYUI_DIR}" />
+		<mkdir dir="${JQUERYUI_DIR}" />
+		<get dest="${temp.zip}" src="${JQUERYUI_URL}" />
+		<unzip dest="${JQUERYUI_DIR}" src="${temp.zip}">
+			<regexpmapper from="^[^\/]*\/ui/(.*)" to="\1"/>
+		</unzip>
+ 
+
 
 		<delete dir="${QUNIT_DIR}" />
 		<mkdir dir="${QUNIT_DIR}" />
@@ -66,6 +77,7 @@
 		<untar dest="${WOOSH_DIR}" src="${temp.zip}" compression="gzip">
 			<regexpmapper from="^[^\/]*\/(.*)" to="\1"/>
 		</untar>
+
 	</target>
 		
 	<target name="clean">

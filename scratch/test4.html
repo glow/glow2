@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>BBC Brew</title> 
+	
+	<script src="../packages/src/brew.js"></script> 
+	<script type="text/javascript">
+		Brew('src').load('ui').ready(function($) {
+			$('#loadMask')
+			.bind('click', function() {
+				var hideSelects = ($.browser.msie && $.browser.version < 7);
+				$.mask.load(
+					{
+						startOpacity: 0.5,
+						color: 'black',
+						onBeforeLoad: function(event, tabIndex) {
+							if (hideSelects) { $('select').hide(); }
+						},
+						onClose: function(event, tabIndex) {
+							if (hideSelects) { $('select').show(); }
+						}
+					}
+				);
+			})
+			.attr('disabled', false);
+		});
+	</script>
+</head>
+
+<body>
+	<p id="testarea">
+		<select>
+			<option value="one">one</option>
+			<option value="two">two</option>
+		</select>
+		<br>
+		<button id="loadMask" disabled="disabled">load mask</button>
+	</p>
+	
+	<p>
+		<embed style="width: 400px; height: 260px;" type="application/x-shockwave-flash" src="media/ff2.swf" quality="best" xwmode="transparent"></embed>
+	</p>
+	
+</body>
+</html>

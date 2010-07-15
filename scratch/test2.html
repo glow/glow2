@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>BBC Brew</title> 
+	
+	<style type="text/css">
+		#testarea { color: red; }
+	</style>
+	
+	<!-- use an unbuilt brew directly -->
+	<script src="../packages/src/core.js"></script> 
+	<script type="text/javascript">
+		var $ = window.jQuery;
+		$(function() {
+			$('#testarea').css('color', 'green');
+		});
+	</script>
+</head>
+
+<body>
+	<p id="testarea">Hello world.</p>
+</body>
+</html>

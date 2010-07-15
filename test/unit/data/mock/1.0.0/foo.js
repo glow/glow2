@@ -1,12 +1,12 @@
 setTimeout(
 	function() {
-		Brew.provide(function(glow) {
-			glow.foo = glow.foo || {};
+		Brew.provide(function($) {
+			$.foo = $.foo || {};
 			
-			glow.order = glow.order || [];
-			glow.order.push('foo');
+			$.order = $.order || [];
+			$.order.push('foo');
 			
-			glow.foo.fibble = function() {
+			$.foo.fibble = function() {
 			};
 		});
 		
