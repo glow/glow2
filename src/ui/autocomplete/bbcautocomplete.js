@@ -16,6 +16,14 @@
 (function( $ ) {
 
     $.widget( "bbc.bbcautocomplete", $.ui.autocomplete, {
+        /**
+        * Adds an extraWidth option for autocomplete, which
+        * makes the menu larger (or smaller) than the input.
+        * 
+        * This is useful where you have a button that appears
+        * to be part of the text field, as with barlesque's
+        * search field.
+        */
         options : {
             extraWidth : 0
         },
@@ -42,7 +50,6 @@
                 - ( parseFloat( ul.css("paddingRight") ) || 0 )
                 - ( parseFloat( ul.css("borderLeftWidth") ) || 0 )
                 - ( parseFloat( ul.css("borderRightWidth") ) || 0 ) );
-         
         }
     });
 
