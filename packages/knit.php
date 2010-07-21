@@ -21,6 +21,10 @@ $conf = array(
 	'path_to_packagelist' => 'packages.xml',
 	'path_to_root'        => '../'
 );
+if ( strpos($_GET['package'], '/brew/packages/') === 0 ) {
+    $_GET['package'] = substr($_GET['package'], strlen('/brew/packages/'));
+}
+
 
 
 /**** main ****/

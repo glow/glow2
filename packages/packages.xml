@@ -26,6 +26,7 @@
 			<file>src/_jqueryui/jquery.ui.widget.js</file>
 			<file>src/_jqueryui/jquery.ui.position.js</file>
 			<file>src/_jqueryui/jquery.ui.autocomplete.js</file>
+			<file>src/ui/autocomplete/bbcautocomplete.js</file>
 			
 			<!-- for dialog -->
 			<file>src/_jqueryui/development-bundle/external/jquery.bgiframe-2.1.1.js</file>
