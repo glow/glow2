@@ -21,15 +21,25 @@
 		<js>
 			<file>src/header/ui.js</file>
 			
+			<!-- for autocomplete -->
 			<file>src/_jqueryui/jquery.ui.core.js</file>
 			<file>src/_jqueryui/jquery.ui.widget.js</file>
 			<file>src/_jqueryui/jquery.ui.position.js</file>
 			<file>src/_jqueryui/jquery.ui.autocomplete.js</file>
 			
+			<!-- for dialog -->
+			<file>src/_jqueryui/development-bundle/external/jquery.bgiframe-2.1.1.js</file>
+			<file>src/_jqueryui/jquery.ui.button.js</file>
+			<file>src/_jqueryui/jquery.ui.mouse.js</file>
+			<file>src/_jqueryui/jquery.ui.draggable.js</file>
+			<file>src/_jqueryui/jquery.ui.resizable.js</file>
+			<file>src/_jqueryui/jquery.ui.dialog.js</file>
+			
 			<file>src/footer/ui.js</file>
 		</js>
 		<css>
             <file>src/ui/autocomplete/bbcautocomplete.css</file>
+            <file>src/ui/dialog/bbcdialog.css</file>
         </css>
 	</ui>
 </packages>
