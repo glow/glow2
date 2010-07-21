@@ -16,21 +16,32 @@
 (function( $ ) {
 
     $.widget( "bbc.bbcautocomplete", $.ui.autocomplete, {
+        options : {
+            extraWidth : 0
+        },
         /**
-         * Overrides the _suggest method of $.ui.autocomplete
-         * to account for padding by using outerWidth
+         * Overrides the _suggest method of autocomplete
+         * to account for padding by using outerWidth and
+         * an "extraWidth" option passed to constructor.
+         * 
+         * Code comes from github, should be the default in
+         * the next version of jQuery UI, minus the
+         * extraWidth bit.
+         * 
          * @private
          * @param Array items list of items to display
          * @returns void
          */
         _suggest: function( items ) {
-            console.log("OHAI");
-             $.ui.autocomplete.prototype._suggest.apply(this, arguments);
-             var ul   = this.menu.element,
-                 ulOuterWidth = ul.outerWidth(),
-                 inputOuterWidth = this.element.outerWidth() + 29; // add the width of the "spyglass"
-             // only make width bigger by the difference in outer widths
-             if ( ulOuterWidth < inputOuterWidth ) ul.width( ul.width() + inputOuterWidth - ulOuterWidth );
+            $.ui.autocomplete.prototype._suggest.apply(this, arguments);
+            var ul = this.menu.element;
+            menuWidth = ul.width( "" ).outerWidth();
+            textWidth = this.element.outerWidth() + this.options.extraWidth;
+            ul.width( Math.max( menuWidth, textWidth )
+                - ( parseFloat( ul.css("paddingLeft") ) || 0 )
+                - ( parseFloat( ul.css("paddingRight") ) || 0 )
+                - ( parseFloat( ul.css("borderLeftWidth") ) || 0 )
+                - ( parseFloat( ul.css("borderRightWidth") ) || 0 ) );
          
         }
     });
