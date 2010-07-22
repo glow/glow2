@@ -27,6 +27,7 @@
 			<file>src/_jqueryui/jquery.ui.position.js</file>
 			<file>src/_jqueryui/jquery.ui.autocomplete.js</file>
 			<file>src/ui/autocomplete/bbcautocomplete.js</file>
+			<file>src/ui/texthint/bbctexthint.js</file>
 			
 			<!-- for dialog -->
 			<file>src/_jqueryui/development-bundle/external/jquery.bgiframe-2.1.1.js</file>
@@ -41,6 +42,7 @@
 		<css>
             <file>src/ui/autocomplete/bbcautocomplete.css</file>
             <file>src/ui/dialog/bbcdialog.css</file>
+            <file>src/ui/texthint/bbctexthint.css</file>
         </css>
 	</ui>
 </packages>
