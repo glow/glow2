@@ -1,26 +1,38 @@
-.blq-container .ui-dialog
+.blq-js .ui-dialog
 {
 	padding: 0;
 	overflow: hidden;
+	height: 120px !important;
 }
-.blq-container .ui-dialog *, .blq-container .ui-widget-content * {border:0 !important; margin:0 !important; }
-.blq-container .ui-dialog .ui-widget-content, .blq-container .ui-dialog-titlebar {
+.blq-js .ui-dialog *, .blq-js .ui-widget-content * {border:0 !important; margin:0 !important; }
+.blq-js .ui-dialog .ui-widget-content, .blq-js .ui-dialog-titlebar {
 	border:0;
 	background: none;
 	background-color: #fff;
 }
-.blq-container .ui-corner-all {
+.blq-js .ui-corner-all {
 	-moz-border-radius: 0;
 	-webkit-border-radius: 0;
 	border-radius: 0;
 }
 
-.blq-container .ui-widget-overlay {
+.blq-js .ui-widget-overlay {
 	background: none;
 	background-color: #000;
 	opacity: .75;
 }
 
-.blq-container .ui-dialog .ui-state-hover {
+.blq-js .ui-dialog .ui-state-hover {
 	background: none;
+}
+
+
+
+
+.blq-js .ui-dialog-titlebar {
+    display:none;
+}
+
+.blq-nav-sub {
+    
 }
