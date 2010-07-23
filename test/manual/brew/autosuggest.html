@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Manual Test: Brew Autosuggest</title>
+	
+	<link type="text/css" rel="stylesheet" media="screen" href="../lib/style.css" />
+	<!-- script src="../../unit/lib/testhelper.js?base=../../.." type="text/javascript"></script>
+	<script type="text/javascript" src="../lib/manualtest.js"></script>
+	
+	<script type="text/javascript">
+		testHelper.addScript('brew.js');
+		testHelper.addScript('ui.js');
+	</script -->
+	
+	<style type="text/css">
+	    .autosuggest {
+	        width:200px;
+	    }
+	    .ui-menu {
+	        list-style: none outside none;
+	        margin:0;
+	        padding:0;
+	        background-color:#ccc;
+	    }
+	    .ui-menu-item {
+	        margin:0;
+	        padding:0;
+	    }
+	</style>
+	<script src="/brew/packages/src/brew.js"></script>
+	<script>
+	    Brew('src').load('ui').ready(function($) {
+	        var availableTags = ["ada", "bytecode", "c++", "d", "erlang", "fortan", "go", "haskell", "inform", "java", "kite", "lingo", "mercury", "neok", "ocaml", "php", "coldfusion", "javascript", "asp", "ruby", "python", "c", "scala", "groovy", "perl"];
+	        $('input.autosuggest').bbcautocomplete({source:availableTags});
+	    });
+	</script>
+
+</head>
+
+<body>
+	
+	<h1>Brew Autosuggest</h1>
+	
+	<h2>Does the autosuggest work?</h2>
+	
+	<p>
+		This is provided as a manual test for some Autosuggest edge cases
+	</p>
+	
+	
+	<div id="test-selectbox">
+	    <h3>Select box</h3>
+	    <input class="autosuggest" /><br />
+	    <select>
+	        <option>One</option>
+	        <option>Two</option>
+	        <option>Three</option>
+	        <option>Four</option>
+	    </select>
+	</div>
+	
+	<div id="test-flash">
+	    <h3>Flash, no options</h3>
+	    <input class="autosuggest" /><br />
+	    <object width="20" height="20">
+            <param name="movie" value="../data/smile.swf">
+            <embed src="../data/smile.swf" width="20" height="20"></embed>
+        </object>
+	    <object width="20" height="20">
+            <param name="wmode" value="window">
+            <param name="movie" value="../data/smile.swf">
+            <embed src="../data/smile.swf" width="20" height="20" wmode="window"></embed>
+        </object>
+	    <object width="20" height="20">
+            <param name="wmode" value="transparent">
+            <param name="movie" value="../data/smile.swf">
+            <embed src="../data/smile.swf" width="20" height="20" wmode="transparent"></embed>
+        </object>
+	    <object width="20" height="20">
+            <param name="wmode" value="opaque">
+            <param name="movie" value="../data/smile.swf">
+            <embed src="../data/smile.swf" width="20" height="20" wmode="opaque"></embed>
+        </object>
+	    <object width="20" height="20">
+            <param name="wmode" value="direct">
+            <param name="movie" value="../data/smile.swf">
+            <embed src="../data/smile.swf" width="20" height="20" wmode="direct"></embed>
+        </object>
+	    <object width="20" height="20">
+            <param name="wmode" value="gpu">
+            <param name="movie" value="../data/smile.swf">
+            <embed src="../data/smile.swf" width="20" height="20" wmode="gpu"></embed>
+        </object>
+	</div>
+	
+	<div id="test-flash-transparent">
+	    <h3>Flash, wmode=transparent</h3>
+	    <input class="autosuggest" /><br />
+	</div>
+	
+	
+	<!-- script type="text/javascript">
+		module('Brew Autosuggest');
+		
+		test('Autosuggest in instatiated', function(result) {
+			try {
+				$ = new Brew('src');
+			}
+			catch(e) {}
+			
+			if (typeof $ !== 'undefined') {
+				result.ok(true, '$ is: ' + typeof $);
+			}
+			else {
+				 result.fail();
+			}
+		});
+	</script -->
+
+
+	<!-- script type="text/javascript">
+		// make scripts visible in the page...
+		manualTests.showSrc();
+	</script>
+	<div id="log-messages"></div -->
+</body>
+</html>
+<span id="last-element"></span>
